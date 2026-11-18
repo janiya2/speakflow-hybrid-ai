@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+  <meta name="referrer" content="no-referrer">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="language_coach_app">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>LangCoach AI</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Google Fonts: Inter, Noto Sans Sinhala, Noto Color Emoji & Material Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Round|Material+Icons+Sharp">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+
+  <style>
+    @font-face {
+      font-family: 'MaterialIcons';
+      font-style: normal;
+      font-weight: 400;
+      src: url('fonts/MaterialIcons-Regular.otf') format('opentype'),
+           url('https://fonts.gstatic.com/s/materialicons/v142/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2') format('woff2');
+    }
+  </style>
+</head>
+<body>
+  <!--
+    You can customize the "flutter_bootstrap.js" script.
+    This is useful to provide a custom configuration to the Flutter loader
+    or to give the user feedback during the initialization process.
+
+    For more details:
+    * https://docs.flutter.dev/platform-integration/web/initialization
+  -->
+  <script>
+    // Prompt Chrome/browser for microphone permission on first user click
+    window.addEventListener('click', function requestMicOnce() {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(function(stream) {
+            stream.getTracks().forEach(function(t) { t.stop(); });
+            window.removeEventListener('click', requestMicOnce);
+          })
+          .catch(function(err) {
+            console.log('Microphone permission request:', err);
+          });
+      }
+    }, { once: true });
+
+    // Global audio player instance for fallback streaming audio (CORS-free standard audio)
+    window._coachAudio = null;
+    let _allVoices = [];
+
+    function cacheVoices() {
+      if ('speechSynthesis' in window) {
+        _allVoices = window.speechSynthesis.getVoices() || [];
+        if (_allVoices.length > 0) {
+          console.log("🔊 Browser voices populated:", _allVoices.length, "voices available");
+        }
+      }
+    }
+    if ('speechSynthesis' in window) {
+      cacheVoices();
+      window.speechSynthesis.onvoiceschanged = cacheVoices;
+    }
+
+    function playCloudAudioStream(text, shortLang) {
+      try {
+        console.log("🔊 Playing Cloud TTS audio stream for lang:", shortLang);
+        let textToPlay = text.trim();
+        if (textToPlay.length > 150) {
+          const sentences = textToPlay.split(/(?<=[.!?。！？؟])\s+/);
+          if (sentences.length > 0 && sentences[0].trim().length > 0) {
+            textToPlay = sentences[0].trim();
+          }
+          if (textToPlay.length > 150) {
+            textToPlay = textToPlay.substring(0, 150);
+          }
+        }
+        const encoded = encodeURIComponent(textToPlay);
+
+        // High-clarity neural voice mapping for languages without local Windows packs
+        const seVoices = {
+          'ko': 'Seoyeon',
+          'ja': 'Mizuki',
+          'ar': 'Zeina',
+          'ta': 'Valluvar',
+          'es': 'Lucia',
+          'en': 'Joanna'
+        };
+        const seVoice = seVoices[shortLang];
+
+        // 1. Primary: StreamElements CORS-enabled high-quality Neural TTS (Amazon Polly / Google Neural)
+        // 2. Secondary fallback: Google Translate TTS without referrer
+        const primaryUrl = seVoice 
+          ? ('https://api.streamelements.com/kappa/v2/speech?voice=' + seVoice + '&text=' + encoded)
+          : ('https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=' + shortLang + '&q=' + encoded);
+
+        const fallbackUrl = 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=' + shortLang + '&q=' + encoded;
+
+        const audio = new Audio();
+        audio.referrerPolicy = 'no-referrer';
+        audio.src = primaryUrl;
+        audio.playbackRate = 1.0;
+        window._coachAudio = audio;
+
+        let triedFallback = false;
+
+        audio.oncanplay = function() {
+          console.log("🔊 Cloud audio stream loaded, playing now...");
+          audio.play().catch(function(err) {
+            console.warn("Audio play() blocked by browser autoplay policy:", err);
+            window.dispatchEvent(new CustomEvent('coachSpeechEnded'));
+          });
+        };
+        audio.onended = function() {
+          console.log("🔊 Cloud audio FINISHED playing");
+          window.dispatchEvent(new CustomEvent('coachSpeechEnded'));
+        };
+        audio.onerror = function(err) {
+          if (!triedFallback) {
+            triedFallback = true;
+            console.warn("🔊 Primary cloud TTS stream failed, trying fallback stream...");
+            audio.src = fallbackUrl;
+            audio.load();
+            return;
+          }
+          console.warn("🔊 Cloud audio error:", err);
+          window.dispatchEvent(new CustomEvent('coachSpeechEnded'));
+        };
+
+        audio.load();
+      } catch (e) {
+        console.error("playCloudAudioStream error:", e);
+        window.dispatchEvent(new CustomEvent('coachSpeechEnded'));
+      }
+    }
+
+    // High-fidelity Multilingual Voice Synthesis for AI Coach Voice (All 6 Languages)
+    window.speakWebText = function(text, lang, coach, gender) {
+      try {
+        console.log("🔊 speakWebText called with text:", text, "(lang:", lang, "coach:", coach, "gender:", gender, ")");
+        if (!text || text.trim() === '') return;
+
+        // Stop any previous audio if playing
+        if (window._coachAudio) {
+          try {
+            window._coachAudio.pause();
+            window._coachAudio.currentTime = 0;
+            window._coachAudio = null;
+          } catch (_) {}
+        }
+        if ('speechSynthesis' in window) {
+          try { window.speechSynthesis.cancel(); } catch (_) {}
+        }
+
+        // PRIMARY: Stream Microsoft Edge Neural TTS directly from Next.js server (Port 3001)
+        const coachParam = encodeURIComponent(coach || 'sarah');
+        const genderParam = encodeURIComponent(gender || 'female');
+        const ttsUrl = 'http://localhost:3001/api/tts?text=' + encodeURIComponent(text) + '&coach=' + coachParam + '&gender=' + genderParam + '&language=' + encodeURIComponent(lang || 'English');
+        const audio = new Audio();
+        audio.crossOrigin = 'anonymous';
+        audio.volume = 1.0;
+        audio.src = ttsUrl;
+        window._coachAudio = audio;
+
+        let hasEnded = false;
+        let hasStarted = false;
+
+        function notifySpeechStarted() {
+          if (!hasStarted) {
+            hasStarted = true;
+            console.log("🔊 Edge Neural TTS playback actually started! Dispatching coachSpeechStarted");
+            window.dispatchEvent(new CustomEvent('coachSpeechStarted'));
+          }
+        }
+
+        function finishSpeech(reason) {
+          if (!hasEnded) {
+            hasEnded = true;
+            console.log("🔊 Edge Neural TTS speech finished. Reason:", reason, "currentTime:", audio.currentTime, "duration:", audio.duration);
+            window.dispatchEvent(new CustomEvent('coachSpeechEnded'));
+          }
+        }
+
+        audio.onplay = function() {
+          notifySpeechStarted();
+        };
+
+        audio.oncanplay = function() {
+          audio.oncanplay = null; // Prevent multi-firing
+          console.log("🔊 Edge Neural TTS audio stream loaded, starting playback... Duration:", audio.duration);
+          audio.play().then(function() {
+            notifySpeechStarted();
+          }).catch(function(err) {
+            console.warn("Audio autoplay blocked by browser:", err);
+            finishSpeech("play_catch");
+          });
+        };
+
+        audio.onended = function() {
+          finishSpeech("track_ended");
+        };
+
+        audio.onerror = function(err) {
+          console.warn("🔊 Edge Neural TTS error, falling back to speech synthesis:", err);
+          fallbackWebSpeech(text, lang, () => finishSpeech("error_fallback"), () => notifySpeechStarted());
+        };
+
+        audio.load();
+      } catch (e) {
+        console.error("speakWebText exception:", e);
+        window.dispatchEvent(new CustomEvent('coachSpeechEnded'));
+      }
+    };
+
+    function fallbackWebSpeech(text, lang, onFinish, onStart) {
+      if (!('speechSynthesis' in window)) {
+        if (onFinish) onFinish();
+        return;
+      }
+      try {
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = lang || 'en-US';
+        u.onstart = function() {
+          if (onStart) onStart();
+        };
+        u.onend = function() { if (onFinish) onFinish(); };
+        u.onerror = function() { if (onFinish) onFinish(); };
+        window.speechSynthesis.speak(u);
+      } catch (_) {
+        if (onFinish) onFinish();
+      }
+    }
+
+    window.stopWebSpeech = function() {
+      try {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+        if (window._coachAudio) {
+          window._coachAudio.pause();
+          window._coachAudio.currentTime = 0;
+          window._coachAudio = null;
+        }
+      } catch (_) {}
+    };
+
+    // Outgoing Phone Ring Synthesizer (Pure Web Audio API - Zero Assets)
+    window.playCallRingtone = function() {
+      try {
+        window.stopCallRingtone();
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        window._ringerCtx = ctx;
+
+        function triggerRing() {
+          if (!window._ringerCtx) return;
+          const now = ctx.currentTime;
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc1.type = 'sine';
+          osc2.type = 'sine';
+          osc1.frequency.setValueAtTime(440, now);
+          osc2.frequency.setValueAtTime(480, now);
+
+          gain.gain.setValueAtTime(0.04, now); // Gentle, subtle volume
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + 1.2);
+          osc2.stop(now + 1.2);
+        }
+
+        triggerRing();
+        window._ringInterval = setInterval(triggerRing, 2800);
+      } catch (e) {
+        console.warn("Ringtone error:", e);
+      }
+    };
+
+    window.stopCallRingtone = function() {
+      try {
+        if (window._ringInterval) {
+          clearInterval(window._ringInterval);
+          window._ringInterval = null;
+        }
+        if (window._ringerCtx) {
+          window._ringerCtx.close();
+          window._ringerCtx = null;
+        }
+      } catch (_) {}
+    };
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

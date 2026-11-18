@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "265385222467",
+    "project_id": "uscut-a78e9",
+    "storage_bucket": "uscut-a78e9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:265385222467:android:8906deead56be1b5988ff6",
+        "android_client_info": {
+          "package_name": "com.innoxpert.speakflow"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "265385222467-98pdtgi3gf0dic1avjlu8veuv0k8sdvo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.innoxpert.speakflow",
+            "certificate_hash": "1580c631603d88d8083a2a190fabcc8fa4ace3a1"
+          }
+        },
+        {
+          "client_id": "265385222467-g08e3bemfbrledagps06o5q8c1mpsiss.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.innoxpert.speakflow",
+            "certificate_hash": "ecd953d7762a1f86744826ad27bdec51225ccb8f"
+          }
+        },
+        {
+          "client_id": "265385222467-t9pgb9carg0l1tqkro77vsdrgfk0q4h1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.innoxpert.speakflow",
+            "certificate_hash": "84fbef4fb292f1acf5bd20af938507867e594fcf"
+          }
+        },
+        {
+          "client_id": "265385222467-voi0uff2m86c8se7nckdnqhj75ks2e4b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwkyYNOAihQO4pEFM_Rq8pPt3KKDCKuRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "265385222467-voi0uff2m86c8se7nckdnqhj75ks2e4b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

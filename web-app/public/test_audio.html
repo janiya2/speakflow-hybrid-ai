@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test TTS Audio</title></head>
+<body>
+<h1>Testing Edge Neural TTS Audio</h1>
+<button id="btn" style="font-size: 20px; padding: 10px 20px;">🔊 Click to Play Audio</button>
+<div id="log" style="font-family: monospace; white-space: pre; margin-top: 20px;"></div>
+<script>
+  function log(msg) {
+    document.getElementById('log').innerText += msg + '\n';
+    console.log(msg);
+  }
+
+  document.getElementById('btn').onclick = function() {
+    log("Button clicked, creating audio...");
+    const text = "Hello Janitha! Can you hear this crystal clear voice now?";
+    const url = "http://localhost:3001/api/tts?text=" + encodeURIComponent(text) + "&coach=alex&gender=male&language=English";
+    
+    const audio = new Audio();
+    audio.src = url;
+    
+    audio.onloadstart = () => log("audio onloadstart");
+    audio.onloadedmetadata = () => log("audio onloadedmetadata - duration: " + audio.duration);
+    audio.onloadeddata = () => log("audio onloadeddata");
+    audio.oncanplay = () => {
+      log("audio oncanplay - duration: " + audio.duration);
+      audio.play().then(() => {
+        log("audio.play() SUCCESS! Audio is actively playing through speakers!");
+      }).catch(err => {
+        log("audio.play() ERROR: " + err);
+      });
+    };
+    audio.onplay = () => log("audio onplay");
+    audio.onplaying = () => log("audio onplaying (audio is audible)");
+    audio.onended = () => log("audio onended (finished)");
+    audio.onerror = (e) => log("audio onerror: " + JSON.stringify(e));
+
+    audio.load();
+  };
+</script>
+</body>
+</html>
