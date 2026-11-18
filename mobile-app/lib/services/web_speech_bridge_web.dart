@@ -14,6 +14,19 @@ external void _playCallRingtone();
 @JS('stopCallRingtone')
 external void _stopCallRingtone();
 
+@JS('promptGeminiNano')
+external JSPromise<JSString?> _promptGeminiNano(JSString prompt, JSString lang);
+
+Future<String?> platformPromptGeminiNano(String prompt, String lang) async {
+  try {
+    final promise = _promptGeminiNano(prompt.toJS, lang.toJS);
+    final result = await promise.toDart;
+    return result?.toDart;
+  } catch (e) {
+    return null;
+  }
+}
+
 void Function()? _onSpeechEndCallback;
 void Function()? _onSpeechStartCallback;
 bool _isListenerRegistered = false;

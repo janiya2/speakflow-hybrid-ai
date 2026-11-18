@@ -24,3 +24,7 @@ void playCallRingtone() {
 void stopCallRingtone() {
   bridge.platformStopRingtone();
 }
+
+Future<String?> promptGeminiNano(String prompt, String lang) {
+  return bridge.platformPromptGeminiNano(prompt, lang);
+}

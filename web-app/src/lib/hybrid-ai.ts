@@ -135,10 +135,48 @@ async function executeOnDeviceInference(
       targetPhrase = correction;
       spokenReply = `Good thought! We say '${targetPhrase}'. Repeat after me!`;
       nextQuestion = "Why do you think so?";
+    } else if (lower.includes("married with")) {
+      hasCorrection = true;
+      original = "married with";
+      correction = "married to";
+      explanation = "In English, we say 'married to someone', not 'married with'.";
+      targetPhrase = correction;
+      spokenReply = `Good try! Remember: we say '${targetPhrase}'. Can you repeat that?`;
+      nextQuestion = "Can you repeat that for me?";
+    } else if (lower.includes("listen music")) {
+      hasCorrection = true;
+      original = "listen music";
+      correction = "listen to music";
+      explanation = "The verb 'listen' requires the preposition 'to' before an object.";
+      targetPhrase = correction;
+      spokenReply = `Nice try! We say '${targetPhrase}'. Could you repeat?`;
+      nextQuestion = "What kind of songs do you like?";
+    } else if (lower.includes("depend of")) {
+      hasCorrection = true;
+      original = "depend of";
+      correction = "depend on";
+      explanation = "In English, the verb 'depend' is always followed by 'on'.";
+      targetPhrase = correction;
+      spokenReply = `Close! We say '${targetPhrase}'. Try saying that once more!`;
+      nextQuestion = "What does it depend on?";
     } else {
-      // Natural on-device conversation progress
-      spokenReply = `That sounds very interesting! Speaking smoothly. How would you elaborate on that?`;
-      nextQuestion = "Could you tell me a bit more about your experience?";
+      // Contextual Conversational Dialogue NLP Generator (Topic-adaptive follow-ups)
+      if (lower.includes("cricket") || lower.includes("match") || lower.includes("t20") || lower.includes("sport")) {
+        spokenReply = "Cricket is such an exhilarating game! Which format do you enjoy most, T20 or One Day matches?";
+        nextQuestion = "Which format do you enjoy most, T20 or One Day matches?";
+      } else if (lower.includes("travel") || lower.includes("trip") || lower.includes("visit") || lower.includes("country") || lower.includes("city")) {
+        spokenReply = "Traveling opens up so many great perspectives! What was the most memorable place you have visited so far?";
+        nextQuestion = "What was the most memorable place you have visited so far?";
+      } else if (lower.includes("coffee") || lower.includes("tea") || lower.includes("food") || lower.includes("restaurant") || lower.includes("dinner")) {
+        spokenReply = "That sounds lovely! Do you prefer cooking at home or exploring new cafes and restaurants?";
+        nextQuestion = "Do you prefer cooking at home or exploring new cafes?";
+      } else if (lower.includes("job") || lower.includes("work") || lower.includes("interview") || lower.includes("career")) {
+        spokenReply = "Professional growth is so rewarding. What would you say is your greatest strength in a professional team?";
+        nextQuestion = "What would you say is your greatest strength in a professional team?";
+      } else {
+        spokenReply = `That sounds very interesting! Speaking smoothly on-device. How would you elaborate on that?`;
+        nextQuestion = "Could you tell me a bit more about your experience?";
+      }
     }
   } else if (language === "Japanese") {
     if (lower.includes("tabemashita desu")) {

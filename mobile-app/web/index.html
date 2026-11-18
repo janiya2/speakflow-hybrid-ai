@@ -326,6 +326,23 @@
         }
       } catch (_) {}
     };
+
+    // Chrome Built-in AI (Gemini Nano) Local Inference Bridge
+    window.promptGeminiNano = async function(promptText, language) {
+      try {
+        if (window.ai && window.ai.languageModel) {
+          const session = await window.ai.languageModel.create({
+            systemPrompt: "You are an On-Device AI Language Coach running on Gemini Nano in " + language + ". Evaluate user speech and return JSON with: hasCorrection (bool), original (str), correction (str), explanation (str), spokenReply (str), targetPhrase (str), nextQuestion (str)."
+          });
+          const result = await session.prompt(promptText);
+          if (session.destroy) session.destroy();
+          return result;
+        }
+      } catch (err) {
+        console.info("window.ai Gemini Nano check:", err);
+      }
+      return null;
+    };
   </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>

@@ -17,3 +17,5 @@ void platformRegisterSpeechStarted(void Function() callback) {
 
 void platformPlayRingtone() {}
 void platformStopRingtone() {}
+
+Future<String?> platformPromptGeminiNano(String prompt, String lang) async => null;
