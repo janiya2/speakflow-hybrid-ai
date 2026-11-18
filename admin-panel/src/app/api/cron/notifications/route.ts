@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb, adminMessaging, isFirebaseConfigured } from "@/lib/firebase-admin";
+import { verifyAdminRequest } from "@/lib/api-auth";
 
 const AUTO_CAMPAIGNS = [
   {
@@ -41,6 +42,11 @@ const AUTO_CAMPAIGNS = [
 ];
 
 async function executeAutoPilotCampaign(req: NextRequest) {
+  const authCheck = await verifyAdminRequest(req);
+  if (!authCheck.authorized) {
+    return authCheck.errorResponse!;
+  }
+
   if (!isFirebaseConfigured()) {
     return NextResponse.json(
       {

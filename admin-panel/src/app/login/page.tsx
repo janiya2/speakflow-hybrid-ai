@@ -11,7 +11,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db, COLLECTIONS } from "@/lib/firebase";
-import { useAuth, UserProfile } from "@/lib/auth-context";
+import { useAuth, UserProfile, isEmailAuthorizedAdmin } from "@/lib/auth-context";
 import { Bot, Lock, Mail, User, ShieldCheck, AlertCircle, ArrowRight } from "lucide-react";
 
 function LoginForm() {
@@ -42,7 +42,10 @@ function LoginForm() {
       }
       return data;
     } else {
-      // First admin bootstrapping: Create as admin
+      // Security Check: Only allow pre-authorized administrator emails to register
+      if (!isEmailAuthorizedAdmin(userEmail)) {
+        throw new Error("Access Denied: This email address is not in the authorized administrator allowlist.");
+      }
       const newAdmin: UserProfile = {
         uid,
         email: userEmail,

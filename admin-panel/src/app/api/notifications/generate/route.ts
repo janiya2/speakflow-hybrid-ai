@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
+import { verifyAdminRequest } from "@/lib/api-auth";
 
 export async function POST(req: NextRequest) {
   try {
+    const authCheck = await verifyAdminRequest(req);
+    if (!authCheck.authorized) {
+      return authCheck.errorResponse!;
+    }
     const { campaignType = "streak", promptTopic = "" } = await req.json();
 
     // 1. Retrieve Gemini API key from Firestore ai_config or env

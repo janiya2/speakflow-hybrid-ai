@@ -131,9 +131,17 @@ class SubscriptionService {
       }
     }
 
-    // 2. Fallback / Test Simulation: Directly activate in Firestore
-    await _syncProStatusToFirestore(user.uid, tierCode, tierName, trialDays);
-    return true;
+    // 2. Production Security Guard:
+    // Only permit local simulated purchases in debug/developer test mode.
+    // In production/release builds, reject purchases if RevenueCat is not active.
+    if (kDebugMode) {
+      debugPrint('[SubscriptionService] Simulating local test purchase (kDebugMode active)...');
+      await _syncProStatusToFirestore(user.uid, tierCode, tierName, trialDays);
+      return true;
+    }
+
+    debugPrint('[SubscriptionService] Real Store purchase required: RevenueCat not configured in release build.');
+    return false;
   }
 
   /// Restore purchases

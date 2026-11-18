@@ -1,0 +1,6 @@
+# Example Android Release Signing Properties
+# Copy this file to 'key.properties' in the android/ directory and fill in your secure credentials:
+storeFile=/path/to/your/upload-keystore.jks
+storePassword=your_secure_store_password
+keyAlias=your_key_alias
+keyPassword=your_secure_key_password

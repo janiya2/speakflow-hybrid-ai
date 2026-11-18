@@ -3,7 +3,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { auth, db, COLLECTIONS } from "./firebase";
+import { auth, db } from "./firebase";
+import { COLLECTIONS } from "./constants";
 import { useRouter, usePathname } from "next/navigation";
 
 export interface UserProfile {
@@ -11,7 +12,7 @@ export interface UserProfile {
   email: string | null;
   displayName: string | null;
   role: "admin" | "user";
-  createdAt?: string;
+  createdAt: string;
 }
 
 interface AuthContextType {
@@ -21,6 +22,20 @@ interface AuthContextType {
   isAdmin: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+}
+
+// Authorized administrator email allowlist
+export const ADMIN_ALLOWLIST: string[] = [
+  "janithad2@gmail.com",
+  "admin@speakflow.ai",
+  ...(process.env.NEXT_PUBLIC_ADMIN_EMAILS
+    ? process.env.NEXT_PUBLIC_ADMIN_EMAILS.split(",").map((e) => e.trim().toLowerCase())
+    : []),
+];
+
+export function isEmailAuthorizedAdmin(email: string | null | undefined): boolean {
+  if (!email) return false;
+  return ADMIN_ALLOWLIST.includes(email.toLowerCase().trim());
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -49,13 +64,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUserProfile(data);
         return data;
       } else {
-        // First user bootstrap option: if no profile exists, let's create a pending user
+        // Enforce Server-Side Allowlist: Only pre-authorized administrator emails get 'admin' role
+        const isAuthorized = isEmailAuthorizedAdmin(firebaseUser.email);
         const newProfile: UserProfile = {
           uid: firebaseUser.uid,
           email: firebaseUser.email,
           displayName: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
-          role: "admin", // Default initial user created through admin panel gets admin
-          createdAt: new Date().toISOString()
+          role: isAuthorized ? "admin" : "user",
+          createdAt: new Date().toISOString(),
         };
         await setDoc(userDocRef, newProfile);
         setUserProfile(newProfile);
@@ -102,7 +118,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const isAuthPage = pathname === "/login";
       const isStudentApp = pathname.startsWith("/app");
       const isPublicLegalPage = pathname.startsWith("/privacy") || pathname.startsWith("/terms");
-      
+
       // Don't restrict the student mobile app interface or public legal pages
       if (isStudentApp || isPublicLegalPage) return;
 
@@ -122,4 +138,3 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
-

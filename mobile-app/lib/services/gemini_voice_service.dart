@@ -76,6 +76,7 @@ class GeminiVoiceService {
   }
 
   /// Evaluates whether the user's spoken repetition matches the target phrase
+  /// using genuine AI Phonetic & CEFR Assessment with a 0ms high-confidence local fast-path.
   Future<bool> evaluateRepetition({
     required String userSpeech,
     required String targetPhrase,
@@ -88,14 +89,61 @@ class GeminiVoiceService {
 
     if (cleanUser.isEmpty) return false;
 
-    // Exact or direct substring match
+    // 1. High-Confidence 0ms Fast-Path: Exact match or direct substring
     if (cleanUser == cleanTarget || cleanUser.contains(cleanTarget) || cleanTarget.contains(cleanUser)) {
       return true;
     }
 
-    // Token overlap match (at least 50% match for non-Latin languages or words)
+    // 2. Token overlap check (> 70% match is an instant pass)
     final userTokens = cleanUser.split(' ').where((t) => t.isNotEmpty).toSet();
     final targetTokens = cleanTarget.split(' ').where((t) => t.isNotEmpty).toSet();
+    if (targetTokens.isNotEmpty) {
+      final overlap = userTokens.intersection(targetTokens);
+      final ratio = overlap.length / targetTokens.length;
+      if (ratio >= 0.70) {
+        return true;
+      }
+    }
+
+    // 3. Genuine AI Phonetic & Pronunciation Assessment (Firebase Vertex AI / Gemini)
+    // Evaluates spoken transcript against pronunciation variations, phonetic homophones, and accents
+    try {
+      final prompt = '''You are an expert CEFR language pronunciation judge.
+Target Language: $targetLanguage
+Target Phrase to Repeat: "$targetPhrase"
+User Spoken Transcript: "$userSpeech"
+
+Evaluate whether the user's spoken repetition reasonably matches the target phrase phonetically or semantically.
+Reply strictly with a JSON object in this format:
+{"isMatch": true, "phoneticScore": 85, "cefrLevel": "B1"}
+Do not include any explanation or markdown formatting, just the raw JSON.''';
+
+      final vertexModel = FirebaseVertexAI.instance.generativeModel(
+        model: 'gemini-2.5-flash',
+        generationConfig: GenerationConfig(
+          temperature: 0.2,
+          maxOutputTokens: 60,
+        ),
+      );
+
+      final response = await vertexModel.generateContent([Content.text(prompt)])
+          .timeout(const Duration(milliseconds: 2200));
+      final text = response.text?.trim() ?? '';
+      if (text.isNotEmpty) {
+        final jsonStr = text.replaceAll('```json', '').replaceAll('```', '').trim();
+        final Map<String, dynamic> parsed = jsonDecode(jsonStr);
+        final bool isMatch = parsed['isMatch'] == true;
+        final num score = parsed['phoneticScore'] ?? 0;
+        if (isMatch || score >= 65) {
+          debugPrint('AI Pronunciation Assessment Passed: score=$score, CEFR=${parsed['cefrLevel']}');
+          return true;
+        }
+      }
+    } catch (e) {
+      debugPrint('AI Pronunciation Assessment fallback to token overlap: $e');
+    }
+
+    // 4. Soft fallback for non-Latin scripts / noisy microphone environments (>= 50% overlap)
     if (targetTokens.isNotEmpty) {
       final overlap = userTokens.intersection(targetTokens);
       if ((overlap.length / targetTokens.length) >= 0.5) {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyAdminRequest } from "@/lib/api-auth";
 
 interface TestKeyResult {
   apiKey: string;
@@ -113,6 +114,11 @@ async function testSingleKey(apiKey: string, model: string = "gemini-3.5-flash")
 
 export async function POST(req: NextRequest) {
   try {
+    const authCheck = await verifyAdminRequest(req);
+    if (!authCheck.authorized) {
+      return authCheck.errorResponse!;
+    }
+
     const body = await req.json();
     const { apiKey, fallbackKeys, model = "gemini-3.5-flash" } = body;
 
