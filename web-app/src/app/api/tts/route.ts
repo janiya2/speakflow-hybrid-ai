@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { resolveEdgeVoice, synthesizeEdgeSpeech } from "@/lib/edge-tts-service";
 import { execFile } from "child_process";
 import path from "path";
 import fs from "fs";
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
     const coach = searchParams.get("coach")?.toLowerCase() || "sarah";
     const gender = searchParams.get("gender")?.toLowerCase() || "female";
     const language = searchParams.get("language") || "English";
-    const voice = searchParams.get("voice") || coach;
+    const voiceParam = searchParams.get("voice") || coach;
 
     if (!text) {
       return NextResponse.json(
@@ -34,32 +35,43 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Path to the python edge_tts service script
-    const scriptPath = path.join(process.cwd(), "scripts", "edge_tts_service.py");
+    let audioBuffer: Buffer | null = null;
+    const targetVoice = resolveEdgeVoice(voiceParam, gender, language);
 
-    // Execute python script to generate or retrieve cached MP3
-    const { stdout, stderr } = await execFileAsync("python", [
-      scriptPath,
-      text,
-      voice,
-      gender,
-      language,
-    ]);
-
-    if (stderr && stderr.trim().length > 0) {
-      console.warn("TTS generator warning:", stderr);
+    // Primary Engine: Pure Node.js Edge TTS (Zero Python dependencies for Vercel Serverless)
+    try {
+      audioBuffer = await synthesizeEdgeSpeech(text, targetVoice);
+    } catch (nodeTtsErr: any) {
+      console.warn("Pure Node Edge-TTS failed, attempting local fallback engine:", nodeTtsErr?.message || nodeTtsErr);
+      
+      // Secondary Fallback Engine: Python edge_tts script (for local dev / environments with python runtime)
+      const scriptPath = path.join(process.cwd(), "scripts", "edge_tts_service.py");
+      if (fs.existsSync(scriptPath)) {
+        try {
+          const { stdout } = await execFileAsync("python", [
+            scriptPath,
+            text,
+            targetVoice,
+            gender,
+            language,
+          ]);
+          const mp3FilePath = stdout.trim();
+          if (fs.existsSync(mp3FilePath)) {
+            audioBuffer = fs.readFileSync(mp3FilePath);
+          }
+        } catch (pyErr: any) {
+          console.error("Python TTS fallback also failed:", pyErr?.message || pyErr);
+        }
+      }
     }
 
-    const mp3FilePath = stdout.trim();
-
-    if (!fs.existsSync(mp3FilePath)) {
+    if (!audioBuffer || audioBuffer.length === 0) {
       return NextResponse.json(
-        { error: "Failed to generate audio file" },
+        { error: "TTS synthesis failed across all available engines" },
         { status: 500, headers: { "Access-Control-Allow-Origin": "*" } }
       );
     }
 
-    const audioBuffer = fs.readFileSync(mp3FilePath);
     const total = audioBuffer.length;
     const rangeHeader = request.headers.get("range");
 

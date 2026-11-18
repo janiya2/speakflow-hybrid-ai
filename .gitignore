@@ -48,6 +48,9 @@ service-account.json
 *.pem
 vedios/
 hs_err_*.log
+**/.tts_cache/
+.tts_cache/
+
 
 
 *.tsbuildinfo
