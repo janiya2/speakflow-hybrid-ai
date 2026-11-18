@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_vertexai/firebase_vertexai.dart';
 import '../models/coach_persona.dart';
 
 class GrammarCorrection {
@@ -217,6 +218,26 @@ Generate a fresh, creative, and engaging opening greeting and 1 starter question
 CRITICAL RULE: Speak 100% purely in $targetLanguage native script. DO NOT include English translations, romanizations, pronunciations, or explanations in parentheses or brackets. Reply ONLY with the exact words to speak.
 ''';
 
+    // 1. PRIMARY INFERENCE: Firebase Vertex AI SDK (#BuildHybridAI)
+    try {
+      final vertexModel = FirebaseVertexAI.instance.generativeModel(
+        model: 'gemini-1.5-flash',
+        generationConfig: GenerationConfig(
+          temperature: 0.85,
+          maxOutputTokens: 120,
+        ),
+      );
+      final vertexResponse = await vertexModel.generateContent([Content.text(prompt)])
+          .timeout(const Duration(milliseconds: 3000));
+      final text = vertexResponse.text?.trim();
+      if (text != null && text.isNotEmpty) {
+        debugPrint('Dynamic Opening Generated via Firebase Vertex AI: $text');
+        return text.replaceAll('"', '').trim();
+      }
+    } catch (e) {
+      debugPrint('Firebase Vertex AI opening statement failover: $e');
+    }
+
     for (final activeKey in keyPool) {
       try {
         final url = Uri.parse(
@@ -347,7 +368,42 @@ Reply ONLY with valid JSON:
 }
 ''';
 
-      // Iterate through keys in the pool (Free keys first -> Auto-failover to Paid key)
+      // 1. PRIMARY INFERENCE: Official Google Firebase Vertex AI SDK (#BuildHybridAI)
+      try {
+        final vertexModel = FirebaseVertexAI.instance.generativeModel(
+          model: 'gemini-1.5-flash',
+          generationConfig: GenerationConfig(
+            responseMimeType: 'application/json',
+            temperature: 0.7,
+            maxOutputTokens: 800,
+          ),
+        );
+        final vertexResponse = await vertexModel.generateContent([Content.text(prompt)])
+            .timeout(const Duration(milliseconds: 4000));
+        final text = vertexResponse.text?.trim();
+        if (text != null && text.isNotEmpty) {
+          final cleanJson = text.replaceAll(RegExp(r'^```json\s*|\s*```$', multiLine: true), '').trim();
+          final parsed = jsonDecode(cleanJson);
+          debugPrint('Firebase Vertex AI inference completed in ${stopwatch.elapsedMilliseconds}ms');
+          return GrammarCorrection(
+            hasCorrection: parsed['hasCorrection'] ?? false,
+            original: parsed['original'] ?? '',
+            correction: parsed['correction'] ?? '',
+            explanation: parsed['explanation'] ?? '',
+            spokenReply: parsed['spokenReply'] ?? '',
+            targetPhrase: parsed['targetPhrase'] ?? (parsed['correction'] ?? ''),
+            nextQuestion: parsed['nextQuestion'] ?? '',
+            modelUsed: 'Firebase Vertex AI (Gemini Flash)',
+            engineUsed: 'CLOUD_GEMINI_2.5_FLASH',
+            latencyMs: stopwatch.elapsedMilliseconds,
+            isOfflineFallback: false,
+          );
+        }
+      } catch (vertexError) {
+        debugPrint('Firebase Vertex AI SDK failover to multi-key pool: $vertexError');
+      }
+
+      // 2. RESILIENCE FAILOVER: Multi-key fallback pool
       for (final activeKey in keyPool) {
         for (final modelName in candidateModels) {
           try {

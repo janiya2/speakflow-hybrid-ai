@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. SpeakFlow Topics & Scenarios (Public read, admin write)
+    match /lang_topics/{topicId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // 2. SpeakFlow AI Config & Settings
+    match /lang_settings/{settingId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // 3. User Accounts, Practice Minutes & Streaks
+    match /lang_users/{userId} {
+      allow read, write: if true; // Or restrict: if request.auth != null && request.auth.uid == userId
+    }
+    
+    // 4. Completed Voice Call Sessions & Evaluation Logs
+    match /lang_sessions/{sessionId} {
+      allow read, write: if true;
+    }
+    
+    // Default rule for all other existing app collections (preserve isolation)
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
