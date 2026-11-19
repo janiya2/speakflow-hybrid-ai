@@ -3415,8 +3415,62 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // -------------------------------------------------------------
-  // HELPER: SAFE DETERMINISTIC LUXURY STUDENT AVATAR
+  // HELPER: SAFE DETERMINISTIC LUXURY STUDENT AVATAR & FLAGS
   // -------------------------------------------------------------
+  String _getStudentCountryCode(String name, String userId) {
+    final lower = name.toLowerCase().trim();
+    if (lower.contains('janitha') || lower.contains('dilshan') || lower.contains('kasun') || lower.contains('nadeesha') || lower.contains('dinuka') || lower.contains('tharushi') || lower.contains('perera') || lower.contains('silva')) {
+      return 'lk';
+    }
+    if (lower.contains('admin') || lower.contains('alex') || lower.contains('john') || lower.contains('michael') || lower.contains('james')) {
+      return 'us';
+    }
+    if (lower.contains('jaji') || lower.contains('sarah') || lower.contains('emma') || lower.contains('david') || lower.contains('oliver')) {
+      return 'gb';
+    }
+    if (lower.contains('carlos') || lower.contains('mateo') || lower.contains('sofia') || lower.contains('diego')) {
+      return 'es';
+    }
+    if (lower.contains('kenji') || lower.contains('yuki') || lower.contains('tanaka') || lower.contains('haruto')) {
+      return 'jp';
+    }
+    if (lower.contains('min-ho') || lower.contains('ji-woo') || lower.contains('kim') || lower.contains('park')) {
+      return 'kr';
+    }
+    if (lower.contains('tariq') || lower.contains('fatima') || lower.contains('omar') || lower.contains('zayed')) {
+      return 'sa';
+    }
+    const countryList = ['lk', 'us', 'gb', 'es', 'jp', 'kr', 'sa'];
+    final int hash = (userId.isNotEmpty ? userId.hashCode : name.hashCode).abs();
+    return countryList[hash % countryList.length];
+  }
+
+  Widget _buildStudentFlagBadge(String countryCode, {double width = 16, double height = 11}) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: Colors.black87, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(2),
+        child: Image.asset(
+          'assets/images/flag_$countryCode.png',
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => const SizedBox(),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStudentAvatarWidget({
     required String name,
     required String userId,
@@ -3424,6 +3478,7 @@ class _HomeScreenState extends State<HomeScreen> {
     double size = 44,
     Color? accentColor,
     int? rankNumber,
+    bool showFlag = false,
   }) {
     // Completely avoid Dicebear calls which trigger 429 rate limit CORS errors in DevTools
     final bool isDicebear = photoUrl != null && photoUrl.contains('dicebear.com');
@@ -3474,26 +3529,44 @@ class _HomeScreenState extends State<HomeScreen> {
       innerChild = _buildFallbackInitials(initials, size, gradient);
     }
 
-    return Container(
+    final avatarWidget = Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
           color: accentColor ?? Colors.white.withOpacity(0.18),
-          width: rankNumber == 1 ? 2.5 : (rankNumber != null && rankNumber <= 3 ? 2 : 1.2),
+          width: rankNumber == 1 ? 2.8 : (rankNumber != null && rankNumber <= 3 ? 2.2 : 1.2),
         ),
         boxShadow: accentColor != null
             ? [
                 BoxShadow(
-                  color: accentColor.withOpacity(0.35),
-                  blurRadius: rankNumber == 1 ? 12 : 6,
-                  spreadRadius: rankNumber == 1 ? 1.5 : 0.5,
+                  color: accentColor.withOpacity(rankNumber == 1 ? 0.55 : 0.35),
+                  blurRadius: rankNumber == 1 ? 16 : 7,
+                  spreadRadius: rankNumber == 1 ? 2 : 0.5,
                 ),
               ]
             : null,
       ),
       child: ClipOval(child: innerChild),
+    );
+
+    if (!showFlag) return avatarWidget;
+
+    final String countryCode = _getStudentCountryCode(name, userId);
+    final double flagW = size >= 50 ? 18 : 14;
+    final double flagH = size >= 50 ? 12.5 : 9.5;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        avatarWidget,
+        Positioned(
+          bottom: -2,
+          right: -2,
+          child: _buildStudentFlagBadge(countryCode, width: flagW, height: flagH),
+        ),
+      ],
     );
   }
 
@@ -3623,63 +3696,273 @@ class _HomeScreenState extends State<HomeScreen> {
     final third = ranks.length > 2 ? ranks[2] : null;
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
+      padding: const EdgeInsets.only(top: 16, bottom: 8, left: 10, right: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF1E1B4B), // deep royal indigo
+            Color(0xFF13182E), // twilight navy
+            Color(0xFF0F172A), // solid dark slate
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFFF59E0B).withOpacity(0.35),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF59E0B).withOpacity(0.12),
+            blurRadius: 24,
+            spreadRadius: 2,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.45),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
         children: [
-          // 2nd Place (Silver)
-          if (second != null)
-            _buildPodiumStep(second, 2, 105, const Color(0xFF94A3B8), '🥈')
-          else
-            const SizedBox(width: 80),
+          // Championship Header Ribbon
+          Padding(
+            padding: const EdgeInsets.only(left: 6, right: 6, bottom: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFF59E0B).withOpacity(0.4),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Icons.emoji_events_rounded, color: Colors.white, size: 14),
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'GLOBAL CHAMPIONSHIP',
+                          style: TextStyle(
+                            color: Color(0xFFFDE68A),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
+                            letterSpacing: 1.1,
+                          ),
+                        ),
+                        Text(
+                          'Season 1 • Live Weekly Standings',
+                          style: TextStyle(color: Colors.white54, fontSize: 9.5),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFF10B981).withOpacity(0.4)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.circle, color: Color(0xFF34D399), size: 6),
+                      SizedBox(width: 4),
+                      Text(
+                        'Live Sync',
+                        style: TextStyle(color: Color(0xFF34D399), fontSize: 9.5, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
 
-          // 1st Place (Gold Crown)
-          if (first != null)
-            _buildPodiumStep(first, 1, 142, const Color(0xFFF59E0B), '👑')
-          else
-            const SizedBox(width: 80),
+          // Stepped Stage Row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // 2nd Place (Silver)
+              if (second != null)
+                Expanded(
+                  flex: 10,
+                  child: _buildPodiumColumn(
+                    student: second,
+                    place: 2,
+                    stepHeight: 105,
+                    accentColor: const Color(0xFFE2E8F0),
+                    badgeText: 'RUNNER UP',
+                  ),
+                )
+              else
+                const Expanded(flex: 10, child: SizedBox(height: 105)),
 
-          // 3rd Place (Bronze)
-          if (third != null)
-            _buildPodiumStep(third, 3, 88, const Color(0xFFD97706), '🥉')
-          else
-            const SizedBox(width: 80),
+              const SizedBox(width: 6),
+
+              // 1st Place (Gold Champion)
+              if (first != null)
+                Expanded(
+                  flex: 12,
+                  child: _buildPodiumColumn(
+                    student: first,
+                    place: 1,
+                    stepHeight: 148,
+                    accentColor: const Color(0xFFF59E0B),
+                    badgeText: 'CHAMPION',
+                  ),
+                )
+              else
+                const Expanded(flex: 12, child: SizedBox(height: 148)),
+
+              const SizedBox(width: 6),
+
+              // 3rd Place (Bronze)
+              if (third != null)
+                Expanded(
+                  flex: 10,
+                  child: _buildPodiumColumn(
+                    student: third,
+                    place: 3,
+                    stepHeight: 88,
+                    accentColor: const Color(0xFFEA580C),
+                    badgeText: '3RD PLACE',
+                  ),
+                )
+              else
+                const Expanded(flex: 10, child: SizedBox(height: 88)),
+            ],
+          ),
+
+          // Continuous Stage Base Platform
+          Container(
+            margin: const EdgeInsets.only(top: 2, bottom: 6),
+            height: 10,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF312E81),
+                  Color(0xFF1E293B),
+                  Color(0xFF4338CA),
+                  Color(0xFF1E293B),
+                  Color(0xFF312E81),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.35), width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF6366F1).withOpacity(0.25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPodiumStep(_StudentRankData student, int place, double height, Color accentColor, String medalEmoji) {
-    final double avatarSize = place == 1 ? 56 : 48;
+  Widget _buildPodiumColumn({
+    required _StudentRankData student,
+    required int place,
+    required double stepHeight,
+    required Color accentColor,
+    required String badgeText,
+  }) {
+    final bool isGold = place == 1;
+    final bool isSilver = place == 2;
+    final double avatarSize = isGold ? 60 : 48;
+
+    final List<Color> pedestalGradient = isGold
+        ? [
+            const Color(0xFFFEF08A),
+            const Color(0xFFF59E0B),
+            const Color(0xFFB45309),
+            const Color(0xFF78350F),
+          ]
+        : isSilver
+            ? [
+                const Color(0xFFFFFFFF),
+                const Color(0xFFCBD5E1),
+                const Color(0xFF64748B),
+                const Color(0xFF334155),
+              ]
+            : [
+                const Color(0xFFFFEDD5),
+                const Color(0xFFEA580C),
+                const Color(0xFF9A3412),
+                const Color(0xFF431407),
+              ];
+
+    final Color topBevelColor = isGold
+        ? const Color(0xFFFFFBEB)
+        : isSilver
+            ? Colors.white
+            : const Color(0xFFFFEDD5);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        // Crown or Medal
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: place == 1
-              ? BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFF59E0B).withOpacity(0.5),
-                      blurRadius: 12,
-                    ),
-                  ],
-                )
-              : null,
-          child: Text(medalEmoji, style: TextStyle(fontSize: place == 1 ? 28 : 22)),
-        ),
+        // Crown / Medal tightly positioned above avatar
+        if (isGold)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFF59E0B).withOpacity(0.6),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Text('✨', style: TextStyle(fontSize: 9)),
+                SizedBox(width: 2),
+                Text('👑', style: TextStyle(fontSize: 16)),
+                SizedBox(width: 2),
+                Text('✨', style: TextStyle(fontSize: 9)),
+              ],
+            ),
+          )
+        else
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isSilver ? const Color(0xFF475569) : const Color(0xFF7C2D12),
+              border: Border.all(color: topBevelColor, width: 1.2),
+            ),
+            child: Text(isSilver ? '🥈' : '🥉', style: const TextStyle(fontSize: 15)),
+          ),
+
         const SizedBox(height: 4),
 
-        // Avatar
+        // Avatar with country flag
         _buildStudentAvatarWidget(
           name: student.name,
           userId: student.userId,
@@ -3687,53 +3970,81 @@ class _HomeScreenState extends State<HomeScreen> {
           size: avatarSize,
           accentColor: accentColor,
           rankNumber: place,
+          showFlag: true,
         ),
+
         const SizedBox(height: 6),
 
         // Name
-        SizedBox(
-          width: 90,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
           child: Text(
             student.name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11.5),
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: isGold ? 12 : 11,
+              shadows: const [
+                Shadow(color: Colors.black, blurRadius: 4),
+              ],
+            ),
           ),
         ),
+
         const SizedBox(height: 3),
 
         // Stat Pill
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
-            color: accentColor.withOpacity(0.15),
+            color: isGold
+                ? const Color(0xFFF59E0B).withOpacity(0.2)
+                : Colors.white.withOpacity(0.08),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: accentColor.withOpacity(0.35), width: 0.8),
+            border: Border.all(
+              color: isGold
+                  ? const Color(0xFFF59E0B).withOpacity(0.5)
+                  : Colors.white.withOpacity(0.15),
+              width: 0.8,
+            ),
           ),
           child: Text(
             '${student.totalMinutes}m • ${student.averageScore}%',
-            style: TextStyle(color: accentColor, fontSize: 9.5, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: isGold ? const Color(0xFFFDE68A) : Colors.white70,
+              fontSize: 9.5,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
+
         const SizedBox(height: 8),
 
-        // Podium Block
+        // 3D Metallic Stepped Pedestal Block
         Container(
-          width: 90,
-          height: height,
+          width: double.infinity,
+          height: stepHeight,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [accentColor.withOpacity(0.4), accentColor.withOpacity(0.1)],
+              colors: pedestalGradient,
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            border: Border.all(color: accentColor.withOpacity(0.7), width: 1.5),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(isGold ? 16 : 13)),
+            border: Border(
+              top: BorderSide(color: topBevelColor, width: isGold ? 3.5 : 2.5),
+              left: BorderSide(color: topBevelColor.withOpacity(0.4), width: 1),
+              right: BorderSide(color: Colors.black.withOpacity(0.3), width: 1),
+            ),
             boxShadow: [
               BoxShadow(
-                color: accentColor.withOpacity(0.15),
-                blurRadius: 8,
+                color: isGold
+                    ? const Color(0xFFF59E0B).withOpacity(0.3)
+                    : Colors.black.withOpacity(0.25),
+                blurRadius: isGold ? 14 : 8,
                 offset: const Offset(0, -2),
               ),
             ],
@@ -3741,27 +4052,58 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Embossed Rank Number
               Text(
                 '#$place',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w900,
-                  fontSize: place == 1 ? 26 : 22,
+                  fontSize: isGold ? 32 : (isSilver ? 25 : 23),
+                  letterSpacing: -0.5,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withOpacity(0.7),
+                      offset: const Offset(0, 2),
+                      blurRadius: 4,
+                    ),
+                  ],
                 ),
               ),
-              if (place == 1)
-                Container(
-                  margin: const EdgeInsets.only(top: 2),
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF59E0B),
-                    borderRadius: BorderRadius.circular(6),
+
+              const SizedBox(height: 2),
+
+              // Ribbon Badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isGold ? const Color(0xFF1E1B4B) : const Color(0xFF0F172A),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: isGold ? const Color(0xFFFDE68A) : Colors.white24,
+                    width: 0.8,
                   ),
-                  child: const Text(
-                    'CHAMPION',
-                    style: TextStyle(color: Colors.black, fontSize: 7.5, fontWeight: FontWeight.w900, letterSpacing: 0.8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 3,
+                    ),
+                  ],
+                ),
+                child: Text(
+                  badgeText,
+                  style: TextStyle(
+                    color: isGold ? const Color(0xFFFDE68A) : Colors.white,
+                    fontSize: isGold ? 8.5 : 7.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.8,
                   ),
                 ),
+              ),
+
+              if (isGold) ...[
+                const SizedBox(height: 4),
+                const Text('⭐ ⭐ ⭐', style: TextStyle(fontSize: 8)),
+              ],
             ],
           ),
         ),
@@ -3776,12 +4118,29 @@ class _HomeScreenState extends State<HomeScreen> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: isCurrentUser ? const Color(0xFF6366F1).withOpacity(0.18) : const Color(0xFF1E293B),
+        gradient: isCurrentUser
+            ? const LinearGradient(
+                colors: [Color(0xFF312E81), Color(0xFF1E1B4B)],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              )
+            : const LinearGradient(
+                colors: [Color(0xFF1E293B), Color(0xFF182234)],
+              ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isCurrentUser ? const Color(0xFF818CF8) : Colors.white.withOpacity(0.06),
-          width: isCurrentUser ? 1.5 : 1,
+          color: isCurrentUser ? const Color(0xFF818CF8) : Colors.white.withOpacity(0.07),
+          width: isCurrentUser ? 1.6 : 1,
         ),
+        boxShadow: isCurrentUser
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF6366F1).withOpacity(0.25),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ]
+            : null,
       ),
       child: Row(
         children: [
@@ -3790,30 +4149,40 @@ class _HomeScreenState extends State<HomeScreen> {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: const Color(0xFF0F172A),
+              gradient: isCurrentUser
+                  ? const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)])
+                  : null,
+              color: isCurrentUser ? null : const Color(0xFF0F172A),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.2)),
+              border: Border.all(
+                color: isCurrentUser ? const Color(0xFFA5B4FC) : const Color(0xFF6366F1).withOpacity(0.25),
+              ),
             ),
             child: Center(
               child: Text(
                 '#$rankNumber',
-                style: const TextStyle(color: Color(0xFFA5B4FC), fontWeight: FontWeight.bold, fontSize: 12),
+                style: TextStyle(
+                  color: isCurrentUser ? Colors.white : const Color(0xFFA5B4FC),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                ),
               ),
             ),
           ),
           const SizedBox(width: 10),
 
-          // Student Avatar
+          // Student Avatar with country flag
           _buildStudentAvatarWidget(
             name: rank.name,
             userId: rank.userId,
             photoUrl: rank.photoUrl,
-            size: 38,
+            size: 40,
             rankNumber: rankNumber,
+            showFlag: true,
           ),
           const SizedBox(width: 12),
 
-          // Name and Stats
+          // Name, Streak and Status
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -3825,16 +4194,28 @@ class _HomeScreenState extends State<HomeScreen> {
                         rank.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                     if (isCurrentUser) ...[
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                          ),
                           borderRadius: BorderRadius.circular(6),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF6366F1).withOpacity(0.4),
+                              blurRadius: 4,
+                            ),
+                          ],
                         ),
                         child: const Text(
                           'YOU',
@@ -3844,18 +4225,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ],
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Row(
                   children: [
                     Text(
                       '${rank.callsCount} calls logged',
-                      style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 10),
+                      style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 10),
                     ),
                     Text(' • ', style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 10)),
                     const Icon(Icons.local_fire_department_rounded, color: Color(0xFFF97316), size: 12),
                     Text(
                       '${rank.streak}d streak',
-                      style: const TextStyle(color: Color(0xFFF97316), fontSize: 10, fontWeight: FontWeight.w600),
+                      style: const TextStyle(color: Color(0xFFF97316), fontSize: 10, fontWeight: FontWeight.w700),
                     ),
                   ],
                 ),
@@ -3868,20 +4249,37 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.18),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF065F46), Color(0xFF047857)],
+                  ),
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF34D399).withOpacity(0.4)),
                 ),
-                child: Text(
-                  '${rank.totalMinutes} min',
-                  style: const TextStyle(color: Color(0xFF34D399), fontWeight: FontWeight.bold, fontSize: 12),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.timer_outlined, color: Color(0xFF6EE7B7), size: 11),
+                    const SizedBox(width: 3),
+                    Text(
+                      '${rank.totalMinutes} min',
+                      style: const TextStyle(color: Color(0xFF6EE7B7), fontWeight: FontWeight.w800, fontSize: 11.5),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 3),
-              Text(
-                '${rank.averageScore}% Fluency',
-                style: const TextStyle(color: Color(0xFFA5B4FC), fontSize: 10, fontWeight: FontWeight.bold),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF818CF8).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '${rank.averageScore}% Fluency',
+                  style: const TextStyle(color: Color(0xFFA5B4FC), fontSize: 9.5, fontWeight: FontWeight.w800),
+                ),
               ),
             ],
           ),
