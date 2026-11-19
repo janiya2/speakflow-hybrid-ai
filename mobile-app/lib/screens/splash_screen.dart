@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'home_screen.dart';
+import 'welcome_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -151,8 +153,20 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     }
 
     if (!mounted) return;
-    final String nextRoute = (user != null) ? '/home' : '/welcome';
-    Navigator.of(context).pushReplacementNamed(nextRoute);
+    final Widget nextScreen = (user != null) ? const HomeScreen() : const WelcomeScreen();
+
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 700),
+        pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+            child: child,
+          );
+        },
+      ),
+    );
   }
 
   @override

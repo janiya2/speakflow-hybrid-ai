@@ -9,6 +9,8 @@ import '../models/coach_persona.dart';
 import '../models/target.dart';
 import '../models/package.dart';
 import 'live_call_screen.dart';
+import 'login_screen.dart';
+import 'welcome_screen.dart';
 import 'paywall_screen.dart';
 import 'notifications_screen.dart';
 import '../services/notification_service.dart';
@@ -491,7 +493,10 @@ class _HomeScreenState extends State<HomeScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      Navigator.of(context).pushNamedAndRemoveUntil('/welcome', (route) => false);
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+        (route) => false,
+      );
       return;
     }
 
@@ -944,7 +949,10 @@ class _HomeScreenState extends State<HomeScreen> {
           if (Navigator.of(ctx).canPop()) {
             Navigator.of(ctx).pop();
           }
-          Navigator.of(context).pushNamedAndRemoveUntil('/welcome', (route) => false);
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+            (route) => false,
+          );
           return;
         }
 
@@ -4377,7 +4385,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13)),
               const SizedBox(height: 18),
               ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, '/login'),
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF6366F1),
                   foregroundColor: Colors.white,
@@ -4949,7 +4957,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               }
                               await FirebaseAuth.instance.signOut();
                               if (context.mounted) {
-                                Navigator.of(context).pushNamedAndRemoveUntil('/welcome', (route) => false);
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                                  (route) => false,
+                                );
                               }
                             }
                           },

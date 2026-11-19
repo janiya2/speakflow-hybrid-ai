@@ -5,9 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'firebase_options.dart';
 import 'screens/splash_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/welcome_screen.dart';
-import 'screens/login_screen.dart';
 import 'services/subscription_service.dart';
 import 'services/notification_service.dart';
 
@@ -64,13 +61,7 @@ class LanguageCoachApp extends StatelessWidget {
         primaryColor: const Color(0xFF6366F1),
         fontFamilyFallback: const ['Noto Sans Sinhala', 'Apple Color Emoji', 'Segoe UI Emoji', 'sans-serif'],
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const SplashScreen(),
-        '/home': (context) => const HomeScreen(),
-        '/welcome': (context) => const WelcomeScreen(),
-        '/login': (context) => const LoginScreen(),
-      },
+      home: const SplashScreen(),
     );
   }
 }
