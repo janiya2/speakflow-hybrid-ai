@@ -36,6 +36,75 @@ class CoachPersona {
   bool get isFemale => gender.toLowerCase() == 'female';
   bool get isMale => gender.toLowerCase() == 'male';
 
+  String get flag {
+    if (id == 'sarah' || id == 'alex') return '🇺🇸';
+    if (id == 'emma' || id == 'oliver') return '🇬🇧';
+    return '🇯🇵';
+  }
+
+  String get shortAccent {
+    if (id == 'sarah' || id == 'alex') return 'American';
+    if (id == 'emma' || id == 'oliver') return 'British';
+    return 'Global Tech';
+  }
+
+  String get shortTone {
+    if (id == 'sarah') return 'Warm & Friendly';
+    if (id == 'emma') return 'Articulate & Clear';
+    if (id == 'aoi') return 'Gentle & Patient';
+    if (id == 'alex') return 'Daily Fluency';
+    if (id == 'oliver') return 'Cambridge Debate';
+    if (id == 'kenji') return 'Bilingual JP/EN';
+    return 'Conversational';
+  }
+
+  Widget buildAvatar({double radius = 24, BoxFit fit = BoxFit.cover}) {
+    final size = radius * 2;
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Color(0xFF334155),
+      ),
+      child: ClipOval(
+        child: Image.asset(
+          assetAvatar,
+          width: size,
+          height: size,
+          fit: fit,
+          errorBuilder: (_, __, ___) => Image.network(
+            'assets/images/coaches/$id.jpg',
+            width: size,
+            height: size,
+            fit: fit,
+            errorBuilder: (_, __, ___) => Image.network(
+              'http://localhost:3001/images/coaches/$id.jpg',
+              width: size,
+              height: size,
+              fit: fit,
+              errorBuilder: (_, __, ___) => Image.network(
+                avatarUrl,
+                width: size,
+                height: size,
+                fit: fit,
+                errorBuilder: (_, __, ___) => Container(
+                  color: const Color(0xFF334155),
+                  child: Center(
+                    child: Text(
+                      isFemale ? '👩' : '👨',
+                      style: TextStyle(fontSize: radius * 0.9),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   static const List<CoachPersona> presetCoaches = [
     // 1. Female Coaches
     CoachPersona(

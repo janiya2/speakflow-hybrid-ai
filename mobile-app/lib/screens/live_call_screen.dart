@@ -2812,6 +2812,16 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                       _coach.assetAvatar,
                                       fit: BoxFit.cover,
                                       alignment: Alignment.topCenter,
+                                      errorBuilder: (_, __, ___) => Image.network(
+                                        'assets/images/coaches/${_coach.id}.jpg',
+                                        fit: BoxFit.cover,
+                                        alignment: Alignment.topCenter,
+                                        errorBuilder: (_, __, ___) => Image.network(
+                                          _coach.avatarUrl,
+                                          fit: BoxFit.cover,
+                                          alignment: Alignment.topCenter,
+                                        ),
+                                      ),
                                     ),
 
                                     // 2. Idle video (if available & initialized)
@@ -2896,10 +2906,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      CircleAvatar(
-                                        radius: 8,
-                                        backgroundImage: AssetImage(_coach.assetAvatar),
-                                      ),
+                                      _coach.buildAvatar(radius: 8),
                                       const SizedBox(width: 5),
                                       Text(
                                         'Coach ${_coach.name}',
@@ -3580,6 +3587,14 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                 child: Image.asset(
                                   _coach.assetAvatar,
                                   fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Image.network(
+                                    'assets/images/coaches/${_coach.id}.jpg',
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Image.network(
+                                      _coach.avatarUrl,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -3760,11 +3775,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                           children: [
                             Stack(
                               children: [
-                                CircleAvatar(
-                                  radius: 24,
-                                  backgroundImage: AssetImage(coach.assetAvatar),
-                                  backgroundColor: const Color(0xFF334155),
-                                ),
+                                coach.buildAvatar(radius: 24),
                                 Positioned(
                                   bottom: 0,
                                   right: 0,

@@ -632,26 +632,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // 3 Perfectly Balanced Coach Cards filling 100% of the row
-                  Row(
-                    children: CoachPersona.presetCoaches.map((coach) {
-                      final isSel = coach.id == _selectedCoachId;
-                      String accentBadge = 'American';
-                      String flag = '🇺🇸';
-                      String toneTag = 'Warm & Friendly';
-                      if (coach.id == 'emma') {
-                        accentBadge = 'British';
-                        flag = '🇬🇧';
-                        toneTag = 'Articulate & Clear';
-                      } else if (coach.id == 'aoi') {
-                        accentBadge = 'Global Tone';
-                        flag = '🇯🇵';
-                        toneTag = 'Gentle & Patient';
-                      }
+                  // 6 Balanced, Spacious AI Coach Cards (Female & Male) with Horizontal Scrolling
+                  SizedBox(
+                    height: 182,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: CoachPersona.presetCoaches.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        final coach = CoachPersona.presetCoaches[index];
+                        final isSel = coach.id == _selectedCoachId;
 
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                        return Container(
+                          width: 112,
                           child: InkWell(
                             onTap: () {
                               setModalState(() => _selectedCoachId = coach.id);
@@ -661,7 +655,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(18),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
                               decoration: BoxDecoration(
                                 gradient: isSel
                                     ? LinearGradient(
@@ -701,7 +695,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
-                                      isSel ? '✓ ACTIVE' : '$flag ${coach.name}',
+                                      isSel ? '✓ ACTIVE' : '${coach.flag} ${coach.name}',
                                       style: TextStyle(
                                         color: isSel ? Colors.black : Colors.white60,
                                         fontSize: 8.5,
@@ -712,7 +706,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   const SizedBox(height: 8),
 
-                                  // Avatar with glowing ring
+                                  // Avatar with glowing ring & multi-tier bulletproof image loader
                                   Stack(
                                     alignment: Alignment.center,
                                     children: [
@@ -725,22 +719,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             width: isSel ? 2 : 1,
                                           ),
                                         ),
-                                        child: ClipOval(
-                                          child: Image.asset(
-                                            coach.assetAvatar,
-                                            width: 48,
-                                            height: 48,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) => Container(
-                                              width: 48,
-                                              height: 48,
-                                              color: const Color(0xFF334155),
-                                              child: const Center(
-                                                child: Text('👩', style: TextStyle(fontSize: 22)),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
+                                        child: coach.buildAvatar(radius: 25),
                                       ),
                                       Positioned(
                                         bottom: 0,
@@ -765,25 +744,35 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 7),
 
-                                  // Coach Name
-                                  Text(
-                                    coach.name,
-                                    style: TextStyle(
-                                      color: isSel ? Colors.white : Colors.white70,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  // Coach Name + Gender Icon
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        coach.name,
+                                        style: TextStyle(
+                                          color: isSel ? Colors.white : Colors.white70,
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        coach.isFemale ? '👩' : '👨',
+                                        style: const TextStyle(fontSize: 10),
+                                      ),
+                                    ],
                                   ),
                                   const SizedBox(height: 2),
 
                                   // Accent Badge
                                   Text(
-                                    accentBadge,
+                                    coach.shortAccent,
                                     style: TextStyle(
                                       color: isSel ? coach.primaryAccent : Colors.white54,
-                                      fontSize: 10,
+                                      fontSize: 9.5,
                                       fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
                                     ),
                                   ),
@@ -791,7 +780,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                                   // Tone Tag
                                   Text(
-                                    toneTag,
+                                    coach.shortTone,
                                     textAlign: TextAlign.center,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -804,9 +793,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    }).toList(),
+                        );
+                      },
+                    ),
                   ),
 
                   // Dynamic Coach Spotlight Banner below the 3 cards
@@ -4727,11 +4716,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const Divider(color: Colors.white10, height: 1),
                             ListTile(
-                              leading: CircleAvatar(
-                                radius: 18,
-                                backgroundImage: AssetImage(_selectedCoach.assetAvatar),
-                                backgroundColor: const Color(0xFF334155),
-                              ),
+                              leading: _selectedCoach.buildAvatar(radius: 18),
                               title: Text('Voice Coach: ${_selectedCoach.name}', style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.bold)),
                               subtitle: Text('${_selectedCoach.isFemale ? "Female" : "Male"} Persona • ${_selectedCoach.tagline}',
                                   maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white54, fontSize: 10.5)),
@@ -5352,11 +5337,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Stack(
                               children: [
-                                CircleAvatar(
-                                  radius: 24,
-                                  backgroundImage: AssetImage(coach.assetAvatar),
-                                  backgroundColor: const Color(0xFF334155),
-                                ),
+                                coach.buildAvatar(radius: 24),
                                 Positioned(
                                   bottom: 0,
                                   right: 0,
