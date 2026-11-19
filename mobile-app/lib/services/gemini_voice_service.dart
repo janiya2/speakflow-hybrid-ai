@@ -44,7 +44,10 @@ class GeminiVoiceService {
   bool _drillModeEnabled = true;
   bool simulateOffline = false;
   String hybridMode = 'auto'; // 'auto', 'nano_only', 'cloud_only'
-  static bool _isFirebaseVertexAiAvailable = true;
+  // When firebasevertexai.googleapis.com is disabled in the Firebase GCP project,
+  // defaulting to false eliminates the 4000ms 403-Forbidden failover hang completely!
+  // Gemini 2.5 Flash REST responds instantly in ~300ms.
+  static bool _isFirebaseVertexAiAvailable = false;
 
   // In-memory key cooldown registry: maps API key string -> cooldown expiry time.
   // When a key encounters HTTP 429 (Rate Limit) or Quota Exceeded, it is placed on a

@@ -451,8 +451,8 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       openingText = widget.topic.starterQuestions[randIndex];
     }
 
-    // Natural phone ringing duration: 1.4s of smooth outgoing call connection
-    await Future.delayed(const Duration(milliseconds: 1400));
+    // Snappy phone outgoing connection duration (450ms)
+    await Future.delayed(const Duration(milliseconds: 450));
 
     if (mounted) {
       setState(() {
@@ -460,7 +460,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       });
     }
 
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 150));
 
     if (kIsWeb) {
       try {
@@ -474,7 +474,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
         _lastBotQuestion = openingText;
       });
       _startTimer();
-      await Future.delayed(const Duration(milliseconds: 200));
+      await Future.delayed(const Duration(milliseconds: 100));
       await _speakText(openingText);
     }
   }
@@ -1251,10 +1251,10 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                 _userSpeech = combinedText;
               });
 
-              // Words updated: set responsive 1800ms silence timer
+              // Words updated: set responsive 1100ms silence timer
               _silenceTimer?.cancel();
               if (combinedText.isNotEmpty) {
-                _silenceTimer = Timer(const Duration(milliseconds: 1800), () {
+                _silenceTimer = Timer(const Duration(milliseconds: 1100), () {
                   if (_userSpeech.trim().isNotEmpty && !_isProcessing && !_isBotSpeaking && !_callEnded) {
                     final textToSubmit = _userSpeech.trim();
                     _accumulatedSpeech = '';
@@ -1266,14 +1266,14 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
             }
 
             if (result.finalResult && currentSegment.isNotEmpty) {
-              // Final segment recognized: promptly submit in 800ms
+              // Final segment recognized: promptly submit in 500ms
               if (_accumulatedSpeech.isEmpty) {
                 _accumulatedSpeech = currentSegment;
               } else if (!_accumulatedSpeech.contains(currentSegment)) {
                 _accumulatedSpeech = '$_accumulatedSpeech $currentSegment';
               }
               _silenceTimer?.cancel();
-              _silenceTimer = Timer(const Duration(milliseconds: 800), () {
+              _silenceTimer = Timer(const Duration(milliseconds: 500), () {
                 if (_userSpeech.trim().isNotEmpty && !_isProcessing && !_isBotSpeaking && !_callEnded) {
                   final textToSubmit = _userSpeech.trim();
                   _accumulatedSpeech = '';
@@ -3774,9 +3774,9 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                       color: coach.primaryAccent,
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Text(
-                                      '👩',
-                                      style: TextStyle(fontSize: 9),
+                                    child: Text(
+                                      coach.isFemale ? '👩' : '👨',
+                                      style: const TextStyle(fontSize: 9),
                                     ),
                                   ),
                                 ),

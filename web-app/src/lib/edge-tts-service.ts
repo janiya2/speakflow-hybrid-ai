@@ -30,11 +30,18 @@ export const VOICE_MAP: Record<string, string> = {
 
 export function resolveEdgeVoice(coachId: string, gender: string, language: string): string {
   const coachKey = coachId.toLowerCase().trim();
+  const l = language.toLowerCase();
+
+  // Special multi-lingual handling for Coach Kenji
+  if (coachKey === "kenji") {
+    if (l.includes("jap") || l.includes("ja")) return "ja-JP-KeitaNeural";
+    return "en-US-ChristopherNeural";
+  }
+
   if (VOICE_MAP[coachKey]) {
     return VOICE_MAP[coachKey];
   }
 
-  const l = language.toLowerCase();
   let langKey = "en";
   if (l.includes("jap") || l.includes("ja")) langKey = "ja";
   else if (l.includes("kor") || l.includes("ko")) langKey = "ko";
@@ -94,7 +101,7 @@ export async function synthesizeEdgeSpeech(
       const fullBuffer = Buffer.concat(chunks);
       try {
         fs.writeFileSync(filePath, fullBuffer);
-      } catch (_) {}
+      } catch (_) { }
       inMemoryCache.set(hash, fullBuffer);
       resolve(fullBuffer);
     });

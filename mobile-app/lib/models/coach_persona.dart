@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class CoachPersona {
   final String id;
   final String name;
-  final String gender; // 'female'
+  final String gender; // 'female' or 'male'
   final String avatarUrl;
   final String assetAvatar;
   final String videoAsset;
@@ -33,9 +33,11 @@ class CoachPersona {
     required this.primaryAccent,
   });
 
-  bool get isFemale => gender == 'female';
+  bool get isFemale => gender.toLowerCase() == 'female';
+  bool get isMale => gender.toLowerCase() == 'male';
 
   static const List<CoachPersona> presetCoaches = [
+    // 1. Female Coaches
     CoachPersona(
       id: 'sarah',
       name: 'Sarah',
@@ -84,9 +86,59 @@ class CoachPersona {
       themeGradient: [Color(0xFF101B20), Color(0xFF191D32)],
       primaryAccent: Color(0xFF2DD4BF),
     ),
+
+    // 2. Male Coaches
+    CoachPersona(
+      id: 'alex',
+      name: 'Alex',
+      gender: 'male',
+      avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+      assetAvatar: 'assets/images/coaches/alex.jpg',
+      videoAsset: 'assets/videos/alex.mp4',
+      idleVideoAsset: 'assets/videos/alex_idle.mp4',
+      tagline: 'Casual & Modern • Silicon Valley English Mentor',
+      accent: 'American English / Deep Casual Tone',
+      pitch: 0.95,
+      speechRate: 0.96,
+      promptPersonality: 'You are Coach Alex, a friendly, encouraging American male tutor with a modern, relaxed conversational style. You specialize in daily conversational flow, slang, idioms, and natural English cadence.',
+      themeGradient: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
+      primaryAccent: Color(0xFF818CF8),
+    ),
+    CoachPersona(
+      id: 'oliver',
+      name: 'Oliver',
+      gender: 'male',
+      avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80',
+      assetAvatar: 'assets/images/coaches/oliver.jpg',
+      videoAsset: 'assets/videos/oliver.mp4',
+      idleVideoAsset: 'assets/videos/oliver_idle.mp4',
+      tagline: 'Executive Poise & Cambridge Business English',
+      accent: 'British / Distinguished RP Diction',
+      pitch: 0.92,
+      speechRate: 0.92,
+      promptPersonality: 'You are Coach Oliver, a sophisticated British male executive coach. You mentor students in professional diction, business meetings, job interviews, and precise presentation vocabulary.',
+      themeGradient: [Color(0xFF0F172A), Color(0xFF1E293B)],
+      primaryAccent: Color(0xFF38BDF8),
+    ),
+    CoachPersona(
+      id: 'kenji',
+      name: 'Kenji',
+      gender: 'male',
+      avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&auto=format&fit=crop&q=80',
+      assetAvatar: 'assets/images/coaches/kenji.jpg',
+      videoAsset: 'assets/videos/kenji.mp4',
+      idleVideoAsset: 'assets/videos/kenji_idle.mp4',
+      tagline: 'Methodical & Patient • Bilingual Linguistics Expert',
+      accent: 'Articulate & Clear Global Tone',
+      pitch: 0.98,
+      speechRate: 0.90,
+      promptPersonality: 'You are Coach Kenji, a calm, patient, and highly articulate multilingual coach. You excel in breaking down tricky grammar patterns, phonetics, and building confidence in non-native speakers.',
+      themeGradient: [Color(0xFF064E3B), Color(0xFF0F172A)],
+      primaryAccent: Color(0xFF34D399),
+    ),
   ];
 
-  static CoachPersona get defaultCoach => presetCoaches.first; // Sarah (Female)
+  static CoachPersona get defaultCoach => presetCoaches.first; // Sarah
 
   static CoachPersona findById(String? id) {
     if (id == null) return defaultCoach;

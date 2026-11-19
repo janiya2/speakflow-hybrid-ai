@@ -93,7 +93,7 @@ const COACHES: CoachModel[] = [
     gender: "female",
     tagline: "Warm & Patient • Master English Tutor",
     accent: "American English / Warm Tone",
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80",
+    avatar: "/images/coaches/sarah.jpg",
     voice: "en-US-JennyNeural"
   },
   {
@@ -102,7 +102,7 @@ const COACHES: CoachModel[] = [
     gender: "female",
     tagline: "Executive & Cambridge Business English",
     accent: "British / Confident Articulate Tone",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+    avatar: "/images/coaches/emma.jpg",
     voice: "en-GB-SoniaNeural"
   },
   {
@@ -111,8 +111,35 @@ const COACHES: CoachModel[] = [
     gender: "female",
     tagline: "Gentle & Clear • Multilingual Specialist",
     accent: "Multilingual / Gentle & Clear Tone",
-    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&q=80",
+    avatar: "/images/coaches/aoi.jpg",
     voice: "ja-JP-NanamiNeural"
+  },
+  {
+    id: "alex",
+    name: "Alex",
+    gender: "male",
+    tagline: "Energetic & Friendly • Daily Fluency & Idioms",
+    accent: "American English / Energetic & Clear",
+    avatar: "/images/coaches/alex.jpg",
+    voice: "en-US-GuyNeural"
+  },
+  {
+    id: "oliver",
+    name: "Oliver",
+    gender: "male",
+    tagline: "Cambridge Scholarly • Executive Debate & Prep",
+    accent: "British / Articulate & Scholarly",
+    avatar: "/images/coaches/oliver.jpg",
+    voice: "en-GB-RyanNeural"
+  },
+  {
+    id: "kenji",
+    name: "Kenji",
+    gender: "male",
+    tagline: "Analytical & Calm • Global Tech & Bilingual JP/EN",
+    accent: "Bilingual Japanese & Global Tech English",
+    avatar: "/images/coaches/kenji.jpg",
+    voice: "en-US-ChristopherNeural"
   }
 ];
 
@@ -1646,7 +1673,7 @@ export default function StudentWebApp() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 {COACHES.map((coach) => {
                   const isSelected = selectedCoach.id === coach.id;
                   return (
