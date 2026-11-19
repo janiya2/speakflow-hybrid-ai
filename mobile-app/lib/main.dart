@@ -15,7 +15,11 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     if (kIsWeb) {
-      await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
+      try {
+        await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
+      } catch (authErr) {
+        debugPrint('Auth persistence notice: $authErr');
+      }
     }
 
     // Official Firebase App Check initialization (#BuildHybridAI Requirement)

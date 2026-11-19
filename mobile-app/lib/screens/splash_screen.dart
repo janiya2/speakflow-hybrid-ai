@@ -92,15 +92,17 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   }
 
   Future<User?> _resolveInitialUser() async {
-    if (FirebaseAuth.instance.currentUser != null) {
-      return FirebaseAuth.instance.currentUser;
-    }
     try {
-      return await FirebaseAuth.instance
+      final auth = FirebaseAuth.instance;
+      if (auth.currentUser != null) {
+        return auth.currentUser;
+      }
+      return await auth
           .authStateChanges()
           .firstWhere((u) => u != null)
           .timeout(const Duration(milliseconds: 2200), onTimeout: () => null);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Auth initial check notice: $e');
       return null;
     }
   }
@@ -141,10 +143,14 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     // Check Firebase user with graceful resolution from background token restoration
     User? user;
-    if (_authRestoreFuture != null) {
-      user = await _authRestoreFuture;
+    try {
+      if (_authRestoreFuture != null) {
+        user = await _authRestoreFuture;
+      }
+      user ??= FirebaseAuth.instance.currentUser;
+    } catch (e) {
+      debugPrint('Navigation auth check notice: $e');
     }
-    user ??= FirebaseAuth.instance.currentUser;
 
     if (!mounted) return;
     final Widget nextScreen = (user != null) ? const HomeScreen() : const WelcomeScreen();
