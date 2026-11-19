@@ -32,9 +32,28 @@ export function resolveEdgeVoice(coachId: string, gender: string, language: stri
   const coachKey = coachId.toLowerCase().trim();
   const l = language.toLowerCase();
 
-  // Special multi-lingual handling for Coach Kenji
+  // If the practice language is non-English, use the native language neural voice
+  const isNonEnglish = l.includes("arab") || l.includes("ar") ||
+                       l.includes("jap") || l.includes("ja") ||
+                       l.includes("kor") || l.includes("ko") ||
+                       l.includes("span") || l.includes("es") ||
+                       l.includes("tamil") || l.includes("ta");
+
+  if (isNonEnglish) {
+    let langKey = "en";
+    if (l.includes("jap") || l.includes("ja")) langKey = "ja";
+    else if (l.includes("kor") || l.includes("ko")) langKey = "ko";
+    else if (l.includes("span") || l.includes("es")) langKey = "es";
+    else if (l.includes("arab") || l.includes("ar")) langKey = "ar";
+    else if (l.includes("tamil") || l.includes("ta")) langKey = "ta";
+
+    const isMale = coachKey === "alex" || coachKey === "oliver" || coachKey === "kenji" || gender.toLowerCase() === "male";
+    const g = isMale ? "male" : "female";
+    return VOICE_MAP[`${g}_${langKey}`] || (isMale ? "ar-EG-ShakirNeural" : "ar-EG-SalmaNeural");
+  }
+
+  // If language is English, use the coach's signature studio accent
   if (coachKey === "kenji") {
-    if (l.includes("jap") || l.includes("ja")) return "ja-JP-KeitaNeural";
     return "en-US-ChristopherNeural";
   }
 
@@ -42,16 +61,8 @@ export function resolveEdgeVoice(coachId: string, gender: string, language: stri
     return VOICE_MAP[coachKey];
   }
 
-  let langKey = "en";
-  if (l.includes("jap") || l.includes("ja")) langKey = "ja";
-  else if (l.includes("kor") || l.includes("ko")) langKey = "ko";
-  else if (l.includes("span") || l.includes("es")) langKey = "es";
-  else if (l.includes("arab") || l.includes("ar")) langKey = "ar";
-  else if (l.includes("tamil") || l.includes("ta")) langKey = "ta";
-
   const g = gender.toLowerCase() === "male" ? "male" : "female";
-  const comboKey = `${g}_${langKey}`;
-  return VOICE_MAP[comboKey] || "en-US-JennyNeural";
+  return VOICE_MAP[`${g}_en`] || "en-US-JennyNeural";
 }
 
 // In-memory cache for fast serverless responses
