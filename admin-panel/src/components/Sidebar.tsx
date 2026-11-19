@@ -21,7 +21,8 @@ import {
   Trophy,
   Clock,
   Package,
-  Bell
+  Bell,
+  Globe
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -30,6 +31,12 @@ const NAV_ITEMS = [
     href: "/",
     icon: LayoutDashboard,
     badge: null,
+  },
+  {
+    name: "Landing Page & CMS",
+    href: "/landing-cms",
+    icon: Globe,
+    badge: "Web CMS 🌐",
   },
   {
     name: "Push Notifications",

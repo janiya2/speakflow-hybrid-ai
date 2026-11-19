@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
       const chunkSize = end - start + 1;
       const chunk = audioBuffer.subarray(start, end + 1);
 
-      return new NextResponse(chunk, {
+      return new NextResponse(chunk as any, {
         status: 206,
         headers: {
           "Content-Range": `bytes ${start}-${end}/${total}`,
@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    return new NextResponse(audioBuffer, {
+    return new NextResponse(audioBuffer as any, {
       status: 200,
       headers: {
         "Content-Type": "audio/mpeg",
