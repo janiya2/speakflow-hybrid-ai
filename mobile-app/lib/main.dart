@@ -31,8 +31,12 @@ void main() async {
       debugPrint('Firebase App Check initialization notice: $appCheckErr');
     }
 
-    await SubscriptionService.instance.initialize();
-    await NotificationService.instance.initialize();
+    try {
+      await SubscriptionService.instance.initialize();
+    } catch (_) {}
+    try {
+      await NotificationService.instance.initialize();
+    } catch (_) {}
   } catch (e) {
     debugPrint('Firebase init error: $e');
   }

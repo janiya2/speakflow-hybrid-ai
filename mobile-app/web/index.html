@@ -21,8 +21,19 @@
   <meta name="description" content="SpeakFlow AI Language Practice">
   <meta name="referrer" content="no-referrer">
 
-  <!-- Always bypass stale service worker caches on localhost development -->
+  <!-- Always bypass stale service worker caches on localhost development & silence AppCheck reCAPTCHA noise -->
   <script>
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    window.addEventListener('unhandledrejection', function(event) {
+      if (event.reason && (
+        event.reason.code === 'appCheck/recaptcha-error' || 
+        ('' + event.reason).includes('ReCAPTCHA error') ||
+        ('' + event.reason).includes('recaptcha')
+      )) {
+        event.preventDefault();
+      }
+    });
+
     if (window.location.hostname === 'localhost' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function(regs) {
         for (let reg of regs) { reg.unregister(); }
