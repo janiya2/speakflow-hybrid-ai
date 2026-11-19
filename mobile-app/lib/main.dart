@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'firebase_options.dart';
 import 'screens/splash_screen.dart';
 import 'services/subscription_service.dart';
@@ -16,6 +17,19 @@ void main() async {
     if (kIsWeb) {
       await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
     }
+
+    // Official Firebase App Check initialization (#BuildHybridAI Requirement)
+    try {
+      await FirebaseAppCheck.instance.activate(
+        webProvider: ReCaptchaV3Provider('6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'),
+        androidProvider: kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+        appleProvider: kDebugMode ? AppleProvider.debug : AppleProvider.deviceCheck,
+      );
+      debugPrint('Firebase App Check successfully initialized');
+    } catch (appCheckErr) {
+      debugPrint('Firebase App Check initialization notice: $appCheckErr');
+    }
+
     await SubscriptionService.instance.initialize();
     await NotificationService.instance.initialize();
   } catch (e) {

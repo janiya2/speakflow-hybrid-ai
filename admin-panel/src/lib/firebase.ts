@@ -2,6 +2,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAXlKI0I8yNMtHIFxKk3lC_hixfuZkj5_Y",
@@ -19,6 +20,21 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+// Official Firebase App Check initialization (#BuildHybridAI Requirement)
+let appCheck: any = null;
+if (typeof window !== "undefined") {
+  try {
+    (window as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    appCheck = initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(
+        process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
+      ),
+      isTokenAutoRefreshEnabled: true,
+    });
+  } catch (_) {}
+}
+export { appCheck };
 
 // Isolated collections for the Language Practice Project
 export const COLLECTIONS = {
