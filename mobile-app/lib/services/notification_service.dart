@@ -171,15 +171,8 @@ class NotificationService {
   }
 
   Future<void> saveTokenForUser(String uid, {String? tokenOverride}) async {
+    if (kIsWeb) return; // FCM device token persistence is targeted for mobile devices (Android/iOS)
     try {
-      if (kIsWeb) {
-        // On web, avoid token retrieval if notification permission was blocked in browser
-        final isGranted = await checkPermissionGranted();
-        if (!isGranted) {
-          debugPrint('[NotificationService] Web notification permission not granted. Skipping FCM token fetch.');
-          return;
-        }
-      }
 
       final token = tokenOverride ?? await _fcm.getToken();
       if (token == null) return;

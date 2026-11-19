@@ -23,7 +23,7 @@
 
   <!-- Always bypass stale service worker caches on localhost development & silence AppCheck reCAPTCHA noise -->
   <script>
-    self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = "0a0ffdc1-7b08-4a1a-bac9-44bb4647db50";
     window.addEventListener('unhandledrejection', function(event) {
       if (event.reason && (
         event.reason.code === 'appCheck/recaptcha-error' || 
