@@ -44,10 +44,9 @@ class GeminiVoiceService {
   bool _drillModeEnabled = true;
   bool simulateOffline = false;
   String hybridMode = 'auto'; // 'auto', 'nano_only', 'cloud_only'
-  // When firebasevertexai.googleapis.com is disabled in the Firebase GCP project,
-  // defaulting to false eliminates the 4000ms 403-Forbidden failover hang completely!
-  // Gemini 2.5 Flash REST responds instantly in ~300ms.
-  static bool _isFirebaseVertexAiAvailable = false;
+  // Official Firebase AI Logic API (firebasevertexai.googleapis.com) is now ENABLED
+  // in project uscut-a78e9! Primary inference runs directly via official Google Firebase SDK.
+  static bool _isFirebaseVertexAiAvailable = true;
 
   // In-memory key cooldown registry: maps API key string -> cooldown expiry time.
   // When a key encounters HTTP 429 (Rate Limit) or Quota Exceeded, it is placed on a
@@ -124,7 +123,7 @@ Reply strictly with a JSON object in this format:
 Do not include any explanation or markdown formatting, just the raw JSON.''';
 
         final vertexModel = FirebaseVertexAI.instance.generativeModel(
-          model: 'gemini-2.5-flash',
+          model: 'gemini-1.5-flash',
           generationConfig: GenerationConfig(
             temperature: 0.2,
             maxOutputTokens: 60,
