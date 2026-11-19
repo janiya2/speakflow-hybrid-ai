@@ -28,13 +28,13 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   String _statusText = 'Initializing AI Voice Engine...';
   Future<User?>? _authRestoreFuture;
 
-  final List<String> _languages = [
-    '🇯🇵 Japanese',
-    '🇰🇷 Korean',
-    '🇬🇧 English',
-    '🇪🇸 Spanish',
-    '🇸🇦 Arabic',
-    '🇮🇳 Tamil',
+  final List<Map<String, String>> _languages = [
+    {'name': 'Japanese', 'flag': 'assets/images/flag_jp.png'},
+    {'name': 'Korean', 'flag': 'assets/images/flag_kr.png'},
+    {'name': 'English', 'flag': 'assets/images/flag_us.png'},
+    {'name': 'Spanish', 'flag': 'assets/images/flag_es.png'},
+    {'name': 'Arabic', 'flag': 'assets/images/flag_sa.png'},
+    {'name': 'Tamil', 'flag': 'assets/images/flag_lk.png'},
   ];
 
   @override
@@ -341,7 +341,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                             alignment: WrapAlignment.center,
                             children: _languages.map((lang) {
                               return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF1E293B).withOpacity(0.7),
                                   borderRadius: BorderRadius.circular(12),
@@ -349,13 +349,29 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                     color: Colors.white.withOpacity(0.08),
                                   ),
                                 ),
-                                child: Text(
-                                  lang,
-                                  style: const TextStyle(
-                                    color: Color(0xFF94A3B8),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(2.5),
+                                      child: Image.asset(
+                                        lang['flag']!,
+                                        width: 15,
+                                        height: 10.5,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (ctx, err, stack) => const SizedBox(width: 15),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      lang['name']!,
+                                      style: const TextStyle(
+                                        color: Color(0xFF94A3B8),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               );
                             }).toList(),
