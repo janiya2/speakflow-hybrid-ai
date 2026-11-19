@@ -1752,7 +1752,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
           SizedBox(
-            height: 96,
+            height: 108,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -1963,7 +1963,82 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Map<String, dynamic> _getCategoryStyle(String category) {
+    switch (category.toLowerCase()) {
+      case 'sports':
+        return {
+          'icon': Icons.sports_cricket_rounded,
+          'color': const Color(0xFF10B981),
+          'gradient': const [Color(0xFF064E3B), Color(0xFF0F172A)],
+          'tag': 'Hot 🔥',
+        };
+      case 'travel':
+        return {
+          'icon': Icons.flight_takeoff_rounded,
+          'color': const Color(0xFF0EA5E9),
+          'gradient': const [Color(0xFF0C4A6E), Color(0xFF0F172A)],
+          'tag': 'Popular ⭐',
+        };
+      case 'food':
+        return {
+          'icon': Icons.restaurant_rounded,
+          'color': const Color(0xFFF59E0B),
+          'gradient': const [Color(0xFF78350F), Color(0xFF0F172A)],
+          'tag': 'Yummy 🍕',
+        };
+      case 'career':
+        return {
+          'icon': Icons.business_center_rounded,
+          'color': const Color(0xFF8B5CF6),
+          'gradient': const [Color(0xFF4C1D95), Color(0xFF0F172A)],
+          'tag': 'Pro 💼',
+        };
+      case 'entertainment':
+      case 'gaming':
+        return {
+          'icon': Icons.sports_esports_rounded,
+          'color': const Color(0xFFEC4899),
+          'gradient': const [Color(0xFF831843), Color(0xFF0F172A)],
+          'tag': 'Play 🎮',
+        };
+      case 'tech':
+        return {
+          'icon': Icons.smart_toy_rounded,
+          'color': const Color(0xFF6366F1),
+          'gradient': const [Color(0xFF1E1B4B), Color(0xFF0F172A)],
+          'tag': 'AI 🤖',
+        };
+      case 'daily life':
+        return {
+          'icon': Icons.coffee_rounded,
+          'color': const Color(0xFF14B8A6),
+          'gradient': const [Color(0xFF134E4A), Color(0xFF0F172A)],
+          'tag': 'Daily ☕',
+        };
+      case 'social':
+        return {
+          'icon': Icons.people_rounded,
+          'color': const Color(0xFFF43F5E),
+          'gradient': const [Color(0xFF881337), Color(0xFF0F172A)],
+          'tag': 'Social 👥',
+        };
+      default:
+        return {
+          'icon': Icons.forum_rounded,
+          'color': const Color(0xFF38BDF8),
+          'gradient': const [Color(0xFF1E293B), Color(0xFF0F172A)],
+          'tag': 'Live',
+        };
+    }
+  }
+
   Widget _buildCategoryPill(String title, String category, String sub) {
+    final style = _getCategoryStyle(category);
+    final Color accent = style['color'] as Color;
+    final List<Color> gradient = style['gradient'] as List<Color>;
+    final IconData iconData = style['icon'] as IconData;
+    final String tag = style['tag'] as String;
+
     return InkWell(
       onTap: () {
         setState(() {
@@ -1971,23 +2046,83 @@ class _HomeScreenState extends State<HomeScreen> {
           _currentTabIndex = 1; // switch to conversations tab
         });
       },
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
-        width: 130,
-        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        padding: const EdgeInsets.all(12),
+        width: 148,
+        margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.2)),
+          gradient: LinearGradient(
+            colors: gradient,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: accent.withOpacity(0.35), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: accent.withOpacity(0.18),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-            const SizedBox(height: 3),
-            Text(sub, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 9)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: accent.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: accent.withOpacity(0.4), width: 0.8),
+                  ),
+                  child: Center(
+                    child: Icon(iconData, color: accent, size: 18),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: accent.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    tag,
+                    style: TextStyle(color: accent, fontSize: 8.5, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  category,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13.5,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  sub,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.55),
+                    fontSize: 9.5,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -2001,7 +2136,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header
+        // Header with Target Language Badge & Reset
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Row(
@@ -2010,13 +2145,36 @@ class _HomeScreenState extends State<HomeScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Speaking Scenarios',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+                  Row(
+                    children: [
+                      const Text(
+                        'Speaking Scenarios',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${topics.length} Live',
+                          style: const TextStyle(color: Color(0xFF34D399), fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(
-                    '${topics.length} Real-Time Scenarios in ${_userTargetLanguage ?? "English"}',
-                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      _buildFlagBadge(_userTargetLanguage ?? 'English', width: 14, height: 9.5, radius: 2),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Practice in ${_userTargetLanguage ?? "English"} with AI Coach',
+                        style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 11),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -2029,56 +2187,125 @@ class _HomeScreenState extends State<HomeScreen> {
                     _searchQuery = '';
                   });
                 },
-                icon: const Icon(Icons.refresh, color: Colors.white70),
+                icon: Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white.withOpacity(0.08)),
+                  ),
+                  child: const Icon(Icons.refresh_rounded, color: Colors.white70, size: 18),
+                ),
                 tooltip: 'Reset Filters',
               ),
             ],
           ),
         ),
 
-        // Search Bar
+        // Search Bar with Clear Button
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: TextField(
-            onChanged: (val) => setState(() => _searchQuery = val),
-            style: const TextStyle(color: Colors.white, fontSize: 13),
-            decoration: InputDecoration(
-              hintText: 'Search 100+ topics (e.g. cricket, hotel, tapas)...',
-              hintStyle: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 12),
-              prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 20),
-              filled: true,
-              fillColor: const Color(0xFF1E293B),
-              contentPadding: const EdgeInsets.symmetric(vertical: 10),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white.withOpacity(0.08)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: TextField(
+              onChanged: (val) => setState(() => _searchQuery = val),
+              style: const TextStyle(color: Colors.white, fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'Search 80+ topics (e.g. cricket, hotel, airport)...',
+                hintStyle: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 12),
+                prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF818CF8), size: 20),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded, color: Colors.white54, size: 18),
+                        onPressed: () => setState(() => _searchQuery = ''),
+                      )
+                    : null,
+                filled: false,
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                border: InputBorder.none,
               ),
             ),
           ),
         ),
 
-        // Category Filter Pills
+        // Category Filter Pills with Icons
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           child: Row(
-            children: ['All', 'Sports', 'Travel', 'Food', 'Career', 'Entertainment', 'Daily Life', 'Tech', 'Social'].map((cat) {
+            children: [
+              {'name': 'All', 'icon': Icons.auto_awesome_rounded},
+              {'name': 'Sports', 'icon': Icons.sports_cricket_rounded},
+              {'name': 'Travel', 'icon': Icons.flight_takeoff_rounded},
+              {'name': 'Food', 'icon': Icons.restaurant_rounded},
+              {'name': 'Career', 'icon': Icons.business_center_rounded},
+              {'name': 'Entertainment', 'icon': Icons.sports_esports_rounded},
+              {'name': 'Tech', 'icon': Icons.smart_toy_rounded},
+              {'name': 'Daily Life', 'icon': Icons.coffee_rounded},
+              {'name': 'Social', 'icon': Icons.people_rounded},
+            ].map((catItem) {
+              final cat = catItem['name'] as String;
+              final catIcon = catItem['icon'] as IconData;
               final isSelected = _selectedCategory.toLowerCase() == cat.toLowerCase();
+              final style = _getCategoryStyle(cat);
+              final Color accent = style['color'] as Color;
+
               return Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: FilterChip(
-                  label: Text(cat),
-                  selected: isSelected,
-                  onSelected: (_) => setState(() => _selectedCategory = cat),
-                  selectedColor: const Color(0xFF10B981),
-                  backgroundColor: const Color(0xFF1E293B),
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : Colors.white60,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    fontSize: 11,
+                padding: const EdgeInsets.only(right: 8),
+                child: InkWell(
+                  onTap: () => setState(() => _selectedCategory = cat),
+                  borderRadius: BorderRadius.circular(12),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isSelected ? const Color(0xFF10B981) : const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected ? const Color(0xFF10B981) : Colors.white.withOpacity(0.08),
+                        width: 1,
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: const Color(0xFF10B981).withOpacity(0.35),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              )
+                            ]
+                          : null,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          catIcon,
+                          size: 13,
+                          color: isSelected ? Colors.white : (cat == 'All' ? const Color(0xFFF59E0B) : accent),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          cat,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.white70,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  side: BorderSide.none,
                 ),
               );
             }).toList(),
@@ -2094,7 +2321,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.search_off, color: Colors.white30, size: 48),
+                      const Icon(Icons.search_off_rounded, color: Colors.white30, size: 48),
                       const SizedBox(height: 8),
                       const Text('No scenarios found matching your filter.', style: TextStyle(color: Colors.white54)),
                       const SizedBox(height: 12),
@@ -2112,10 +2339,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 )
-              : ListView.separated(
+              : ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   itemCount: topics.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     return _buildScenarioCard(topics[index]);
                   },
@@ -2126,85 +2352,207 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildScenarioCard(TopicModel topic) {
+    final style = _getCategoryStyle(topic.category);
+    final Color accent = style['color'] as Color;
+    final IconData catIcon = style['icon'] as IconData;
+
+    // Difficulty level colors
+    Color levelColor = const Color(0xFF10B981); // Beginner - emerald
+    if (topic.level.toLowerCase().contains('inter')) {
+      levelColor = const Color(0xFFF59E0B); // Intermediate - amber
+    } else if (topic.level.toLowerCase().contains('adv')) {
+      levelColor = const Color(0xFFA855F7); // Advanced - purple
+    }
+
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        onTap: () => _promptCallDuration(context, topic),
-        leading: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: const Color(0xFF0F172A),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Center(
-            child: Text(topic.icon, style: const TextStyle(fontSize: 24)),
-          ),
-        ),
-        title: Text(
-          topic.title,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text(
-              topic.scenario,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 11),
-            ),
-            const SizedBox(height: 6),
-            Row(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _promptCallDuration(context, topic),
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                // 1. Left Icon Container with Category Gradient
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  width: 50,
+                  height: 50,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withOpacity(0.18),
-                    borderRadius: BorderRadius.circular(6),
+                    gradient: LinearGradient(
+                      colors: [
+                        accent.withOpacity(0.25),
+                        const Color(0xFF0F172A),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: accent.withOpacity(0.4), width: 1),
                   ),
-                  child: Text(
-                    '${_getLanguageFlag(topic.language)} ${topic.language}',
-                    style: const TextStyle(color: Color(0xFF818CF8), fontSize: 10, fontWeight: FontWeight.bold),
+                  child: Center(
+                    child: Text(
+                      topic.icon,
+                      style: const TextStyle(fontSize: 24),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    topic.category,
-                    style: const TextStyle(color: Color(0xFF34D399), fontSize: 10, fontWeight: FontWeight.bold),
+                const SizedBox(width: 12),
+
+                // 2. Middle Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        topic.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        topic.scenario,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.6),
+                          fontSize: 11,
+                          height: 1.25,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Tags Row
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: [
+                          // Real Country Flag Badge + Language
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF6366F1).withOpacity(0.18),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.35), width: 0.8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildFlagBadge(topic.language, width: 14, height: 9.5, radius: 2),
+                                const SizedBox(width: 4),
+                                Text(
+                                  topic.language,
+                                  style: const TextStyle(
+                                    color: Color(0xFFA5B4FC),
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Category Tag with Icon
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: accent.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: accent.withOpacity(0.3), width: 0.8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(catIcon, size: 9.5, color: accent),
+                                const SizedBox(width: 3),
+                                Text(
+                                  topic.category,
+                                  style: TextStyle(
+                                    color: accent,
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Level Tag with Icon
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: levelColor.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.signal_cellular_alt_rounded, size: 9.5, color: levelColor),
+                                const SizedBox(width: 3),
+                                Text(
+                                  topic.level,
+                                  style: TextStyle(
+                                    color: levelColor,
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  topic.level,
-                  style: TextStyle(color: Colors.white.withOpacity(0.45), fontSize: 10),
+                const SizedBox(width: 8),
+
+                // 3. Right Action Call Button
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF059669)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF10B981).withOpacity(0.4),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.call_rounded, color: Colors.white, size: 20),
+                  ),
                 ),
               ],
             ),
-          ],
-        ),
-        trailing: ElevatedButton(
-          onPressed: () => _promptCallDuration(context, topic),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF10B981),
-            foregroundColor: Colors.white,
-            shape: const CircleBorder(),
-            padding: const EdgeInsets.all(12),
-            elevation: 3,
           ),
-          child: const Icon(Icons.call, size: 20),
         ),
       ),
     );
