@@ -18,8 +18,22 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="SpeakFlow AI Language Practice">
   <meta name="referrer" content="no-referrer">
+
+  <!-- Always bypass stale service worker caches on localhost development -->
+  <script>
+    if (window.location.hostname === 'localhost' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        for (let reg of regs) { reg.unregister(); }
+      });
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          for (let name of names) { caches.delete(name); }
+        });
+      }
+    }
+  </script>
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
