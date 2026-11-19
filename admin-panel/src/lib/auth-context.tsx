@@ -3,8 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { auth, db } from "./firebase";
-import { COLLECTIONS } from "./constants";
+import { auth, db, COLLECTIONS } from "./firebase";
 import { useRouter, usePathname } from "next/navigation";
 
 export interface UserProfile {
