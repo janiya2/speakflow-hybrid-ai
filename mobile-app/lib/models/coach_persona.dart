@@ -42,6 +42,12 @@ class CoachPersona {
     return '🇯🇵';
   }
 
+  String get flagAsset {
+    if (id == 'sarah' || id == 'alex') return 'assets/images/flag_us.png';
+    if (id == 'emma' || id == 'oliver') return 'assets/images/flag_gb.png';
+    return 'assets/images/flag_jp.png';
+  }
+
   String get shortAccent {
     if (id == 'sarah' || id == 'alex') return 'American';
     if (id == 'emma' || id == 'oliver') return 'British';

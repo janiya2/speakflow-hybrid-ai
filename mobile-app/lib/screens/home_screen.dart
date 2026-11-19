@@ -44,36 +44,42 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'English',
       'flag': '🇺🇸',
+      'flagAsset': 'assets/images/flag_us.png',
       'native': 'English',
       'desc': 'Global Business & Conversational Fluency',
     },
     {
       'name': 'Japanese',
       'flag': '🇯🇵',
+      'flagAsset': 'assets/images/flag_jp.png',
       'native': '日本語',
       'desc': 'JLPT & Daily Tokyo Life Conversations',
     },
     {
       'name': 'Spanish',
       'flag': '🇪🇸',
+      'flagAsset': 'assets/images/flag_es.png',
       'native': 'Español',
       'desc': 'Spain & Latin America Conversations',
     },
     {
       'name': 'Korean',
       'flag': '🇰🇷',
+      'flagAsset': 'assets/images/flag_kr.png',
       'native': '한국어',
       'desc': 'K-Culture, K-Drama & Daily Life',
     },
     {
       'name': 'Arabic',
       'flag': '🇸🇦',
+      'flagAsset': 'assets/images/flag_sa.png',
       'native': 'العربية',
       'desc': 'Modern Standard & Spoken Arabic',
     },
     {
       'name': 'Tamil',
       'flag': '🇱🇰',
+      'flagAsset': 'assets/images/flag_lk.png',
       'native': 'தமிழ்',
       'desc': 'Daily Conversations & Regional Fluency',
     },
@@ -286,6 +292,49 @@ class _HomeScreenState extends State<HomeScreen> {
     return '🌐';
   }
 
+  String _getLanguageFlagAsset(String lang) {
+    for (final l in supportedLanguagesList) {
+      if (l['name']?.toLowerCase() == lang.toLowerCase()) {
+        return l['flagAsset'] ?? 'assets/images/flag_us.png';
+      }
+    }
+    return 'assets/images/flag_us.png';
+  }
+
+  Widget _buildFlagBadge(String lang, {double width = 36, double height = 24, double radius = 6}) {
+    final asset = _getLanguageFlagAsset(lang);
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(radius),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 4,
+            offset: const Offset(0, 1.5),
+          ),
+        ],
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 0.8),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius > 1 ? radius - 0.8 : radius),
+        child: Image.asset(
+          asset,
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+          errorBuilder: (ctx, err, stack) => Center(
+            child: Text(
+              _getLanguageFlag(lang),
+              style: TextStyle(fontSize: height * 0.7),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   // Language Setup & Selection Modal
   void _showLanguageSetupModal(BuildContext context, {bool isMandatory = false}) {
     showModalBottomSheet(
@@ -413,7 +462,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             child: Row(
                               children: [
-                                Text(lang['flag']!, style: const TextStyle(fontSize: 28)),
+                                _buildFlagBadge(lang['name']!, width: 44, height: 30, radius: 7),
                                 const SizedBox(width: 14),
                                 Expanded(
                                   child: Column(
@@ -694,15 +743,41 @@ class _HomeScreenState extends State<HomeScreen> {
                                       color: isSel ? coach.primaryAccent : Colors.white.withOpacity(0.06),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: Text(
-                                      isSel ? '✓ ACTIVE' : '${coach.flag} ${coach.name}',
-                                      style: TextStyle(
-                                        color: isSel ? Colors.black : Colors.white60,
-                                        fontSize: 8.5,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: 0.3,
-                                      ),
-                                    ),
+                                    child: isSel
+                                        ? const Text(
+                                            '✓ ACTIVE',
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 8.5,
+                                              fontWeight: FontWeight.w900,
+                                              letterSpacing: 0.3,
+                                            ),
+                                          )
+                                        : Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              ClipRRect(
+                                                borderRadius: BorderRadius.circular(2),
+                                                child: Image.asset(
+                                                  coach.flagAsset,
+                                                  width: 12,
+                                                  height: 8,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (_, __, ___) => Text(coach.flag, style: const TextStyle(fontSize: 8)),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                coach.name,
+                                                style: const TextStyle(
+                                                  color: Colors.white60,
+                                                  fontSize: 8.5,
+                                                  fontWeight: FontWeight.w900,
+                                                  letterSpacing: 0.3,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                   ),
                                   const SizedBox(height: 8),
 
@@ -1344,11 +1419,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         child: Row(
                           children: [
-                            Text(
-                              _getLanguageFlag(_userTargetLanguage ?? 'English'),
-                              style: const TextStyle(fontSize: 13),
-                            ),
-                            const SizedBox(width: 4),
+                            _buildFlagBadge(_userTargetLanguage ?? 'English', width: 20, height: 14, radius: 3),
+                            const SizedBox(width: 6),
                             Text(
                               _userTargetLanguage ?? 'Set Lang',
                               style: const TextStyle(
@@ -1870,7 +1942,10 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 20),
+          if (label == 'Target Lang' && value != 'None')
+            _buildFlagBadge(value, width: 28, height: 18, radius: 4)
+          else
+            Icon(icon, color: color, size: 20),
           const SizedBox(height: 6),
           Text(
             value,
@@ -4701,7 +4776,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Column(
                           children: [
                             ListTile(
-                              leading: Text(_getLanguageFlag(_userTargetLanguage ?? 'English'), style: const TextStyle(fontSize: 26)),
+                              leading: _buildFlagBadge(_userTargetLanguage ?? 'English', width: 36, height: 24, radius: 5),
                               title: const Text('Target Practice Language', style: TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.bold)),
                               subtitle: Text(_userTargetLanguage ?? 'English', style: const TextStyle(color: Color(0xFF818CF8), fontSize: 11)),
                               trailing: Container(
