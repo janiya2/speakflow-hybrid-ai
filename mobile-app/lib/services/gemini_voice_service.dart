@@ -524,6 +524,12 @@ Reply ONLY with valid JSON:
       }
     }
 
+    // STRICT CLOUD CHECK: If user selected 'cloud_only' mode and cloud was unreachable, do NOT silently fallback to local
+    if (hybridMode == 'cloud_only') {
+      debugPrint('Cloud-only mode was active and cloud inference failed.');
+      throw Exception('Cloud-only inference failed: Cloud servers unreachable.');
+    }
+
     // ⚡ Resilience Auto-Fallback to On-Device Gemini Nano
     debugPrint('⚡ Network timeout or quota reached -> Auto-fallback to On-Device Gemini Nano!');
     return await _executeOnDeviceNanoInference(

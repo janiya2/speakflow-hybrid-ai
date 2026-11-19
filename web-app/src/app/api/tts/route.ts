@@ -7,6 +7,24 @@ import { promisify } from "util";
 
 const execFileAsync = promisify(execFile);
 
+// Simple sliding window rate limiter: maps IP -> timestamp list
+const ipRequestBuckets = new Map<string, number[]>();
+const MAX_REQUESTS_PER_MINUTE = 60;
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const windowStart = now - 60000;
+  const timestamps = (ipRequestBuckets.get(ip) || []).filter((t) => t > windowStart);
+
+  if (timestamps.length >= MAX_REQUESTS_PER_MINUTE) {
+    return true;
+  }
+
+  timestamps.push(now);
+  ipRequestBuckets.set(ip, timestamps);
+  return false;
+}
+
 // Helper for CORS preflight
 export async function OPTIONS() {
   return new NextResponse(null, {
@@ -21,6 +39,14 @@ export async function OPTIONS() {
 
 export async function GET(request: NextRequest) {
   try {
+    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "127.0.0.1";
+    if (isRateLimited(ip)) {
+      return NextResponse.json(
+        { error: "Too Many Requests: Rate limit of 60 calls/min exceeded" },
+        { status: 429, headers: { "Access-Control-Allow-Origin": "*" } }
+      );
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const text = searchParams.get("text")?.trim();
     const coach = searchParams.get("coach")?.toLowerCase() || "sarah";
@@ -35,6 +61,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Input length limit guard: Maximum 500 characters per TTS synthesis request
+    if (text.length > 500) {
+      return NextResponse.json(
+        { error: "Input text exceeds maximum permitted length of 500 characters" },
+        { status: 400, headers: { "Access-Control-Allow-Origin": "*" } }
+      );
+    }
+
     let audioBuffer: Buffer | null = null;
     const targetVoice = resolveEdgeVoice(voiceParam, gender, language);
 
@@ -43,7 +77,7 @@ export async function GET(request: NextRequest) {
       audioBuffer = await synthesizeEdgeSpeech(text, targetVoice);
     } catch (nodeTtsErr: any) {
       console.warn("Pure Node Edge-TTS failed, attempting local fallback engine:", nodeTtsErr?.message || nodeTtsErr);
-      
+
       // Secondary Fallback Engine: Python edge_tts script (for local dev / environments with python runtime)
       const scriptPath = path.join(process.cwd(), "scripts", "edge_tts_service.py");
       if (fs.existsSync(scriptPath)) {

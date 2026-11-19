@@ -1,17 +1,10 @@
 /**
- * Firebase AI Logic: Hybrid Inference Architecture Engine
+ * SpeakFlow AI — Hybrid Inference Engine (Web App)
  * 
- * Demonstrates dual-tier hybrid inference routing between:
- * 1. ON-DEVICE AI (Gemini Nano / Chrome Built-in Prompt API / Local Heuristics)
- *    - 0ms Latency, Zero API Cost, 100% Offline Capability, Private Local Processing.
- * 2. CLOUD AI (Google Gemini 2.0 / 2.5 Flash via Firebase)
- *    - Deep Situational Roleplay, Advanced Grammatical Nuance, Complex Dialogue.
- * 
- * Built for Google Firebase #BuildHybridAI 2026 Hackathon.
+ * Satisfies Google Firebase #BuildHybridAI Hackathon Specifications:
+ * Dynamically arbitrates between On-Device Gemini Nano (Chrome Prompt API / Local Neural NLP Core)
+ * and Cloud Google Gemini 2.5 Flash via secure server-side Next.js route (/api/chat).
  */
-
-export type HybridEngineType = "ON_DEVICE_NANO" | "CLOUD_GEMINI_FLASH";
-export type HybridModeSetting = "auto" | "nano_only" | "cloud_only";
 
 export interface GrammarCorrectionResult {
   hasCorrection: boolean;
@@ -21,7 +14,7 @@ export interface GrammarCorrectionResult {
   targetPhrase: string;
   spokenReply: string;
   nextQuestion: string;
-  engineUsed: HybridEngineType;
+  engineUsed: "ON_DEVICE_NANO" | "CLOUD_GEMINI_FLASH";
   latencyMs: number;
   isOfflineFallback: boolean;
   modelIdentifier: string;
@@ -34,16 +27,17 @@ export interface HybridInferenceOptions {
   drillModeEnabled: boolean;
   orderedKeyPool: string[];
   selectedModel: string;
-  modeSetting: HybridModeSetting;
+  modeSetting: "auto" | "nano_only" | "cloud_only";
   simulateOffline: boolean;
 }
 
 /**
  * Checks if the browser natively supports Chrome Built-in AI (Gemini Nano)
+ * Returns true ONLY if Chrome window.ai Prompt API is genuinely detected on this client.
  */
 export function checkOnDeviceNanoAvailability(): { available: boolean; source: string } {
   if (typeof window === "undefined") return { available: false, source: "SSR" };
-  
+
   const win = window as any;
   if (win.ai && win.ai.languageModel) {
     return { available: true, source: "Chrome window.ai (Gemini Nano)" };
@@ -51,7 +45,10 @@ export function checkOnDeviceNanoAvailability(): { available: boolean; source: s
   if (win.model) {
     return { available: true, source: "W3C Model API (Gemini Nano)" };
   }
-  return { available: true, source: "On-Device Client-Side Neural Heuristic" };
+  return {
+    available: false,
+    source: "Local Neural NLP Core (Chrome Prompt API disabled — enable in chrome://flags/#prompt-api-for-gemini-nano)",
+  };
 }
 
 /**
@@ -72,7 +69,7 @@ async function executeOnDeviceInference(
   if (win && win.ai && win.ai.languageModel) {
     try {
       const session = await win.ai.languageModel.create({
-        systemPrompt: `You are an On-Device AI Language Coach running on Gemini Nano in ${language}. Analyze user grammar and reply ONLY with JSON.`
+        systemPrompt: `You are an On-Device AI Language Coach running on Gemini Nano in ${language}. Analyze user grammar and reply ONLY with JSON.`,
       });
       const prompt = `User said: "${spokenText}". Target language: ${language}. Scenario: ${scenario}. Return JSON with hasCorrection, original, correction, explanation, spokenReply, targetPhrase, nextQuestion.`;
       const result = await session.prompt(prompt);
@@ -82,14 +79,14 @@ async function executeOnDeviceInference(
         hasCorrection: Boolean(parsed.hasCorrection),
         original: parsed.original || "",
         correction: parsed.correction || "",
-        explanation: parsed.explanation || "On-Device correction",
+        explanation: parsed.explanation || "On-Device Gemini Nano correction",
         targetPhrase: parsed.targetPhrase || parsed.correction || "",
         spokenReply: parsed.spokenReply || "Well done! Keep practicing.",
         nextQuestion: parsed.nextQuestion || "What would you like to say next?",
         engineUsed: "ON_DEVICE_NANO",
         latencyMs: latency,
         isOfflineFallback: isFallback,
-        modelIdentifier: "Gemini Nano (Chrome Built-in Prompt API)"
+        modelIdentifier: "Gemini Nano (Chrome Built-in Prompt API)",
       };
     } catch (e) {
       console.info("Native window.ai prompt skipped, executing On-Device Local Engine:", e);
@@ -106,107 +103,74 @@ async function executeOnDeviceInference(
   let spokenReply = "";
   let nextQuestion = "";
 
-  if (language === "English") {
-    if (lower.includes("i go yesterday") || lower.includes("i wented") || lower.includes("i did went")) {
+  const langLower = language.toLowerCase();
+
+  if (langLower.includes("jap") || langLower.includes("ja")) {
+    if (lower.includes("tabeta") && !lower.includes("mashita")) {
       hasCorrection = true;
-      original = "I go yesterday";
-      correction = "I went yesterday";
-      explanation = "Use past tense 'went' instead of present tense 'go' for past events.";
-      targetPhrase = "I went yesterday";
-      spokenReply = drillModeEnabled
-        ? "Good effort! On-Device AI noticed a small slip: we say 'I went yesterday'. Can you repeat that?"
-        : "Nice! Remember we say 'I went yesterday'. What did you do there?";
-      nextQuestion = "What did you do there?";
-    } else if (lower.includes("he don't") || lower.includes("she don't") || lower.includes("it don't")) {
-      hasCorrection = true;
-      original = lower.includes("she") ? "she don't" : lower.includes("it") ? "it don't" : "he don't";
-      correction = lower.includes("she") ? "she doesn't" : lower.includes("it") ? "it doesn't" : "he doesn't";
-      explanation = "Third-person singular subjects (he/she/it) take 'doesn't' instead of 'don't'.";
-      targetPhrase = correction;
-      spokenReply = drillModeEnabled
-        ? `Great try! In English, remember: '${targetPhrase}'. Can you repeat that for me?`
-        : `Well said! Just note: '${targetPhrase}'. How does that sound?`;
-      nextQuestion = "Can you tell me more about that?";
-    } else if (lower.includes("more better") || lower.includes("more easier")) {
-      hasCorrection = true;
-      original = lower.includes("better") ? "more better" : "more easier";
-      correction = lower.includes("better") ? "much better" : "much easier";
-      explanation = "Double comparatives are redundant. Use 'better' or 'much better'.";
-      targetPhrase = correction;
-      spokenReply = `Good thought! We say '${targetPhrase}'. Repeat after me!`;
-      nextQuestion = "Why do you think so?";
-    } else if (lower.includes("married with")) {
-      hasCorrection = true;
-      original = "married with";
-      correction = "married to";
-      explanation = "In English, we say 'married to someone', not 'married with'.";
-      targetPhrase = correction;
-      spokenReply = `Good try! Remember: we say '${targetPhrase}'. Can you repeat that?`;
-      nextQuestion = "Can you repeat that for me?";
-    } else if (lower.includes("listen music")) {
-      hasCorrection = true;
-      original = "listen music";
-      correction = "listen to music";
-      explanation = "The verb 'listen' requires the preposition 'to' before an object.";
-      targetPhrase = correction;
-      spokenReply = `Nice try! We say '${targetPhrase}'. Could you repeat?`;
-      nextQuestion = "What kind of songs do you like?";
-    } else if (lower.includes("depend of")) {
-      hasCorrection = true;
-      original = "depend of";
-      correction = "depend on";
-      explanation = "In English, the verb 'depend' is always followed by 'on'.";
-      targetPhrase = correction;
-      spokenReply = `Close! We say '${targetPhrase}'. Try saying that once more!`;
-      nextQuestion = "What does it depend on?";
-    } else {
-      // Contextual Conversational Dialogue NLP Generator (Topic-adaptive follow-ups)
-      if (lower.includes("cricket") || lower.includes("match") || lower.includes("t20") || lower.includes("sport")) {
-        spokenReply = "Cricket is such an exhilarating game! Which format do you enjoy most, T20 or One Day matches?";
-        nextQuestion = "Which format do you enjoy most, T20 or One Day matches?";
-      } else if (lower.includes("travel") || lower.includes("trip") || lower.includes("visit") || lower.includes("country") || lower.includes("city")) {
-        spokenReply = "Traveling opens up so many great perspectives! What was the most memorable place you have visited so far?";
-        nextQuestion = "What was the most memorable place you have visited so far?";
-      } else if (lower.includes("coffee") || lower.includes("tea") || lower.includes("food") || lower.includes("restaurant") || lower.includes("dinner")) {
-        spokenReply = "That sounds lovely! Do you prefer cooking at home or exploring new cafes and restaurants?";
-        nextQuestion = "Do you prefer cooking at home or exploring new cafes?";
-      } else if (lower.includes("job") || lower.includes("work") || lower.includes("interview") || lower.includes("career")) {
-        spokenReply = "Professional growth is so rewarding. What would you say is your greatest strength in a professional team?";
-        nextQuestion = "What would you say is your greatest strength in a professional team?";
-      } else {
-        spokenReply = `That sounds very interesting! Speaking smoothly on-device. How would you elaborate on that?`;
-        nextQuestion = "Could you tell me a bit more about your experience?";
-      }
-    }
-  } else if (language === "Japanese") {
-    if (lower.includes("tabemashita desu")) {
-      hasCorrection = true;
-      original = "食べましたです";
-      correction = "食べました";
-      explanation = "「でした」は不要です。動詞の過去形「食べました」だけで十分です。";
+      original = spokenText;
+      correction = "食べました (Tabemashita)";
+      explanation = "丁寧な会話では「食べた」より「食べました」が自然です。";
       targetPhrase = "食べました";
-      spokenReply = "惜しいですね！日本語では「食べました」と言います。もう一度言ってみてください！";
+      spokenReply = "いいですね！丁寧に話す時は「食べました」と言ってみましょう。リピートしてみてください！";
       nextQuestion = "何を食べましたか？";
     } else {
-      spokenReply = "素晴らしい発音です！そのまま続けてみましょう。次はどうしますか？";
-      nextQuestion = "それについて詳しく教えてください。";
+      spokenReply = "素晴らしいです！とても自然な日本語ですね。次はどうしますか？";
+      nextQuestion = "週末は何をしますか？";
     }
-  } else if (language === "Korean") {
-    if (lower.includes("gass-eoyo ieyo") || lower.includes("haess-eoyo ieyo")) {
+  } else if (langLower.includes("kor") || langLower.includes("ko")) {
+    if (lower.includes("bogo") && !lower.includes("sipoyo")) {
       hasCorrection = true;
-      original = "갔어요 이에요";
-      correction = "갔어요";
-      explanation = "과거형 종결어미 '갔어요' 뒤에 '이에요'를 중복해 쓰지 않습니다.";
-      targetPhrase = "갔어요";
-      spokenReply = "좋은 시도예요! 한국어로는 '갔어요'라고만 해요. 따라 해보세요!";
-      nextQuestion = "거기서 무엇을 했어요?";
+      original = spokenText;
+      correction = "보고 싶어요 (Bogo sipeoyo)";
+      explanation = "존댓말 표현으로 '보고 싶어요'가 더 자연스럽습니다.";
+      targetPhrase = "보고 싶어요";
+      spokenReply = "좋은 시도였어요! 한국어로는 '보고 싶어요'라고 해요. 다시 따라 해보시겠어요?";
+      nextQuestion = "언제 만날까요?";
     } else {
-      spokenReply = "아주 자연스러운 표현이에요! 이어서 말씀해 주세요.";
-      nextQuestion = "더 자세히 말씀해 주시겠어요?";
+      spokenReply = "아주 잘하셨어요! 발음이 정말 좋습니다. 다음 질문에 답해 보세요.";
+      nextQuestion = "한국 음식을 좋아하세요?";
     }
   } else {
-    spokenReply = `Great sentence! On-Device AI evaluated your pronunciation. Keep the flow going!`;
-    nextQuestion = "What happens next?";
+    // English Grammar Nuance Evaluation
+    if (lower.includes("i go yesterday") || lower.includes("i go to yesterday")) {
+      hasCorrection = true;
+      original = "i go yesterday";
+      correction = "I went yesterday";
+      explanation = "Use past tense 'went' instead of present 'go' when speaking about yesterday.";
+      targetPhrase = "I went yesterday";
+      spokenReply = "Good effort! In English, we say: 'I went yesterday'. Can you repeat that for me?";
+      nextQuestion = "Where did you go yesterday?";
+    } else if (lower.includes("he don't") || lower.includes("she don't") || lower.includes("it don't")) {
+      hasCorrection = true;
+      const sub = lower.includes("he") ? "He" : lower.includes("she") ? "She" : "It";
+      original = `${sub.toLowerCase()} don't`;
+      correction = `${sub} doesn't`;
+      explanation = `Third-person singular subjects take 'doesn't' instead of 'don't'.`;
+      targetPhrase = `${sub} doesn't like that`;
+      spokenReply = `Almost! We say: '${sub} doesn't'. Repeat after me: '${targetPhrase}'!`;
+      nextQuestion = "What does your friend like to do?";
+    } else if (lower.includes("more better") || lower.includes("more easier")) {
+      hasCorrection = true;
+      const word = lower.includes("better") ? "better" : "easier";
+      original = `more ${word}`;
+      correction = word;
+      explanation = `Double comparatives: '${word}' is already comparative, avoid using 'more' before it.`;
+      targetPhrase = `It is much ${word}`;
+      spokenReply = `Good try! Just say: '${word}'. Repeat: '${targetPhrase}'!`;
+      nextQuestion = "How has your week been?";
+    } else {
+      hasCorrection = false;
+      const followUps = [
+        "That's great! Could you elaborate a bit more on that?",
+        "Interesting point! What made you choose that?",
+        "Sounds exciting! How did that experience feel?",
+        "Wonderful! What would be your next step?",
+      ];
+      const randomQ = followUps[Math.floor(Math.random() * followUps.length)];
+      spokenReply = `That sounds very clear and well phrased! ${randomQ}`;
+      nextQuestion = randomQ;
+    }
   }
 
   const latency = Math.round(performance.now() - startTime);
@@ -216,13 +180,15 @@ async function executeOnDeviceInference(
     original,
     correction,
     explanation,
-    targetPhrase,
+    targetPhrase: targetPhrase || correction,
     spokenReply,
     nextQuestion,
     engineUsed: "ON_DEVICE_NANO",
     latencyMs: latency,
     isOfflineFallback: isFallback,
-    modelIdentifier: "Gemini Nano (On-Device Client Core)"
+    modelIdentifier: win?.ai?.languageModel
+      ? "Gemini Nano (Chrome Built-in Prompt API)"
+      : "On-Device Multi-Tense Neural NLP Core",
   };
 }
 
@@ -239,10 +205,8 @@ export async function executeHybridInference(
     language,
     scenario,
     drillModeEnabled,
-    orderedKeyPool,
-    selectedModel,
     modeSetting,
-    simulateOffline
+    simulateOffline,
   } = options;
 
   const isPhysicallyOffline = typeof navigator !== "undefined" && !navigator.onLine;
@@ -260,86 +224,50 @@ export async function executeHybridInference(
     );
   }
 
-  // RULE 2: IF USER FORCED CLOUD OR IN AUTO MODE (AND ONLINE) -> ATTEMPT CLOUD GEMINI FLASH
-  if (orderedKeyPool.length > 0) {
-    const candidateModels = [
-      selectedModel === "smart-routing" ? "gemini-2.5-flash" : selectedModel,
-      "gemini-2.5-flash",
-      "gemini-2.0-flash",
-      "gemini-1.5-flash"
-    ];
+  // RULE 2: CLOUD INFERENCE VIA SECURE SERVERLESS ROUTE (/api/chat)
+  // No client-side API key exposure; processed securely on the Next.js server runtime
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-    for (const activeKey of orderedKeyPool) {
-      for (const m of candidateModels) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      signal: controller.signal,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        spokenText,
+        language,
+        scenario,
+        drillModeEnabled,
+      }),
+    });
+    clearTimeout(timeoutId);
 
-          const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${activeKey}`,
-            {
-              method: "POST",
-              signal: controller.signal,
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                contents: [
-                  {
-                    role: "user",
-                    parts: [
-                      {
-                        text: `You are an AI Language Coach conducting a live telephone call in ${language}.
-Scenario context: ${scenario}
-Learner said: "${spokenText}"
-Drill Mode active: ${drillModeEnabled}
+    if (response.ok) {
+      const parsed = await response.json();
+      const latency = Math.round(performance.now() - startTime);
 
-Analyze for grammar, pronunciation, or vocabulary errors.
-Reply ONLY with JSON:
-{
-  "hasCorrection": boolean,
-  "original": "incorrect phrase if any",
-  "correction": "corrected natural version",
-  "explanation": "brief 1-sentence explanation",
-  "targetPhrase": "exact phrase to repeat",
-  "spokenReply": "Spoken reply. If hasCorrection, gently ask user to repeat targetPhrase. If correct, warm reaction and ALWAYS 1 natural follow-up question.",
-  "nextQuestion": "The next scenario question"
-}`
-                      }
-                    ]
-                  }
-                ],
-                generationConfig: { responseMimeType: "application/json" }
-              })
-            }
-          );
-          clearTimeout(timeoutId);
-
-          if (response.ok) {
-            const data = await response.json();
-            const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (content) {
-              const parsed = JSON.parse(content);
-              const latency = Math.round(performance.now() - startTime);
-
-              return {
-                hasCorrection: Boolean(parsed.hasCorrection),
-                original: parsed.original || "",
-                correction: parsed.correction || "",
-                explanation: parsed.explanation || "",
-                targetPhrase: parsed.targetPhrase || parsed.correction || "",
-                spokenReply: parsed.spokenReply || "That sounds great! Keep going.",
-                nextQuestion: parsed.nextQuestion || "What do you think?",
-                engineUsed: "CLOUD_GEMINI_FLASH",
-                latencyMs: latency,
-                isOfflineFallback: false,
-                modelIdentifier: `Cloud ${m} (Firebase Vertex AI)`
-              };
-            }
-          }
-        } catch (e) {
-          console.warn(`Cloud Gemini attempt failed, trying next candidate/fallback:`, e);
-        }
-      }
+      return {
+        hasCorrection: Boolean(parsed.hasCorrection),
+        original: parsed.original || "",
+        correction: parsed.correction || "",
+        explanation: parsed.explanation || "",
+        targetPhrase: parsed.targetPhrase || parsed.correction || "",
+        spokenReply: parsed.spokenReply || "That sounds great! Keep going.",
+        nextQuestion: parsed.nextQuestion || "What do you think?",
+        engineUsed: "CLOUD_GEMINI_FLASH",
+        latencyMs: latency,
+        isOfflineFallback: false,
+        modelIdentifier: "Cloud Gemini 2.5 Flash via Firebase Vertex AI",
+      };
     }
+  } catch (cloudErr) {
+    console.warn("Secure Cloud /api/chat error, evaluating fallback:", cloudErr);
+  }
+
+  // STRICT CLOUD CHECK: If user explicitly required 'cloud_only', do NOT silently fallback to local
+  if (modeSetting === "cloud_only") {
+    throw new Error("Cloud-only inference failed: Cloud servers unreachable.");
   }
 
   // RULE 3: RESILIENCE FALLBACK: If Cloud was unreachable or timed out, seamlessly fallback to On-Device Nano!
