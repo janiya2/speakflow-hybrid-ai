@@ -20,12 +20,13 @@ void main() async {
 
     // Official Firebase App Check initialization (#BuildHybridAI Requirement)
     try {
-      await FirebaseAppCheck.instance.activate(
-        webProvider: ReCaptchaV3Provider('6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'),
-        androidProvider: kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-        appleProvider: kDebugMode ? AppleProvider.debug : AppleProvider.deviceCheck,
-      );
-      debugPrint('Firebase App Check successfully initialized');
+      if (!kIsWeb) {
+        await FirebaseAppCheck.instance.activate(
+          androidProvider: kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+          appleProvider: kDebugMode ? AppleProvider.debug : AppleProvider.deviceCheck,
+        );
+        debugPrint('Firebase App Check successfully initialized for mobile platform');
+      }
     } catch (appCheckErr) {
       debugPrint('Firebase App Check initialization notice: $appCheckErr');
     }

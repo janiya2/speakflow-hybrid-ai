@@ -25,12 +25,13 @@ let appCheck: any = null;
 if (typeof window !== "undefined") {
   try {
     (window as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-    appCheck = initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider(
-        process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
-      ),
-      isTokenAutoRefreshEnabled: true,
-    });
+    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+    if (siteKey) {
+      appCheck = initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider(siteKey),
+        isTokenAutoRefreshEnabled: true,
+      });
+    }
   } catch (_) {}
 }
 export { appCheck };
