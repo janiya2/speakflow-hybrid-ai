@@ -2085,101 +2085,242 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // -------------------------------------------------------------
+  // -------------------------------------------------------------
   // TAB 1: CONVERSATIONS / CALLS TAB (DEDICATED CALLING PAGE)
   // -------------------------------------------------------------
   Widget _buildConversationsTab(List<TopicModel> topics) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // -----------------------------------------------------------
+        // LUXURY VOICE STUDIO HERO HEADER CARD
+        // -----------------------------------------------------------
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+          padding: const EdgeInsets.all(15),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF1E1B4B), // deep royal indigo
+                Color(0xFF1E293B), // slate navy
+                Color(0xFF0F172A), // dark obsidian
+              ],
+            ),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: const Color(0xFF6366F1).withOpacity(0.35),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF6366F1).withOpacity(0.14),
+                blurRadius: 16,
+                spreadRadius: 1,
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.4),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              // Top Row: Studio Title + Live Voice Pill + Reset Button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      const Text(
-                        'Speaking Scenarios',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
-                      ),
-                      const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        width: 38,
+                        height: 38,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withOpacity(0.18),
-                          borderRadius: BorderRadius.circular(6),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF6366F1).withOpacity(0.4),
+                              blurRadius: 8,
+                            ),
+                          ],
                         ),
-                        child: Text(
-                          '${topics.length} Live',
-                          style: const TextStyle(color: Color(0xFF34D399), fontSize: 10, fontWeight: FontWeight.bold),
-                        ),
+                        child: const Icon(Icons.record_voice_over_rounded, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Speaking Scenarios',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 18,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          Row(
+                            children: const [
+                              Icon(Icons.circle, color: Color(0xFF34D399), size: 6),
+                              SizedBox(width: 4),
+                              Text(
+                                'AI Voice Coach Online',
+                                style: TextStyle(color: Color(0xFF34D399), fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 3),
-                  Row(
-                    children: [
-                      _buildFlagBadge(_userTargetLanguage ?? 'English', width: 14, height: 9.5, radius: 2),
-                      const SizedBox(width: 5),
-                      Text(
-                        '${topics.length} Real-Time Scenarios in ${_userTargetLanguage ?? "English"}',
-                        style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 11),
+
+                  // Reset / Refresh Button
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        _selectedLanguage = _userTargetLanguage ?? 'English';
+                        _selectedCategory = 'All';
+                        _selectedLevel = 'All';
+                        _searchQuery = '';
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.white12),
                       ),
-                    ],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.refresh_rounded, color: Colors.white70, size: 14),
+                          SizedBox(width: 4),
+                          Text(
+                            'Reset',
+                            style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    _selectedLanguage = _userTargetLanguage ?? 'English';
-                    _selectedCategory = 'All';
-                    _selectedLevel = 'All';
-                    _searchQuery = '';
-                  });
-                },
-                icon: const Icon(Icons.refresh, color: Colors.white70),
-                tooltip: 'Reset Filters',
+
+              const SizedBox(height: 12),
+
+              // Interactive Language Pill Bar (Tappable to change language!)
+              Row(
+                children: [
+                  InkWell(
+                    onTap: () => _showLanguageSetupModal(context),
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF312E81), Color(0xFF1E1B4B)],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFF818CF8).withOpacity(0.5)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildFlagBadge(_userTargetLanguage ?? 'English', width: 16, height: 11, radius: 2),
+                          const SizedBox(width: 6),
+                          Text(
+                            _userTargetLanguage ?? 'English',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11.5),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFFA5B4FC), size: 18),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // Available Count Pill
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withOpacity(0.14),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.35)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.bolt_rounded, color: Color(0xFF34D399), size: 14),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              '${topics.length} Live Scenarios',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Color(0xFF34D399),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
 
-        // Search Bar
+        // Search Bar with luxury glow
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: TextField(
-            onChanged: (val) => setState(() => _searchQuery = val),
-            style: const TextStyle(color: Colors.white, fontSize: 13),
-            decoration: InputDecoration(
-              hintText: 'Search 100+ topics (e.g. cricket, hotel, tapas)...',
-              hintStyle: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 12),
-              prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 20),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear, color: Colors.white54, size: 18),
-                      onPressed: () => setState(() => _searchQuery = ''),
-                    )
-                  : null,
-              filled: true,
-              fillColor: const Color(0xFF1E293B),
-              contentPadding: const EdgeInsets.symmetric(vertical: 10),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.2)),
+            ),
+            child: TextField(
+              onChanged: (val) => setState(() => _searchQuery = val),
+              style: const TextStyle(color: Colors.white, fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'Search 110+ topics (e.g. cricket, hotel, flight, ramen)...',
+                hintStyle: TextStyle(color: Colors.white.withOpacity(0.38), fontSize: 12),
+                prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFFA5B4FC), size: 20),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded, color: Colors.white54, size: 18),
+                        onPressed: () => setState(() => _searchQuery = ''),
+                      )
+                    : null,
+                filled: true,
+                fillColor: const Color(0xFF1E293B),
+                contentPadding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
           ),
         ),
 
-        // Category Filter Pills
+        // Category Filter Pills with glowing active squircle design
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           child: Row(
             children: [
               {'name': 'All', 'icon': '🌟'},
@@ -2198,20 +2339,51 @@ class _HomeScreenState extends State<HomeScreen> {
 
               return Padding(
                 padding: const EdgeInsets.only(right: 6),
-                child: FilterChip(
-                  avatar: Text(iconStr, style: const TextStyle(fontSize: 12)),
-                  label: Text(cat),
-                  selected: isSelected,
-                  onSelected: (_) => setState(() => _selectedCategory = cat),
-                  selectedColor: const Color(0xFF10B981),
-                  backgroundColor: const Color(0xFF1E293B),
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : Colors.white60,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    fontSize: 11,
+                child: InkWell(
+                  onTap: () => setState(() => _selectedCategory = cat),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      gradient: isSelected
+                          ? const LinearGradient(
+                              colors: [Color(0xFF10B981), Color(0xFF059669)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : null,
+                      color: isSelected ? null : const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected ? const Color(0xFF34D399) : Colors.white.withOpacity(0.08),
+                        width: isSelected ? 1.4 : 1,
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: const Color(0xFF10B981).withOpacity(0.3),
+                                blurRadius: 8,
+                                spreadRadius: 0.5,
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(iconStr, style: const TextStyle(fontSize: 13)),
+                        const SizedBox(width: 5),
+                        Text(
+                          cat,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.white70,
+                            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  side: BorderSide.none,
                 ),
               );
             }).toList(),
