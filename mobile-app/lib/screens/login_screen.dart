@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'terms_policy_screen.dart';
-import 'home_screen.dart';
 import 'welcome_screen.dart';
 import '../services/notification_service.dart';
 
@@ -106,9 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (mounted) {
           // If modal sheet open, close it
           Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-          );
+          Navigator.of(context).pushReplacementNamed('/home');
         }
       }
     } on FirebaseAuthException catch (e) {
@@ -164,9 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
         NotificationService.instance.saveTokenForUser(user.uid);
 
         if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-          );
+          Navigator.of(context).pushReplacementNamed('/home');
         }
       }
     } on FirebaseAuthException catch (e) {
