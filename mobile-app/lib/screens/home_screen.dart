@@ -2093,139 +2093,94 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // -----------------------------------------------------------
-        // LUXURY VOICE STUDIO HERO HEADER CARD
+        // UNIFIED LUXURY VOICE STUDIO HEADER HUB
         // -----------------------------------------------------------
         Container(
-          margin: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-          padding: const EdgeInsets.all(15),
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
               colors: [
                 Color(0xFF1E1B4B), // deep royal indigo
-                Color(0xFF1E293B), // slate navy
-                Color(0xFF0F172A), // dark obsidian
+                Color(0xFF171F38), // twilight navy
+                Color(0xFF0F172A), // solid dark slate
               ],
             ),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: const Color(0xFF6366F1).withOpacity(0.35),
-              width: 1.2,
+            border: Border(
+              bottom: BorderSide(
+                color: const Color(0xFF6366F1).withOpacity(0.35),
+                width: 1.2,
+              ),
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF6366F1).withOpacity(0.14),
-                blurRadius: 16,
-                spreadRadius: 1,
-              ),
-              BoxShadow(
                 color: Colors.black.withOpacity(0.4),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Row: Studio Title + Live Voice Pill + Reset Button
+              // Row 1: Studio Title, Online Pulse, Language Selector & Reset
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF6366F1).withOpacity(0.45),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.record_voice_over_rounded, color: Colors.white, size: 21),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Speaking Scenarios',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 18,
+                            letterSpacing: -0.3,
                           ),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF6366F1).withOpacity(0.4),
-                              blurRadius: 8,
+                        ),
+                        Row(
+                          children: const [
+                            Icon(Icons.circle, color: Color(0xFF34D399), size: 6),
+                            SizedBox(width: 4),
+                            Text(
+                              'AI Voice Coach Online',
+                              style: TextStyle(color: Color(0xFF34D399), fontSize: 10, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.record_voice_over_rounded, color: Colors.white, size: 20),
-                      ),
-                      const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Speaking Scenarios',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 18,
-                              letterSpacing: -0.3,
-                            ),
-                          ),
-                          Row(
-                            children: const [
-                              Icon(Icons.circle, color: Color(0xFF34D399), size: 6),
-                              SizedBox(width: 4),
-                              Text(
-                                'AI Voice Coach Online',
-                                style: TextStyle(color: Color(0xFF34D399), fontSize: 10, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-
-                  // Reset / Refresh Button
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        _selectedLanguage = _userTargetLanguage ?? 'English';
-                        _selectedCategory = 'All';
-                        _selectedLevel = 'All';
-                        _searchQuery = '';
-                      });
-                    },
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.white12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.refresh_rounded, color: Colors.white70, size: 14),
-                          SizedBox(width: 4),
-                          Text(
-                            'Reset',
-                            style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
+                      ],
                     ),
                   ),
-                ],
-              ),
 
-              const SizedBox(height: 12),
-
-              // Interactive Language Pill Bar (Tappable to change language!)
-              Row(
-                children: [
+                  // Language Dropdown Pill (Tappable to change language!)
                   InkWell(
                     onTap: () => _showLanguageSetupModal(context),
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFF312E81), Color(0xFF1E1B4B)],
@@ -2237,160 +2192,181 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           _buildFlagBadge(_userTargetLanguage ?? 'English', width: 16, height: 11, radius: 2),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 5),
                           Text(
                             _userTargetLanguage ?? 'English',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11.5),
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFFA5B4FC), size: 18),
+                          const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFFA5B4FC), size: 16),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
 
-                  // Available Count Pill
-                  Expanded(
+                  // Reset Filter Button
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        _selectedLanguage = _userTargetLanguage ?? 'English';
+                        _selectedCategory = 'All';
+                        _selectedLevel = 'All';
+                        _searchQuery = '';
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(10),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5.5),
+                      padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.14),
+                        color: Colors.white.withOpacity(0.08),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.35)),
+                        border: Border.all(color: Colors.white12),
                       ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.bolt_rounded, color: Color(0xFF34D399), size: 14),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              '${topics.length} Live Scenarios',
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Color(0xFF34D399),
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      child: const Icon(Icons.refresh_rounded, color: Colors.white70, size: 16),
                     ),
                   ),
                 ],
+              ),
+
+              const SizedBox(height: 12),
+
+              // Row 2: Search Bar with glass styling
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.25)),
+                ),
+                child: TextField(
+                  onChanged: (val) => setState(() => _searchQuery = val),
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Search 150+ scenarios (e.g. pizza, hotel, flight)...',
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12),
+                    prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFFA5B4FC), size: 20),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded, color: Colors.white54, size: 18),
+                            onPressed: () => setState(() => _searchQuery = ''),
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: const Color(0xFF0F172A),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // Row 3: Horizontal Category Filter Chips with Food and Travel first
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    {'name': 'All', 'icon': '🌟'},
+                    {'name': 'Food', 'icon': '🍕'},
+                    {'name': 'Travel', 'icon': '✈️'},
+                    {'name': 'Sports', 'icon': '🏏'},
+                    {'name': 'Career', 'icon': '💼'},
+                    {'name': 'Entertainment', 'icon': '🎮'},
+                    {'name': 'Daily Life', 'icon': '☕'},
+                    {'name': 'Tech', 'icon': '🤖'},
+                    {'name': 'Social', 'icon': '👥'},
+                  ].map((catItem) {
+                    final cat = catItem['name']!;
+                    final iconStr = catItem['icon']!;
+                    final isSelected = _selectedCategory.toLowerCase() == cat.toLowerCase();
+
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: InkWell(
+                        onTap: () => setState(() => _selectedCategory = cat),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6.5),
+                          decoration: BoxDecoration(
+                            gradient: isSelected
+                                ? const LinearGradient(
+                                    colors: [Color(0xFF10B981), Color(0xFF059669)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  )
+                                : null,
+                            color: isSelected ? null : const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected ? const Color(0xFF34D399) : Colors.white.withOpacity(0.08),
+                              width: isSelected ? 1.4 : 1,
+                            ),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(0xFF10B981).withOpacity(0.35),
+                                      blurRadius: 8,
+                                      spreadRadius: 0.5,
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(iconStr, style: const TextStyle(fontSize: 13)),
+                              const SizedBox(width: 5),
+                              Text(
+                                cat,
+                                style: TextStyle(
+                                  color: isSelected ? Colors.white : Colors.white70,
+                                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+                                  fontSize: 11.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
             ],
           ),
         ),
 
-        // Search Bar with luxury glow
+        // Sub-header showing active filter summary
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.2)),
-            ),
-            child: TextField(
-              onChanged: (val) => setState(() => _searchQuery = val),
-              style: const TextStyle(color: Colors.white, fontSize: 13),
-              decoration: InputDecoration(
-                hintText: 'Search 110+ topics (e.g. cricket, hotel, flight, ramen)...',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.38), fontSize: 12),
-                prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFFA5B4FC), size: 20),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded, color: Colors.white54, size: 18),
-                        onPressed: () => setState(() => _searchQuery = ''),
-                      )
-                    : null,
-                filled: true,
-                fillColor: const Color(0xFF1E293B),
-                contentPadding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  _buildFlagBadge(_userTargetLanguage ?? 'English', width: 14, height: 9.5, radius: 2),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${topics.length} ${_selectedCategory == "All" ? "" : "$_selectedCategory "}Scenarios in ${_userTargetLanguage ?? "English"}',
+                    style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 11.5, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withOpacity(0.16),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${topics.length} Live',
+                  style: const TextStyle(color: Color(0xFF34D399), fontSize: 10, fontWeight: FontWeight.bold),
                 ),
               ),
-            ),
+            ],
           ),
         ),
-
-        // Category Filter Pills with glowing active squircle design
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          child: Row(
-            children: [
-              {'name': 'All', 'icon': '🌟'},
-              {'name': 'Sports', 'icon': '🏏'},
-              {'name': 'Travel', 'icon': '✈️'},
-              {'name': 'Food', 'icon': '🍕'},
-              {'name': 'Career', 'icon': '💼'},
-              {'name': 'Entertainment', 'icon': '🎮'},
-              {'name': 'Daily Life', 'icon': '☕'},
-              {'name': 'Tech', 'icon': '🤖'},
-              {'name': 'Social', 'icon': '👥'},
-            ].map((catItem) {
-              final cat = catItem['name']!;
-              final iconStr = catItem['icon']!;
-              final isSelected = _selectedCategory.toLowerCase() == cat.toLowerCase();
-
-              return Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: InkWell(
-                  onTap: () => setState(() => _selectedCategory = cat),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                    decoration: BoxDecoration(
-                      gradient: isSelected
-                          ? const LinearGradient(
-                              colors: [Color(0xFF10B981), Color(0xFF059669)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            )
-                          : null,
-                      color: isSelected ? null : const Color(0xFF1E293B),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isSelected ? const Color(0xFF34D399) : Colors.white.withOpacity(0.08),
-                        width: isSelected ? 1.4 : 1,
-                      ),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: const Color(0xFF10B981).withOpacity(0.3),
-                                blurRadius: 8,
-                                spreadRadius: 0.5,
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(iconStr, style: const TextStyle(fontSize: 13)),
-                        const SizedBox(width: 5),
-                        Text(
-                          cat,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.white70,
-                            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-
-        const SizedBox(height: 6),
 
         // List of Scenarios
         Expanded(
@@ -2418,7 +2394,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 )
               : ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
                   itemCount: topics.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
