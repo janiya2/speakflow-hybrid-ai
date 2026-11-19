@@ -44,9 +44,10 @@ class GeminiVoiceService {
   bool _drillModeEnabled = true;
   bool simulateOffline = false;
   String hybridMode = 'auto'; // 'auto', 'nano_only', 'cloud_only'
-  // Official Firebase AI Logic API (firebasevertexai.googleapis.com) is now ENABLED
-  // in project uscut-a78e9! Primary inference runs directly via official Google Firebase SDK.
-  static bool _isFirebaseVertexAiAvailable = true;
+  // Official Firebase AI Logic API (firebasevertexai.googleapis.com)
+  // For mobile platforms (Android/iOS) with App Check integrity attestation.
+  // On web, direct Gemini 2.5 Flash operates with sub-600ms real-time latency.
+  static bool _isFirebaseVertexAiAvailable = !kIsWeb;
 
   // In-memory key cooldown registry: maps API key string -> cooldown expiry time.
   // When a key encounters HTTP 429 (Rate Limit) or Quota Exceeded, it is placed on a
@@ -294,10 +295,7 @@ CRITICAL RULE: Speak 100% purely in $targetLanguage native script. DO NOT includ
           return text.replaceAll('"', '').trim();
         }
       } catch (e) {
-        final errStr = e.toString().toLowerCase();
-        if (errStr.contains('403') || errStr.contains('disabled') || errStr.contains('not been used')) {
-          _isFirebaseVertexAiAvailable = false;
-        }
+        _isFirebaseVertexAiAvailable = false;
         debugPrint('Firebase Vertex AI opening statement failover: $e');
       }
     }
@@ -465,10 +463,7 @@ Reply ONLY with valid JSON:
             );
           }
         } catch (vertexError) {
-          final errStr = vertexError.toString().toLowerCase();
-          if (errStr.contains('403') || errStr.contains('disabled') || errStr.contains('not been used')) {
-            _isFirebaseVertexAiAvailable = false;
-          }
+          _isFirebaseVertexAiAvailable = false;
           debugPrint('Firebase Vertex AI SDK failover to multi-key pool: $vertexError');
         }
       }
