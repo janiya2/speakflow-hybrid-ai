@@ -85,12 +85,12 @@ export async function synthesizeEdgeSpeech(
   // 3. Synthesize via pure Node.js MsEdgeTTS (WebSocket to Microsoft Edge Neural speech)
   const tts = new MsEdgeTTS();
   await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
-  const stream = tts.toStream(text);
+  const { audioStream } = tts.toStream(text);
 
   return new Promise<Buffer>((resolve, reject) => {
     const chunks: Buffer[] = [];
-    stream.on("data", (chunk: Buffer) => chunks.push(chunk));
-    stream.on("end", () => {
+    audioStream.on("data", (chunk: Buffer) => chunks.push(chunk));
+    audioStream.on("end", () => {
       const fullBuffer = Buffer.concat(chunks);
       try {
         fs.writeFileSync(filePath, fullBuffer);
@@ -98,7 +98,7 @@ export async function synthesizeEdgeSpeech(
       inMemoryCache.set(hash, fullBuffer);
       resolve(fullBuffer);
     });
-    stream.on("error", (err: any) => reject(err));
+    audioStream.on("error", (err: any) => reject(err));
   });
 }
 

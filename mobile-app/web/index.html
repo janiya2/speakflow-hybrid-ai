@@ -214,16 +214,22 @@
           notifySpeechStarted();
         };
 
-        audio.oncanplay = function() {
-          audio.oncanplay = null; // Prevent multi-firing
-          console.log("🔊 Edge Neural TTS audio stream loaded, starting playback... Duration:", audio.duration);
-          audio.play().then(function() {
+        // Stream audio playback immediately without waiting for buffer delay
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(function() {
             notifySpeechStarted();
           }).catch(function(err) {
-            console.warn("Audio autoplay blocked by browser:", err);
-            finishSpeech("play_catch");
+            console.warn("Direct play pending buffer, waiting for canplay event:", err);
+            audio.oncanplay = function() {
+              audio.oncanplay = null;
+              audio.play().then(notifySpeechStarted).catch(function(e) {
+                console.warn("Audio autoplay blocked by browser:", e);
+                finishSpeech("play_catch");
+              });
+            };
           });
-        };
+        }
 
         audio.onended = function() {
           finishSpeech("track_ended");

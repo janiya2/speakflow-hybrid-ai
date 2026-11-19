@@ -43,7 +43,8 @@ class GeminiVoiceService {
   String _model = 'smart-routing';
   bool _drillModeEnabled = true;
   bool simulateOffline = false;
-  String hybridMode = 'auto'; // 'auto', 'nano_only', 'cloud_only
+  String hybridMode = 'auto'; // 'auto', 'nano_only', 'cloud_only'
+  static bool _isFirebaseVertexAiAvailable = true;
 
   // In-memory key cooldown registry: maps API key string -> cooldown expiry time.
   // When a key encounters HTTP 429 (Rate Limit) or Quota Exceeded, it is placed on a
@@ -107,8 +108,9 @@ class GeminiVoiceService {
 
     // 3. Genuine AI Phonetic & Pronunciation Assessment (Firebase Vertex AI / Gemini)
     // Evaluates spoken transcript against pronunciation variations, phonetic homophones, and accents
-    try {
-      final prompt = '''You are an expert CEFR language pronunciation judge.
+    if (_isFirebaseVertexAiAvailable) {
+      try {
+        final prompt = '''You are an expert CEFR language pronunciation judge.
 Target Language: $targetLanguage
 Target Phrase to Repeat: "$targetPhrase"
 User Spoken Transcript: "$userSpeech"
@@ -118,29 +120,34 @@ Reply strictly with a JSON object in this format:
 {"isMatch": true, "phoneticScore": 85, "cefrLevel": "B1"}
 Do not include any explanation or markdown formatting, just the raw JSON.''';
 
-      final vertexModel = FirebaseVertexAI.instance.generativeModel(
-        model: 'gemini-2.5-flash',
-        generationConfig: GenerationConfig(
-          temperature: 0.2,
-          maxOutputTokens: 60,
-        ),
-      );
+        final vertexModel = FirebaseVertexAI.instance.generativeModel(
+          model: 'gemini-2.5-flash',
+          generationConfig: GenerationConfig(
+            temperature: 0.2,
+            maxOutputTokens: 60,
+          ),
+        );
 
-      final response = await vertexModel.generateContent([Content.text(prompt)])
-          .timeout(const Duration(milliseconds: 2200));
-      final text = response.text?.trim() ?? '';
-      if (text.isNotEmpty) {
-        final jsonStr = text.replaceAll('```json', '').replaceAll('```', '').trim();
-        final Map<String, dynamic> parsed = jsonDecode(jsonStr);
-        final bool isMatch = parsed['isMatch'] == true;
-        final num score = parsed['phoneticScore'] ?? 0;
-        if (isMatch || score >= 65) {
-          debugPrint('AI Pronunciation Assessment Passed: score=$score, CEFR=${parsed['cefrLevel']}');
-          return true;
+        final response = await vertexModel.generateContent([Content.text(prompt)])
+            .timeout(const Duration(milliseconds: 1400));
+        final text = response.text?.trim() ?? '';
+        if (text.isNotEmpty) {
+          final jsonStr = text.replaceAll('```json', '').replaceAll('```', '').trim();
+          final Map<String, dynamic> parsed = jsonDecode(jsonStr);
+          final bool isMatch = parsed['isMatch'] == true;
+          final num score = parsed['phoneticScore'] ?? 0;
+          if (isMatch || score >= 65) {
+            debugPrint('AI Pronunciation Assessment Passed: score=$score, CEFR=${parsed['cefrLevel']}');
+            return true;
+          }
         }
+      } catch (e) {
+        final errStr = e.toString().toLowerCase();
+        if (errStr.contains('403') || errStr.contains('disabled') || errStr.contains('not been used')) {
+          _isFirebaseVertexAiAvailable = false;
+        }
+        debugPrint('AI Pronunciation Assessment fallback to token overlap: $e');
       }
-    } catch (e) {
-      debugPrint('AI Pronunciation Assessment fallback to token overlap: $e');
     }
 
     // 4. Soft fallback for non-Latin scripts / noisy microphone environments (>= 50% overlap)
@@ -268,29 +275,35 @@ CRITICAL RULE: Speak 100% purely in $targetLanguage native script. DO NOT includ
 ''';
 
     // 1. PRIMARY INFERENCE: Firebase Vertex AI SDK (#BuildHybridAI)
-    try {
-      final vertexModel = FirebaseVertexAI.instance.generativeModel(
-        model: 'gemini-1.5-flash',
-        generationConfig: GenerationConfig(
-          temperature: 0.85,
-          maxOutputTokens: 120,
-        ),
-      );
-      final vertexResponse = await vertexModel.generateContent([Content.text(prompt)])
-          .timeout(const Duration(milliseconds: 3000));
-      final text = vertexResponse.text?.trim();
-      if (text != null && text.isNotEmpty) {
-        debugPrint('Dynamic Opening Generated via Firebase Vertex AI: $text');
-        return text.replaceAll('"', '').trim();
+    if (_isFirebaseVertexAiAvailable) {
+      try {
+        final vertexModel = FirebaseVertexAI.instance.generativeModel(
+          model: 'gemini-1.5-flash',
+          generationConfig: GenerationConfig(
+            temperature: 0.85,
+            maxOutputTokens: 120,
+          ),
+        );
+        final vertexResponse = await vertexModel.generateContent([Content.text(prompt)])
+            .timeout(const Duration(milliseconds: 1400));
+        final text = vertexResponse.text?.trim();
+        if (text != null && text.isNotEmpty) {
+          debugPrint('Dynamic Opening Generated via Firebase Vertex AI: $text');
+          return text.replaceAll('"', '').trim();
+        }
+      } catch (e) {
+        final errStr = e.toString().toLowerCase();
+        if (errStr.contains('403') || errStr.contains('disabled') || errStr.contains('not been used')) {
+          _isFirebaseVertexAiAvailable = false;
+        }
+        debugPrint('Firebase Vertex AI opening statement failover: $e');
       }
-    } catch (e) {
-      debugPrint('Firebase Vertex AI opening statement failover: $e');
     }
 
     for (final activeKey in keyPool) {
       try {
         final url = Uri.parse(
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=$activeKey',
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$activeKey',
         );
 
         final response = await http
@@ -418,38 +431,44 @@ Reply ONLY with valid JSON:
 ''';
 
       // 1. PRIMARY INFERENCE: Official Google Firebase Vertex AI SDK (#BuildHybridAI)
-      try {
-        final vertexModel = FirebaseVertexAI.instance.generativeModel(
-          model: 'gemini-1.5-flash',
-          generationConfig: GenerationConfig(
-            responseMimeType: 'application/json',
-            temperature: 0.7,
-            maxOutputTokens: 800,
-          ),
-        );
-        final vertexResponse = await vertexModel.generateContent([Content.text(prompt)])
-            .timeout(const Duration(milliseconds: 4000));
-        final text = vertexResponse.text?.trim();
-        if (text != null && text.isNotEmpty) {
-          final cleanJson = text.replaceAll(RegExp(r'^```json\s*|\s*```$', multiLine: true), '').trim();
-          final parsed = jsonDecode(cleanJson);
-          debugPrint('Firebase Vertex AI inference completed in ${stopwatch.elapsedMilliseconds}ms');
-          return GrammarCorrection(
-            hasCorrection: parsed['hasCorrection'] ?? false,
-            original: parsed['original'] ?? '',
-            correction: parsed['correction'] ?? '',
-            explanation: parsed['explanation'] ?? '',
-            spokenReply: parsed['spokenReply'] ?? '',
-            targetPhrase: parsed['targetPhrase'] ?? (parsed['correction'] ?? ''),
-            nextQuestion: parsed['nextQuestion'] ?? '',
-            modelUsed: 'Firebase Vertex AI (Gemini Flash)',
-            engineUsed: 'CLOUD_GEMINI_2.5_FLASH',
-            latencyMs: stopwatch.elapsedMilliseconds,
-            isOfflineFallback: false,
+      if (_isFirebaseVertexAiAvailable) {
+        try {
+          final vertexModel = FirebaseVertexAI.instance.generativeModel(
+            model: 'gemini-1.5-flash',
+            generationConfig: GenerationConfig(
+              responseMimeType: 'application/json',
+              temperature: 0.7,
+              maxOutputTokens: 800,
+            ),
           );
+          final vertexResponse = await vertexModel.generateContent([Content.text(prompt)])
+              .timeout(const Duration(milliseconds: 1500));
+          final text = vertexResponse.text?.trim();
+          if (text != null && text.isNotEmpty) {
+            final cleanJson = text.replaceAll(RegExp(r'^```json\s*|\s*```$', multiLine: true), '').trim();
+            final parsed = jsonDecode(cleanJson);
+            debugPrint('Firebase Vertex AI inference completed in ${stopwatch.elapsedMilliseconds}ms');
+            return GrammarCorrection(
+              hasCorrection: parsed['hasCorrection'] ?? false,
+              original: parsed['original'] ?? '',
+              correction: parsed['correction'] ?? '',
+              explanation: parsed['explanation'] ?? '',
+              spokenReply: parsed['spokenReply'] ?? '',
+              targetPhrase: parsed['targetPhrase'] ?? (parsed['correction'] ?? ''),
+              nextQuestion: parsed['nextQuestion'] ?? '',
+              modelUsed: 'Firebase Vertex AI (Gemini Flash)',
+              engineUsed: 'CLOUD_GEMINI_2.5_FLASH',
+              latencyMs: stopwatch.elapsedMilliseconds,
+              isOfflineFallback: false,
+            );
+          }
+        } catch (vertexError) {
+          final errStr = vertexError.toString().toLowerCase();
+          if (errStr.contains('403') || errStr.contains('disabled') || errStr.contains('not been used')) {
+            _isFirebaseVertexAiAvailable = false;
+          }
+          debugPrint('Firebase Vertex AI SDK failover to multi-key pool: $vertexError');
         }
-      } catch (vertexError) {
-        debugPrint('Firebase Vertex AI SDK failover to multi-key pool: $vertexError');
       }
 
       // 2. RESILIENCE FAILOVER: Multi-key fallback pool
