@@ -1117,6 +1117,30 @@ export default function StudentWebApp() {
     },
   };
 
+  // Today's Live AI Voice Challenge State & Audio Handler
+  const [isPlayingChallengeAudio, setIsPlayingChallengeAudio] = useState(false);
+
+  const handleToggleChallengeAudio = () => {
+    if (isPlayingChallengeAudio) {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+      setIsPlayingChallengeAudio(false);
+    } else {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(
+          "Hi Janitha! I am Coach Sophia. In today's AI voice challenge, your mission is to pitch your SpeakFlow Hybrid AI architecture in under three minutes. Speak with confidence, maintain steady cadence, and aim for 95% fluency. Whenever you are ready, tap Call Coach Sophia and let's begin!"
+        );
+        utter.rate = 0.95;
+        utter.onend = () => setIsPlayingChallengeAudio(false);
+        utter.onerror = () => setIsPlayingChallengeAudio(false);
+        window.speechSynthesis.speak(utter);
+      }
+      setIsPlayingChallengeAudio(true);
+    }
+  };
+
   // Web Speech API Refs
   const recognitionRef = useRef<any>(null);
   const proactiveNudgeTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -3567,40 +3591,121 @@ export default function StudentWebApp() {
                   )}
                 </div>
 
-                {/* 2. UPCOMING LESSON CARD (London Big Ben Sunset) */}
-                <div className="p-5 rounded-3xl bg-[#111827] border border-slate-800/80 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-blue-400" />
-                    <h3 className="font-bold text-xs text-white">Upcoming Lesson</h3>
+                {/* 2. TODAY'S LIVE AI VOICE CHALLENGE (Daily Coach on Call) */}
+                <div className="p-5 rounded-3xl bg-gradient-to-br from-[#111827] via-[#0E1629] to-[#151E3D] border border-indigo-500/35 shadow-xl space-y-4 relative overflow-hidden group/voice-challenge">
+                  {/* Ambient Cyber Violet Glow */}
+                  <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                  {/* Header: Title + Live Status */}
+                  <div className="flex items-center justify-between relative z-10">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                        <PhoneCall className="w-4 h-4 animate-bounce" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-xs text-white">Daily Voice Challenge</h3>
+                        <span className="text-[10px] text-indigo-300 font-medium">
+                          Today&apos;s AI Roleplay Sprint
+                        </span>
+                      </div>
+                    </div>
+
+                    <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 font-bold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                      Coach Online
+                    </span>
                   </div>
 
-                  {/* Clean Big Ben Scenery Card */}
-                  <div className="rounded-2xl overflow-hidden border border-slate-800 relative group">
-                    <img
-                      src="/images/lesson-london-clean.jpg"
-                      alt="London Travel Scenario"
-                      className="w-full h-32 object-cover transition-transform duration-300 group-hover:scale-105"
-                      onError={(e) => {
-                        (e.currentTarget as any).src = "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600";
-                      }}
-                    />
-                    <div className="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur text-[10px] font-mono text-white flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-cyan-400" />
-                      <span>10 min</span>
+                  {/* Featured Coach on Duty Banner */}
+                  <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between gap-3 relative z-10">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="relative shrink-0">
+                        <img
+                          src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80"
+                          alt="Coach Sophia Miller"
+                          className="w-10 h-10 rounded-xl object-cover border border-indigo-400/50 shadow-md"
+                        />
+                        <span className="absolute -bottom-1 -right-1 text-[11px] leading-none drop-shadow">
+                          🇺🇸
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-xs text-white truncate">
+                            Coach Sophia Miller
+                          </span>
+                        </div>
+                        <span className="text-[9.5px] text-slate-400 block truncate font-medium">
+                          Executive Speech &amp; VC Pitch Coach
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Live Audio Challenge Preview Button */}
+                    <button
+                      onClick={handleToggleChallengeAudio}
+                      title={isPlayingChallengeAudio ? "Stop Audio Briefing" : "Listen to Coach Sophia's Briefing"}
+                      className={`px-2 py-1 rounded-xl text-[9px] font-bold flex items-center gap-1 transition-all shrink-0 ${
+                        isPlayingChallengeAudio
+                          ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/40 animate-pulse"
+                          : "bg-slate-800 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30"
+                      }`}
+                    >
+                      {isPlayingChallengeAudio ? (
+                        <>
+                          <Pause className="w-3 h-3" />
+                          <span>Playing</span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="w-3 h-3" />
+                          <span>Briefing 🔊</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Challenge Mission Details */}
+                  <div className="space-y-2 p-3 rounded-2xl bg-indigo-950/30 border border-indigo-500/20 relative z-10">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="font-bold text-indigo-300 bg-indigo-500/20 px-2 py-0.5 rounded-full border border-indigo-400/30">
+                        💼 Business Pitching
+                      </span>
+                      <span className="font-mono text-slate-400 flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-cyan-400" />
+                        3-5 min sprint
+                      </span>
+                    </div>
+
+                    <h4 className="font-black text-sm text-white leading-snug">
+                      &ldquo;Pitching Hybrid AI to Silicon Valley VCs&rdquo;
+                    </h4>
+
+                    <p className="text-[11px] text-slate-300 leading-relaxed font-serif italic">
+                      &ldquo;Explain why on-device Gemini Nano guarantees sub-20ms voice response with 100% privacy.&rdquo;
+                    </p>
+
+                    {/* Target & Reward Bar */}
+                    <div className="pt-1.5 flex items-center justify-between text-[10px] text-amber-300 border-t border-indigo-500/20 font-bold">
+                      <span className="flex items-center gap-1">
+                        <Target className="w-3 h-3 text-emerald-400" />
+                        Target: Fluency 90%+ (A)
+                      </span>
+                      <span className="flex items-center gap-1 text-amber-400">
+                        <Sparkles className="w-3 h-3" />
+                        +250 XP Reward
+                      </span>
                     </div>
                   </div>
 
-                  <div>
-                    <h4 className="font-bold text-sm text-white">Daily Conversation</h4>
-                    <p className="text-xs text-slate-400">(Travel & Tourism)</p>
-                  </div>
-
+                  {/* Primary 1-Click Call CTA Button */}
                   <button
-                    onClick={() => launchTopicByKeyword("travel")}
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-1.5 transition-all"
+                    onClick={() => launchTopicByKeyword("business")}
+                    className="w-full py-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-black text-xs shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-98 relative z-10"
                   >
-                    <span>Start Lesson</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <PhoneCall className="w-4 h-4 animate-bounce" />
+                    <span>Call Coach Sophia Now (14ms Nano) →</span>
                   </button>
                 </div>
 
