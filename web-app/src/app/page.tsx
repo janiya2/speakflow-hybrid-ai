@@ -617,7 +617,7 @@ export default function StudentWebApp() {
       try {
         activeAudioRef.current.pause();
         activeAudioRef.current.currentTime = 0;
-      } catch (_) {}
+      } catch (_) { }
       activeAudioRef.current = null;
     }
 
@@ -955,7 +955,7 @@ export default function StudentWebApp() {
       try {
         activeAudioRef.current.pause();
         activeAudioRef.current.currentTime = 0;
-      } catch (_) {}
+      } catch (_) { }
       activeAudioRef.current = null;
     }
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -1757,7 +1757,7 @@ export default function StudentWebApp() {
         </header>
 
         {/* MAIN BODY CONTENT */}
-        <main className="p-4 sm:p-8 space-y-6 max-w-7xl">
+        <main className="flex-1 w-full p-4 sm:p-6 lg:p-7 space-y-6">
           {/* IF ACTIVE CALL IS RUNNING: FULL SCREEN VOICE COACH CALL */}
           {activeCallTopic ? (
             <div className="max-w-2xl mx-auto bg-slate-900/95 border border-blue-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur relative overflow-hidden flex flex-col min-h-[580px]">
@@ -1878,22 +1878,22 @@ export default function StudentWebApp() {
             /* ----------------------------------------------------------- */
             /* TAB: 1:1 DASHBOARD VIEW (MATCHING THE SCREENSHOT EXACTLY)    */
             /* ----------------------------------------------------------- */
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* LEFT & CENTER MAIN COLUMN (9 cols) */}
-              <div className="lg:col-span-8 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
+              {/* LEFT & CENTER MAIN COLUMN (9 cols on xl / 8 cols on lg) */}
+              <div className="lg:col-span-8 xl:col-span-9 space-y-6">
                 {/* 1. HERO BANNER: Welcome Back Janitha! */}
-                <div className="relative rounded-3xl overflow-hidden border border-blue-500/30 bg-gradient-to-r from-[#0C1E40] via-[#0F1E38] to-[#0A1324] p-6 sm:p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="relative rounded-3xl overflow-hidden border border-blue-500/30 bg-gradient-to-r from-[#0C1E40] via-[#0E204A] to-[#0A1633] p-6 sm:p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
                   {/* Subtle ambient lighting */}
-                  <div className="absolute top-0 left-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                  <div className="absolute top-0 left-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
                   {/* Left 3D Robot Mascot */}
                   <div className="shrink-0 relative">
                     <img
-                      src="/images/dashboard-robot.png"
+                      src="/images/dashboard-robot-transparent.png"
                       alt="AI Robot Tutor"
-                      className="w-32 h-36 sm:w-36 sm:h-40 object-contain drop-shadow-[0_10px_20px_rgba(56,189,248,0.3)] animate-in fade-in zoom-in duration-300"
+                      className="w-32 h-36 sm:w-36 sm:h-40 object-contain drop-shadow-[0_10px_25px_rgba(56,189,248,0.35)] animate-in fade-in zoom-in duration-300"
                       onError={(e) => {
-                        (e.currentTarget as any).src = "/images/dashboard-hero-banner.jpg";
+                        (e.currentTarget as any).src = "/images/dashboard-robot.png";
                       }}
                     />
                   </div>
@@ -1920,18 +1920,18 @@ export default function StudentWebApp() {
                   {/* Right Earth Globe with Multilingual Holographic Speech Bubbles */}
                   <div className="shrink-0 relative hidden sm:block">
                     <img
-                      src="/images/globe-landmarks.png"
+                      src="/images/globe-landmarks-transparent.png"
                       alt="Global Languages"
-                      className="w-44 h-36 object-contain drop-shadow-[0_0_20px_rgba(99,102,241,0.3)]"
+                      className="w-48 h-36 object-contain drop-shadow-[0_0_25px_rgba(99,102,241,0.35)]"
                       onError={(e) => {
-                        (e.currentTarget as any).style.display = "none";
+                        (e.currentTarget as any).src = "/images/globe-landmarks.png";
                       }}
                     />
                   </div>
                 </div>
 
                 {/* 2. 4 QUICK STAT CARDS */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
                   {/* Card 1: Practice Time */}
                   <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800/80 flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -2015,9 +2015,9 @@ export default function StudentWebApp() {
                 </div>
 
                 {/* 3. YOUR LEARNING PROGRESS & QUICK ACTIONS ROW */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                  {/* Your Learning Progress Chart (7 cols) */}
-                  <div className="md:col-span-7 p-5 rounded-3xl bg-[#111827] border border-slate-800/80 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 w-full">
+                  {/* Your Learning Progress Chart (7 cols on md, 7 cols on xl) */}
+                  <div className="md:col-span-7 xl:col-span-7 p-5 rounded-3xl bg-[#111827] border border-slate-800/80 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <BarChart3 className="w-4 h-4 text-emerald-400" />
@@ -2091,8 +2091,8 @@ export default function StudentWebApp() {
                     </div>
                   </div>
 
-                  {/* Quick Actions (5 cols) */}
-                  <div className="md:col-span-5 p-5 rounded-3xl bg-[#111827] border border-slate-800/80 space-y-4">
+                  {/* Quick Actions (5 cols on md, 5 cols on xl) */}
+                  <div className="md:col-span-5 xl:col-span-5 p-5 rounded-3xl bg-[#111827] border border-slate-800/80 space-y-4">
                     <div className="flex items-center gap-2">
                       <Zap className="w-4 h-4 text-amber-400" />
                       <h3 className="font-bold text-xs text-white">Quick Actions</h3>
@@ -2147,9 +2147,9 @@ export default function StudentWebApp() {
                 </div>
 
                 {/* 4. RECENT ACTIVITY & ACHIEVEMENTS ROW */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 w-full">
                   {/* Recent Activity (7 cols) */}
-                  <div className="md:col-span-7 p-4 rounded-3xl bg-[#111827] border border-slate-800/80 flex items-center justify-between">
+                  <div className="md:col-span-7 xl:col-span-7 p-4 rounded-3xl bg-[#111827] border border-slate-800/80 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
                         <Check className="w-4 h-4" />
@@ -2168,7 +2168,7 @@ export default function StudentWebApp() {
                   </div>
 
                   {/* Achievements Hexagonal Badges (5 cols) */}
-                  <div className="md:col-span-5 p-4 rounded-3xl bg-[#111827] border border-slate-800/80 flex items-center justify-between">
+                  <div className="md:col-span-5 xl:col-span-5 p-4 rounded-3xl bg-[#111827] border border-slate-800/80 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Trophy className="w-4 h-4 text-amber-400" />
                       <span className="font-bold text-xs text-white">Achievements</span>
@@ -2196,8 +2196,8 @@ export default function StudentWebApp() {
                 </div>
               </div>
 
-              {/* RIGHT COLUMN (4 cols in 12-col grid): Your Streak & Upcoming Lesson */}
-              <div className="lg:col-span-4 space-y-6">
+              {/* RIGHT COLUMN (3 cols on xl / 4 cols on lg): Your Streak & Upcoming Lesson */}
+              <div className="lg:col-span-4 xl:col-span-3 space-y-6">
                 {/* 1. YOUR STREAK CARD */}
                 <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800/80 text-center relative overflow-hidden space-y-3">
                   <div className="flex items-center justify-between text-left">
@@ -2209,19 +2209,15 @@ export default function StudentWebApp() {
                   </div>
 
                   {/* Flame Graphic with 12 Days */}
-                  <div className="relative py-4 flex flex-col items-center justify-center">
+                  <div className="relative py-3 flex flex-col items-center justify-center">
                     <img
-                      src="/images/flame-streak.png"
+                      src="/images/flame-streak-clean.png"
                       alt="12 Day Flame Streak"
                       className="w-28 h-28 object-contain drop-shadow-[0_0_25px_rgba(245,158,11,0.5)]"
                       onError={(e) => {
-                        (e.currentTarget as any).src = "https://cdn-icons-png.flaticon.com/512/785/785116.png";
+                        (e.currentTarget as any).src = "/images/flame-streak.png";
                       }}
                     />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pt-3 pointer-events-none">
-                      <span className="text-3xl font-black text-white drop-shadow">12</span>
-                      <span className="text-xs font-bold text-amber-200 uppercase tracking-wider">Days</span>
-                    </div>
                   </div>
 
                   <p className="font-bold text-xs text-white">
@@ -2231,25 +2227,27 @@ export default function StudentWebApp() {
 
                 {/* 2. UPCOMING LESSON CARD (London Big Ben Sunset) */}
                 <div className="p-5 rounded-3xl bg-[#111827] border border-slate-800/80 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-blue-400" />
-                    <h3 className="font-bold text-xs text-white">Upcoming Lesson</h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-blue-400" />
+                      <h3 className="font-bold text-xs text-white">Upcoming Lesson</h3>
+                    </div>
+                    <div className="px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-800 text-[10px] font-mono text-slate-300 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-cyan-400" />
+                      <span>10 min</span>
+                    </div>
                   </div>
 
-                  {/* Big Ben Image Card */}
+                  {/* Clean Big Ben Image Card without duplicate headers */}
                   <div className="rounded-2xl overflow-hidden border border-slate-800 relative group">
                     <img
                       src="/images/lesson-london-travel.jpg"
                       alt="London Travel Scenario"
-                      className="w-full h-32 object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="w-full h-36 object-cover transition-transform duration-300 group-hover:scale-105"
                       onError={(e) => {
                         (e.currentTarget as any).src = "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600";
                       }}
                     />
-                    <div className="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur text-[10px] font-mono text-white flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-cyan-400" />
-                      <span>10 min</span>
-                    </div>
                   </div>
 
                   <div>
