@@ -1881,17 +1881,26 @@ export default function StudentWebApp() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
               {/* LEFT & CENTER MAIN COLUMN (9 cols on xl / 8 cols on lg) */}
               <div className="lg:col-span-8 xl:col-span-9 space-y-6">
-                {/* 1. HERO BANNER: Welcome Back Janitha! */}
-                <div className="relative rounded-3xl overflow-hidden border border-blue-500/30 bg-gradient-to-r from-[#0C1E40] via-[#0E204A] to-[#0A1633] p-6 sm:p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
-                  {/* Subtle ambient lighting */}
-                  <div className="absolute top-0 left-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                {/* 1. HERO BANNER: Welcome Back Janitha! (with Nano Banana Panoramic AI Background) */}
+                <div className="relative rounded-3xl overflow-hidden border border-blue-500/30 shadow-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 min-h-[190px]">
+                  {/* Panoramic AI Background Image */}
+                  <img
+                    src="/images/hero-banner-panoramic.png"
+                    alt="AI Language Learning Studio"
+                    className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
+                    onError={(e) => {
+                      (e.currentTarget as any).style.display = "none";
+                    }}
+                  />
+                  {/* Dark glass gradient overlay for ultra-crisp readable typography */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#070D1F]/90 via-[#0A132C]/75 to-[#081026]/90 backdrop-blur-[2px] pointer-events-none"></div>
 
                   {/* Left 3D Robot Mascot */}
-                  <div className="shrink-0 relative">
+                  <div className="shrink-0 relative z-10">
                     <img
                       src="/images/dashboard-robot-transparent.png"
                       alt="AI Robot Tutor"
-                      className="w-32 h-36 sm:w-36 sm:h-40 object-contain drop-shadow-[0_10px_25px_rgba(56,189,248,0.35)] animate-in fade-in zoom-in duration-300"
+                      className="w-32 h-36 sm:w-36 sm:h-40 object-contain drop-shadow-[0_10px_25px_rgba(56,189,248,0.4)] animate-in fade-in zoom-in duration-300"
                       onError={(e) => {
                         (e.currentTarget as any).src = "/images/dashboard-robot.png";
                       }}
@@ -1899,17 +1908,21 @@ export default function StudentWebApp() {
                   </div>
 
                   {/* Center Text & Start Practice Button */}
-                  <div className="flex-1 space-y-3 text-center md:text-left z-10">
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                  <div className="flex-1 space-y-3 text-center md:text-left relative z-10">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-[11px] font-bold text-cyan-300">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                      <span>AI Voice Coach Online • On-Device Gemini Nano</span>
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                       Welcome back, Janitha! 👋
                     </h2>
-                    <p className="text-xs sm:text-sm text-slate-300 max-w-md leading-relaxed">
+                    <p className="text-xs sm:text-sm text-slate-200 max-w-lg leading-relaxed font-medium">
                       Let's practice your language skills today and become more fluent!
                     </p>
                     <div className="pt-1">
                       <button
                         onClick={() => launchTopicByKeyword("travel")}
-                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-500/30 flex items-center justify-center md:justify-start gap-2 transition-all hover:scale-[1.02]"
+                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-bold text-xs shadow-xl shadow-blue-500/35 flex items-center justify-center md:justify-start gap-2 transition-all hover:scale-[1.02]"
                       >
                         <Play className="w-3.5 h-3.5 fill-white" />
                         <span>Start Practice →</span>
@@ -1918,11 +1931,11 @@ export default function StudentWebApp() {
                   </div>
 
                   {/* Right Earth Globe with Multilingual Holographic Speech Bubbles */}
-                  <div className="shrink-0 relative hidden sm:block">
+                  <div className="shrink-0 relative hidden sm:block z-10">
                     <img
                       src="/images/globe-landmarks-transparent.png"
                       alt="Global Languages"
-                      className="w-48 h-36 object-contain drop-shadow-[0_0_25px_rgba(99,102,241,0.35)]"
+                      className="w-48 h-36 object-contain drop-shadow-[0_0_25px_rgba(99,102,241,0.4)]"
                       onError={(e) => {
                         (e.currentTarget as any).src = "/images/globe-landmarks.png";
                       }}
@@ -2225,42 +2238,99 @@ export default function StudentWebApp() {
                   </p>
                 </div>
 
-                {/* 2. UPCOMING LESSON CARD (London Big Ben Sunset) */}
-                <div className="p-5 rounded-3xl bg-[#111827] border border-slate-800/80 space-y-4">
+                {/* 2. WEEKLY TARGETS & FLUENCY SPRINT CARD (Matching Mobile App Gamification) */}
+                <div className="p-5 rounded-3xl bg-[#111827] border border-slate-800/80 space-y-4 shadow-xl">
+                  {/* Header */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-blue-400" />
-                      <h3 className="font-bold text-xs text-white">Upcoming Lesson</h3>
+                      <Trophy className="w-4 h-4 text-amber-400" />
+                      <h3 className="font-bold text-xs text-white">Weekly Targets & Winners</h3>
                     </div>
-                    <div className="px-2 py-0.5 rounded-lg bg-slate-900 border border-slate-800 text-[10px] font-mono text-slate-300 flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-cyan-400" />
-                      <span>10 min</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                      +500 XP Reward
+                    </span>
+                  </div>
+
+                  {/* Main Sprint Goal Box */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/60 via-slate-900/90 to-purple-950/40 border border-indigo-500/30 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shadow">
+                          <Award className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <span className="font-bold text-xs text-white block">Weekly Fluency Sprint</span>
+                          <span className="text-[10px] text-amber-300/80">Goal: 60 mins speaking</span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        🔥 100% Done
+                      </span>
+                    </div>
+
+                    {/* Today's practice progress */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400">Today: 2 / 10 mins</span>
+                        <span className="text-cyan-400 font-bold">20%</span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full" style={{ width: "20%" }}></div>
+                      </div>
+                    </div>
+
+                    {/* Weekly sprint progress */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400">Weekly Goal: 115 / 60 mins</span>
+                        <span className="text-emerald-400 font-bold">191% 🔥</span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-amber-400 to-emerald-400 rounded-full" style={{ width: "100%" }}></div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Clean Big Ben Image Card without duplicate headers */}
-                  <div className="rounded-2xl overflow-hidden border border-slate-800 relative group">
-                    <img
-                      src="/images/lesson-london-travel.jpg"
-                      alt="London Travel Scenario"
-                      className="w-full h-36 object-cover transition-transform duration-300 group-hover:scale-105"
-                      onError={(e) => {
-                        (e.currentTarget as any).src = "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600";
-                      }}
-                    />
+                  {/* 7-Day Speaking Streak Tracker Chips */}
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-bold text-slate-300 block flex items-center gap-1.5">
+                      <Flame className="w-3.5 h-3.5 text-orange-400" />
+                      7-Day Streak Tracker:
+                    </span>
+                    <div className="grid grid-cols-7 gap-1.5 text-center">
+                      {[
+                        { day: "Mon", done: true },
+                        { day: "Tue", done: true },
+                        { day: "Wed", done: true },
+                        { day: "Thu", done: true },
+                        { day: "Fri", done: true, today: true },
+                        { day: "Sat", done: false },
+                        { day: "Sun", done: false }
+                      ].map((item, idx) => (
+                        <div
+                          key={idx}
+                          className={`py-1.5 rounded-xl text-[10px] flex flex-col items-center justify-center gap-0.5 border ${
+                            item.today
+                              ? "bg-emerald-500/25 border-emerald-400 text-emerald-300 font-bold shadow-md shadow-emerald-500/20"
+                              : item.done
+                              ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400 font-semibold"
+                              : "bg-slate-900 border-slate-800 text-slate-500 font-medium"
+                          }`}
+                        >
+                          <span className="text-[9px] uppercase">{item.day}</span>
+                          <span className="text-[11px]">{item.done ? "✓" : "○"}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
-                  <div>
-                    <h4 className="font-bold text-sm text-white">Daily Conversation</h4>
-                    <p className="text-xs text-slate-400">(Travel & Tourism)</p>
-                  </div>
-
+                  {/* Action Button: Opens Weekly Winners Podium & Leaderboard */}
                   <button
-                    onClick={() => launchTopicByKeyword("travel")}
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-1.5 transition-all"
+                    onClick={() => setActiveTab("achievements")}
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01]"
                   >
-                    <span>Start Lesson</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <Trophy className="w-3.5 h-3.5 fill-slate-950" />
+                    <span>View Winners Podium & Leaderboard →</span>
                   </button>
                 </div>
               </div>
