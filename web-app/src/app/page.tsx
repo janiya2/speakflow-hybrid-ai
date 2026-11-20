@@ -2183,7 +2183,7 @@ export default function StudentWebApp() {
         </header>
 
         {/* MAIN BODY CONTENT */}
-        <main className="p-4 sm:p-8 space-y-6 max-w-7xl">
+        <main className="p-4 sm:p-6 lg:p-8 space-y-6 w-full max-w-[1680px] mx-auto">
           {/* IF ACTIVE CALL IS RUNNING: FULL SCREEN VOICE COACH CALL */}
           {activeCallTopic ? (
             <div className="max-w-2xl mx-auto bg-slate-900/95 border border-blue-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur relative overflow-hidden flex flex-col min-h-[580px]">
@@ -2306,44 +2306,41 @@ export default function StudentWebApp() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
               {/* LEFT & CENTER MAIN COLUMN (8 cols of 12) */}
               <div className="lg:col-span-8 space-y-6">
-                {/* 1. HERO BANNER: Welcome Back Janitha! (Clean 1:1 Design) */}
-                <div className="relative rounded-3xl overflow-hidden border border-blue-500/30 shadow-2xl min-h-[175px] sm:min-h-[185px] flex items-center p-6 sm:p-7">
-                  {/* Clean Authentic Hero Artwork */}
+                {/* 1. HERO BANNER: Welcome Back Janitha! (1:1 Pixel-Perfect Authentic Artwork) */}
+                <div className="relative rounded-3xl overflow-hidden border border-blue-500/30 shadow-2xl group transition-all">
+                  {/* Master Pristine Artwork (Robot + 1:1 Typography + Glowing Globe) */}
                   <img
-                    src="/images/speakflow_clean_hero_banner.png"
-                    alt="SpeakFlow Hero Banner"
-                    className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
+                    src="/images/hero_banner_master_pristine.png"
+                    alt="Welcome back Janitha - SpeakFlow AI"
+                    className="w-full h-auto object-cover object-center rounded-3xl block select-none pointer-events-none"
                     onError={(e) => {
-                      (e.currentTarget as any).src = "/images/dashboard-hero-banner.jpg";
+                      (e.currentTarget as any).src = "/images/exact_reference_banner.png";
                     }}
                   />
 
-                  {/* Clean Typography Directly on Banner (No nested dark box) */}
-                  <div className="relative z-10 max-w-sm sm:max-w-md ml-24 sm:ml-32 md:ml-36 lg:ml-40 space-y-2 text-left">
-                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight flex items-center gap-2 drop-shadow-md">
-                      <span>Welcome back, {user?.displayName?.split(" ")[0] || "Janitha"}!</span>
-                      <span className="text-2xl">👋</span>
-                    </h1>
-                    <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed font-medium drop-shadow">
-                      Let's practice your language skills today and become more fluent!
-                    </p>
-                    <div className="pt-2 flex flex-wrap items-center gap-2.5">
-                      <button
-                        onClick={() => launchTopicByKeyword("travel")}
-                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-bold text-xs shadow-xl shadow-blue-500/35 flex items-center gap-2 transition-all hover:scale-[1.02]"
-                      >
-                        <Play className="w-3.5 h-3.5 fill-white" />
-                        <span>Start Practice →</span>
-                      </button>
-                      <button
-                        onClick={() => setActiveTab("achievements")}
-                        className="px-3 py-2.5 rounded-xl bg-white/15 hover:bg-white/20 text-white font-semibold text-xs border border-white/25 transition-all flex items-center gap-1.5 backdrop-blur-sm shadow-md"
-                      >
-                        <Trophy className="w-3.5 h-3.5 text-amber-300" />
-                        <span>Badges ({achievements.filter(a => a.isUnlocked).length}/20)</span>
-                      </button>
+                  {/* Top-Right Floating Badges: Gemini Nano Hybrid & Badges XP */}
+                  <div className="absolute top-3 sm:top-4 right-3 sm:right-6 flex items-center gap-2 z-10">
+                    <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/75 border border-cyan-500/40 text-cyan-300 text-[11px] font-bold backdrop-blur-md shadow-lg shadow-cyan-950/40">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span>Gemini Nano Hybrid AI</span>
                     </div>
+                    <button
+                      onClick={() => setActiveTab("achievements")}
+                      className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/80 hover:bg-slate-900 border border-amber-500/40 text-amber-300 text-[11px] font-bold backdrop-blur-md shadow-lg transition-all hover:scale-105 active:scale-95"
+                      title="View All 20 Achievements"
+                    >
+                      <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Badges ({achievements.filter(a => a.isUnlocked).length}/20)</span>
+                    </button>
                   </div>
+
+                  {/* Interactive Click Target directly over "Start Practice →" button */}
+                  <button
+                    onClick={() => launchTopicByKeyword("travel")}
+                    className="absolute left-[24%] bottom-[13%] w-[21%] h-[28%] rounded-xl cursor-pointer hover:bg-white/10 active:scale-95 transition-all"
+                    title="Start Travel & Tourism Practice"
+                    aria-label="Start Practice"
+                  />
                 </div>
 
                 {/* 2. 4 QUICK STAT CARDS (Clean Uniform Luxury Theme) */}
@@ -2626,13 +2623,12 @@ export default function StudentWebApp() {
                                 setActiveTab("achievements");
                               }
                             }}
-                            className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all hover:scale-110 ${
-                              badge.isClaimed
-                                ? `bg-gradient-to-tr ${badge.gradient} border-white/20 text-white shadow-md ${badge.glow}`
-                                : badge.isUnlocked
+                            className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all hover:scale-110 ${badge.isClaimed
+                              ? `bg-gradient-to-tr ${badge.gradient} border-white/20 text-white shadow-md ${badge.glow}`
+                              : badge.isUnlocked
                                 ? "bg-amber-500/20 text-amber-400 border-amber-500/50 shadow-md shadow-amber-500/20 animate-bounce"
                                 : "bg-slate-900 border-slate-800 text-slate-600"
-                            }`}
+                              }`}
                             title={`${badge.title} (${badge.isClaimed ? "Claimed" : badge.isUnlocked ? "Ready to Claim!" : "Locked"})`}
                           >
                             {renderBadgeIcon(badge.iconType, "w-3.5 h-3.5")}
@@ -2652,9 +2648,9 @@ export default function StudentWebApp() {
                 </div>
               </div>
 
-              {/* RIGHT COLUMN (4 cols in 12-col grid): Your Streak & Upcoming Lesson */}
+              {/* RIGHT COLUMN (4 cols in 12-col grid): Your Streak, Upcoming Lesson & Sprint Targets */}
               <div className="lg:col-span-4 space-y-6">
-                {/* 1. YOUR STREAK CARD */}
+                {/* 1. YOUR STREAK CARD (Pristine Artwork with Zero Double Text) */}
                 <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800/80 text-center relative overflow-hidden space-y-3">
                   <div className="flex items-center justify-between text-left">
                     <div className="flex items-center gap-2">
@@ -2664,20 +2660,16 @@ export default function StudentWebApp() {
                     <Flame className="w-4 h-4 text-orange-500" />
                   </div>
 
-                  {/* Flame Graphic with 12 Days */}
-                  <div className="relative py-4 flex flex-col items-center justify-center">
+                  {/* Flame Graphic with 12 Days (Native Crisp Visual) */}
+                  <div className="relative py-3 flex flex-col items-center justify-center">
                     <img
-                      src="/images/flame-streak.png"
+                      src="/images/flame_badge_pristine.png"
                       alt="12 Day Flame Streak"
-                      className="w-28 h-28 object-contain drop-shadow-[0_0_25px_rgba(245,158,11,0.5)]"
+                      className="w-28 h-28 object-contain drop-shadow-[0_0_25px_rgba(245,158,11,0.5)] transition-transform hover:scale-105 duration-300"
                       onError={(e) => {
-                        (e.currentTarget as any).src = "https://cdn-icons-png.flaticon.com/512/785/785116.png";
+                        (e.currentTarget as any).src = "/images/flame-streak.png";
                       }}
                     />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pt-3 pointer-events-none">
-                      <span className="text-3xl font-black text-white drop-shadow">12</span>
-                      <span className="text-xs font-bold text-amber-200 uppercase tracking-wider">Days</span>
-                    </div>
                   </div>
 
                   <p className="font-bold text-xs text-white">
@@ -2692,10 +2684,10 @@ export default function StudentWebApp() {
                     <h3 className="font-bold text-xs text-white">Upcoming Lesson</h3>
                   </div>
 
-                  {/* Big Ben Image Card */}
+                  {/* Clean Big Ben Scenery Card */}
                   <div className="rounded-2xl overflow-hidden border border-slate-800 relative group">
                     <img
-                      src="/images/lesson-london-travel.jpg"
+                      src="/images/lesson-london-clean.jpg"
                       alt="London Travel Scenario"
                       className="w-full h-32 object-cover transition-transform duration-300 group-hover:scale-105"
                       onError={(e) => {
@@ -2719,6 +2711,97 @@ export default function StudentWebApp() {
                   >
                     <span>Start Lesson</span>
                     <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* 3. WEEKLY TARGETS & SPRINT TRACKER */}
+                <div className="p-5 rounded-3xl bg-[#111827] border border-slate-800/80 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="w-4 h-4 text-amber-400" />
+                      <h3 className="font-bold text-xs text-white">Weekly Targets & Winners</h3>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                      +500 XP Reward
+                    </span>
+                  </div>
+
+                  {/* Main Sprint Goal Box */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/60 via-slate-900/90 to-purple-950/40 border border-indigo-500/30 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shadow">
+                          <Award className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <span className="font-bold text-xs text-white block">Weekly Fluency Sprint</span>
+                          <span className="text-[10px] text-amber-300/80">Goal: 60 mins speaking</span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        🔥 100% Done
+                      </span>
+                    </div>
+
+                    {/* Today's practice progress */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400">Today: 2 / 10 mins</span>
+                        <span className="text-cyan-400 font-bold">20%</span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                        <div className="h-full bg-cyan-400 rounded-full" style={{ width: "20%" }}></div>
+                      </div>
+                    </div>
+
+                    {/* Total weekly sprint */}
+                    <div className="space-y-1 pt-1 border-t border-slate-800/80">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400">Weekly Goal: 115 / 60 mins</span>
+                        <span className="text-emerald-400 font-bold">191% 🔥</span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full" style={{ width: "100%" }}></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 7-Day Streak Pills */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      7-Day Streak Tracker:
+                    </span>
+                    <div className="grid grid-cols-7 gap-1">
+                      {[
+                        { day: "MON", done: true },
+                        { day: "TUE", done: true },
+                        { day: "WED", done: true },
+                        { day: "THU", done: true },
+                        { day: "FRI", done: true },
+                        { day: "SAT", done: false },
+                        { day: "SUN", done: false },
+                      ].map((item, idx) => (
+                        <div
+                          key={idx}
+                          className={`py-1.5 rounded-lg text-center border text-[9px] font-bold transition-all ${item.done
+                            ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-400 shadow-sm"
+                            : "bg-slate-900 border-slate-800 text-slate-600"
+                            }`}
+                        >
+                          <div className="text-[8px] text-slate-500 leading-none mb-0.5">{item.day}</div>
+                          {item.done ? "✓" : "○"}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* View Leaderboard CTA */}
+                  <button
+                    onClick={() => setActiveTab("achievements")}
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5 transition-all"
+                  >
+                    <Trophy className="w-3.5 h-3.5 text-slate-950" />
+                    <span>View Winners Podium & Leaderboard →</span>
                   </button>
                 </div>
               </div>
@@ -2973,11 +3056,10 @@ export default function StudentWebApp() {
                     <button
                       key={filterTab.id}
                       onClick={() => setAchievementFilter(filterTab.id as any)}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                        achievementFilter === filterTab.id
-                          ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
-                          : "bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800"
-                      }`}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${achievementFilter === filterTab.id
+                        ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
+                        : "bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800"
+                        }`}
                     >
                       {filterTab.label}
                     </button>
@@ -3012,13 +3094,12 @@ export default function StudentWebApp() {
                     return (
                       <div
                         key={badge.id}
-                        className={`p-5 rounded-3xl border transition-all duration-200 flex flex-col justify-between gap-4 relative overflow-hidden group ${
-                          badge.isClaimed
-                            ? "bg-gradient-to-br from-[#111827] via-[#0D1527] to-[#0A1020] border-emerald-500/30 shadow-lg"
-                            : badge.isUnlocked
+                        className={`p-5 rounded-3xl border transition-all duration-200 flex flex-col justify-between gap-4 relative overflow-hidden group ${badge.isClaimed
+                          ? "bg-gradient-to-br from-[#111827] via-[#0D1527] to-[#0A1020] border-emerald-500/30 shadow-lg"
+                          : badge.isUnlocked
                             ? "bg-gradient-to-br from-[#111827] via-[#1E1B4B]/35 to-[#0F172A] border-amber-500/50 shadow-xl shadow-amber-500/10 ring-1 ring-amber-400/25"
                             : "bg-[#111827]/75 border-slate-800/80 opacity-85 hover:opacity-100"
-                        }`}
+                          }`}
                       >
                         {/* Corner Glow for Unlocked / Ready */}
                         {badge.isUnlocked && !badge.isClaimed && (
@@ -3063,13 +3144,12 @@ export default function StudentWebApp() {
                             </div>
                             <div className="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden">
                               <div
-                                className={`h-full rounded-full transition-all duration-500 ${
-                                  badge.isClaimed
-                                    ? "bg-emerald-400"
-                                    : badge.isUnlocked
+                                className={`h-full rounded-full transition-all duration-500 ${badge.isClaimed
+                                  ? "bg-emerald-400"
+                                  : badge.isUnlocked
                                     ? "bg-gradient-to-r from-amber-400 to-yellow-400"
                                     : "bg-gradient-to-r from-blue-500 to-cyan-400"
-                                }`}
+                                  }`}
                                 style={{ width: `${percent}%` }}
                               ></div>
                             </div>
