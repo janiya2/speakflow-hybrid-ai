@@ -2306,9 +2306,9 @@ export default function StudentWebApp() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
               {/* LEFT & CENTER MAIN COLUMN (8 cols of 12) */}
               <div className="lg:col-span-8 space-y-6">
-                {/* 1. HERO BANNER: Welcome Back Janitha! (Crisp Vector Typography & Ultra HD Artwork) */}
-                <div className="relative rounded-3xl overflow-hidden border border-blue-500/30 bg-[#0B132B] shadow-[0_15px_40px_rgba(30,58,138,0.25)] min-h-[195px] sm:min-h-[210px] flex items-center p-6 sm:p-8">
-                  {/* High Resolution Background Artwork (Robot on Left, Globe on Right, Clean Center) */}
+                {/* 1. HERO BANNER: Welcome Back Janitha! (Fully Visible Artwork & Centered Typography) */}
+                <div className="relative rounded-3xl overflow-hidden border border-blue-500/30 bg-[#0B132B] shadow-[0_20px_50px_rgba(30,58,138,0.3)] min-h-[250px] sm:min-h-[275px] lg:min-h-[290px] flex items-center justify-center p-6 sm:p-8">
+                  {/* High Resolution Background Artwork (Full Robot on Left, Full Globe on Right, Clean Center) */}
                   <img
                     src="/images/hero_banner_panoramic_clean.jpg"
                     alt="SpeakFlow AI Hero"
@@ -2319,7 +2319,7 @@ export default function StudentWebApp() {
                   />
 
                   {/* Ambient Glow Gradient Overlays */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-950/40 via-transparent to-blue-950/40 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-950/30 via-transparent to-blue-950/30 pointer-events-none" />
 
                   {/* Top-Right Floating Badges */}
                   <div className="absolute top-3.5 right-4 sm:top-4 sm:right-6 flex items-center gap-2 z-20">
@@ -2337,26 +2337,26 @@ export default function StudentWebApp() {
                     </button>
                   </div>
 
-                  {/* REAL CRISP NATIVE VECTOR TYPOGRAPHY (Always 100% sharp on all displays) */}
-                  <div className="relative z-10 max-w-lg sm:max-w-xl ml-24 sm:ml-32 md:ml-40 lg:ml-44 space-y-2 text-left">
-                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight flex items-center gap-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                  {/* CENTERED CRISP NATIVE VECTOR TYPOGRAPHY */}
+                  <div className="relative z-10 max-w-sm sm:max-w-md lg:max-w-lg mx-auto text-center flex flex-col items-center justify-center space-y-2.5">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight flex items-center justify-center gap-2 drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
                       <span>Welcome back, {user?.displayName?.split(" ")[0] || "Janitha"}!</span>
-                      <span className="text-2xl animate-bounce">👋</span>
+                      <span className="text-2xl sm:text-3xl animate-bounce">👋</span>
                     </h1>
-                    <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)] max-w-md">
+                    <p className="text-xs sm:text-sm lg:text-base text-blue-100/90 leading-relaxed font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] max-w-sm sm:max-w-md">
                       Let's practice your language skills today and become more fluent!
                     </p>
-                    <div className="pt-2 flex flex-wrap items-center gap-3">
+                    <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
                       <button
                         onClick={() => launchTopicByKeyword("travel")}
-                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 via-indigo-600 to-blue-700 hover:from-blue-400 hover:to-indigo-500 text-white font-bold text-xs shadow-xl shadow-blue-500/35 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 via-indigo-600 to-blue-700 hover:from-blue-400 hover:to-indigo-500 text-white font-bold text-xs shadow-xl shadow-blue-500/40 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
                       >
                         <Play className="w-3.5 h-3.5 fill-white" />
                         <span>Start Practice →</span>
                       </button>
                       <button
                         onClick={() => setActiveTab("achievements")}
-                        className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs border border-white/20 transition-all flex items-center gap-1.5 backdrop-blur-md shadow-md hover:scale-105"
+                        className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs border border-white/20 transition-all flex items-center gap-1.5 backdrop-blur-md shadow-md hover:scale-105"
                       >
                         <Trophy className="w-3.5 h-3.5 text-amber-300" />
                         <span>View Badges & XP</span>
