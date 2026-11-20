@@ -2672,32 +2672,129 @@ export default function StudentWebApp() {
 
               {/* RIGHT COLUMN (4 cols in 12-col grid): Your Streak, Upcoming Lesson & Sprint Targets */}
               <div className="lg:col-span-4 space-y-6">
-                {/* 1. YOUR STREAK CARD (Crisp Glowing 3D Vector Flame Badge) */}
-                <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800/80 text-center relative overflow-hidden space-y-3 shadow-lg">
-                  {/* Ambient Background Fire Glow */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-36 h-36 bg-orange-600/15 rounded-full blur-2xl pointer-events-none" />
+                {/* 1. YOUR STREAK CARD (Live Burning Animated Fire Badge) */}
+                <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800/80 text-center relative overflow-hidden space-y-3 shadow-xl group">
+                  {/* Pulsing Ambient Fiery Aura */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-44 h-44 bg-gradient-to-tr from-orange-600/25 via-amber-500/20 to-red-600/15 rounded-full animate-flame-glow pointer-events-none" />
 
                   <div className="flex items-center justify-between text-left relative z-10">
                     <div className="flex items-center gap-2">
-                      <Flame className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      <Flame className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse" />
                       <h3 className="font-bold text-xs text-white">Your Streak</h3>
                     </div>
-                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
-                      🔥 Top 5%
+                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/25 flex items-center gap-1 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-ping"></span>
+                      <span>Top 5%</span>
                     </span>
                   </div>
 
-                  {/* Vector Fiery Flame Badge with Center Numbers */}
+                  {/* LIVE ANIMATED BURNING FLAME BADGE */}
                   <div className="relative py-2 flex flex-col items-center justify-center">
-                    <div className="relative w-32 h-32 flex items-center justify-center transition-transform hover:scale-105 duration-300">
-                      <img
-                        src="/images/flame_streak_vector.svg"
-                        alt="Streak Fire"
-                        className="w-full h-full object-contain select-none pointer-events-none drop-shadow-[0_0_20px_rgba(249,115,22,0.45)]"
-                      />
+                    <div className="relative w-36 h-36 flex items-center justify-center">
+                      {/* Rising Fire Sparks / Embers */}
+                      <span className="absolute top-6 left-12 w-1.5 h-1.5 rounded-full bg-amber-300 shadow-[0_0_8px_#fde047] animate-ember-1 pointer-events-none" />
+                      <span className="absolute top-8 right-12 w-2 h-2 rounded-full bg-orange-400 shadow-[0_0_10px_#f97316] animate-ember-2 pointer-events-none" />
+                      <span className="absolute top-4 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-yellow-200 shadow-[0_0_6px_#fef08a] animate-ember-3 pointer-events-none" />
+
+                      {/* Animated SVG Fire */}
+                      <svg viewBox="0 0 200 200" className="w-full h-full select-none pointer-events-none overflow-visible">
+                        <defs>
+                          <radialGradient id="haloBurn" cx="50%" cy="58%" r="50%">
+                            <stop offset="0%" stopColor="#fb923c" stopOpacity="0.4" />
+                            <stop offset="50%" stopColor="#ea580c" stopOpacity="0.2" />
+                            <stop offset="100%" stopColor="#000000" stopOpacity="0" />
+                          </radialGradient>
+                          <radialGradient id="innerBallBurn" cx="50%" cy="45%" r="55%">
+                            <stop offset="0%" stopColor="#3d1405" />
+                            <stop offset="65%" stopColor="#1c0902" />
+                            <stop offset="100%" stopColor="#0b0301" />
+                          </radialGradient>
+                          <linearGradient id="flameRingBurn" x1="0%" y1="100%" x2="0%" y2="0%">
+                            <stop offset="0%" stopColor="#dc2626" />
+                            <stop offset="35%" stopColor="#ea580c" />
+                            <stop offset="70%" stopColor="#f97316" />
+                            <stop offset="100%" stopColor="#fde047" />
+                          </linearGradient>
+                          <linearGradient id="mainFlameBurn" x1="0%" y1="100%" x2="0%" y2="0%">
+                            <stop offset="0%" stopColor="#c2410c" />
+                            <stop offset="30%" stopColor="#ea580c" />
+                            <stop offset="60%" stopColor="#f59e0b" />
+                            <stop offset="90%" stopColor="#fef08a" />
+                            <stop offset="100%" stopColor="#ffffff" />
+                          </linearGradient>
+                          <filter id="fireGlowBurn" x="-30%" y="-30%" width="160%" height="160%">
+                            <feGaussianBlur stdDeviation="5" result="blur" />
+                            <feMerge>
+                              <feMergeNode in="blur" />
+                              <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                          </filter>
+                        </defs>
+
+                        {/* Ambient Halo */}
+                        <circle cx="100" cy="115" r="75" fill="url(#haloBurn)" />
+
+                        {/* Animated Rising Flames */}
+                        {/* Left Dancing Flame */}
+                        <path
+                          d="M 72 32 C 55 58, 48 85, 58 116 C 62 92, 70 70, 72 32 Z"
+                          fill="url(#flameRingBurn)"
+                          opacity="0.95"
+                          className="animate-flame-left"
+                        />
+                        {/* Right Dancing Flame */}
+                        <path
+                          d="M 128 32 C 145 58, 152 85, 142 116 C 138 92, 130 70, 128 32 Z"
+                          fill="url(#flameRingBurn)"
+                          opacity="0.95"
+                          className="animate-flame-right"
+                        />
+                        {/* Center Dominant Flame Lick */}
+                        <path
+                          d="M 100 12 C 82 45, 68 75, 78 112 C 82 85, 94 55, 100 12 Z"
+                          fill="url(#mainFlameBurn)"
+                          filter="url(#fireGlowBurn)"
+                          className="animate-flame-center"
+                        />
+                        {/* Hot White-Yellow Inner Spikes */}
+                        <path
+                          d="M 88 28 C 78 52, 74 76, 84 105 C 88 80, 96 60, 88 28 Z"
+                          fill="#fef08a"
+                          opacity="0.9"
+                          className="animate-flame-left"
+                        />
+                        <path
+                          d="M 112 28 C 122 52, 126 76, 116 105 C 112 80, 104 60, 112 28 Z"
+                          fill="#fef08a"
+                          opacity="0.9"
+                          className="animate-flame-right"
+                        />
+
+                        {/* Fiery Burning Ring */}
+                        <circle
+                          cx="100"
+                          cy="115"
+                          r="54"
+                          fill="url(#innerBallBurn)"
+                          stroke="url(#flameRingBurn)"
+                          strokeWidth="4.5"
+                          filter="url(#fireGlowBurn)"
+                        />
+                        <circle
+                          cx="100"
+                          cy="115"
+                          r="49"
+                          fill="none"
+                          stroke="#ea580c"
+                          strokeWidth="1.5"
+                          strokeDasharray="4 2"
+                          opacity="0.5"
+                        />
+                      </svg>
+
                       {/* 100% Vector Crisp Text Inside the Fiery Orb */}
-                      <div className="absolute inset-0 pt-6 flex flex-col items-center justify-center pointer-events-none z-10">
-                        <span className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+                      <div className="absolute inset-0 pt-7 flex flex-col items-center justify-center pointer-events-none z-10">
+                        <span className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)] animate-pulse">
                           12
                         </span>
                         <span className="text-[10px] sm:text-[11px] font-black text-amber-300 uppercase tracking-widest -mt-1 drop-shadow">
@@ -2707,8 +2804,9 @@ export default function StudentWebApp() {
                     </div>
                   </div>
 
-                  <p className="font-bold text-xs text-white relative z-10">
-                    Keep going! You're on fire! 🔥
+                  <p className="font-bold text-xs text-white relative z-10 flex items-center justify-center gap-1.5">
+                    <span>Keep going! You're on fire!</span>
+                    <span className="animate-bounce">🔥</span>
                   </p>
                 </div>
 
