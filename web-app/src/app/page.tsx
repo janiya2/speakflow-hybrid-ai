@@ -112,58 +112,76 @@ interface CoachModel {
 
 const COACHES: CoachModel[] = [
   {
+    id: "sophia",
+    name: "Sophia Miller",
+    gender: "female",
+    tagline: "Executive Speech & Silicon Valley Pitch Coach",
+    accent: "American English 🇺🇸 / Executive Tone",
+    avatar: "/images/coaches/sophia.jpg",
+    voice: "en-US-JennyNeural"
+  },
+  {
     id: "sarah",
-    name: "Sarah",
+    name: "Sarah Jenkins",
     gender: "female",
     tagline: "Warm & Patient • Master English Tutor",
-    accent: "American English / Warm Tone",
+    accent: "American English 🇺🇸 / Warm Tone",
     avatar: "/images/coaches/sarah.jpg",
     voice: "en-US-JennyNeural"
   },
   {
     id: "emma",
-    name: "Emma",
+    name: "Emma Watson",
     gender: "female",
     tagline: "Executive & Cambridge Business English",
-    accent: "British / Confident Articulate Tone",
+    accent: "British 🇬🇧 / Confident RP Tone",
     avatar: "/images/coaches/emma.jpg",
     voice: "en-GB-SoniaNeural"
   },
   {
-    id: "aoi",
-    name: "Aoi",
+    id: "chloe",
+    name: "Camille Laurent",
     gender: "female",
-    tagline: "Gentle & Clear • Multilingual Specialist",
-    accent: "Multilingual / Gentle & Clear Tone",
-    avatar: "/images/coaches/aoi.jpg",
-    voice: "ja-JP-NanamiNeural"
+    tagline: "French & European Accent & Conversational Master",
+    accent: "French 🇫🇷 / Elegant Tone",
+    avatar: "/images/coaches/chloe.jpg",
+    voice: "fr-FR-DeniseNeural"
   },
   {
     id: "alex",
-    name: "Alex",
+    name: "Alex Rivera",
     gender: "male",
     tagline: "Energetic & Friendly • Daily Fluency & Idioms",
-    accent: "American English / Energetic & Clear",
+    accent: "American English 🇺🇸 / Energetic Tone",
     avatar: "/images/coaches/alex.jpg",
     voice: "en-US-GuyNeural"
   },
   {
     id: "oliver",
-    name: "Oliver",
+    name: "Oliver Wright",
     gender: "male",
     tagline: "Cambridge Scholarly • Executive Debate & Prep",
-    accent: "British / Articulate & Scholarly",
+    accent: "British Oxford RP 🇬🇧 / Scholarly",
     avatar: "/images/coaches/oliver.jpg",
     voice: "en-GB-RyanNeural"
   },
   {
     id: "kenji",
-    name: "Kenji",
+    name: "Kenji Sato",
     gender: "male",
     tagline: "Analytical & Calm • Global Tech & Bilingual JP/EN",
-    accent: "Bilingual Japanese & Global Tech English",
+    accent: "Bilingual Japanese 🇯🇵 / Tech English",
     avatar: "/images/coaches/kenji.jpg",
     voice: "en-US-ChristopherNeural"
+  },
+  {
+    id: "aoi",
+    name: "Aoi Tanaka",
+    gender: "female",
+    tagline: "Gentle & Clear • Multilingual Specialist",
+    accent: "Multilingual 🇯🇵 / Gentle & Clear Tone",
+    avatar: "/images/coaches/aoi.jpg",
+    voice: "ja-JP-NanamiNeural"
   }
 ];
 
@@ -874,6 +892,29 @@ export default function StudentWebApp() {
   // AI Voice Coach Persona Selection
   const [selectedCoach, setSelectedCoach] = useState<CoachModel>(COACHES[0]);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [previewingCoachVoiceId, setPreviewingCoachVoiceId] = useState<string | null>(null);
+
+  const handlePreviewCoachVoice = (e: React.MouseEvent, coach: CoachModel) => {
+    e.stopPropagation();
+    if (previewingCoachVoiceId === coach.id) {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+      setPreviewingCoachVoiceId(null);
+    } else {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const sampleText = `Hello Janitha! I'm ${coach.name}. I'm excited to practice speaking with you today. Let's start!`;
+        const utter = new SpeechSynthesisUtterance(sampleText);
+        utter.rate = 0.95;
+        utter.pitch = coach.gender === "female" ? 1.15 : 0.9;
+        utter.onend = () => setPreviewingCoachVoiceId(null);
+        utter.onerror = () => setPreviewingCoachVoiceId(null);
+        window.speechSynthesis.speak(utter);
+        setPreviewingCoachVoiceId(coach.id);
+      }
+    }
+  };
 
   // Call Setup Modal State
   const [showDurationModal, setShowDurationModal] = useState(false);
@@ -4410,44 +4451,271 @@ export default function StudentWebApp() {
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* 3. DURATION SELECTION MODAL                                   */}
+      {/* 3. DELUXE CALL SETUP & AI COACH SELECTION MODAL                */}
       {/* ------------------------------------------------------------- */}
       {showDurationModal && pendingTopic && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
-            <div className="text-center space-y-1">
-              <span className="text-3xl">{pendingTopic.icon}</span>
-              <h3 className="font-bold text-sm text-white">{pendingTopic.title}</h3>
-              <p className="text-xs text-slate-400">Select speaking call duration:</p>
-            </div>
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="w-full max-w-2xl bg-gradient-to-b from-[#131b2e] via-[#0d1527] to-[#070b16] border border-cyan-500/40 rounded-3xl p-5 sm:p-6 shadow-[0_25px_80px_rgba(0,0,0,0.9)] relative overflow-hidden my-auto space-y-5">
+            {/* Ambient Corner Glows */}
+            <div className="absolute -top-12 -left-12 w-48 h-48 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent" />
 
-            <div className="grid grid-cols-3 gap-2">
-              {[3, 5, 10].map((mins) => (
-                <button
-                  key={mins}
-                  onClick={() => setSelectedDurationMinutes(mins)}
-                  className={`py-2 rounded-xl text-xs font-bold transition-all ${selectedDurationMinutes === mins
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
-                    : "bg-slate-950 text-slate-400 hover:text-white border border-slate-800"
-                    }`}
-                >
-                  {mins} Mins
-                </button>
-              ))}
-            </div>
+            {/* Top Bar: Topic Badge + Close */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800/80 relative z-10">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/30 border border-cyan-400/40 text-cyan-300 flex items-center justify-center text-2xl shadow-lg shadow-cyan-950/40 shrink-0">
+                  {pendingTopic.icon}
+                </div>
+                <div className="truncate">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 text-[10px] font-black uppercase tracking-wider">
+                      {pendingTopic.language}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-[10px] font-bold">
+                      {pendingTopic.level}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Live AI Call Ready
+                    </span>
+                  </div>
+                  <h3 className="font-black text-base sm:text-lg text-white truncate mt-1">
+                    {pendingTopic.title}
+                  </h3>
+                </div>
+              </div>
 
-            <div className="flex gap-2 pt-2">
               <button
-                onClick={() => setShowDurationModal(false)}
-                className="flex-1 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold"
+                onClick={() => {
+                  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                    window.speechSynthesis.cancel();
+                  }
+                  setPreviewingCoachVoiceId(null);
+                  setShowDurationModal(false);
+                }}
+                className="w-8 h-8 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all shrink-0 ml-2"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Section 1: Choose Your AI Voice Coach */}
+            <div className="space-y-3 relative z-10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+                    <Bot className="w-3.5 h-3.5" />
+                  </div>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-200">
+                    Choose Your AI Speech Coach (8 Available)
+                  </h4>
+                </div>
+                <span className="text-[11px] font-bold text-cyan-300 flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Coach {selectedCoach.name} Active</span>
+                </span>
+              </div>
+
+              {/* Coach Cards Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 max-h-[240px] overflow-y-auto pr-1">
+                {COACHES.map((coach) => {
+                  const isSelected = selectedCoach.id === coach.id;
+                  const isVoicePlaying = previewingCoachVoiceId === coach.id;
+
+                  return (
+                    <div
+                      key={coach.id}
+                      onClick={() => setSelectedCoach(coach)}
+                      className={`p-3 rounded-2xl transition-all duration-200 cursor-pointer relative flex flex-col justify-between group ${
+                        isSelected
+                          ? "bg-gradient-to-b from-cyan-950/70 via-blue-950/50 to-slate-900 border-2 border-cyan-400 shadow-lg shadow-cyan-500/25 scale-[1.02]"
+                          : "bg-slate-900/70 border border-slate-800/90 hover:border-slate-700 hover:bg-slate-800/50"
+                      }`}
+                    >
+                      {/* Active Check Badge */}
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 w-4.5 h-4.5 rounded-full bg-cyan-400 text-slate-950 flex items-center justify-center shadow-md shadow-cyan-400/50">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                        </div>
+                      )}
+
+                      <div className="flex flex-col items-center text-center space-y-1.5">
+                        {/* Coach Avatar with Online Ring */}
+                        <div className="relative">
+                          <div className={`w-14 h-14 rounded-full p-0.5 transition-all ${
+                            isSelected
+                              ? "bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-500 shadow-md shadow-cyan-400/40"
+                              : "bg-slate-700 group-hover:bg-slate-600"
+                          }`}>
+                            <img
+                              src={coach.avatar}
+                              alt={coach.name}
+                              className="w-full h-full object-cover rounded-full"
+                            />
+                          </div>
+                          <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-slate-900 shadow-sm" />
+                        </div>
+
+                        {/* Coach Name & Accent */}
+                        <div>
+                          <h5 className="font-black text-xs text-white group-hover:text-cyan-200 transition-colors">
+                            {coach.name}
+                          </h5>
+                          <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">
+                            {coach.accent}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Listen Preview Button */}
+                      <button
+                        onClick={(e) => handlePreviewCoachVoice(e, coach)}
+                        className={`mt-2 py-1 px-2 rounded-xl text-[9px] font-bold flex items-center justify-center gap-1 transition-all ${
+                          isVoicePlaying
+                            ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/40 animate-pulse"
+                            : "bg-slate-800/80 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-slate-700/60"
+                        }`}
+                        title="Click to preview coach voice"
+                      >
+                        {isVoicePlaying ? (
+                          <>
+                            <Pause className="w-2.5 h-2.5" />
+                            <span>Playing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Volume2 className="w-2.5 h-2.5 text-cyan-400" />
+                            <span>Preview Voice</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Spotlight Banner for Selected Coach */}
+              <div className="p-3 rounded-2xl bg-gradient-to-r from-blue-950/50 via-cyan-950/40 to-indigo-950/50 border border-cyan-500/30 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-cyan-400/80 shadow-md shadow-cyan-400/30 shrink-0">
+                    <img src={selectedCoach.avatar} alt={selectedCoach.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="truncate">
+                    <div className="flex items-center gap-2">
+                      <span className="font-black text-xs text-white truncate">{selectedCoach.name}</span>
+                      <span className="text-[9px] font-bold text-cyan-300 bg-cyan-500/20 px-1.5 py-0.5 rounded border border-cyan-500/30 shrink-0">
+                        {selectedCoach.accent}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-300 truncate mt-0.5">{selectedCoach.tagline}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[10px] font-bold hidden sm:inline-flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    <span>Coach Online</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Call Duration & Bonus XP */}
+            <div className="space-y-2.5 relative z-10 pt-1 border-t border-slate-800/80">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-3.5 h-3.5 text-amber-400" />
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-200">
+                    Select Call Duration
+                  </h4>
+                </div>
+                <span className="text-[10px] text-amber-400 font-mono font-bold">
+                  Bonus XP Multipliers Active
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2.5">
+                {[
+                  { mins: 3, label: "3 Mins", badge: "+50 XP", sub: "⚡ Quick Sprint" },
+                  { mins: 5, label: "5 Mins", badge: "+100 XP", sub: "🎯 Recommended", popular: true },
+                  { mins: 10, label: "10 Mins", badge: "+250 XP", sub: "👑 Immersion" }
+                ].map((tier) => {
+                  const isSelected = selectedDurationMinutes === tier.mins;
+                  return (
+                    <button
+                      key={tier.mins}
+                      onClick={() => setSelectedDurationMinutes(tier.mins)}
+                      className={`p-3 rounded-2xl text-left transition-all duration-200 relative ${
+                        isSelected
+                          ? "bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-lg shadow-blue-600/30 border border-cyan-400/60 scale-[1.02]"
+                          : "bg-slate-900/80 text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700"
+                      }`}
+                    >
+                      {tier.popular && (
+                        <span className="absolute -top-2 right-3 px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[8px] font-black uppercase tracking-wide shadow-sm">
+                          POPULAR
+                        </span>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <span className="font-black text-sm">{tier.label}</span>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                          isSelected ? "bg-white/20 text-white" : "bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                        }`}>
+                          {tier.badge}
+                        </span>
+                      </div>
+                      <p className={`text-[10px] mt-1 font-medium ${
+                        isSelected ? "text-cyan-100" : "text-slate-400"
+                      }`}>
+                        {tier.sub}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* AI Engine & Privacy Guarantee */}
+            <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-950/60 border border-slate-800 text-[10px] text-slate-400 relative z-10">
+              <div className="flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-yellow-400" />
+                <span>Powered by <strong className="text-white">Gemini Nano Hybrid AI</strong></span>
+              </div>
+              <div className="flex items-center gap-1 text-emerald-400 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span>Sub-15ms Live Voice Latency</span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3 pt-1 relative z-10">
+              <button
+                onClick={() => {
+                  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                    window.speechSynthesis.cancel();
+                  }
+                  setPreviewingCoachVoiceId(null);
+                  setShowDurationModal(false);
+                }}
+                className="py-3 px-5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition-all"
               >
                 Cancel
               </button>
               <button
-                onClick={handleConfirmStartCall}
-                className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-600/30"
+                onClick={() => {
+                  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                    window.speechSynthesis.cancel();
+                  }
+                  setPreviewingCoachVoiceId(null);
+                  handleConfirmStartCall();
+                }}
+                className="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-black text-xs sm:text-sm shadow-xl shadow-blue-600/40 hover:shadow-cyan-500/50 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
               >
-                Start Call Now
+                <PhoneCall className="w-4 h-4 animate-bounce" />
+                <span>
+                  Start Call with Coach {selectedCoach.name} ({selectedDurationMinutes} Mins) →
+                </span>
               </button>
             </div>
           </div>
