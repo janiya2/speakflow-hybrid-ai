@@ -95,7 +95,8 @@ import {
   Activity,
   Wifi,
   WifiOff,
-  MessageSquare
+  MessageSquare,
+  Send
 } from "lucide-react";
 
 interface TopicModel {
@@ -956,13 +957,18 @@ export default function StudentWebApp() {
       setIsCameraActive(false);
     } else {
       try {
-        if (typeof navigator !== "undefined" && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-          if (userVideoRef.current) {
-            userVideoRef.current.srcObject = stream;
-            userVideoRef.current.play();
-          }
+        if (typeof navigator !== "undefined" && navigator.mediaDevices?.getUserMedia) {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 640 }, height: { ideal: 480 } },
+            audio: false
+          });
           setIsCameraActive(true);
+          setTimeout(() => {
+            if (userVideoRef.current) {
+              userVideoRef.current.srcObject = stream;
+              userVideoRef.current.play().catch(() => {});
+            }
+          }, 150);
         }
       } catch (err) {
         console.warn("Camera access denied or unavailable:", err);
@@ -1222,9 +1228,101 @@ export default function StudentWebApp() {
     }
   };
 
-  // Web Speech API Refs
+  // Web Speech & Audio Monitor Refs
   const recognitionRef = useRef<any>(null);
   const proactiveNudgeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const speechDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isCallActiveRef = useRef(false);
+  const isBotSpeakingRef = useRef(false);
+  const isProcessingRef = useRef(false);
+  const isMutedRef = useRef(false);
+  const isListeningIntentRef = useRef(false);
+
+  // AudioContext Decibel Monitor Refs
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
+  const animFrameRef = useRef<number | null>(null);
+  const [micVolumeLevel, setMicVolumeLevel] = useState<number>(0);
+  const [micPermissionError, setMicPermissionError] = useState(false);
+
+  useEffect(() => {
+    isCallActiveRef.current = !!activeCallTopic;
+  }, [activeCallTopic]);
+
+  useEffect(() => {
+    isBotSpeakingRef.current = isBotSpeaking;
+  }, [isBotSpeaking]);
+
+  useEffect(() => {
+    isProcessingRef.current = isProcessing;
+  }, [isProcessing]);
+
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+  }, [isMuted]);
+
+  const startMicVolumeMonitor = async () => {
+    try {
+      if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia) return;
+      if (micStreamRef.current) return;
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micStreamRef.current = stream;
+      setMicPermissionError(false);
+
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioCtx();
+      audioContextRef.current = ctx;
+
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 64;
+      analyserRef.current = analyser;
+
+      const source = ctx.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+      const checkVolume = () => {
+        if (!analyserRef.current) return;
+        analyserRef.current.getByteFrequencyData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+          sum += dataArray[i];
+        }
+        const avg = sum / dataArray.length;
+        const level = Math.min(100, Math.round((avg / 128) * 100));
+        setMicVolumeLevel(level);
+
+        if (level > 10) {
+          setIsUserSpeaking(true);
+        }
+
+        animFrameRef.current = requestAnimationFrame(checkVolume);
+      };
+
+      checkVolume();
+    } catch (err: any) {
+      console.warn("Microphone access error / permission denied:", err);
+      if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+        setMicPermissionError(true);
+      }
+    }
+  };
+
+  const stopMicVolumeMonitor = () => {
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    if (micStreamRef.current) {
+      micStreamRef.current.getTracks().forEach((t) => t.stop());
+      micStreamRef.current = null;
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close().catch(() => {});
+      audioContextRef.current = null;
+    }
+    setMicVolumeLevel(0);
+  };
 
   // 1. Load Landing Settings from Firestore (Synced with Admin Panel CMS)
   useEffect(() => {
@@ -1472,9 +1570,9 @@ export default function StudentWebApp() {
     }, 12000);
   };
 
-  // 8. Speech Recognition (STT)
+  // 8. Speech Recognition (STT) - Unbreakable Continuous Recognition Loop
   const startListening = () => {
-    if (isMuted || !activeCallTopic) return;
+    if (isMutedRef.current || !isCallActiveRef.current) return;
     if (typeof window === "undefined") return;
 
     const SpeechRecognition =
@@ -1485,17 +1583,22 @@ export default function StudentWebApp() {
       return;
     }
 
+    isListeningIntentRef.current = true;
+    startMicVolumeMonitor();
+
     try {
       if (recognitionRef.current) {
-        recognitionRef.current.abort();
+        try {
+          recognitionRef.current.abort();
+        } catch (_) {}
       }
 
       const recognition = new SpeechRecognition();
       recognitionRef.current = recognition;
-      recognition.continuous = false;
+      recognition.continuous = true;
       recognition.interimResults = true;
 
-      const langName = activeCallTopic.language;
+      const langName = activeCallTopic?.language || "English";
       let targetLang = "en-US";
       if (langName === "Japanese") targetLang = "ja-JP";
       else if (langName === "Korean") targetLang = "ko-KR";
@@ -1504,39 +1607,75 @@ export default function StudentWebApp() {
 
       recognition.onstart = () => {
         setIsUserSpeaking(true);
+        setMicPermissionError(false);
       };
 
       recognition.onresult = (event: any) => {
-        let transcript = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript;
-        }
-        setUserCaption(transcript);
+        let interimText = "";
+        let finalText = "";
 
-        if (event.results[0].isFinal) {
-          handleUserSpeech(transcript);
+        for (let i = 0; i < event.results.length; i++) {
+          const result = event.results[i];
+          if (result.isFinal) {
+            finalText += result[0].transcript + " ";
+          } else {
+            interimText += result[0].transcript;
+          }
+        }
+
+        const liveWords = (finalText + interimText).trim();
+        if (liveWords) {
+          setUserCaption(liveWords);
+          setIsUserSpeaking(true);
+        }
+
+        // When user finishes a phrase, debounce before sending to AI
+        const phraseToSubmit = finalText.trim() || (interimText.length > 8 ? interimText.trim() : "");
+        if (phraseToSubmit) {
+          if (speechDebounceTimerRef.current) clearTimeout(speechDebounceTimerRef.current);
+          speechDebounceTimerRef.current = setTimeout(() => {
+            if (isListeningIntentRef.current && phraseToSubmit.length >= 2) {
+              handleUserSpeech(phraseToSubmit);
+            }
+          }, 1100);
         }
       };
 
       recognition.onerror = (event: any) => {
-        if (event.error !== "no-speech") {
-          console.warn("Speech Recognition Error:", event.error);
+        console.warn("Speech Recognition Status:", event.error);
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+          setMicPermissionError(true);
         }
         setIsUserSpeaking(false);
+
+        // Auto-resurrect on no-speech
+        if (event.error === "no-speech" && isCallActiveRef.current && !isBotSpeakingRef.current && !isMutedRef.current) {
+          try {
+            recognition.start();
+          } catch (_) {}
+        }
       };
 
       recognition.onend = () => {
         setIsUserSpeaking(false);
+        // Automatic resurrection loop: Keep listening continuously while call is active!
+        if (isListeningIntentRef.current && isCallActiveRef.current && !isBotSpeakingRef.current && !isMutedRef.current && !isProcessingRef.current) {
+          try {
+            recognition.start();
+          } catch (_) {}
+        }
       };
 
       recognition.start();
-    } catch (e) {
-      console.error("Failed to start speech recognition:", e);
+    } catch (e: any) {
+      console.warn("Failed to start speech recognition:", e);
       setIsUserSpeaking(false);
     }
   };
 
   const stopListening = () => {
+    isListeningIntentRef.current = false;
+    if (speechDebounceTimerRef.current) clearTimeout(speechDebounceTimerRef.current);
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
@@ -1735,6 +1874,13 @@ export default function StudentWebApp() {
   // 12. Calculate Score & End Call
   const handleEndCall = async () => {
     stopListening();
+    stopMicVolumeMonitor();
+    if (userVideoRef.current && userVideoRef.current.srcObject) {
+      const stream = userVideoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop());
+      userVideoRef.current.srcObject = null;
+    }
+    setIsCameraActive(false);
     if (proactiveNudgeTimerRef.current) clearTimeout(proactiveNudgeTimerRef.current);
     if (activeAudioRef.current) {
       try {
@@ -2714,25 +2860,32 @@ export default function StudentWebApp() {
                   </div>
 
                   {/* Central Coach Presence & Dynamic Video Animation */}
-                  <div className="flex-1 flex flex-col items-center justify-center my-4 relative">
+                  <div className="flex-1 flex flex-col items-center justify-center my-2 relative">
+                    {/* Ambient Blurred Studio Video Backdrop */}
+                    <img
+                      src={selectedCoach.avatar}
+                      alt="Studio Backdrop"
+                      className="absolute inset-0 w-full h-full object-cover blur-3xl scale-125 opacity-25 pointer-events-none"
+                    />
+
                     {/* Concentric Audio Pulse Rings when Speaking */}
                     {isBotSpeaking && (
                       <>
-                        <div className="absolute w-64 h-64 rounded-full border-2 border-cyan-400 animate-ping opacity-30 pointer-events-none" />
-                        <div className="absolute w-80 h-80 rounded-full border border-blue-500 animate-pulse opacity-20 pointer-events-none" />
+                        <div className="absolute w-64 h-64 rounded-3xl border-2 border-cyan-400 animate-ping opacity-30 pointer-events-none" />
+                        <div className="absolute w-80 h-80 rounded-3xl border border-blue-500 animate-pulse opacity-20 pointer-events-none" />
                       </>
                     )}
 
-                    {/* Coach Large Studio Avatar Feed */}
-                    <div className="relative group">
-                      <div className={`w-44 h-44 sm:w-56 sm:h-56 rounded-full p-1.5 transition-all duration-300 ${
+                    {/* Coach Large Studio Avatar Video Feed */}
+                    <div className="relative group z-10">
+                      <div className={`w-44 h-44 sm:w-56 sm:h-56 rounded-3xl p-1.5 transition-all duration-300 ${
                         isBotSpeaking
                           ? "bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-500 shadow-[0_0_60px_rgba(56,189,248,0.7)] scale-105"
                           : isUserSpeaking
                           ? "bg-gradient-to-tr from-emerald-400 to-teal-500 shadow-[0_0_50px_rgba(16,185,129,0.5)] scale-100"
                           : "bg-gradient-to-tr from-slate-700 to-slate-800 shadow-2xl"
                       }`}>
-                        <div className="w-full h-full rounded-full overflow-hidden relative">
+                        <div className="w-full h-full rounded-[22px] overflow-hidden relative">
                           <img
                             src={selectedCoach.avatar}
                             alt={selectedCoach.name}
@@ -2753,7 +2906,7 @@ export default function StudentWebApp() {
                       {isUserSpeaking && (
                         <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/40 flex items-center gap-1.5 whitespace-nowrap animate-bounce">
                           <Mic className="w-3.5 h-3.5 animate-pulse" />
-                          <span>Listening to You...</span>
+                          <span>Hearing Your Speech...</span>
                         </div>
                       )}
                       {!isBotSpeaking && !isUserSpeaking && isProcessing && (
@@ -2764,29 +2917,58 @@ export default function StudentWebApp() {
                       )}
                     </div>
 
-                    {/* Live Multichannel Soundwave Bars */}
-                    <div className="flex items-center gap-1.5 h-8 mt-5">
-                      {[1, 2, 3, 4, 5, 6, 7].map((bar) => {
-                        const active = isBotSpeaking || isUserSpeaking;
-                        return (
-                          <span
-                            key={bar}
-                            className={`w-1.5 rounded-full transition-all duration-150 ${
-                              isBotSpeaking
-                                ? "bg-cyan-400 shadow-[0_0_8px_#38bdf8]"
-                                : isUserSpeaking
-                                ? "bg-emerald-400 shadow-[0_0_8px_#34d399]"
-                                : "bg-slate-700 h-2"
-                            } ${
-                              active
-                                ? bar % 2 === 0
-                                  ? "h-7 animate-bounce"
-                                  : "h-5 animate-pulse"
-                                : "h-2"
-                            }`}
+                    {/* LIVE MICROPHONE INPUT & DECIBEL LEVEL HUD */}
+                    <div className="flex flex-col items-center gap-1.5 mt-4 z-20">
+                      <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-950/90 border border-emerald-500/40 backdrop-blur-md shadow-lg">
+                        <span className={`w-2.5 h-2.5 rounded-full ${micVolumeLevel > 10 ? 'bg-emerald-400 animate-ping' : 'bg-emerald-500'}`} />
+                        <Mic className="w-3.5 h-3.5 text-emerald-400" />
+                        {/* Live Decibel Bar */}
+                        <div className="w-24 sm:w-32 h-2 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                          <div
+                            className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full transition-all duration-75"
+                            style={{ width: `${Math.max(6, micVolumeLevel)}%` }}
                           />
-                        );
-                      })}
+                        </div>
+                        <span className="text-[10px] font-mono text-emerald-300 font-bold">
+                          {micVolumeLevel > 10 ? `Hearing Voice: ${micVolumeLevel}%` : 'Mic Live • Speak Now'}
+                        </span>
+                      </div>
+
+                      {/* Manual Submit Button if user spoke something */}
+                      {userCaption && (
+                        <button
+                          onClick={() => handleUserSpeech(userCaption)}
+                          className="mt-1 px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/50 flex items-center gap-1.5 transition-all animate-bounce"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Send Speech: "{userCaption.slice(0, 32)}..." →</span>
+                        </button>
+                      )}
+
+                      {/* Microphone Permission Blocked Warning */}
+                      {micPermissionError && (
+                        <div className="mt-1 px-3 py-1 rounded-xl bg-rose-500/20 border border-rose-500/50 text-rose-300 text-[10px] font-bold flex items-center gap-1.5">
+                          <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                          <span>Microphone blocked! Click the lock icon 🔒 in browser address bar to Allow.</span>
+                        </div>
+                      )}
+
+                      {/* Quick Instant Response Chips */}
+                      <div className="flex items-center gap-1.5 flex-wrap justify-center mt-1">
+                        {[
+                          { text: "I love cricket and Virat Kohli!", label: "🏏 Cricket & Kohli" },
+                          { text: "Who is your all-time favorite player?", label: "❓ Favorite Player" },
+                          { text: "Tell me how T20 matches are played!", label: "⚡ T20 Rules" }
+                        ].map((chip, cIdx) => (
+                          <button
+                            key={cIdx}
+                            onClick={() => handleUserSpeech(chip.text)}
+                            className="px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-cyan-600/30 text-slate-300 hover:text-cyan-200 border border-slate-700/80 text-[10px] font-semibold transition-all hover:scale-105 active:scale-95"
+                          >
+                            {chip.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
