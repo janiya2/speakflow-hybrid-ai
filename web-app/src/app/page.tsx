@@ -2690,107 +2690,205 @@ export default function StudentWebApp() {
                   </div>
                 </div>
 
-                {/* 2. 4 QUICK STAT CARDS (Pristine Luxury Glassmorphic Suite) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
+                {/* 2. 4 QUICK STAT CARDS (Ultra-Luxury Cyber Glass Suite) */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4.5 w-full">
                   {/* Card 1: Practice Time */}
-                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#111827] via-[#15122B] to-[#100D22] border border-purple-500/30 hover:border-purple-400/60 shadow-lg flex items-center justify-between min-h-[102px] transition-all duration-200 hover:scale-[1.02] relative overflow-hidden group">
-                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-purple-500/15 rounded-full blur-2xl pointer-events-none" />
-                    
-                    <div className="flex items-center gap-3 relative z-10 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-400 flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform">
-                        <Mic className="w-5 h-5 text-purple-400" />
+                  <div 
+                    onClick={() => setActiveTab("practice")}
+                    className="p-4 sm:p-5 rounded-3xl bg-gradient-to-b from-[#1b153b]/95 via-[#130f2d]/90 to-[#0a081a]/95 border border-purple-500/40 hover:border-purple-400 shadow-xl shadow-purple-950/30 hover:shadow-purple-600/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[142px] group"
+                  >
+                    {/* Top specular highlight line */}
+                    <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-purple-400/60 to-transparent" />
+                    {/* Ambient Purple Glow */}
+                    <div className="absolute -top-10 -right-10 w-28 h-28 bg-purple-600/20 rounded-full blur-2xl pointer-events-none group-hover:bg-purple-500/35 transition-all" />
+
+                    {/* Top Row: 3D Squircle Icon + Trend Badge */}
+                    <div className="flex items-center justify-between relative z-10">
+                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500/30 via-purple-600/20 to-indigo-600/25 border border-purple-400/40 text-purple-300 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.35)] group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                        <Mic className="w-5 h-5 text-purple-300 drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]" />
                       </div>
-                      <div className="min-w-0">
-                        <span className="text-[11px] text-slate-400 block font-medium">Practice Time</span>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xl font-black text-white">2.5 hrs</span>
-                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 rounded">
-                            ↑ +25%
-                          </span>
-                        </div>
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[10px] font-bold shadow-sm shadow-emerald-950/50">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span>↑ +25%</span>
                       </div>
                     </div>
 
-                    {/* Micro Sparkline on the right */}
-                    <div className="shrink-0 pl-2 relative z-10">
-                      <svg className="w-14 h-7 text-purple-400 drop-shadow-[0_2px_8px_rgba(168,85,247,0.4)]" fill="none" viewBox="0 0 56 28">
-                        <path d="M 2 24 C 14 20, 24 16, 34 18 C 44 20, 48 6, 54 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                      </svg>
+                    {/* Middle: Big Stat Number */}
+                    <div className="relative z-10 my-2">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)] font-sans">
+                          2.5
+                        </span>
+                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-purple-300 bg-purple-500/20 px-1.5 py-0.5 rounded-md border border-purple-400/30">
+                          HRS
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Bottom Row: Label + Glowing Waveform Bars */}
+                    <div className="flex items-end justify-between relative z-10 pt-1 border-t border-purple-500/15">
+                      <div className="flex flex-col">
+                        <span className="text-[11px] text-slate-300 font-semibold group-hover:text-purple-200 transition-colors">
+                          Practice Time
+                        </span>
+                        <span className="text-[9px] text-purple-400/70 font-mono">
+                          150 mins logged
+                        </span>
+                      </div>
+                      {/* Animated Soundwave Equalizer */}
+                      <div className="flex items-end gap-1 h-5 px-1 py-0.5 rounded-lg bg-purple-950/40 border border-purple-500/20">
+                        <span className="w-1 bg-purple-400 rounded-full animate-[pulse_1.2s_ease-in-out_infinite] h-3" />
+                        <span className="w-1 bg-purple-300 rounded-full animate-[pulse_0.8s_ease-in-out_infinite] h-4.5" />
+                        <span className="w-1 bg-indigo-400 rounded-full animate-[pulse_1.5s_ease-in-out_infinite] h-2.5" />
+                        <span className="w-1 bg-purple-400 rounded-full animate-[pulse_1.0s_ease-in-out_infinite] h-4" />
+                        <span className="w-1 bg-purple-300 rounded-full animate-[pulse_0.9s_ease-in-out_infinite] h-3.5" />
+                      </div>
                     </div>
                   </div>
 
                   {/* Card 2: Lessons Completed */}
-                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#111827] via-[#0D211B] to-[#091814] border border-emerald-500/30 hover:border-emerald-400/60 shadow-lg flex items-center justify-between min-h-[102px] transition-all duration-200 hover:scale-[1.02] relative overflow-hidden group">
-                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none" />
+                  <div 
+                    onClick={() => setActiveTab("practice")}
+                    className="p-4 sm:p-5 rounded-3xl bg-gradient-to-b from-[#0e2c22]/95 via-[#092018]/90 to-[#05140f]/95 border border-emerald-500/40 hover:border-emerald-400 shadow-xl shadow-emerald-950/30 hover:shadow-emerald-600/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[142px] group"
+                  >
+                    <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent" />
+                    <div className="absolute -top-10 -right-10 w-28 h-28 bg-emerald-600/20 rounded-full blur-2xl pointer-events-none group-hover:bg-emerald-500/35 transition-all" />
 
-                    <div className="flex items-center gap-3 relative z-10 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform">
-                        <Target className="w-5 h-5 stroke-[2.5]" />
+                    {/* Top Row: 3D Squircle Icon + Trend Badge */}
+                    <div className="flex items-center justify-between relative z-10">
+                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500/30 via-emerald-600/20 to-teal-600/25 border border-emerald-400/40 text-emerald-300 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.35)] group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                        <Target className="w-5 h-5 text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] stroke-[2.5]" />
                       </div>
-                      <div className="min-w-0">
-                        <span className="text-[11px] text-slate-400 block font-medium">Lessons Completed</span>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xl font-black text-white">48</span>
-                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 rounded">
-                            ↑ +12%
-                          </span>
-                        </div>
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[10px] font-bold shadow-sm shadow-emerald-950/50">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span>↑ +12%</span>
                       </div>
                     </div>
 
-                    <div className="shrink-0 pl-2 relative z-10">
-                      <svg className="w-14 h-7 text-emerald-400 drop-shadow-[0_2px_8px_rgba(16,185,129,0.4)]" fill="none" viewBox="0 0 56 28">
-                        <path d="M 2 22 C 16 8, 28 16, 40 10 C 48 5, 50 4, 54 3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                      </svg>
+                    {/* Middle: Big Stat Number */}
+                    <div className="relative z-10 my-2">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)] font-sans">
+                          48
+                        </span>
+                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-300 bg-emerald-500/20 px-1.5 py-0.5 rounded-md border border-emerald-400/30">
+                          / 60 UNITS
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Bottom Row: Label + 6-Segment Cyber Bar */}
+                    <div className="flex flex-col relative z-10 pt-1 border-t border-emerald-500/15 space-y-1">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-slate-300 font-semibold group-hover:text-emerald-200 transition-colors">
+                          Lessons Done
+                        </span>
+                        <span className="text-[9px] text-emerald-300 font-bold font-mono">
+                          80% Complete
+                        </span>
+                      </div>
+                      {/* Segmented Cyber Progress Bar */}
+                      <div className="flex items-center gap-1 w-full">
+                        <div className="flex-1 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                        <div className="flex-1 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                        <div className="flex-1 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                        <div className="flex-1 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                        <div className="flex-1 h-1.5 rounded-full bg-emerald-500/40" />
+                        <div className="flex-1 h-1.5 rounded-full bg-emerald-950/60" />
+                      </div>
                     </div>
                   </div>
 
                   {/* Card 3: Current Streak */}
-                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#111827] via-[#22150E] to-[#180E08] border border-amber-500/30 hover:border-amber-400/60 shadow-lg flex items-center justify-between min-h-[102px] transition-all duration-200 hover:scale-[1.02] relative overflow-hidden group">
-                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-amber-500/15 rounded-full blur-2xl pointer-events-none" />
+                  <div 
+                    onClick={() => setActiveTab("achievements")}
+                    className="p-4 sm:p-5 rounded-3xl bg-gradient-to-b from-[#331c0c]/95 via-[#231307]/90 to-[#120803]/95 border border-amber-500/40 hover:border-amber-400 shadow-xl shadow-amber-950/30 hover:shadow-amber-600/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[142px] group"
+                  >
+                    <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
+                    <div className="absolute -top-10 -right-10 w-28 h-28 bg-amber-600/20 rounded-full blur-2xl pointer-events-none group-hover:bg-amber-500/35 transition-all" />
 
-                    <div className="flex items-center gap-3 relative z-10 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform">
-                        <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+                    {/* Top Row: 3D Squircle Icon + Rank Badge */}
+                    <div className="flex items-center justify-between relative z-10">
+                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500/30 via-orange-600/20 to-yellow-600/25 border border-amber-400/40 text-amber-300 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.35)] group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                        <Flame className="w-5 h-5 text-amber-400 fill-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] animate-pulse" />
                       </div>
-                      <div className="min-w-0">
-                        <span className="text-[11px] text-slate-400 block font-medium">Current Streak</span>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-xl font-black text-white">12 days</span>
-                          <span className="text-sm">🔥</span>
-                        </div>
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/35 text-amber-300 text-[10px] font-black tracking-wide shadow-sm">
+                        <span>👑 Top 5%</span>
                       </div>
                     </div>
 
-                    <div className="shrink-0 pl-2 relative z-10">
-                      <svg className="w-14 h-7 text-amber-400 drop-shadow-[0_2px_8px_rgba(245,158,11,0.4)]" fill="none" viewBox="0 0 56 28">
-                        <path d="M 2 25 C 16 18, 30 12, 44 8 C 50 6, 52 4, 54 3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                      </svg>
+                    {/* Middle: Big Stat Number */}
+                    <div className="relative z-10 my-2">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)] font-sans">
+                          12
+                        </span>
+                        <span className="text-[11px] font-black uppercase tracking-wider text-amber-400 bg-amber-500/20 px-1.5 py-0.5 rounded-md border border-amber-400/30 flex items-center gap-1">
+                          DAYS <span className="text-xs">🔥</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Bottom Row: Label + Multiplier Pill */}
+                    <div className="flex items-end justify-between relative z-10 pt-1 border-t border-amber-500/15">
+                      <div className="flex flex-col">
+                        <span className="text-[11px] text-slate-300 font-semibold group-hover:text-amber-200 transition-colors">
+                          Daily Streak
+                        </span>
+                        <span className="text-[9px] text-amber-400/80 font-mono">
+                          Personal Best!
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-400/30 text-amber-300 text-[9px] font-black uppercase tracking-wider">
+                        <Zap className="w-2.5 h-2.5 text-amber-400 fill-amber-400 animate-bounce" />
+                        <span>2x XP Boost</span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Card 4: Overall Level */}
-                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#111827] via-[#0E1B2E] to-[#0A1424] border border-cyan-500/30 hover:border-cyan-400/60 shadow-lg flex flex-col justify-between min-h-[102px] transition-all duration-200 hover:scale-[1.02] relative overflow-hidden group">
-                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-cyan-500/15 rounded-full blur-2xl pointer-events-none" />
+                  <div 
+                    onClick={() => setActiveTab("progress")}
+                    className="p-4 sm:p-5 rounded-3xl bg-gradient-to-b from-[#10253d]/95 via-[#0b1b2d]/90 to-[#06101c]/95 border border-cyan-500/40 hover:border-cyan-400 shadow-xl shadow-cyan-950/30 hover:shadow-cyan-600/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[142px] group"
+                  >
+                    <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
+                    <div className="absolute -top-10 -right-10 w-28 h-28 bg-cyan-600/20 rounded-full blur-2xl pointer-events-none group-hover:bg-cyan-500/35 transition-all" />
 
-                    <div className="flex items-center gap-3 relative z-10">
-                      <div className="w-10 h-10 rounded-xl bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform">
-                        <Trophy className="w-5 h-5" />
+                    {/* Top Row: 3D Squircle Icon + CEFR Badge */}
+                    <div className="flex items-center justify-between relative z-10">
+                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500/30 via-blue-600/20 to-indigo-600/25 border border-cyan-400/40 text-cyan-300 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.35)] group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                        <Award className="w-5 h-5 text-cyan-300 drop-shadow-[0_0_8px_rgba(103,232,249,0.8)] stroke-[2.5]" />
                       </div>
-                      <div>
-                        <span className="text-[11px] text-slate-400 block font-medium">Overall Level</span>
-                        <span className="text-sm font-black text-white block mt-0.5">Intermediate</span>
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 text-[10px] font-black font-mono shadow-sm">
+                        <span>CEFR B2</span>
                       </div>
                     </div>
 
-                    <div className="pt-2 relative z-10">
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
-                        <span>Progress</span>
-                        <span className="font-bold text-cyan-400">68%</span>
+                    {/* Middle: Big Stat Text */}
+                    <div className="relative z-10 my-2">
+                      <div className="flex items-baseline gap-1.5 truncate">
+                        <span className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)] font-sans truncate">
+                          Intermediate
+                        </span>
+                        <span className="text-[10px] font-bold text-cyan-300 bg-cyan-500/20 px-1.5 py-0.5 rounded border border-cyan-400/30">
+                          68%
+                        </span>
                       </div>
-                      <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                    </div>
+
+                    {/* Bottom Row: Label + Glowing XP Progress Bar */}
+                    <div className="flex flex-col relative z-10 pt-1 border-t border-cyan-500/15 space-y-1">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-slate-300 font-semibold group-hover:text-cyan-200 transition-colors">
+                          Fluency Tier
+                        </span>
+                        <span className="text-[9px] text-cyan-300 font-bold font-mono">
+                          2.4k / 3k XP
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-slate-900/80 p-0.5 border border-cyan-500/20 overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full shadow-sm shadow-cyan-400/50"
+                          className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 rounded-full shadow-[0_0_8px_#38bdf8] transition-all duration-500"
                           style={{ width: "68%" }}
                         />
                       </div>
