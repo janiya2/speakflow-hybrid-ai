@@ -6,8 +6,10 @@ import os from "os";
 
 export const VOICE_MAP: Record<string, string> = {
   // Female Voices
+  sophia: "en-US-AriaNeural",
   sarah: "en-US-JennyNeural",
   emma: "en-GB-SoniaNeural",
+  chloe: "fr-FR-DeniseNeural",
   aoi: "ja-JP-NanamiNeural",
   female_en: "en-US-JennyNeural",
   female_ja: "ja-JP-NanamiNeural",
