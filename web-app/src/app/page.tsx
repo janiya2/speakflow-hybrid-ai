@@ -748,6 +748,34 @@ export default function StudentWebApp() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showVipModal, setShowVipModal] = useState(false);
 
+  // Membership Tier & Expiration System (Free vs VIP Pro)
+  const [isPremiumMember, setIsPremiumMember] = useState<boolean>(true);
+  const [premiumPlanName, setPremiumPlanName] = useState<string>("Annual VIP Pro Pass");
+  const [premiumExpiryDate, setPremiumExpiryDate] = useState<string>("2027-01-15");
+  const [streakFreezesCount, setStreakFreezesCount] = useState<number>(2);
+
+  const toggleMembershipTier = () => {
+    const nextVal = !isPremiumMember;
+    setIsPremiumMember(nextVal);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("speakflow_is_premium", String(nextVal));
+      } catch (_) {}
+    }
+  };
+
+  const getDaysUntilExpiry = (expiryDateStr: string) => {
+    try {
+      const expiry = new Date(expiryDateStr);
+      const now = new Date();
+      const diffTime = expiry.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 0 ? diffDays : 0;
+    } catch (_) {
+      return 56;
+    }
+  };
+
   // 20-Achievement Gamification System
   const [achievements, setAchievements] = useState<AchievementBadge[]>(DEFAULT_ACHIEVEMENTS);
   const [totalXp, setTotalXp] = useState<number>(2450);
@@ -2080,9 +2108,18 @@ export default function StudentWebApp() {
                 <span className="font-bold text-xs text-white block">
                   {user.displayName || "Janitha Dilshan"}
                 </span>
-                <span className="text-[10px] text-emerald-400 flex items-center gap-1 font-semibold">
-                  <CheckCircle2 className="w-3 h-3" />
-                  Premium Member
+                <span className={`text-[10px] flex items-center gap-1 font-semibold ${isPremiumMember ? "text-amber-300" : "text-slate-400"}`}>
+                  {isPremiumMember ? (
+                    <>
+                      <Crown className="w-3 h-3 text-amber-400 fill-amber-400" />
+                      <span>VIP Pro Member</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-3 h-3 text-slate-500" />
+                      <span>Free Explorer</span>
+                    </>
+                  )}
                 </span>
               </div>
             </div>
@@ -2672,45 +2709,94 @@ export default function StudentWebApp() {
 
               {/* RIGHT COLUMN (4 cols in 12-col grid): Your Streak, Upcoming Lesson & Sprint Targets */}
               <div className="lg:col-span-4 space-y-6">
-                {/* 1. YOUR STREAK CARD (Live Burning Animated Fire Badge) */}
-                <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800/80 text-center relative overflow-hidden space-y-3 shadow-xl group">
-                  {/* Pulsing Ambient Fiery Aura */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-44 h-44 bg-gradient-to-tr from-orange-600/25 via-amber-500/20 to-red-600/15 rounded-full animate-flame-glow pointer-events-none" />
+                {/* 1. YOUR STREAK CARD (Adaptive Tier Badge & Expiry System) */}
+                <div
+                  className={`p-6 rounded-3xl border text-center relative overflow-hidden space-y-4 shadow-xl transition-all duration-300 ${
+                    isPremiumMember
+                      ? "bg-gradient-to-b from-[#121629] to-[#0D111E] border-amber-500/35 ring-1 ring-amber-400/20"
+                      : "bg-[#111827] border-slate-800/80"
+                  }`}
+                >
+                  {/* Ambient Aura: Violet/Gold for Premium, Amber for Free */}
+                  <div
+                    className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full pointer-events-none animate-flame-glow ${
+                      isPremiumMember
+                        ? "bg-gradient-to-tr from-amber-500/25 via-purple-600/25 to-pink-500/20"
+                        : "bg-orange-600/15"
+                    }`}
+                  />
 
+                  {/* Top Header with Interactive Tier Switcher Badge */}
                   <div className="flex items-center justify-between text-left relative z-10">
                     <div className="flex items-center gap-2">
-                      <Flame className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse" />
+                      <Flame
+                        className={`w-4 h-4 animate-pulse ${
+                          isPremiumMember ? "text-amber-400 fill-amber-400" : "text-orange-500 fill-orange-500"
+                        }`}
+                      />
                       <h3 className="font-bold text-xs text-white">Your Streak</h3>
                     </div>
-                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/25 flex items-center gap-1 shadow-sm">
-                      <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-ping"></span>
-                      <span>Top 5%</span>
-                    </span>
+
+                    {/* Dynamic Membership Tier Pill (Clickable to demo toggle Free vs Pro!) */}
+                    <button
+                      onClick={toggleMembershipTier}
+                      title="Click to toggle between Free Explorer and VIP Pro Member"
+                      className={`text-[10px] font-black px-2.5 py-1 rounded-full border flex items-center gap-1.5 shadow-md transition-all hover:scale-105 active:scale-95 ${
+                        isPremiumMember
+                          ? "bg-gradient-to-r from-amber-500/20 via-purple-500/25 to-pink-500/20 border-amber-400/50 text-amber-300 shadow-amber-500/10"
+                          : "bg-slate-800 text-slate-300 border-slate-700"
+                      }`}
+                    >
+                      {isPremiumMember ? (
+                        <>
+                          <Crown className="w-3 h-3 text-amber-400 fill-amber-400 animate-pulse" />
+                          <span>👑 VIP PRO</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                          <span>Free Explorer</span>
+                        </>
+                      )}
+                    </button>
                   </div>
 
                   {/* LIVE ANIMATED BURNING FLAME BADGE */}
                   <div className="relative py-2 flex flex-col items-center justify-center">
                     <div className="relative w-36 h-36 flex items-center justify-center">
+                      {/* Floating Crown above flame when VIP PRO */}
+                      {isPremiumMember && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 animate-bounce">
+                          <div className="p-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 shadow-[0_0_15px_#facc15] text-slate-950">
+                            <Crown className="w-3.5 h-3.5 fill-slate-950" />
+                          </div>
+                        </div>
+                      )}
+
                       {/* Rising Fire Sparks / Embers */}
                       <span className="absolute top-6 left-12 w-1.5 h-1.5 rounded-full bg-amber-300 shadow-[0_0_8px_#fde047] animate-ember-1 pointer-events-none" />
-                      <span className="absolute top-8 right-12 w-2 h-2 rounded-full bg-orange-400 shadow-[0_0_10px_#f97316] animate-ember-2 pointer-events-none" />
+                      <span
+                        className={`absolute top-8 right-12 w-2 h-2 rounded-full shadow-[0_0_10px_#f97316] animate-ember-2 pointer-events-none ${
+                          isPremiumMember ? "bg-purple-300 shadow-[0_0_10px_#c084fc]" : "bg-orange-400"
+                        }`}
+                      />
                       <span className="absolute top-4 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-yellow-200 shadow-[0_0_6px_#fef08a] animate-ember-3 pointer-events-none" />
 
                       {/* Animated SVG Fire */}
                       <svg viewBox="0 0 200 200" className="w-full h-full select-none pointer-events-none overflow-visible">
                         <defs>
                           <radialGradient id="haloBurn" cx="50%" cy="58%" r="50%">
-                            <stop offset="0%" stopColor="#fb923c" stopOpacity="0.4" />
+                            <stop offset="0%" stopColor={isPremiumMember ? "#c084fc" : "#fb923c"} stopOpacity="0.4" />
                             <stop offset="50%" stopColor="#ea580c" stopOpacity="0.2" />
                             <stop offset="100%" stopColor="#000000" stopOpacity="0" />
                           </radialGradient>
                           <radialGradient id="innerBallBurn" cx="50%" cy="45%" r="55%">
-                            <stop offset="0%" stopColor="#3d1405" />
-                            <stop offset="65%" stopColor="#1c0902" />
-                            <stop offset="100%" stopColor="#0b0301" />
+                            <stop offset="0%" stopColor={isPremiumMember ? "#2e1065" : "#3d1405"} />
+                            <stop offset="65%" stopColor="#1a0b2e" />
+                            <stop offset="100%" stopColor="#0b0314" />
                           </radialGradient>
                           <linearGradient id="flameRingBurn" x1="0%" y1="100%" x2="0%" y2="0%">
-                            <stop offset="0%" stopColor="#dc2626" />
+                            <stop offset="0%" stopColor={isPremiumMember ? "#a855f7" : "#dc2626"} />
                             <stop offset="35%" stopColor="#ea580c" />
                             <stop offset="70%" stopColor="#f97316" />
                             <stop offset="100%" stopColor="#fde047" />
@@ -2734,7 +2820,6 @@ export default function StudentWebApp() {
                         {/* Ambient Halo */}
                         <circle cx="100" cy="115" r="75" fill="url(#haloBurn)" />
 
-                        {/* Animated Rising Flames */}
                         {/* Left Dancing Flame */}
                         <path
                           d="M 72 32 C 55 58, 48 85, 58 116 C 62 92, 70 70, 72 32 Z"
@@ -2756,7 +2841,7 @@ export default function StudentWebApp() {
                           filter="url(#fireGlowBurn)"
                           className="animate-flame-center"
                         />
-                        {/* Hot White-Yellow Inner Spikes */}
+                        {/* Hot Inner Flame Spikes */}
                         <path
                           d="M 88 28 C 78 52, 74 76, 84 105 C 88 80, 96 60, 88 28 Z"
                           fill="#fef08a"
@@ -2785,7 +2870,7 @@ export default function StudentWebApp() {
                           cy="115"
                           r="49"
                           fill="none"
-                          stroke="#ea580c"
+                          stroke={isPremiumMember ? "#a855f7" : "#ea580c"}
                           strokeWidth="1.5"
                           strokeDasharray="4 2"
                           opacity="0.5"
@@ -2800,6 +2885,16 @@ export default function StudentWebApp() {
                         <span className="text-[10px] sm:text-[11px] font-black text-amber-300 uppercase tracking-widest -mt-1 drop-shadow">
                           Days
                         </span>
+                        {/* Dynamic Multiplier Badge */}
+                        <span
+                          className={`text-[8px] font-black px-1.5 py-0.2 rounded-full mt-0.5 shadow-sm ${
+                            isPremiumMember
+                              ? "bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 font-black"
+                              : "bg-slate-800 text-slate-400 border border-slate-700"
+                          }`}
+                        >
+                          {isPremiumMember ? "2x XP BOOST" : "1x XP"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -2808,6 +2903,62 @@ export default function StudentWebApp() {
                     <span>Keep going! You're on fire!</span>
                     <span className="animate-bounce">🔥</span>
                   </p>
+
+                  {/* DYNAMIC MEMBERSHIP & PACKAGE EXPIRY DETAILS BOX */}
+                  {isPremiumMember ? (
+                    <div className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-950/70 via-slate-900/90 to-purple-950/60 border border-amber-500/30 text-left space-y-2 relative z-10">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                          <span className="text-[11px] font-bold text-white">{premiumPlanName}</span>
+                        </div>
+                        <span className="text-[9px] font-extrabold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 rounded-full flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                          Active
+                        </span>
+                      </div>
+
+                      {/* Package Expiry Date & Countdown */}
+                      <div className="p-2 rounded-xl bg-slate-950/75 border border-slate-800/90 flex items-center justify-between text-[10px]">
+                        <div className="flex items-center gap-1.5 text-slate-300">
+                          <Calendar className="w-3 h-3 text-cyan-400" />
+                          <span>Renews: <b className="text-white">Jan 15, 2027</b></span>
+                        </div>
+                        <span className="font-mono font-bold text-amber-300 bg-amber-500/15 px-1.5 py-0.2 rounded border border-amber-500/25">
+                          {getDaysUntilExpiry(premiumExpiryDate)} Days Left
+                        </span>
+                      </div>
+
+                      {/* Streak Freeze & Perks Status */}
+                      <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+                        <span className="flex items-center gap-1">
+                          <Shield className="w-3 h-3 text-cyan-400" />
+                          Streak Freeze:
+                        </span>
+                        <span className="font-bold text-cyan-300">{streakFreezesCount}/2 Protected 🛡️</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-blue-500/10 border border-amber-500/30 text-left space-y-2 relative z-10">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-amber-300 flex items-center gap-1">
+                          <Crown className="w-3.5 h-3.5 text-amber-400" />
+                          Upgrade to VIP Pro
+                        </span>
+                        <span className="text-[9px] font-bold text-slate-400">Unlock 2x XP</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 leading-relaxed">
+                        Get Streak Freeze protection so you never lose your 12-day streak when busy!
+                      </p>
+                      <button
+                        onClick={() => setShowVipModal(true)}
+                        className="w-full py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-[11px] shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02]"
+                      >
+                        <Crown className="w-3.5 h-3.5 fill-slate-950" />
+                        <span>Unlock Pro Package ($9.99/mo) →</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* 2. UPCOMING LESSON CARD (London Big Ben Sunset) */}
