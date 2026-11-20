@@ -2306,20 +2306,23 @@ export default function StudentWebApp() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
               {/* LEFT & CENTER MAIN COLUMN (8 cols of 12) */}
               <div className="lg:col-span-8 space-y-6">
-                {/* 1. HERO BANNER: Welcome Back Janitha! (1:1 Pixel-Perfect Authentic Artwork) */}
-                <div className="relative rounded-3xl overflow-hidden border border-blue-500/30 shadow-2xl group transition-all">
-                  {/* Master Pristine Artwork (Robot + 1:1 Typography + Glowing Globe) */}
+                {/* 1. HERO BANNER: Welcome Back Janitha! (Crisp Vector Typography & Ultra HD Artwork) */}
+                <div className="relative rounded-3xl overflow-hidden border border-blue-500/30 bg-[#0B132B] shadow-[0_15px_40px_rgba(30,58,138,0.25)] min-h-[195px] sm:min-h-[210px] flex items-center p-6 sm:p-8">
+                  {/* High Resolution Background Artwork (Robot on Left, Globe on Right, Clean Center) */}
                   <img
-                    src="/images/hero_banner_master_pristine.png"
-                    alt="Welcome back Janitha - SpeakFlow AI"
-                    className="w-full h-auto object-cover object-center rounded-3xl block select-none pointer-events-none"
+                    src="/images/hero_banner_panoramic_clean.jpg"
+                    alt="SpeakFlow AI Hero"
+                    className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none opacity-90"
                     onError={(e) => {
                       (e.currentTarget as any).src = "/images/exact_reference_banner.png";
                     }}
                   />
 
-                  {/* Top-Right Floating Badges: Gemini Nano Hybrid & Badges XP */}
-                  <div className="absolute top-3 sm:top-4 right-3 sm:right-6 flex items-center gap-2 z-10">
+                  {/* Ambient Glow Gradient Overlays */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-950/40 via-transparent to-blue-950/40 pointer-events-none" />
+
+                  {/* Top-Right Floating Badges */}
+                  <div className="absolute top-3.5 right-4 sm:top-4 sm:right-6 flex items-center gap-2 z-20">
                     <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/75 border border-cyan-500/40 text-cyan-300 text-[11px] font-bold backdrop-blur-md shadow-lg shadow-cyan-950/40">
                       <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                       <span>Gemini Nano Hybrid AI</span>
@@ -2334,13 +2337,32 @@ export default function StudentWebApp() {
                     </button>
                   </div>
 
-                  {/* Interactive Click Target directly over "Start Practice →" button */}
-                  <button
-                    onClick={() => launchTopicByKeyword("travel")}
-                    className="absolute left-[24%] bottom-[13%] w-[21%] h-[28%] rounded-xl cursor-pointer hover:bg-white/10 active:scale-95 transition-all"
-                    title="Start Travel & Tourism Practice"
-                    aria-label="Start Practice"
-                  />
+                  {/* REAL CRISP NATIVE VECTOR TYPOGRAPHY (Always 100% sharp on all displays) */}
+                  <div className="relative z-10 max-w-lg sm:max-w-xl ml-24 sm:ml-32 md:ml-40 lg:ml-44 space-y-2 text-left">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight flex items-center gap-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                      <span>Welcome back, {user?.displayName?.split(" ")[0] || "Janitha"}!</span>
+                      <span className="text-2xl animate-bounce">👋</span>
+                    </h1>
+                    <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)] max-w-md">
+                      Let's practice your language skills today and become more fluent!
+                    </p>
+                    <div className="pt-2 flex flex-wrap items-center gap-3">
+                      <button
+                        onClick={() => launchTopicByKeyword("travel")}
+                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 via-indigo-600 to-blue-700 hover:from-blue-400 hover:to-indigo-500 text-white font-bold text-xs shadow-xl shadow-blue-500/35 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-white" />
+                        <span>Start Practice →</span>
+                      </button>
+                      <button
+                        onClick={() => setActiveTab("achievements")}
+                        className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs border border-white/20 transition-all flex items-center gap-1.5 backdrop-blur-md shadow-md hover:scale-105"
+                      >
+                        <Trophy className="w-3.5 h-3.5 text-amber-300" />
+                        <span>View Badges & XP</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* 2. 4 QUICK STAT CARDS (Clean Uniform Luxury Theme) */}
