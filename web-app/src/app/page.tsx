@@ -1043,6 +1043,80 @@ export default function StudentWebApp() {
     }
   };
 
+  // Interactive Learning Progress Chart State & Datasets
+  const [learningChartMetric, setLearningChartMetric] = useState<"fluency" | "time" | "xp">("fluency");
+  const [learningChartRange, setLearningChartRange] = useState<"7d" | "30d" | "all">("30d");
+  const [hoveredChartPointIndex, setHoveredChartPointIndex] = useState<number | null>(null);
+
+  const learningDatasets = {
+    fluency: {
+      label: "Fluency Score",
+      unit: "%",
+      color: "#38BDF8",
+      gradientId: "fluencyGradient",
+      kpis: [
+        { label: "Peak Fluency", value: "96.8%", change: "↑ +14.2% this mo", color: "text-cyan-400" },
+        { label: "Avg Cadence", value: "92.4%", change: "Top 5% Cohort", color: "text-emerald-400" },
+        { label: "Pronunciation", value: "95.1%", change: "Native Cadence", color: "text-blue-400" },
+      ],
+      insight: "Your sentence fluency improved by +24% after French Café & Business Pitch sessions!",
+      points: [
+        { label: "Nov 1", value: "55%", cx: 50, cy: 120, note: "Day 1 Baseline (55%)" },
+        { label: "Nov 5", value: "68%", cx: 110, cy: 102, note: "Airport Flow (68%)" },
+        { label: "Nov 9", value: "76%", cx: 180, cy: 88, note: "Grammar Sprints (76%)" },
+        { label: "Nov 13", value: "84%", cx: 240, cy: 72, note: "Business Pitch (84%)" },
+        { label: "Nov 17", value: "91%", cx: 300, cy: 50, note: "Tokyo Tech Q&A (91%)" },
+        { label: "Nov 19", value: "96%", cx: 365, cy: 30, note: "Current Peak: 96% 🔥" },
+      ],
+      pathD: "M 50 120 C 80 115, 95 105, 110 102 C 145 95, 160 90, 180 88 C 210 82, 225 75, 240 72 C 270 62, 285 54, 300 50 C 330 40, 345 32, 365 30",
+      areaD: "M 50 120 C 80 115, 95 105, 110 102 C 145 95, 160 90, 180 88 C 210 82, 225 75, 240 72 C 270 62, 285 54, 300 50 C 330 40, 345 32, 365 30 L 365 140 L 50 140 Z",
+    },
+    time: {
+      label: "Practice Time",
+      unit: "mins",
+      color: "#10B981",
+      gradientId: "timeGradient",
+      kpis: [
+        { label: "Today Spoken", value: "32 mins", change: "↑ +18 mins goal", color: "text-emerald-400" },
+        { label: "Weekly Total", value: "3.8 hrs", change: "14 Sessions", color: "text-cyan-400" },
+        { label: "Avg Session", value: "4m 20s", change: "Optimal Cadence", color: "text-teal-400" },
+      ],
+      insight: "You spoke 42% more conversational minutes this week than last week!",
+      points: [
+        { label: "Nov 1", value: "10m", cx: 50, cy: 125, note: "10 mins spoken" },
+        { label: "Nov 5", value: "18m", cx: 110, cy: 110, note: "18 mins spoken" },
+        { label: "Nov 9", value: "24m", cx: 180, cy: 95, note: "24 mins spoken" },
+        { label: "Nov 13", value: "35m", cx: 240, cy: 70, note: "35 mins spoken" },
+        { label: "Nov 17", value: "42m", cx: 300, cy: 52, note: "42 mins spoken" },
+        { label: "Nov 19", value: "50m", cx: 365, cy: 35, note: "50 mins peak day!" },
+      ],
+      pathD: "M 50 125 C 80 120, 95 115, 110 110 C 145 102, 160 98, 180 95 C 210 82, 225 76, 240 70 C 270 60, 285 55, 300 52 C 330 42, 345 38, 365 35",
+      areaD: "M 50 125 C 80 120, 95 115, 110 110 C 145 102, 160 98, 180 95 C 210 82, 225 76, 240 70 C 270 60, 285 55, 300 52 C 330 42, 345 38, 365 35 L 365 140 L 50 140 Z",
+    },
+    xp: {
+      label: "Language Mastery XP",
+      unit: "XP",
+      color: "#F59E0B",
+      gradientId: "xpGradient",
+      kpis: [
+        { label: "Total Earned", value: "2,450 XP", change: "Level 4 Fluent", color: "text-amber-400" },
+        { label: "Weekly Sprint", value: "+850 XP", change: "Rank #3 🏆", color: "text-yellow-400" },
+        { label: "VIP Multiplier", value: "2x Boost", change: "Active", color: "text-orange-400" },
+      ],
+      insight: "You're just 550 XP away from unlocking Level 5 Global Diplomat rank!",
+      points: [
+        { label: "Nov 1", value: "+300", cx: 50, cy: 122, note: "+300 XP Earned" },
+        { label: "Nov 5", value: "+650", cx: 110, cy: 104, note: "+650 XP Total" },
+        { label: "Nov 9", value: "+1.1k", cx: 180, cy: 86, note: "+1,100 XP Total" },
+        { label: "Nov 13", value: "+1.6k", cx: 240, cy: 68, note: "+1,600 XP Total" },
+        { label: "Nov 17", value: "+2.0k", cx: 300, cy: 46, note: "+2,050 XP Total" },
+        { label: "Nov 19", value: "+2.4k", cx: 365, cy: 26, note: "+2,450 XP Peak ⚡" },
+      ],
+      pathD: "M 50 122 C 80 116, 95 108, 110 104 C 145 96, 160 90, 180 86 C 210 78, 225 72, 240 68 C 270 56, 285 50, 300 46 C 330 36, 345 30, 365 26",
+      areaD: "M 50 122 C 80 116, 95 108, 110 104 C 145 96, 160 90, 180 86 C 210 78, 225 72, 240 68 C 270 56, 285 50, 300 46 C 330 36, 345 30, 365 26 L 365 140 L 50 140 Z",
+    },
+  };
+
   // Web Speech API Refs
   const recognitionRef = useRef<any>(null);
   const proactiveNudgeTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -2611,134 +2685,362 @@ export default function StudentWebApp() {
                 </div>
 
                 {/* 3. YOUR LEARNING PROGRESS & QUICK ACTIONS ROW */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
                   {/* Your Learning Progress Chart (7 cols) */}
-                  <div className="md:col-span-7 p-5 rounded-3xl bg-[#111827] border border-slate-800/80 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <BarChart3 className="w-4 h-4 text-emerald-400" />
-                        <h3 className="font-bold text-xs text-white">Your Learning Progress</h3>
+                  <div className="md:col-span-7 p-5 rounded-3xl bg-gradient-to-br from-[#111827] via-[#0D172A] to-[#111E38] border border-cyan-500/30 shadow-xl flex flex-col justify-between space-y-4 relative overflow-hidden group/chart">
+                    {/* Ambient Neon Glow */}
+                    <div className="absolute -top-10 -left-10 w-48 h-48 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -bottom-10 -right-10 w-44 h-44 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                    {/* Header: Title + Metric Switcher Tabs */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 flex items-center justify-center font-bold shadow-lg shadow-emerald-500/25">
+                          <TrendingUp className="w-4.5 h-4.5 stroke-[2.5]" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-bold text-xs text-white">Your Learning Progress</h3>
+                            <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                              +24.8% This Mo
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-cyan-300/80 font-medium">
+                            Global Cohort: Top 5% • High Retention
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-[11px] text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-lg flex items-center gap-1">
-                        Last 30 Days <ChevronDown className="w-3 h-3" />
-                      </span>
+
+                      {/* Interactive Metric Switcher Pills */}
+                      <div className="flex items-center gap-1 bg-slate-950/80 border border-slate-800/80 p-1 rounded-xl">
+                        {(["fluency", "time", "xp"] as const).map((m) => {
+                          const isActive = learningChartMetric === m;
+                          const titles = {
+                            fluency: "Fluency",
+                            time: "Practice Time",
+                            xp: "Mastery XP",
+                          };
+                          return (
+                            <button
+                              key={m}
+                              onClick={() => {
+                                setLearningChartMetric(m);
+                                setHoveredChartPointIndex(null);
+                              }}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                                isActive
+                                  ? m === "fluency"
+                                    ? "bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30"
+                                    : m === "time"
+                                    ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/30"
+                                    : "bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30"
+                                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                              }`}
+                            >
+                              {titles[m]}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
 
-                    {/* Smooth Spline Chart */}
-                    <div className="relative pt-4">
-                      {/* Floating tooltip 92% */}
-                      <div className="absolute top-2 right-12 px-2 py-0.5 rounded bg-cyan-500 text-slate-950 text-[10px] font-black shadow-lg shadow-cyan-500/30">
-                        92%
-                      </div>
+                    {/* 3 Key Metric Micro-Cards */}
+                    <div className="grid grid-cols-3 gap-2 relative z-10">
+                      {learningDatasets[learningChartMetric].kpis.map((kpi, idx) => (
+                        <div
+                          key={idx}
+                          className="p-2.5 rounded-2xl bg-slate-950/60 border border-slate-800/80 flex flex-col justify-between"
+                        >
+                          <span className="text-[10px] text-slate-400 font-medium truncate">{kpi.label}</span>
+                          <div className="flex items-baseline gap-1 mt-0.5">
+                            <span className={`text-sm sm:text-base font-black ${kpi.color}`}>
+                              {kpi.value}
+                            </span>
+                          </div>
+                          <span className="text-[9px] text-emerald-400 font-semibold truncate mt-0.5">
+                            {kpi.change}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
 
-                      <svg className="w-full h-44" viewBox="0 0 400 150">
+                    {/* Smooth Spline Chart Area */}
+                    <div className="relative pt-2 relative z-10">
+                      {/* Floating Active Hover Tooltip */}
+                      {hoveredChartPointIndex !== null ? (
+                        <div
+                          className="absolute -top-3 px-2.5 py-1 rounded-xl bg-slate-900 border border-cyan-400 text-white text-[10px] font-bold shadow-xl shadow-cyan-500/20 z-20 pointer-events-none transition-all duration-200 -translate-x-1/2"
+                          style={{
+                            left: `${(learningDatasets[learningChartMetric].points[hoveredChartPointIndex].cx / 400) * 100}%`,
+                          }}
+                        >
+                          <span className="text-cyan-300">
+                            {learningDatasets[learningChartMetric].points[hoveredChartPointIndex].note}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="absolute top-0 right-4 px-2 py-0.5 rounded-lg bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[9.5px] font-black shadow-md flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                          <span>Current: {learningDatasets[learningChartMetric].points[5].value}</span>
+                        </div>
+                      )}
+
+                      <svg className="w-full h-40 overflow-visible" viewBox="0 0 400 150">
                         <defs>
-                          <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.35" />
-                            <stop offset="100%" stopColor="#38BDF8" stopOpacity="0" />
+                          <linearGradient id="chartSplineGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop
+                              offset="0%"
+                              stopColor={learningDatasets[learningChartMetric].color}
+                              stopOpacity="0.4"
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor={learningDatasets[learningChartMetric].color}
+                              stopOpacity="0.0"
+                            />
                           </linearGradient>
                         </defs>
 
                         {/* Horizontal Grid lines */}
-                        <line x1="40" y1="20" x2="380" y2="20" stroke="#1F2937" strokeDasharray="3 3" />
-                        <line x1="40" y1="55" x2="380" y2="55" stroke="#1F2937" strokeDasharray="3 3" />
-                        <line x1="40" y1="90" x2="380" y2="90" stroke="#1F2937" strokeDasharray="3 3" />
-                        <line x1="40" y1="125" x2="380" y2="125" stroke="#1F2937" strokeDasharray="3 3" />
+                        <line x1="40" y1="20" x2="385" y2="20" stroke="#1F2937" strokeDasharray="3 3" opacity="0.7" />
+                        <line x1="40" y1="55" x2="385" y2="55" stroke="#1F2937" strokeDasharray="3 3" opacity="0.7" />
+                        <line x1="40" y1="90" x2="385" y2="90" stroke="#1F2937" strokeDasharray="3 3" opacity="0.7" />
+                        <line x1="40" y1="125" x2="385" y2="125" stroke="#1F2937" strokeDasharray="3 3" opacity="0.7" />
 
                         {/* Y-axis Labels */}
-                        <text x="5" y="23" fill="#6B7280" fontSize="9">100%</text>
-                        <text x="10" y="58" fill="#6B7280" fontSize="9">75%</text>
-                        <text x="10" y="93" fill="#6B7280" fontSize="9">50%</text>
-                        <text x="10" y="128" fill="#6B7280" fontSize="9">25%</text>
+                        <text x="5" y="23" fill="#64748B" fontSize="9" fontWeight="bold">100%</text>
+                        <text x="10" y="58" fill="#64748B" fontSize="9" fontWeight="bold">75%</text>
+                        <text x="10" y="93" fill="#64748B" fontSize="9" fontWeight="bold">50%</text>
+                        <text x="10" y="128" fill="#64748B" fontSize="9" fontWeight="bold">25%</text>
 
                         {/* Spline Area Fill */}
                         <path
-                          d="M 50 120 C 100 115, 140 100, 180 92 C 220 84, 250 95, 290 80 C 330 65, 345 35, 365 25 L 365 140 L 50 140 Z"
-                          fill="url(#chartGradient)"
+                          d={learningDatasets[learningChartMetric].areaD}
+                          fill="url(#chartSplineGradient)"
+                          className="transition-all duration-300"
                         />
 
                         {/* Spline Line */}
                         <path
-                          d="M 50 120 C 100 115, 140 100, 180 92 C 220 84, 250 95, 290 80 C 330 65, 345 35, 365 25"
+                          d={learningDatasets[learningChartMetric].pathD}
                           fill="none"
-                          stroke="#38BDF8"
-                          strokeWidth="2.5"
+                          stroke={learningDatasets[learningChartMetric].color}
+                          strokeWidth="3"
                           strokeLinecap="round"
+                          className="transition-all duration-300 drop-shadow-[0_4px_10px_rgba(56,189,248,0.5)]"
                         />
 
                         {/* Data Points */}
-                        <circle cx="50" cy="120" r="3.5" fill="#38BDF8" />
-                        <circle cx="110" cy="112" r="3.5" fill="#38BDF8" />
-                        <circle cx="180" cy="92" r="3.5" fill="#38BDF8" />
-                        <circle cx="240" cy="88" r="3.5" fill="#38BDF8" />
-                        <circle cx="290" cy="80" r="3.5" fill="#38BDF8" />
-                        <circle cx="365" cy="25" r="4.5" fill="#38BDF8" className="animate-pulse" />
+                        {learningDatasets[learningChartMetric].points.map((pt, idx) => {
+                          const isHovered = hoveredChartPointIndex === idx;
+                          const isLast = idx === 5;
+                          return (
+                            <g
+                              key={idx}
+                              className="cursor-pointer group"
+                              onMouseEnter={() => setHoveredChartPointIndex(idx)}
+                              onMouseLeave={() => setHoveredChartPointIndex(null)}
+                            >
+                              {/* Invisible touch/hover hit zone */}
+                              <circle cx={pt.cx} cy={pt.cy} r="14" fill="transparent" />
+
+                              {/* Outer glow ring on hover or last */}
+                              {(isHovered || isLast) && (
+                                <circle
+                                  cx={pt.cx}
+                                  cy={pt.cy}
+                                  r={isHovered ? "8" : "6"}
+                                  fill={learningDatasets[learningChartMetric].color}
+                                  opacity="0.3"
+                                  className={isLast ? "animate-ping" : ""}
+                                />
+                              )}
+
+                              {/* Core dot */}
+                              <circle
+                                cx={pt.cx}
+                                cy={pt.cy}
+                                r={isHovered ? "5" : isLast ? "4.5" : "3.5"}
+                                fill={isHovered ? "#FFFFFF" : learningDatasets[learningChartMetric].color}
+                                stroke={learningDatasets[learningChartMetric].color}
+                                strokeWidth="2"
+                                className="transition-all duration-200"
+                              />
+                            </g>
+                          );
+                        })}
                       </svg>
 
-                      {/* X-axis dates */}
-                      <div className="flex justify-between text-[10px] text-slate-500 px-6 pt-1 font-mono">
-                        <span>Nov 1</span>
-                        <span>Nov 5</span>
-                        <span>Nov 9</span>
-                        <span>Nov 13</span>
-                        <span>Nov 17</span>
-                        <span>Nov 19</span>
+                      {/* X-axis date labels */}
+                      <div className="flex justify-between text-[10px] text-slate-400 px-6 pt-1 font-mono">
+                        {learningDatasets[learningChartMetric].points.map((pt, idx) => (
+                          <span
+                            key={idx}
+                            onMouseEnter={() => setHoveredChartPointIndex(idx)}
+                            onMouseLeave={() => setHoveredChartPointIndex(null)}
+                            className={`cursor-pointer transition-colors ${
+                              hoveredChartPointIndex === idx ? "text-cyan-300 font-bold" : "hover:text-slate-200"
+                            }`}
+                          >
+                            {pt.label}
+                          </span>
+                        ))}
                       </div>
+                    </div>
+
+                    {/* AI Insight Callout */}
+                    <div className="p-2.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-between text-[10.5px] text-cyan-200 relative z-10">
+                      <div className="flex items-center gap-2 truncate">
+                        <Sparkles className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <span className="truncate">
+                          {learningDatasets[learningChartMetric].insight}
+                        </span>
+                      </div>
+                      <span className="text-[9.5px] text-cyan-400 font-bold shrink-0 hidden sm:inline">
+                        AI Adaptive Engine ✓
+                      </span>
                     </div>
                   </div>
 
                   {/* Quick Actions (5 cols) */}
-                  <div className="md:col-span-5 p-5 rounded-3xl bg-[#111827] border border-slate-800/80 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-amber-400" />
-                      <h3 className="font-bold text-xs text-white">Quick Actions</h3>
+                  <div className="md:col-span-5 p-5 rounded-3xl bg-gradient-to-br from-[#111827] via-[#0E1629] to-[#151D38] border border-amber-500/30 shadow-xl flex flex-col justify-between space-y-3.5 relative overflow-hidden group/actions">
+                    {/* Ambient Gold Glow */}
+                    <div className="absolute -top-10 -right-10 w-44 h-44 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                    {/* Header */}
+                    <div className="flex items-center justify-between relative z-10">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 flex items-center justify-center font-bold shadow-lg shadow-amber-500/25">
+                          <Zap className="w-4.5 h-4.5 fill-slate-950" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-bold text-xs text-white">Quick Actions</h3>
+                            <span className="text-[9px] font-bold text-amber-400 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                              Instant Launch
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-amber-200/80 font-medium">
+                            Sub-20ms Real-Time Voice & Drills
+                          </span>
+                        </div>
+                      </div>
+
+                      <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                        Nano Ready
+                      </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      {/* Button 1: Start Speaking Practice */}
+                    {/* 2x2 Feature Action Tiles */}
+                    <div className="grid grid-cols-2 gap-2.5 relative z-10">
+                      {/* Tile 1: Start Speaking Practice */}
                       <button
                         onClick={() => launchTopicByKeyword("cricket")}
-                        className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 hover:opacity-90 text-white flex flex-col items-center justify-center text-center gap-2 shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02]"
+                        className="p-3 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white flex flex-col justify-between text-left gap-2 border border-blue-400/30 shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] group"
                       >
-                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                          <Mic className="w-4 h-4 text-white" />
+                        <div className="flex items-center justify-between w-full">
+                          <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <Mic className="w-4 h-4 text-white" />
+                          </div>
+                          <span className="text-[8.5px] font-bold bg-blue-400/20 border border-blue-300/30 text-blue-100 px-1.5 py-0.2 rounded-full">
+                            ⚡ AI Voice
+                          </span>
                         </div>
-                        <span className="font-bold text-[11px] leading-tight">Start Speaking Practice</span>
+                        <div>
+                          <span className="font-black text-xs block text-white leading-tight">
+                            Speaking Practice
+                          </span>
+                          <span className="text-[9.5px] text-blue-100/80 font-medium mt-0.5 block line-clamp-1">
+                            14ms Nano Coach
+                          </span>
+                        </div>
                       </button>
 
-                      {/* Button 2: Learn Vocabulary */}
+                      {/* Tile 2: Learn Vocabulary */}
                       <button
                         onClick={() => setActiveTab("vocabulary")}
-                        className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 hover:opacity-90 text-white flex flex-col items-center justify-center text-center gap-2 shadow-lg shadow-emerald-600/20 transition-all hover:scale-[1.02]"
+                        className="p-3 rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white flex flex-col justify-between text-left gap-2 border border-emerald-400/30 shadow-lg shadow-emerald-600/20 transition-all hover:scale-[1.02] group"
                       >
-                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                          <BookOpen className="w-4 h-4 text-white" />
+                        <div className="flex items-center justify-between w-full">
+                          <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <BookOpen className="w-4 h-4 text-white" />
+                          </div>
+                          <span className="text-[8.5px] font-bold bg-emerald-400/20 border border-emerald-300/30 text-emerald-100 px-1.5 py-0.2 rounded-full">
+                            +150 XP
+                          </span>
                         </div>
-                        <span className="font-bold text-[11px] leading-tight">Learn Vocabulary</span>
+                        <div>
+                          <span className="font-black text-xs block text-white leading-tight">
+                            Learn Vocabulary
+                          </span>
+                          <span className="text-[9.5px] text-emerald-100/80 font-medium mt-0.5 block line-clamp-1">
+                            Spaced Repetition
+                          </span>
+                        </div>
                       </button>
 
-                      {/* Button 3: Grammar Exercises */}
+                      {/* Tile 3: Grammar Exercises */}
                       <button
                         onClick={() => setActiveTab("grammar")}
-                        className="p-3.5 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-800 hover:opacity-90 text-white flex flex-col items-center justify-center text-center gap-2 shadow-lg shadow-purple-600/20 transition-all hover:scale-[1.02]"
+                        className="p-3 rounded-2xl bg-gradient-to-br from-purple-600 via-violet-700 to-indigo-800 hover:from-purple-500 hover:to-violet-600 text-white flex flex-col justify-between text-left gap-2 border border-purple-400/30 shadow-lg shadow-purple-600/20 transition-all hover:scale-[1.02] group"
                       >
-                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                          <GraduationCap className="w-4 h-4 text-white" />
+                        <div className="flex items-center justify-between w-full">
+                          <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <GraduationCap className="w-4 h-4 text-white" />
+                          </div>
+                          <span className="text-[8.5px] font-bold bg-purple-400/20 border border-purple-300/30 text-purple-100 px-1.5 py-0.2 rounded-full">
+                            Level B2
+                          </span>
                         </div>
-                        <span className="font-bold text-[11px] leading-tight">Grammar Exercises</span>
+                        <div>
+                          <span className="font-black text-xs block text-white leading-tight">
+                            Grammar Drills
+                          </span>
+                          <span className="text-[9.5px] text-purple-100/80 font-medium mt-0.5 block line-clamp-1">
+                            Adaptive Fixes
+                          </span>
+                        </div>
                       </button>
 
-                      {/* Button 4: Chat with AI */}
+                      {/* Tile 4: Chat with AI */}
                       <button
                         onClick={() => launchTopicByKeyword("travel")}
-                        className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 hover:opacity-90 text-white flex flex-col items-center justify-center text-center gap-2 shadow-lg shadow-amber-600/20 transition-all hover:scale-[1.02]"
+                        className="p-3 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-600 to-amber-600 hover:from-amber-400 hover:to-orange-500 text-white flex flex-col justify-between text-left gap-2 border border-amber-400/30 shadow-lg shadow-amber-600/20 transition-all hover:scale-[1.02] group"
                       >
-                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                          <MessageCircle className="w-4 h-4 text-white" />
+                        <div className="flex items-center justify-between w-full">
+                          <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <MessageCircle className="w-4 h-4 text-white" />
+                          </div>
+                          <span className="text-[8.5px] font-bold bg-amber-400/20 border border-amber-300/30 text-amber-100 px-1.5 py-0.2 rounded-full">
+                            4 Online
+                          </span>
                         </div>
-                        <span className="font-bold text-[11px] leading-tight">Chat with AI</span>
+                        <div>
+                          <span className="font-black text-xs block text-white leading-tight">
+                            Chat with AI
+                          </span>
+                          <span className="text-[9.5px] text-amber-100/80 font-medium mt-0.5 block line-clamp-1">
+                            Roleplay Scenarios
+                          </span>
+                        </div>
                       </button>
                     </div>
+
+                    {/* Instant Lightning Drill Banner */}
+                    <button
+                      onClick={() => launchTopicByKeyword("travel")}
+                      className="w-full py-2.5 px-3 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/25 to-yellow-500/20 border border-amber-400/40 text-amber-200 flex items-center justify-between text-[11px] font-bold hover:scale-[1.01] transition-all shadow-md shadow-amber-500/10 cursor-pointer relative z-10"
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Daily Sprint: 2-min Fluency Warmup</span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 font-black text-[10px] shadow">
+                        Launch (+100 XP) →
+                      </span>
+                    </button>
                   </div>
                 </div>
 
