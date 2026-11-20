@@ -2672,29 +2672,42 @@ export default function StudentWebApp() {
 
               {/* RIGHT COLUMN (4 cols in 12-col grid): Your Streak, Upcoming Lesson & Sprint Targets */}
               <div className="lg:col-span-4 space-y-6">
-                {/* 1. YOUR STREAK CARD (Pristine Artwork with Zero Double Text) */}
-                <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800/80 text-center relative overflow-hidden space-y-3">
-                  <div className="flex items-center justify-between text-left">
+                {/* 1. YOUR STREAK CARD (Crisp Glowing 3D Vector Flame Badge) */}
+                <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800/80 text-center relative overflow-hidden space-y-3 shadow-lg">
+                  {/* Ambient Background Fire Glow */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-36 h-36 bg-orange-600/15 rounded-full blur-2xl pointer-events-none" />
+
+                  <div className="flex items-center justify-between text-left relative z-10">
                     <div className="flex items-center gap-2">
-                      <Flame className="w-4 h-4 text-amber-500" />
+                      <Flame className="w-4 h-4 text-amber-500 fill-amber-500" />
                       <h3 className="font-bold text-xs text-white">Your Streak</h3>
                     </div>
-                    <Flame className="w-4 h-4 text-orange-500" />
+                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                      🔥 Top 5%
+                    </span>
                   </div>
 
-                  {/* Flame Graphic with 12 Days (Native Crisp Visual) */}
-                  <div className="relative py-3 flex flex-col items-center justify-center">
-                    <img
-                      src="/images/flame_badge_pristine.png"
-                      alt="12 Day Flame Streak"
-                      className="w-28 h-28 object-contain drop-shadow-[0_0_25px_rgba(245,158,11,0.5)] transition-transform hover:scale-105 duration-300"
-                      onError={(e) => {
-                        (e.currentTarget as any).src = "/images/flame-streak.png";
-                      }}
-                    />
+                  {/* Vector Fiery Flame Badge with Center Numbers */}
+                  <div className="relative py-2 flex flex-col items-center justify-center">
+                    <div className="relative w-32 h-32 flex items-center justify-center transition-transform hover:scale-105 duration-300">
+                      <img
+                        src="/images/flame_streak_vector.svg"
+                        alt="Streak Fire"
+                        className="w-full h-full object-contain select-none pointer-events-none drop-shadow-[0_0_20px_rgba(249,115,22,0.45)]"
+                      />
+                      {/* 100% Vector Crisp Text Inside the Fiery Orb */}
+                      <div className="absolute inset-0 pt-6 flex flex-col items-center justify-center pointer-events-none z-10">
+                        <span className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+                          12
+                        </span>
+                        <span className="text-[10px] sm:text-[11px] font-black text-amber-300 uppercase tracking-widest -mt-1 drop-shadow">
+                          Days
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
-                  <p className="font-bold text-xs text-white">
+                  <p className="font-bold text-xs text-white relative z-10">
                     Keep going! You're on fire! 🔥
                   </p>
                 </div>
