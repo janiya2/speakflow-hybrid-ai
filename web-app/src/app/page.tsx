@@ -2690,122 +2690,107 @@ export default function StudentWebApp() {
                   </div>
                 </div>
 
-                {/* 2. 4 QUICK STAT CARDS (Deluxe Glassmorphic Cyber Suite) */}
+                {/* 2. 4 QUICK STAT CARDS (Pristine Luxury Glassmorphic Suite) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
                   {/* Card 1: Practice Time */}
-                  <div className="p-4.5 rounded-3xl bg-gradient-to-br from-[#111827] via-[#1A1230] to-[#120F24] border border-purple-500/35 hover:border-purple-400/60 shadow-xl shadow-purple-950/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 group flex flex-col justify-between">
-                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-purple-500/20 rounded-full blur-2xl pointer-events-none" />
+                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#111827] via-[#15122B] to-[#100D22] border border-purple-500/30 hover:border-purple-400/60 shadow-lg flex items-center justify-between min-h-[102px] transition-all duration-200 hover:scale-[1.02] relative overflow-hidden group">
+                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-purple-500/15 rounded-full blur-2xl pointer-events-none" />
                     
-                    <div className="flex items-start justify-between relative z-10">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 shrink-0 group-hover:scale-105 transition-transform">
-                          <Mic className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <span className="text-[11px] text-purple-200/80 block font-medium">Practice Time</span>
-                          <span className="text-2xl font-black text-white leading-tight mt-0.5 block">2.5 hrs</span>
+                    <div className="flex items-center gap-3 relative z-10 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-400 flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+                        <Mic className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-[11px] text-slate-400 block font-medium">Practice Time</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xl font-black text-white">2.5 hrs</span>
+                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 rounded">
+                            ↑ +25%
+                          </span>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm">
-                        ↑ +25%
-                      </span>
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-purple-500/20 flex items-center justify-between text-[10px] relative z-10">
-                      <span className="text-slate-400 font-medium">Daily Goal: 30 mins</span>
-                      {/* Mini SVG Sparkline */}
-                      <svg className="w-16 h-6 text-purple-400 drop-shadow-[0_2px_6px_rgba(168,85,247,0.4)]" fill="none" viewBox="0 0 64 24">
-                        <path d="M0 20 Q 16 14, 32 16 T 64 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                    {/* Micro Sparkline on the right */}
+                    <div className="shrink-0 pl-2 relative z-10">
+                      <svg className="w-14 h-7 text-purple-400 drop-shadow-[0_2px_8px_rgba(168,85,247,0.4)]" fill="none" viewBox="0 0 56 28">
+                        <path d="M 2 24 C 14 20, 24 16, 34 18 C 44 20, 48 6, 54 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
                       </svg>
                     </div>
                   </div>
 
                   {/* Card 2: Lessons Completed */}
-                  <div className="p-4.5 rounded-3xl bg-gradient-to-br from-[#111827] via-[#0D241E] to-[#0A1A17] border border-emerald-500/35 hover:border-emerald-400/60 shadow-xl shadow-emerald-950/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 group flex flex-col justify-between">
-                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none" />
+                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#111827] via-[#0D211B] to-[#091814] border border-emerald-500/30 hover:border-emerald-400/60 shadow-lg flex items-center justify-between min-h-[102px] transition-all duration-200 hover:scale-[1.02] relative overflow-hidden group">
+                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none" />
 
-                    <div className="flex items-start justify-between relative z-10">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 flex items-center justify-center shadow-lg shadow-emerald-500/30 shrink-0 group-hover:scale-105 transition-transform font-bold">
-                          <Target className="w-5 h-5 stroke-[2.5]" />
-                        </div>
-                        <div>
-                          <span className="text-[11px] text-emerald-200/80 block font-medium">Lessons Completed</span>
-                          <span className="text-2xl font-black text-white leading-tight mt-0.5 block">48</span>
+                    <div className="flex items-center gap-3 relative z-10 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+                        <Target className="w-5 h-5 stroke-[2.5]" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-[11px] text-slate-400 block font-medium">Lessons Completed</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xl font-black text-white">48</span>
+                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 rounded">
+                            ↑ +12%
+                          </span>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm">
-                        ↑ +12%
-                      </span>
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-emerald-500/20 flex items-center justify-between text-[10px] relative z-10">
-                      <span className="text-slate-400 font-medium">100% Passed</span>
-                      <svg className="w-16 h-6 text-emerald-400 drop-shadow-[0_2px_6px_rgba(16,185,129,0.4)]" fill="none" viewBox="0 0 64 24">
-                        <path d="M0 18 Q 18 6, 36 12 T 64 3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                    <div className="shrink-0 pl-2 relative z-10">
+                      <svg className="w-14 h-7 text-emerald-400 drop-shadow-[0_2px_8px_rgba(16,185,129,0.4)]" fill="none" viewBox="0 0 56 28">
+                        <path d="M 2 22 C 16 8, 28 16, 40 10 C 48 5, 50 4, 54 3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
                       </svg>
                     </div>
                   </div>
 
                   {/* Card 3: Current Streak */}
-                  <div className="p-4.5 rounded-3xl bg-gradient-to-br from-[#111827] via-[#26160D] to-[#1A0E08] border border-amber-500/35 hover:border-amber-400/60 shadow-xl shadow-amber-950/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 group flex flex-col justify-between">
-                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-amber-500/20 rounded-full blur-2xl pointer-events-none" />
+                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#111827] via-[#22150E] to-[#180E08] border border-amber-500/30 hover:border-amber-400/60 shadow-lg flex items-center justify-between min-h-[102px] transition-all duration-200 hover:scale-[1.02] relative overflow-hidden group">
+                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-amber-500/15 rounded-full blur-2xl pointer-events-none" />
 
-                    <div className="flex items-start justify-between relative z-10">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-red-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/30 shrink-0 group-hover:scale-105 transition-transform">
-                          <Flame className="w-5 h-5 fill-white animate-pulse" />
-                        </div>
-                        <div>
-                          <span className="text-[11px] text-amber-200/80 block font-medium">Current Streak</span>
-                          <span className="text-2xl font-black text-white leading-tight mt-0.5 block flex items-center gap-1">
-                            <span>12</span>
-                            <span className="text-base text-amber-400 font-bold">Days 🔥</span>
-                          </span>
+                    <div className="flex items-center gap-3 relative z-10 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+                        <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-[11px] text-slate-400 block font-medium">Current Streak</span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-xl font-black text-white">12 days</span>
+                          <span className="text-sm">🔥</span>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm">
-                        Top 5%
-                      </span>
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-amber-500/20 flex items-center justify-between text-[10px] relative z-10">
-                      <span className="text-slate-400 font-medium">2x XP Multiplier Active</span>
-                      <svg className="w-16 h-6 text-amber-400 drop-shadow-[0_2px_6px_rgba(245,158,11,0.4)]" fill="none" viewBox="0 0 64 24">
-                        <path d="M0 22 Q 20 14, 40 8 T 64 3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                    <div className="shrink-0 pl-2 relative z-10">
+                      <svg className="w-14 h-7 text-amber-400 drop-shadow-[0_2px_8px_rgba(245,158,11,0.4)]" fill="none" viewBox="0 0 56 28">
+                        <path d="M 2 25 C 16 18, 30 12, 44 8 C 50 6, 52 4, 54 3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
                       </svg>
                     </div>
                   </div>
 
                   {/* Card 4: Overall Level */}
-                  <div className="p-4.5 rounded-3xl bg-gradient-to-br from-[#111827] via-[#0E1E36] to-[#0B1526] border border-cyan-500/35 hover:border-cyan-400/60 shadow-xl shadow-cyan-950/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 flex flex-col justify-between group">
-                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-cyan-500/20 rounded-full blur-2xl pointer-events-none" />
+                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#111827] via-[#0E1B2E] to-[#0A1424] border border-cyan-500/30 hover:border-cyan-400/60 shadow-lg flex flex-col justify-between min-h-[102px] transition-all duration-200 hover:scale-[1.02] relative overflow-hidden group">
+                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-cyan-500/15 rounded-full blur-2xl pointer-events-none" />
 
-                    <div className="flex items-start justify-between relative z-10">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-cyan-500/30 shrink-0 group-hover:scale-105 transition-transform">
-                          <Trophy className="w-5 h-5 fill-white" />
-                        </div>
-                        <div>
-                          <span className="text-[11px] text-cyan-200/80 block font-medium">Overall Level</span>
-                          <span className="text-base sm:text-lg font-black text-white leading-tight mt-0.5 block">
-                            Intermediate (B2)
-                          </span>
-                        </div>
+                    <div className="flex items-center gap-3 relative z-10">
+                      <div className="w-10 h-10 rounded-xl bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+                        <Trophy className="w-5 h-5" />
                       </div>
-                      <span className="text-[10px] font-bold text-cyan-300 bg-cyan-500/15 border border-cyan-500/30 px-2 py-0.5 rounded-full shadow-sm font-mono">
-                        68%
-                      </span>
+                      <div>
+                        <span className="text-[11px] text-slate-400 block font-medium">Overall Level</span>
+                        <span className="text-sm font-black text-white block mt-0.5">Intermediate</span>
+                      </div>
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-cyan-500/20 space-y-1.5 relative z-10">
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
-                        <span>XP Progress</span>
-                        <span className="text-cyan-300 font-bold font-mono">2,450 / 3,000 XP</span>
+                    <div className="pt-2 relative z-10">
+                      <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                        <span>Progress</span>
+                        <span className="font-bold text-cyan-400">68%</span>
                       </div>
-                      <div className="w-full h-2 rounded-full bg-slate-950 border border-slate-800 overflow-hidden p-0.5">
+                      <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 rounded-full shadow-md shadow-cyan-400/40"
+                          className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full shadow-sm shadow-cyan-400/50"
                           style={{ width: "68%" }}
                         />
                       </div>
