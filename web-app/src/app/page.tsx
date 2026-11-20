@@ -2618,90 +2618,190 @@ export default function StudentWebApp() {
                   </div>
                 </div>
 
-                {/* 4. RECENT ACTIVITY & ACHIEVEMENTS ROW */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                  {/* Recent Activity (7 cols) */}
-                  <div className="md:col-span-7 p-4 rounded-3xl bg-[#111827] border border-slate-800/80 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                        <Check className="w-4 h-4" />
+                {/* 4. RECENT ACTIVITY & DELUXE ACHIEVEMENTS SHOWCASE ROW */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+                  {/* Left: Recent Activity Feed (5 cols of 12) */}
+                  <div className="md:col-span-5 p-5 rounded-3xl bg-[#111827] border border-slate-800/80 flex flex-col justify-between space-y-4 shadow-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <History className="w-4 h-4 text-cyan-400" />
+                        <h3 className="font-bold text-xs text-white">Recent Activity</h3>
                       </div>
-                      <div>
-                        <span className="text-[11px] text-slate-400 block">Recent Activity</span>
-                        <span className="font-bold text-xs text-white">Completed: Business English Conversation</span>
+                      <button
+                        onClick={() => setActiveTab("history")}
+                        className="text-[10px] text-blue-400 hover:text-cyan-300 font-bold transition-colors"
+                      >
+                        History →
+                      </button>
+                    </div>
+
+                    {/* Activity Feed Items */}
+                    <div className="space-y-2.5">
+                      {/* Item 1 */}
+                      <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700/80 transition-all flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                            <Check className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="font-bold text-[11px] text-white block truncate max-w-[140px] sm:max-w-[170px]">
+                              Business English Talk
+                            </span>
+                            <span className="text-[9px] text-emerald-400 font-semibold">98% Accuracy • +250 XP</span>
+                          </div>
+                        </div>
+                        <span className="text-[9px] text-slate-500 font-mono">2h ago</span>
+                      </div>
+
+                      {/* Item 2 */}
+                      <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700/80 transition-all flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/30">
+                            <Mic className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="font-bold text-[11px] text-white block truncate max-w-[140px] sm:max-w-[170px]">
+                              Airport Check-in Flow
+                            </span>
+                            <span className="text-[9px] text-cyan-400 font-semibold">Fluent • +150 XP</span>
+                          </div>
+                        </div>
+                        <span className="text-[9px] text-slate-500 font-mono">Yesterday</span>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <span className="text-[10px] text-slate-500 block">2 hours ago</span>
-                      <button onClick={() => setActiveTab("history")} className="text-[10px] text-blue-400 hover:underline font-semibold">
-                        View All →
-                      </button>
+
+                    <div className="pt-1 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-800/60">
+                      <span>Total Calls: <b className="text-white font-mono">48</b></span>
+                      <span className="text-emerald-400 font-bold">100% Synced</span>
                     </div>
                   </div>
 
-                  {/* Achievements Hexagonal Badges (5 cols) */}
-                  <div className="md:col-span-5 xl:col-span-5 p-4 rounded-3xl bg-[#111827] border border-slate-800/80 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
-                        <Trophy className="w-4.5 h-4.5" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-xs text-white">Achievements</span>
-                          <span className="text-[10px] font-bold text-cyan-400 bg-cyan-500/15 border border-cyan-500/30 px-1.5 py-0.2 rounded-full">
-                            {achievements.filter(a => a.isUnlocked).length}/20
+                  {/* Right: Deluxe 3D Achievements Trophy Showcase (7 cols of 12) */}
+                  <div className="md:col-span-7 p-5 rounded-3xl bg-gradient-to-br from-[#111827] via-[#0D1527] to-[#121B35] border border-amber-500/30 shadow-xl space-y-4 flex flex-col justify-between relative overflow-hidden">
+                    {/* Ambient Trophy Gold Glow */}
+                    <div className="absolute -top-10 -right-10 w-44 h-44 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                    {/* Card Header */}
+                    <div className="flex items-center justify-between relative z-10">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center font-bold shadow-lg shadow-amber-500/25">
+                          <Trophy className="w-4.5 h-4.5 fill-slate-950" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-bold text-xs text-white">Achievements Showcase</h3>
+                            <span className="text-[10px] font-bold text-cyan-400 bg-cyan-500/15 border border-cyan-500/30 px-2 py-0.2 rounded-full">
+                              {achievements.filter(a => a.isUnlocked).length} / 20 Unlocked
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-amber-300/90 font-medium">
+                            {totalXp.toLocaleString()} Total XP Earned
                           </span>
                         </div>
-                        <span className="text-[10px] text-slate-400 block">{totalXp} XP Earned</span>
                       </div>
+
+                      <button
+                        onClick={() => setActiveTab("achievements")}
+                        className="text-[11px] font-bold text-amber-400 hover:text-yellow-300 transition-colors flex items-center gap-1 group"
+                        title="View All 20 Achievements"
+                      >
+                        <span>View All 20</span>
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      </button>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      {/* Check if any badge is ready to claim */}
-                      {achievements.some(a => a.isUnlocked && !a.isClaimed) ? (
-                        <button
-                          onClick={() => {
-                            const firstUnclaimed = achievements.find(a => a.isUnlocked && !a.isClaimed);
-                            if (firstUnclaimed) setActiveClaimModalBadge(firstUnclaimed);
-                          }}
-                          className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-[10px] shadow-lg shadow-amber-500/30 animate-pulse flex items-center gap-1"
-                        >
-                          <span>🎁 Claim ({achievements.filter(a => a.isUnlocked && !a.isClaimed).length})</span>
-                        </button>
-                      ) : null}
+                    {/* Unclaimed Badges Alert Bar */}
+                    {achievements.some(a => a.isUnlocked && !a.isClaimed) && (
+                      <button
+                        onClick={() => {
+                          const firstUnclaimed = achievements.find(a => a.isUnlocked && !a.isClaimed);
+                          if (firstUnclaimed) setActiveClaimModalBadge(firstUnclaimed);
+                        }}
+                        className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500/20 via-yellow-500/25 to-amber-500/20 border border-amber-400/50 text-amber-200 flex items-center justify-between text-[11px] font-bold hover:scale-[1.01] transition-all shadow-md shadow-amber-500/15 animate-pulse relative z-10"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span>🎁</span>
+                          <span>{achievements.filter(a => a.isUnlocked && !a.isClaimed).length} Badges Ready to Claim!</span>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 font-black text-[10px] shadow">
+                          Claim Rewards (+{achievements.filter(a => a.isUnlocked && !a.isClaimed).length * 250} XP) →
+                        </span>
+                      </button>
+                    )}
 
-                      {/* 5 Top Glowing Badges */}
-                      <div className="flex items-center gap-1.5">
-                        {achievements.slice(0, 5).map((badge) => (
+                    {/* 5 Big Glowing 3D Jewel Badges Showcase */}
+                    <div className="grid grid-cols-5 gap-2 relative z-10 pt-1">
+                      {achievements.slice(0, 5).map((badge) => {
+                        const isReady = badge.isUnlocked && !badge.isClaimed;
+                        return (
                           <button
                             key={badge.id}
                             onClick={() => {
-                              if (badge.isUnlocked && !badge.isClaimed) {
+                              if (isReady) {
                                 setActiveClaimModalBadge(badge);
                               } else {
                                 setActiveTab("achievements");
                               }
                             }}
-                            className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all hover:scale-110 ${badge.isClaimed
-                              ? `bg-gradient-to-tr ${badge.gradient} border-white/20 text-white shadow-md ${badge.glow}`
-                              : badge.isUnlocked
-                                ? "bg-amber-500/20 text-amber-400 border-amber-500/50 shadow-md shadow-amber-500/20 animate-bounce"
-                                : "bg-slate-900 border-slate-800 text-slate-600"
-                              }`}
-                            title={`${badge.title} (${badge.isClaimed ? "Claimed" : badge.isUnlocked ? "Ready to Claim!" : "Locked"})`}
+                            className="flex flex-col items-center text-center group cursor-pointer"
+                            title={`${badge.title} (${badge.isClaimed ? "Claimed" : isReady ? "Click to Claim!" : "Locked"})`}
                           >
-                            {renderBadgeIcon(badge.iconType, "w-3.5 h-3.5")}
-                          </button>
-                        ))}
-                      </div>
+                            {/* 3D Glowing Hexagon / Jewel Orb */}
+                            <div
+                              className={`w-12 h-12 sm:w-13 sm:h-13 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-1 relative ${
+                                badge.isClaimed
+                                  ? `bg-gradient-to-tr ${badge.gradient} border-2 border-white/30 shadow-lg ${badge.glow}`
+                                  : isReady
+                                  ? "bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 border-2 border-white shadow-xl shadow-amber-500/40 animate-bounce ring-2 ring-amber-400 ring-offset-2 ring-offset-[#111827]"
+                                  : "bg-slate-900 border border-slate-800 text-slate-600 opacity-60"
+                              }`}
+                            >
+                              {renderBadgeIcon(badge.iconType, `w-5 h-5 sm:w-6 sm:h-6 ${badge.isClaimed ? "text-white fill-white/20 drop-shadow" : isReady ? "text-slate-950 fill-slate-950" : "text-slate-500"}`)}
 
-                      <button
-                        onClick={() => setActiveTab("achievements")}
-                        className="text-[10px] font-bold text-blue-400 hover:text-cyan-300 transition-colors ml-1"
-                        title="View All 20 Achievements"
-                      >
-                        All →
-                      </button>
+                              {/* Claimed Tick Badge in Corner */}
+                              {badge.isClaimed && (
+                                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[9px] font-black border border-slate-950 shadow">
+                                  ✓
+                                </div>
+                              )}
+
+                              {/* Unclaimed Alert Badge in Corner */}
+                              {isReady && (
+                                <div className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 rounded-full bg-red-500 text-white flex items-center justify-center text-[9px] font-black border border-white shadow animate-ping">
+                                  !
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Badge Title */}
+                            <span className="text-[10px] font-bold text-slate-200 mt-1.5 truncate max-w-[65px] group-hover:text-amber-300 transition-colors">
+                              {badge.title.split(" ")[0]}
+                            </span>
+
+                            {/* XP Pill */}
+                            <span className="text-[8px] font-bold text-amber-400 bg-amber-500/10 px-1 py-0.2 rounded-full mt-0.5 border border-amber-500/20">
+                              +{badge.xpReward} XP
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Level 4 XP Progress Bar */}
+                    <div className="pt-2 border-t border-slate-800/80 space-y-1 relative z-10">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <div className="flex items-center gap-1.5">
+                          <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
+                          <span className="font-bold text-white">Level 4: Fluent Speaker</span>
+                        </div>
+                        <span className="font-mono font-bold text-cyan-400">2,450 / 3,000 XP (81%)</span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-slate-950 overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-amber-400 via-yellow-400 to-emerald-400 rounded-full transition-all duration-700 shadow-[0_0_8px_rgba(250,204,21,0.5)]"
+                          style={{ width: "81%" }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
