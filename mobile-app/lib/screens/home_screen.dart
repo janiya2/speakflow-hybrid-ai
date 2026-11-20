@@ -40,6 +40,291 @@ class _HomeScreenState extends State<HomeScreen> {
   String _customTopicLanguage = 'English';
   String _customTopicLevel = 'Intermediate';
 
+  // Gamification & 20 Achievements
+  int _userTotalXp = 2450;
+  final List<Map<String, dynamic>> _mobileAchievements = [
+    {
+      'id': 'welcome_explorer',
+      'title': 'Welcome Explorer',
+      'category': 'Onboarding',
+      'desc': 'Joined SpeakFlow AI to revolutionize your language fluency!',
+      'xp': 100,
+      'icon': Icons.auto_awesome_rounded,
+      'colors': [const Color(0xFF06B6D4), const Color(0xFF2563EB)],
+      'current': 1,
+      'target': 1,
+      'unit': 'signup',
+      'isUnlocked': true,
+      'isClaimed': false,
+    },
+    {
+      'id': 'pro_champion',
+      'title': 'VIP Crown Elite',
+      'category': 'Onboarding',
+      'desc': 'Unlocked SpeakFlow Pro for unlimited AI voice calls and offline Nano inference.',
+      'xp': 500,
+      'icon': Icons.workspace_premium_rounded,
+      'colors': [const Color(0xFFF59E0B), const Color(0xFFEC4899)],
+      'current': 1,
+      'target': 1,
+      'unit': 'pro',
+      'isUnlocked': true,
+      'isClaimed': false,
+    },
+    {
+      'id': 'first_words',
+      'title': 'Hello World Call',
+      'category': 'Speaking Time',
+      'desc': 'Completed your first live interactive phone call with an AI voice coach.',
+      'xp': 150,
+      'icon': Icons.mic_rounded,
+      'colors': [const Color(0xFFA855F7), const Color(0xFF6366F1)],
+      'current': 1,
+      'target': 1,
+      'unit': 'call',
+      'isUnlocked': true,
+      'isClaimed': true,
+    },
+    {
+      'id': 'nano_pioneer',
+      'title': 'Gemini Nano Pioneer',
+      'category': 'Accuracy & Mastery',
+      'desc': 'Practiced with on-device Gemini Nano hybrid AI with zero cloud latency.',
+      'xp': 250,
+      'icon': Icons.bolt_rounded,
+      'colors': [const Color(0xFF10B981), const Color(0xFF14B8A6)],
+      'current': 1,
+      'target': 1,
+      'unit': 'session',
+      'isUnlocked': true,
+      'isClaimed': true,
+    },
+    {
+      'id': 'streak_spark',
+      'title': 'Streak Spark',
+      'category': 'Streaks',
+      'desc': 'Ignited a consistent daily habit with 3 consecutive days of practice.',
+      'xp': 150,
+      'icon': Icons.local_fire_department_rounded,
+      'colors': [const Color(0xFFF97316), const Color(0xFFF59E0B)],
+      'current': 12,
+      'target': 3,
+      'unit': 'days',
+      'isUnlocked': true,
+      'isClaimed': true,
+    },
+    {
+      'id': 'streak_blaze',
+      'title': 'Streak Blaze',
+      'category': 'Streaks',
+      'desc': 'Kept the fire burning strong for an entire 7-day week!',
+      'xp': 300,
+      'icon': Icons.whatshot_rounded,
+      'colors': [const Color(0xFFEF4444), const Color(0xFFF59E0B)],
+      'current': 12,
+      'target': 7,
+      'unit': 'days',
+      'isUnlocked': true,
+      'isClaimed': true,
+    },
+    {
+      'id': 'streak_inferno',
+      'title': 'Streak Inferno',
+      'category': 'Streaks',
+      'desc': 'Two entire weeks of non-stop spoken English fluency momentum.',
+      'xp': 600,
+      'icon': Icons.whatshot_rounded,
+      'colors': [const Color(0xFFF43F5E), const Color(0xFF9333EA)],
+      'current': 12,
+      'target': 14,
+      'unit': 'days',
+      'isUnlocked': false,
+      'isClaimed': false,
+    },
+    {
+      'id': 'streak_titan',
+      'title': 'Streak Titan',
+      'category': 'Streaks',
+      'desc': 'A legendary 30-day streak! Speaking English is now second nature.',
+      'xp': 1200,
+      'icon': Icons.military_tech_rounded,
+      'colors': [const Color(0xFFC026D3), const Color(0xFF4F46E5)],
+      'current': 12,
+      'target': 30,
+      'unit': 'days',
+      'isUnlocked': false,
+      'isClaimed': false,
+    },
+    {
+      'id': 'time_conversationalist',
+      'title': '15-Min Conversationalist',
+      'category': 'Speaking Time',
+      'desc': 'Crossed 15 minutes of live spoken dialogue practice.',
+      'xp': 150,
+      'icon': Icons.timer_rounded,
+      'colors': [const Color(0xFF3B82F6), const Color(0xFF06B6D4)],
+      'current': 150,
+      'target': 15,
+      'unit': 'mins',
+      'isUnlocked': true,
+      'isClaimed': true,
+    },
+    {
+      'id': 'time_fluent_hour',
+      'title': '1-Hour Fluency Master',
+      'category': 'Speaking Time',
+      'desc': 'Invested 60 full minutes training your tongue and ears with AI.',
+      'xp': 350,
+      'icon': Icons.hourglass_top_rounded,
+      'colors': [const Color(0xFF6366F1), const Color(0xFFA855F7)],
+      'current': 150,
+      'target': 60,
+      'unit': 'mins',
+      'isUnlocked': true,
+      'isClaimed': true,
+    },
+    {
+      'id': 'time_prodigy',
+      'title': '2.5-Hour Prodigy',
+      'category': 'Speaking Time',
+      'desc': 'Logged 150 minutes of deep conversational practice with AI coaches!',
+      'xp': 500,
+      'icon': Icons.track_changes_rounded,
+      'colors': [const Color(0xFF9333EA), const Color(0xFFEC4899)],
+      'current': 150,
+      'target': 150,
+      'unit': 'mins',
+      'isUnlocked': true,
+      'isClaimed': false,
+    },
+    {
+      'id': 'time_marathon',
+      'title': '5-Hour Marathoner',
+      'category': 'Speaking Time',
+      'desc': 'Achieve 300 minutes of active voice calls across any language.',
+      'xp': 1000,
+      'icon': Icons.directions_run_rounded,
+      'colors': [const Color(0xFFF59E0B), const Color(0xFFEAB308)],
+      'current': 150,
+      'target': 300,
+      'unit': 'mins',
+      'isUnlocked': false,
+      'isClaimed': false,
+    },
+    {
+      'id': 'sprint_champion',
+      'title': 'Sprint Champion',
+      'category': 'Targets & Podium',
+      'desc': 'Smashed the 60-minute Weekly Fluency Sprint target (115/60 mins clocked)!',
+      'xp': 500,
+      'icon': Icons.emoji_events_rounded,
+      'colors': [const Color(0xFF10B981), const Color(0xFF16A34A)],
+      'current': 115,
+      'target': 60,
+      'unit': 'mins',
+      'isUnlocked': true,
+      'isClaimed': false,
+    },
+    {
+      'id': 'podium_king',
+      'title': 'Podium Conqueror',
+      'category': 'Targets & Podium',
+      'desc': 'Secured #1 First Place on the Weekly Global Championship Podium!',
+      'xp': 750,
+      'icon': Icons.military_tech_rounded,
+      'colors': [const Color(0xFFFBBF24), const Color(0xFFEA580C)],
+      'current': 1,
+      'target': 1,
+      'unit': 'rank',
+      'isUnlocked': true,
+      'isClaimed': false,
+    },
+    {
+      'id': 'target_crusher',
+      'title': '7-Day Target Crusher',
+      'category': 'Targets & Podium',
+      'desc': 'Complete daily practice targets every single day from Mon through Sun.',
+      'xp': 400,
+      'icon': Icons.flag_rounded,
+      'colors': [const Color(0xFFF43F5E), const Color(0xFFDB2777)],
+      'current': 5,
+      'target': 7,
+      'unit': 'days',
+      'isUnlocked': false,
+      'isClaimed': false,
+    },
+    {
+      'id': 'weekend_warrior',
+      'title': 'Weekend Warrior',
+      'category': 'Streaks',
+      'desc': 'Kept practicing through the weekend when everyone else took a break.',
+      'xp': 250,
+      'icon': Icons.shield_rounded,
+      'colors': [const Color(0xFF14B8A6), const Color(0xFF0284C7)],
+      'current': 1,
+      'target': 2,
+      'unit': 'days',
+      'isUnlocked': false,
+      'isClaimed': false,
+    },
+    {
+      'id': 'phonetic_perfection',
+      'title': 'Phonetic Perfectionist',
+      'category': 'Accuracy & Mastery',
+      'desc': 'Achieved an astounding 95%+ pronunciation accuracy in a lesson.',
+      'xp': 300,
+      'icon': Icons.diamond_rounded,
+      'colors': [const Color(0xFF38BDF8), const Color(0xFF0284C7)],
+      'current': 96,
+      'target': 95,
+      'unit': '%',
+      'isUnlocked': true,
+      'isClaimed': true,
+    },
+    {
+      'id': 'drill_champion',
+      'title': 'Drill Loop Ace',
+      'category': 'Accuracy & Mastery',
+      'desc': 'Mastered 10 repeat-until-accurate on-device pronunciation drills.',
+      'xp': 300,
+      'icon': Icons.psychology_rounded,
+      'colors': [const Color(0xFFD946EF), const Color(0xFFEC4899)],
+      'current': 8,
+      'target': 10,
+      'unit': 'drills',
+      'isUnlocked': false,
+      'isClaimed': false,
+    },
+    {
+      'id': 'world_polyglot',
+      'title': 'World Polyglot',
+      'category': 'Accuracy & Mastery',
+      'desc': 'Practiced conversations across 3 or more distinct languages.',
+      'xp': 450,
+      'icon': Icons.language_rounded,
+      'colors': [const Color(0xFF2563EB), const Color(0xFF4F46E5)],
+      'current': 2,
+      'target': 3,
+      'unit': 'languages',
+      'isUnlocked': false,
+      'isClaimed': false,
+    },
+    {
+      'id': 'fluency_diamond',
+      'title': 'Diamond Master C2',
+      'category': 'Accuracy & Mastery',
+      'desc': 'Achieved the pinnacle 98%+ overall fluency score with native conversational flow.',
+      'xp': 1500,
+      'icon': Icons.star_rounded,
+      'colors': [const Color(0xFF9333EA), const Color(0xFFEC4899)],
+      'current': 95,
+      'target': 98,
+      'unit': '%',
+      'isUnlocked': false,
+      'isClaimed': false,
+    },
+  ];
+
   static const List<Map<String, String>> supportedLanguagesList = [
     {
       'name': 'English',
@@ -5953,6 +6238,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
 
+                      const SizedBox(height: 16),
+
+                      // Achievements & Badges Showcase
+                      _buildProfileAchievementsSection(),
+
                       const SizedBox(height: 20),
 
                       // Learning Setup (Language, Coach, Drills)
@@ -6248,6 +6538,391 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         );
       },
+    );
+  }
+
+  void _claimMobileBadge(Map<String, dynamic> badge) {
+    if (badge['isClaimed'] == true) return;
+    setState(() {
+      badge['isClaimed'] = true;
+      _userTotalXp += (badge['xp'] as int);
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.auto_awesome, color: Color(0xFFFBBF24), size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '🎉 Claimed +${badge['xp']} XP! Unlocked "${badge['title']}"',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF0F172A),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: Color(0xFFF59E0B), width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  void _showAchievementUnlockedDialog(Map<String, dynamic> badge) {
+    showDialog(
+      context: context,
+      builder: (dCtx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+              ),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.5), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFF59E0B).withOpacity(0.2),
+                  blurRadius: 30,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Top close button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 20),
+                      onPressed: () => Navigator.pop(dCtx),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                // Glowing Badge Avatar
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: badge['colors'] as List<Color>,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (badge['colors'][0] as Color).withOpacity(0.4),
+                        blurRadius: 20,
+                        spreadRadius: 3,
+                      ),
+                    ],
+                  ),
+                  child: Icon(badge['icon'] as IconData, color: Colors.white, size: 36),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF59E0B).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.3)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.auto_awesome, color: Color(0xFFFBBF24), size: 14),
+                      SizedBox(width: 4),
+                      Text(
+                        'ACHIEVEMENT MILESTONE',
+                        style: TextStyle(color: Color(0xFFFBBF24), fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  badge['title'] as String,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  badge['desc'] as String,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12, height: 1.35),
+                ),
+                const SizedBox(height: 16),
+                // XP Reward Card
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.white.withOpacity(0.08)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Milestone Reward', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                      Text(
+                        '+${badge['xp']} XP',
+                        style: const TextStyle(color: Color(0xFFFBBF24), fontWeight: FontWeight.w900, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Action Button
+                if (badge['isClaimed'] == true)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        '✓ Reward Already Claimed',
+                        style: TextStyle(color: Color(0xFF34D399), fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                    ),
+                  )
+                else if (badge['isUnlocked'] == true)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(dCtx);
+                        _claimMobileBadge(badge);
+                      },
+                      icon: const Icon(Icons.emoji_events_rounded, size: 18),
+                      label: Text('Claim Badge & +${badge['xp']} XP 🚀'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF59E0B),
+                        foregroundColor: const Color(0xFF0F172A),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        textStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13.5),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white.withOpacity(0.08)),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '🔒 Progress: ${badge['current']}/${badge['target']} ${badge['unit']}',
+                        style: const TextStyle(color: Colors.white54, fontWeight: FontWeight.bold, fontSize: 12.5),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildProfileAchievementsSection() {
+    final unlockedCount = _mobileAchievements.where((b) => b['isUnlocked'] == true).length;
+    final unclaimedCount = _mobileAchievements.where((b) => b['isUnlocked'] == true && b['isClaimed'] != true).length;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section Title
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.emoji_events_rounded, color: Color(0xFFFBBF24), size: 18),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Achievements & Badges',
+                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF06B6D4).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF06B6D4).withOpacity(0.3)),
+                ),
+                child: Text(
+                  '$unlockedCount / 20 Unlocked',
+                  style: const TextStyle(color: Color(0xFF22D3EE), fontSize: 10.5, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Unclaimed Banner Alert
+          if (unclaimedCount > 0) ...[
+            InkWell(
+              onTap: () {
+                final first = _mobileAchievements.firstWhere((b) => b['isUnlocked'] == true && b['isClaimed'] != true);
+                _showAchievementUnlockedDialog(first);
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF78350F), Color(0xFFB45309)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFFBBF24).withOpacity(0.4)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.card_giftcard_rounded, color: Color(0xFFFDE68A), size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '$unclaimedCount Badges Ready to Claim! Tap to earn XP',
+                        style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 12),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Badges Horizontal Carousel
+          SizedBox(
+            height: 115,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _mobileAchievements.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemBuilder: (ctx, i) {
+                final badge = _mobileAchievements[i];
+                final isUnlocked = badge['isUnlocked'] == true;
+                final isClaimed = badge['isClaimed'] == true;
+                final colors = badge['colors'] as List<Color>;
+
+                return InkWell(
+                  onTap: () => _showAchievementUnlockedDialog(badge),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    width: 100,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isClaimed
+                          ? const Color(0xFF0F172A)
+                          : isUnlocked
+                              ? const Color(0xFF1E1B4B).withOpacity(0.7)
+                              : Colors.white.withOpacity(0.03),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isClaimed
+                            ? const Color(0xFF10B981).withOpacity(0.4)
+                            : isUnlocked
+                                ? const Color(0xFFF59E0B).withOpacity(0.6)
+                                : Colors.white.withOpacity(0.06),
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Badge Icon Avatar
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            gradient: isUnlocked
+                                ? LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight)
+                                : null,
+                            color: isUnlocked ? null : Colors.white.withOpacity(0.08),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            badge['icon'] as IconData,
+                            color: isUnlocked ? Colors.white : Colors.white30,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          badge['title'] as String,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: isUnlocked ? Colors.white : Colors.white54,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          isClaimed
+                              ? '✓ Claimed'
+                              : isUnlocked
+                                  ? '🎁 Claim!'
+                                  : '+${badge['xp']} XP',
+                          style: TextStyle(
+                            color: isClaimed
+                                ? const Color(0xFF34D399)
+                                : isUnlocked
+                                    ? const Color(0xFFFBBF24)
+                                    : Colors.white38,
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 

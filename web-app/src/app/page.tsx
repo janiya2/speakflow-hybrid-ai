@@ -82,7 +82,8 @@ import {
   ExternalLink,
   Target,
   Trophy,
-  Sparkle
+  Sparkle,
+  Shield
 } from "lucide-react";
 
 interface TopicModel {
@@ -249,6 +250,367 @@ const DEFAULT_LANDING_CONFIG: LandingPageConfig = {
   announcementActive: true,
 };
 
+interface AchievementBadge {
+  id: string;
+  title: string;
+  category: "Onboarding" | "Speaking Time" | "Streaks" | "Targets & Podium" | "Accuracy & Mastery";
+  description: string;
+  iconType: "sparkles" | "crown" | "mic" | "zap" | "flame" | "clock" | "target" | "trophy" | "award" | "gem" | "globe" | "star" | "shield";
+  gradient: string;
+  accentBorder: string;
+  glow: string;
+  xpReward: number;
+  requirement: string;
+  progressCurrent: number;
+  progressTarget: number;
+  progressUnit: string;
+  isUnlocked: boolean;
+  isClaimed: boolean;
+}
+
+const DEFAULT_ACHIEVEMENTS: AchievementBadge[] = [
+  {
+    id: "welcome_explorer",
+    title: "Welcome Explorer",
+    category: "Onboarding",
+    description: "Joined SpeakFlow AI to revolutionize your language fluency!",
+    iconType: "sparkles",
+    gradient: "from-cyan-500 to-blue-600",
+    accentBorder: "border-cyan-500/40",
+    glow: "shadow-cyan-500/30",
+    xpReward: 100,
+    requirement: "Sign up and create your account",
+    progressCurrent: 1,
+    progressTarget: 1,
+    progressUnit: "signup",
+    isUnlocked: true,
+    isClaimed: false
+  },
+  {
+    id: "pro_champion",
+    title: "VIP Crown Elite",
+    category: "Onboarding",
+    description: "Unlocked SpeakFlow Pro for unlimited AI voice calls and offline Nano inference.",
+    iconType: "crown",
+    gradient: "from-amber-400 via-orange-500 to-pink-500",
+    accentBorder: "border-amber-500/40",
+    glow: "shadow-amber-500/30",
+    xpReward: 500,
+    requirement: "Acquire SpeakFlow VIP / Pro status",
+    progressCurrent: 1,
+    progressTarget: 1,
+    progressUnit: "pro",
+    isUnlocked: true,
+    isClaimed: false
+  },
+  {
+    id: "first_words",
+    title: "Hello World Call",
+    category: "Speaking Time",
+    description: "Completed your first live interactive phone call with an AI voice coach.",
+    iconType: "mic",
+    gradient: "from-purple-500 to-indigo-600",
+    accentBorder: "border-purple-500/40",
+    glow: "shadow-purple-500/30",
+    xpReward: 150,
+    requirement: "Complete 1 speaking call",
+    progressCurrent: 1,
+    progressTarget: 1,
+    progressUnit: "call",
+    isUnlocked: true,
+    isClaimed: true
+  },
+  {
+    id: "nano_pioneer",
+    title: "Gemini Nano Pioneer",
+    category: "Accuracy & Mastery",
+    description: "Practiced with on-device Gemini Nano hybrid AI with zero cloud latency.",
+    iconType: "zap",
+    gradient: "from-emerald-400 to-teal-500",
+    accentBorder: "border-emerald-500/40",
+    glow: "shadow-emerald-500/30",
+    xpReward: 250,
+    requirement: "Complete an on-device AI session",
+    progressCurrent: 1,
+    progressTarget: 1,
+    progressUnit: "session",
+    isUnlocked: true,
+    isClaimed: true
+  },
+  {
+    id: "streak_spark",
+    title: "Streak Spark",
+    category: "Streaks",
+    description: "Ignited a consistent daily habit with 3 consecutive days of practice.",
+    iconType: "flame",
+    gradient: "from-orange-500 to-amber-500",
+    accentBorder: "border-orange-500/40",
+    glow: "shadow-orange-500/30",
+    xpReward: 150,
+    requirement: "Maintain a 3-day speaking streak",
+    progressCurrent: 12,
+    progressTarget: 3,
+    progressUnit: "days",
+    isUnlocked: true,
+    isClaimed: true
+  },
+  {
+    id: "streak_blaze",
+    title: "Streak Blaze",
+    category: "Streaks",
+    description: "Kept the fire burning strong for an entire 7-day week!",
+    iconType: "flame",
+    gradient: "from-red-500 to-amber-500",
+    accentBorder: "border-red-500/40",
+    glow: "shadow-red-500/30",
+    xpReward: 300,
+    requirement: "Reach a 7-day speaking streak",
+    progressCurrent: 12,
+    progressTarget: 7,
+    progressUnit: "days",
+    isUnlocked: true,
+    isClaimed: true
+  },
+  {
+    id: "streak_inferno",
+    title: "Streak Inferno",
+    category: "Streaks",
+    description: "Two entire weeks of non-stop spoken English fluency momentum.",
+    iconType: "flame",
+    gradient: "from-rose-500 to-purple-600",
+    accentBorder: "border-rose-500/40",
+    glow: "shadow-rose-500/30",
+    xpReward: 600,
+    requirement: "Reach a 14-day speaking streak",
+    progressCurrent: 12,
+    progressTarget: 14,
+    progressUnit: "days",
+    isUnlocked: false,
+    isClaimed: false
+  },
+  {
+    id: "streak_titan",
+    title: "Streak Titan",
+    category: "Streaks",
+    description: "A legendary 30-day streak! Speaking English is now second nature.",
+    iconType: "award",
+    gradient: "from-fuchsia-600 to-indigo-600",
+    accentBorder: "border-fuchsia-500/40",
+    glow: "shadow-fuchsia-500/30",
+    xpReward: 1200,
+    requirement: "Reach a 30-day speaking streak",
+    progressCurrent: 12,
+    progressTarget: 30,
+    progressUnit: "days",
+    isUnlocked: false,
+    isClaimed: false
+  },
+  {
+    id: "time_conversationalist",
+    title: "15-Min Conversationalist",
+    category: "Speaking Time",
+    description: "Crossed 15 minutes of live spoken dialogue practice.",
+    iconType: "clock",
+    gradient: "from-blue-500 to-cyan-500",
+    accentBorder: "border-blue-500/40",
+    glow: "shadow-blue-500/30",
+    xpReward: 150,
+    requirement: "Accumulate 15 minutes of speaking",
+    progressCurrent: 150,
+    progressTarget: 15,
+    progressUnit: "mins",
+    isUnlocked: true,
+    isClaimed: true
+  },
+  {
+    id: "time_fluent_hour",
+    title: "1-Hour Fluency Master",
+    category: "Speaking Time",
+    description: "Invested 60 full minutes training your tongue and ears with AI.",
+    iconType: "clock",
+    gradient: "from-indigo-500 to-purple-500",
+    accentBorder: "border-indigo-500/40",
+    glow: "shadow-indigo-500/30",
+    xpReward: 350,
+    requirement: "Accumulate 60 minutes of speaking",
+    progressCurrent: 150,
+    progressTarget: 60,
+    progressUnit: "mins",
+    isUnlocked: true,
+    isClaimed: true
+  },
+  {
+    id: "time_prodigy",
+    title: "2.5-Hour Prodigy",
+    category: "Speaking Time",
+    description: "Logged 150 minutes of deep conversational practice with AI coaches!",
+    iconType: "target",
+    gradient: "from-purple-600 to-pink-500",
+    accentBorder: "border-purple-500/40",
+    glow: "shadow-purple-500/30",
+    xpReward: 500,
+    requirement: "Accumulate 150 minutes of speaking",
+    progressCurrent: 150,
+    progressTarget: 150,
+    progressUnit: "mins",
+    isUnlocked: true,
+    isClaimed: false
+  },
+  {
+    id: "time_marathon",
+    title: "5-Hour Marathoner",
+    category: "Speaking Time",
+    description: "Achieve 300 minutes of active voice calls across any language.",
+    iconType: "award",
+    gradient: "from-amber-500 to-yellow-500",
+    accentBorder: "border-amber-500/40",
+    glow: "shadow-amber-500/30",
+    xpReward: 1000,
+    requirement: "Accumulate 300 minutes of speaking",
+    progressCurrent: 150,
+    progressTarget: 300,
+    progressUnit: "mins",
+    isUnlocked: false,
+    isClaimed: false
+  },
+  {
+    id: "sprint_champion",
+    title: "Sprint Champion",
+    category: "Targets & Podium",
+    description: "Smashed the 60-minute Weekly Fluency Sprint target (115/60 mins clocked)!",
+    iconType: "trophy",
+    gradient: "from-emerald-500 to-green-600",
+    accentBorder: "border-emerald-500/40",
+    glow: "shadow-emerald-500/30",
+    xpReward: 500,
+    requirement: "Hit 60+ spoken minutes in one week",
+    progressCurrent: 115,
+    progressTarget: 60,
+    progressUnit: "mins",
+    isUnlocked: true,
+    isClaimed: false
+  },
+  {
+    id: "podium_king",
+    title: "Podium Conqueror",
+    category: "Targets & Podium",
+    description: "Secured #1 First Place on the Weekly Global Championship Podium!",
+    iconType: "crown",
+    gradient: "from-amber-400 via-yellow-500 to-orange-500",
+    accentBorder: "border-amber-400/50",
+    glow: "shadow-amber-400/30",
+    xpReward: 750,
+    requirement: "Rank #1 on weekly championship leaderboard",
+    progressCurrent: 1,
+    progressTarget: 1,
+    progressUnit: "rank",
+    isUnlocked: true,
+    isClaimed: false
+  },
+  {
+    id: "target_crusher",
+    title: "7-Day Target Crusher",
+    category: "Targets & Podium",
+    description: "Complete daily practice targets every single day from Mon through Sun.",
+    iconType: "target",
+    gradient: "from-rose-500 to-pink-600",
+    accentBorder: "border-rose-500/40",
+    glow: "shadow-rose-500/30",
+    xpReward: 400,
+    requirement: "Complete all 7 daily targets in a week",
+    progressCurrent: 5,
+    progressTarget: 7,
+    progressUnit: "days",
+    isUnlocked: false,
+    isClaimed: false
+  },
+  {
+    id: "weekend_warrior",
+    title: "Weekend Warrior",
+    category: "Streaks",
+    description: "Kept practicing through the weekend when everyone else took a break.",
+    iconType: "shield",
+    gradient: "from-teal-500 to-cyan-600",
+    accentBorder: "border-teal-500/40",
+    glow: "shadow-teal-500/30",
+    xpReward: 250,
+    requirement: "Complete speaking sessions on both Saturday and Sunday",
+    progressCurrent: 1,
+    progressTarget: 2,
+    progressUnit: "days",
+    isUnlocked: false,
+    isClaimed: false
+  },
+  {
+    id: "phonetic_perfection",
+    title: "Phonetic Perfectionist",
+    category: "Accuracy & Mastery",
+    description: "Achieved an astounding 95%+ pronunciation accuracy in a lesson.",
+    iconType: "gem",
+    gradient: "from-cyan-400 to-sky-500",
+    accentBorder: "border-cyan-400/40",
+    glow: "shadow-cyan-400/30",
+    xpReward: 300,
+    requirement: "Score 95%+ pronunciation accuracy in a session",
+    progressCurrent: 96,
+    progressTarget: 95,
+    progressUnit: "%",
+    isUnlocked: true,
+    isClaimed: true
+  },
+  {
+    id: "drill_champion",
+    title: "Drill Loop Ace",
+    category: "Accuracy & Mastery",
+    description: "Mastered 10 repeat-until-accurate on-device pronunciation drills.",
+    iconType: "sparkles",
+    gradient: "from-fuchsia-500 to-pink-500",
+    accentBorder: "border-fuchsia-500/40",
+    glow: "shadow-fuchsia-500/30",
+    xpReward: 300,
+    requirement: "Pass 10 pronunciation drill challenges",
+    progressCurrent: 8,
+    progressTarget: 10,
+    progressUnit: "drills",
+    isUnlocked: false,
+    isClaimed: false
+  },
+  {
+    id: "world_polyglot",
+    title: "World Polyglot",
+    category: "Accuracy & Mastery",
+    description: "Practiced conversations across 3 or more distinct languages.",
+    iconType: "globe",
+    gradient: "from-blue-600 to-indigo-600",
+    accentBorder: "border-blue-500/40",
+    glow: "shadow-blue-500/30",
+    xpReward: 450,
+    requirement: "Practice in 3 foreign languages",
+    progressCurrent: 2,
+    progressTarget: 3,
+    progressUnit: "languages",
+    isUnlocked: false,
+    isClaimed: false
+  },
+  {
+    id: "fluency_diamond",
+    title: "Diamond Master C2",
+    category: "Accuracy & Mastery",
+    description: "Achieved the pinnacle 98%+ overall fluency score with native conversational flow.",
+    iconType: "star",
+    gradient: "from-purple-600 via-fuchsia-500 to-pink-500",
+    accentBorder: "border-purple-400/50",
+    glow: "shadow-purple-500/40",
+    xpReward: 1500,
+    requirement: "Reach a 98%+ cumulative fluency grade",
+    progressCurrent: 95,
+    progressTarget: 98,
+    progressUnit: "%",
+    isUnlocked: false,
+    isClaimed: false
+  }
+];
+
 const FALLBACK_TOPICS: TopicModel[] = [
   {
     id: "tr_london",
@@ -385,6 +747,81 @@ export default function StudentWebApp() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [showVipModal, setShowVipModal] = useState(false);
+
+  // 20-Achievement Gamification System
+  const [achievements, setAchievements] = useState<AchievementBadge[]>(DEFAULT_ACHIEVEMENTS);
+  const [totalXp, setTotalXp] = useState<number>(2450);
+  const [activeClaimModalBadge, setActiveClaimModalBadge] = useState<AchievementBadge | null>(null);
+  const [achievementFilter, setAchievementFilter] = useState<"all" | "ready" | "claimed" | "in_progress">("all");
+  const [celebrationToast, setCelebrationToast] = useState<string | null>(null);
+
+  // Load persisted achievements & XP
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const savedBadges = localStorage.getItem("speakflow_achievements_v2");
+        if (savedBadges) {
+          const parsed = JSON.parse(savedBadges);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setAchievements(parsed);
+          }
+        }
+        const savedXp = localStorage.getItem("speakflow_total_xp_v2");
+        if (savedXp) {
+          setTotalXp(parseInt(savedXp, 10) || 2450);
+        }
+      } catch (e) {
+        console.error("Failed to load achievements from local storage", e);
+      }
+    }
+  }, []);
+
+  const handleClaimBadge = (badgeId: string) => {
+    const targetBadge = achievements.find((b) => b.id === badgeId);
+    if (!targetBadge || targetBadge.isClaimed) return;
+
+    const nextBadges = achievements.map((b) => {
+      if (b.id === badgeId) {
+        return { ...b, isClaimed: true };
+      }
+      return b;
+    });
+    setAchievements(nextBadges);
+
+    const nextXp = totalXp + targetBadge.xpReward;
+    setTotalXp(nextXp);
+
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("speakflow_achievements_v2", JSON.stringify(nextBadges));
+        localStorage.setItem("speakflow_total_xp_v2", String(nextXp));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    setCelebrationToast(`🎉 +${targetBadge.xpReward} XP Added! Unlocked "${targetBadge.title}"!`);
+    setTimeout(() => setCelebrationToast(null), 4500);
+  };
+
+  const renderBadgeIcon = (iconType: string, className: string = "w-5 h-5") => {
+    switch (iconType) {
+      case "sparkles": return <Sparkles className={className} />;
+      case "crown": return <Crown className={className} />;
+      case "mic": return <Mic className={className} />;
+      case "zap": return <Zap className={className} />;
+      case "flame": return <Flame className={className} />;
+      case "clock": return <Clock className={className} />;
+      case "target": return <Target className={className} />;
+      case "trophy": return <Trophy className={className} />;
+      case "award": return <Award className={className} />;
+      case "gem": return <Gem className={className} />;
+      case "globe": return <Globe className={className} />;
+      case "star": return <Star className={className} />;
+      case "shield": return <Shield className={className} />;
+      default: return <Award className={className} />;
+    }
+  };
 
   // Topics & Filtering
   const [topics, setTopics] = useState<TopicModel[]>(FALLBACK_TOPICS);
@@ -1881,147 +2318,168 @@ export default function StudentWebApp() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
               {/* LEFT & CENTER MAIN COLUMN (9 cols on xl / 8 cols on lg) */}
               <div className="lg:col-span-8 xl:col-span-9 space-y-6">
-                {/* 1. HERO BANNER: Welcome Back Janitha! (with Nano Banana Panoramic AI Background) */}
-                <div className="relative rounded-3xl overflow-hidden border border-blue-500/30 shadow-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 min-h-[190px]">
-                  {/* Panoramic AI Background Image */}
+                {/* 1. HERO BANNER: Welcome Back Janitha! (Unified Panoramic Artwork with Zero Pasted Boxes) */}
+                <div className="relative rounded-3xl overflow-hidden border border-cyan-500/30 shadow-[0_15px_40px_rgba(6,182,212,0.18)] min-h-[220px] flex items-center">
+                  {/* Unified Panoramic AI Background Image */}
                   <img
-                    src="/images/hero-banner-panoramic.png"
-                    alt="AI Language Learning Studio"
+                    src="/images/speakflow_hero_unified.jpg"
+                    alt="SpeakFlow AI Hero Panoramic"
                     className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
                     onError={(e) => {
-                      (e.currentTarget as any).style.display = "none";
+                      (e.currentTarget as any).src = "/images/dashboard-hero-banner.jpg";
                     }}
                   />
-                  {/* Dark glass gradient overlay for ultra-crisp readable typography */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#070D1F]/90 via-[#0A132C]/75 to-[#081026]/90 backdrop-blur-[2px] pointer-events-none"></div>
+                  {/* Subtle dark gradient overlay to ensure text contrast while letting robot & globe shine */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#070D1F]/50 via-[#0A132C]/70 to-[#081026]/40 pointer-events-none"></div>
 
-                  {/* Left 3D Robot Mascot */}
-                  <div className="shrink-0 relative z-10">
-                    <img
-                      src="/images/dashboard-robot-transparent.png"
-                      alt="AI Robot Tutor"
-                      className="w-32 h-36 sm:w-36 sm:h-40 object-contain drop-shadow-[0_10px_25px_rgba(56,189,248,0.4)] animate-in fade-in zoom-in duration-300"
-                      onError={(e) => {
-                        (e.currentTarget as any).src = "/images/dashboard-robot.png";
-                      }}
-                    />
-                  </div>
-
-                  {/* Center Text & Start Practice Button */}
-                  <div className="flex-1 space-y-3 text-center md:text-left relative z-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-[11px] font-bold text-cyan-300">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                      <span>AI Voice Coach Online • On-Device Gemini Nano</span>
+                  {/* Centered/Center-Left Glass Content Card */}
+                  <div className="relative z-10 w-full px-6 py-6 sm:px-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="max-w-xl md:ml-28 lg:ml-36 space-y-3 text-center md:text-left bg-[#0A1128]/80 backdrop-blur-md p-5 sm:p-6 rounded-2xl border border-cyan-500/25 shadow-2xl">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 text-[10px] font-bold tracking-wide">
+                        <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                        <span>AI Voice Coach Online • On-Device Gemini Nano Hybrid</span>
+                      </div>
+                      <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight flex items-center justify-center md:justify-start gap-2">
+                        <span>Welcome back, {user?.displayName?.split(" ")[0] || "Janitha"}!</span>
+                        <span className="text-2xl animate-bounce">👋</span>
+                      </h1>
+                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">
+                        Let's practice your language skills today and become more fluent!
+                      </p>
+                      <div className="pt-1 flex flex-wrap items-center justify-center md:justify-start gap-3">
+                        <button
+                          onClick={() => launchTopicByKeyword("travel")}
+                          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold text-xs shadow-xl shadow-cyan-500/30 flex items-center gap-2 transition-all hover:scale-[1.02]"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-white" />
+                          <span>Start Practice →</span>
+                        </button>
+                        <button
+                          onClick={() => setActiveTab("achievements")}
+                          className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs border border-white/20 transition-all flex items-center gap-1.5"
+                        >
+                          <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Badges & XP ({achievements.filter(a => a.isUnlocked).length}/20)</span>
+                        </button>
+                      </div>
                     </div>
-                    <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                      Welcome back, Janitha! 👋
-                    </h2>
-                    <p className="text-xs sm:text-sm text-slate-200 max-w-lg leading-relaxed font-medium">
-                      Let's practice your language skills today and become more fluent!
-                    </p>
-                    <div className="pt-1">
-                      <button
-                        onClick={() => launchTopicByKeyword("travel")}
-                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-bold text-xs shadow-xl shadow-blue-500/35 flex items-center justify-center md:justify-start gap-2 transition-all hover:scale-[1.02]"
-                      >
-                        <Play className="w-3.5 h-3.5 fill-white" />
-                        <span>Start Practice →</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Right Earth Globe with Multilingual Holographic Speech Bubbles */}
-                  <div className="shrink-0 relative hidden sm:block z-10">
-                    <img
-                      src="/images/globe-landmarks-transparent.png"
-                      alt="Global Languages"
-                      className="w-48 h-36 object-contain drop-shadow-[0_0_25px_rgba(99,102,241,0.4)]"
-                      onError={(e) => {
-                        (e.currentTarget as any).src = "/images/globe-landmarks.png";
-                      }}
-                    />
                   </div>
                 </div>
 
-                {/* 2. 4 QUICK STAT CARDS */}
+                {/* 2. 4 LUXURY STAT CARDS */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
                   {/* Card 1: Practice Time */}
-                  <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800/80 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center">
+                  <div className="relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br from-purple-950/40 via-[#0E1528] to-[#1E1B4B]/30 border border-purple-500/30 hover:border-purple-400/60 shadow-[0_8px_25px_rgba(168,85,247,0.12)] transition-all hover:-translate-y-1 group flex items-center justify-between">
+                    <div className="absolute -top-8 -right-8 w-20 h-20 bg-purple-500/15 rounded-full blur-xl group-hover:bg-purple-500/25 transition-all pointer-events-none"></div>
+                    <div className="flex items-center gap-3.5 relative z-10">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 ring-1 ring-purple-400/30 shrink-0">
                         <Mic className="w-5 h-5" />
                       </div>
                       <div>
-                        <span className="text-[11px] text-slate-400 block">Practice Time</span>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-lg font-bold text-white">2.5 hrs</span>
-                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded">
+                        <span className="text-[10px] font-bold text-purple-300 uppercase tracking-wider block">Practice Time</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xl font-black text-white">2.5 hrs</span>
+                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 rounded-full">
                             ↑ +25%
                           </span>
                         </div>
                       </div>
                     </div>
-                    {/* Mini SVG Sparkline */}
-                    <svg className="w-12 h-6 text-purple-400" fill="none" viewBox="0 0 48 24">
-                      <path d="M0 20 Q 12 12, 24 16 T 48 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    {/* Glowing Sparkline */}
+                    <svg className="w-16 h-8 text-purple-400 shrink-0 relative z-10" viewBox="0 0 64 32">
+                      <defs>
+                        <linearGradient id="purpleSparkGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#C084FC" stopOpacity="0.4" />
+                          <stop offset="100%" stopColor="#C084FC" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M0 26 Q 16 16, 32 20 T 64 6 L 64 32 L 0 32 Z" fill="url(#purpleSparkGrad)" />
+                      <path d="M0 26 Q 16 16, 32 20 T 64 6" stroke="#C084FC" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                      <circle cx="64" cy="6" r="3" fill="#E9D5FF" />
                     </svg>
                   </div>
 
                   {/* Card 2: Lessons Completed */}
-                  <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800/80 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center">
-                        <Target className="w-5 h-5" />
+                  <div className="relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br from-emerald-950/40 via-[#0E1528] to-[#064E3B]/30 border border-emerald-500/30 hover:border-emerald-400/60 shadow-[0_8px_25px_rgba(16,185,129,0.12)] transition-all hover:-translate-y-1 group flex items-center justify-between">
+                    <div className="absolute -top-8 -right-8 w-20 h-20 bg-emerald-500/15 rounded-full blur-xl group-hover:bg-emerald-500/25 transition-all pointer-events-none"></div>
+                    <div className="flex items-center gap-3.5 relative z-10">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 flex items-center justify-center shadow-lg shadow-emerald-500/30 ring-1 ring-emerald-400/30 shrink-0">
+                        <Target className="w-5 h-5 stroke-[2.5]" />
                       </div>
                       <div>
-                        <span className="text-[11px] text-slate-400 block">Lessons Completed</span>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-lg font-bold text-white">48</span>
-                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded">
+                        <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider block">Lessons Completed</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xl font-black text-white">48</span>
+                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 rounded-full">
                             ↑ +12%
                           </span>
                         </div>
                       </div>
                     </div>
-                    <svg className="w-12 h-6 text-emerald-400" fill="none" viewBox="0 0 48 24">
-                      <path d="M0 18 Q 14 6, 26 12 T 48 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    {/* Glowing Sparkline */}
+                    <svg className="w-16 h-8 text-emerald-400 shrink-0 relative z-10" viewBox="0 0 64 32">
+                      <defs>
+                        <linearGradient id="emeraldSparkGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#34D399" stopOpacity="0.4" />
+                          <stop offset="100%" stopColor="#34D399" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M0 24 Q 18 8, 36 16 T 64 4 L 64 32 L 0 32 Z" fill="url(#emeraldSparkGrad)" />
+                      <path d="M0 24 Q 18 8, 36 16 T 64 4" stroke="#34D399" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                      <circle cx="64" cy="4" r="3" fill="#A7F3D0" />
                     </svg>
                   </div>
 
                   {/* Card 3: Current Streak */}
-                  <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800/80 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-amber-600/20 text-amber-400 flex items-center justify-center">
-                        <Star className="w-5 h-5 fill-amber-400" />
+                  <div className="relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br from-amber-950/40 via-[#0E1528] to-[#78350F]/30 border border-amber-500/30 hover:border-amber-400/60 shadow-[0_8px_25px_rgba(245,158,11,0.12)] transition-all hover:-translate-y-1 group flex items-center justify-between">
+                    <div className="absolute -top-8 -right-8 w-20 h-20 bg-amber-500/15 rounded-full blur-xl group-hover:bg-amber-500/25 transition-all pointer-events-none"></div>
+                    <div className="flex items-center gap-3.5 relative z-10">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/30 ring-1 ring-amber-400/30 shrink-0">
+                        <Flame className="w-5 h-5 fill-amber-300 animate-pulse" />
                       </div>
                       <div>
-                        <span className="text-[11px] text-slate-400 block">Current Streak</span>
-                        <span className="text-lg font-bold text-white">12 days 🔥</span>
+                        <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider block">Current Streak</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xl font-black text-white">12 Days</span>
+                          <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-1.5 py-0.5 rounded-full">
+                            🔥 Top 5%
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <svg className="w-12 h-6 text-amber-400" fill="none" viewBox="0 0 48 24">
-                      <path d="M0 22 Q 15 15, 30 10 T 48 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    {/* Glowing Sparkline */}
+                    <svg className="w-16 h-8 text-amber-400 shrink-0 relative z-10" viewBox="0 0 64 32">
+                      <defs>
+                        <linearGradient id="amberSparkGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#FBBF24" stopOpacity="0.4" />
+                          <stop offset="100%" stopColor="#FBBF24" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M0 28 Q 20 20, 38 12 T 64 4 L 64 32 L 0 32 Z" fill="url(#amberSparkGrad)" />
+                      <path d="M0 28 Q 20 20, 38 12 T 64 4" stroke="#FBBF24" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                      <circle cx="64" cy="4" r="3" fill="#FEF3C7" />
                     </svg>
                   </div>
 
                   {/* Card 4: Overall Level */}
-                  <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800/80 flex flex-col justify-between">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-xl bg-yellow-600/20 text-yellow-400 flex items-center justify-center">
-                        <Trophy className="w-5 h-5" />
+                  <div className="relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br from-cyan-950/40 via-[#0E1528] to-[#164E63]/30 border border-cyan-500/30 hover:border-cyan-400/60 shadow-[0_8px_25px_rgba(6,182,212,0.12)] transition-all hover:-translate-y-1 group flex flex-col justify-between">
+                    <div className="absolute -top-8 -right-8 w-20 h-20 bg-cyan-500/15 rounded-full blur-xl group-hover:bg-cyan-500/25 transition-all pointer-events-none"></div>
+                    <div className="flex items-center gap-3.5 mb-2 relative z-10">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-white flex items-center justify-center shadow-lg shadow-cyan-500/30 ring-1 ring-cyan-400/30 shrink-0">
+                        <Trophy className="w-5 h-5 fill-cyan-300" />
                       </div>
                       <div>
-                        <span className="text-[11px] text-slate-400 block">Overall Level</span>
-                        <span className="text-sm font-bold text-white">Intermediate</span>
+                        <span className="text-[10px] font-bold text-cyan-300 uppercase tracking-wider block">Overall Level</span>
+                        <span className="text-base font-black text-white">Intermediate (B2)</span>
                       </div>
                     </div>
-                    <div>
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
-                        <span>Progress</span>
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between text-[10px] text-slate-300 mb-1">
+                        <span className="font-semibold">Fluency Progress</span>
                         <span className="font-bold text-cyan-400">68%</span>
                       </div>
-                      <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full" style={{ width: "68%" }}></div>
+                      <div className="w-full h-2 rounded-full bg-slate-900/90 p-0.5 overflow-hidden ring-1 ring-cyan-500/20">
+                        <div className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 rounded-full shadow-md shadow-cyan-500/30" style={{ width: "68%" }}></div>
                       </div>
                     </div>
                   </div>
@@ -2181,29 +2639,69 @@ export default function StudentWebApp() {
                   </div>
 
                   {/* Achievements Hexagonal Badges (5 cols) */}
-                  <div className="md:col-span-5 xl:col-span-5 p-4 rounded-3xl bg-[#111827] border border-slate-800/80 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Trophy className="w-4 h-4 text-amber-400" />
-                      <span className="font-bold text-xs text-white">Achievements</span>
+                  <div className="md:col-span-5 xl:col-span-5 p-4 rounded-3xl bg-[#111827] border border-slate-800/80 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                        <Trophy className="w-4.5 h-4.5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-xs text-white">Achievements</span>
+                          <span className="text-[10px] font-bold text-cyan-400 bg-cyan-500/15 border border-cyan-500/30 px-1.5 py-0.2 rounded-full">
+                            {achievements.filter(a => a.isUnlocked).length}/20
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 block">{totalXp} XP Earned</span>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {/* 5 Glowing Hexagonal Badges */}
-                      <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center shadow-md shadow-amber-500/20" title="Gold Star Speaker">
-                        <Star className="w-3.5 h-3.5 fill-amber-400" />
+                      {/* Check if any badge is ready to claim */}
+                      {achievements.some(a => a.isUnlocked && !a.isClaimed) ? (
+                        <button
+                          onClick={() => {
+                            const firstUnclaimed = achievements.find(a => a.isUnlocked && !a.isClaimed);
+                            if (firstUnclaimed) setActiveClaimModalBadge(firstUnclaimed);
+                          }}
+                          className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-[10px] shadow-lg shadow-amber-500/30 animate-pulse flex items-center gap-1"
+                        >
+                          <span>🎁 Claim ({achievements.filter(a => a.isUnlocked && !a.isClaimed).length})</span>
+                        </button>
+                      ) : null}
+
+                      {/* 5 Top Glowing Badges */}
+                      <div className="flex items-center gap-1.5">
+                        {achievements.slice(0, 5).map((badge) => (
+                          <button
+                            key={badge.id}
+                            onClick={() => {
+                              if (badge.isUnlocked && !badge.isClaimed) {
+                                setActiveClaimModalBadge(badge);
+                              } else {
+                                setActiveTab("achievements");
+                              }
+                            }}
+                            className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all hover:scale-110 ${
+                              badge.isClaimed
+                                ? `bg-gradient-to-tr ${badge.gradient} border-white/20 text-white shadow-md ${badge.glow}`
+                                : badge.isUnlocked
+                                ? "bg-amber-500/20 text-amber-400 border-amber-500/50 shadow-md shadow-amber-500/20 animate-bounce"
+                                : "bg-slate-900 border-slate-800 text-slate-600"
+                            }`}
+                            title={`${badge.title} (${badge.isClaimed ? "Claimed" : badge.isUnlocked ? "Ready to Claim!" : "Locked"})`}
+                          >
+                            {renderBadgeIcon(badge.iconType, "w-3.5 h-3.5")}
+                          </button>
+                        ))}
                       </div>
-                      <div className="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-400 border border-purple-500/40 flex items-center justify-center shadow-md shadow-purple-500/20" title="Global Polyglot">
-                        <Globe className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shadow-md shadow-emerald-500/20" title="Fluency Champion">
-                        <Trophy className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 flex items-center justify-center shadow-md shadow-cyan-500/20" title="VIP Royal Member">
-                        <Crown className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 flex items-center justify-center shadow-md shadow-indigo-500/20" title="Diamond Precision">
-                        <Gem className="w-3.5 h-3.5" />
-                      </div>
+
+                      <button
+                        onClick={() => setActiveTab("achievements")}
+                        className="text-[10px] font-bold text-blue-400 hover:text-cyan-300 transition-colors ml-1"
+                        title="View All 20 Achievements"
+                      >
+                        All →
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -2475,65 +2973,243 @@ export default function StudentWebApp() {
             </div>
           ) : activeTab === "achievements" ? (
             /* ----------------------------------------------------------- */
-            /* TAB: ACHIEVEMENTS & WEEKLY PODIUM                           */
+            /* TAB: 20 ACHIEVEMENTS & WEEKLY CHAMPIONSHIP HUB              */
             /* ----------------------------------------------------------- */
             <div className="space-y-6">
-              <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800 flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-amber-400" />
-                    Weekly Winners Championship Podium
+              {/* Top Banner & XP Stats */}
+              <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-r from-[#111827] via-[#0E172E] to-[#121B35] border border-cyan-500/30 shadow-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="space-y-1.5">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 text-[10px] font-bold tracking-wide">
+                    <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                    <span>GAMIFICATION & PROGRESS REWARDS</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+                    <Trophy className="w-6 h-6 text-amber-400" />
+                    Achievements & Weekly Championship Hub
                   </h2>
-                  <p className="text-xs text-slate-400">Top learners this week ranked by spoken practice minutes.</p>
+                  <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+                    Earn badges through spoken practice time, continuous daily streaks, and weekly fluency sprints. Claim badges to level up your global XP score!
+                  </p>
                 </div>
-                <button
-                  onClick={() => setActiveTab("dashboard")}
-                  className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
-                >
-                  ← Back to Dashboard
-                </button>
+
+                {/* User Stats Ribbons */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="px-4 py-2.5 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 flex items-center gap-2">
+                    <Zap className="w-4 h-4 fill-amber-300" />
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-amber-400/80 block">Total XP</span>
+                      <span className="text-sm font-black text-white">{totalXp.toLocaleString()} XP</span>
+                    </div>
+                  </div>
+
+                  <div className="px-4 py-2.5 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-cyan-400" />
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-cyan-400/80 block">Badges Unlocked</span>
+                      <span className="text-sm font-black text-white">{achievements.filter(a => a.isUnlocked).length} / 20</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setActiveTab("dashboard")}
+                    className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all"
+                  >
+                    ← Dashboard
+                  </button>
+                </div>
               </div>
 
-              {/* Podium */}
-              <div className="p-8 rounded-3xl bg-[#111827] border border-slate-800 flex items-end justify-center gap-4 max-w-xl mx-auto">
-                {/* 2nd Place */}
-                <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 rounded-full bg-slate-700 border-2 border-slate-400 flex items-center justify-center font-bold text-white mb-2">
-                    J
-                  </div>
-                  <span className="text-xs font-bold text-white">Jaji</span>
-                  <span className="text-[10px] text-slate-400">13m • 50%</span>
-                  <div className="w-24 h-28 rounded-t-2xl bg-gradient-to-t from-slate-800 to-slate-700 mt-2 flex items-center justify-center font-black text-xl text-slate-300">
-                    #2
-                  </div>
+              {/* Weekly Winners Championship Podium */}
+              <div className="p-6 sm:p-8 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
+                <div className="text-center space-y-1">
+                  <h3 className="text-sm sm:text-base font-bold text-white flex items-center justify-center gap-2">
+                    <Crown className="w-4 h-4 text-amber-400" />
+                    Weekly Winners Championship Podium
+                  </h3>
+                  <p className="text-xs text-slate-400">Top learners this week ranked by spoken conversation minutes.</p>
                 </div>
 
-                {/* 1st Place (Janitha Dilshan) */}
-                <div className="flex flex-col items-center">
-                  <Crown className="w-6 h-6 text-amber-400 mb-1 animate-bounce" />
-                  <img
-                    src="/images/janitha-avatar.jpg"
-                    alt="Janitha Dilshan"
-                    className="w-16 h-16 rounded-full object-cover ring-4 ring-amber-400 mb-2"
-                  />
-                  <span className="text-xs font-bold text-amber-300">Janitha Dilshan</span>
-                  <span className="text-[10px] text-amber-200">190m • 95%</span>
-                  <div className="w-28 h-36 rounded-t-2xl bg-gradient-to-t from-amber-600 to-amber-500 mt-2 flex items-center justify-center font-black text-2xl text-slate-950 shadow-xl shadow-amber-500/20">
-                    #1
+                <div className="flex items-end justify-center gap-3 sm:gap-6 pt-4 max-w-lg mx-auto">
+                  {/* 2nd Place */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-12 h-12 rounded-full bg-slate-700 border-2 border-slate-400 flex items-center justify-center font-bold text-white mb-2">
+                      J
+                    </div>
+                    <span className="text-xs font-bold text-white">Jaji</span>
+                    <span className="text-[10px] text-slate-400">13m • 50%</span>
+                    <div className="w-24 sm:w-28 h-28 rounded-t-2xl bg-gradient-to-t from-slate-800 to-slate-700 mt-2 flex items-center justify-center font-black text-xl text-slate-300">
+                      #2
+                    </div>
                   </div>
+
+                  {/* 1st Place (Janitha Dilshan) */}
+                  <div className="flex flex-col items-center">
+                    <Crown className="w-6 h-6 text-amber-400 mb-1 animate-bounce" />
+                    <img
+                      src="/images/janitha-avatar.jpg"
+                      alt="Janitha Dilshan"
+                      className="w-16 h-16 rounded-full object-cover ring-4 ring-amber-400 mb-2 shadow-lg shadow-amber-400/20"
+                    />
+                    <span className="text-xs font-bold text-amber-300">Janitha Dilshan</span>
+                    <span className="text-[10px] text-amber-200">190m • 95%</span>
+                    <div className="w-28 sm:w-32 h-36 rounded-t-2xl bg-gradient-to-t from-amber-600 to-amber-500 mt-2 flex items-center justify-center font-black text-2xl text-slate-950 shadow-xl shadow-amber-500/20">
+                      #1
+                    </div>
+                  </div>
+
+                  {/* 3rd Place */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-12 h-12 rounded-full bg-orange-950 border-2 border-orange-600 flex items-center justify-center font-bold text-orange-300 mb-2">
+                      A
+                    </div>
+                    <span className="text-xs font-bold text-white">admin</span>
+                    <span className="text-[10px] text-slate-400">8m • 89%</span>
+                    <div className="w-24 sm:w-28 h-20 rounded-t-2xl bg-gradient-to-t from-orange-950 to-orange-800 mt-2 flex items-center justify-center font-black text-xl text-orange-200">
+                      #3
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Badges Filter Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-[#111827] border border-slate-800">
+                <div className="flex flex-wrap items-center gap-2">
+                  {[
+                    { id: "all", label: `All Badges (20)` },
+                    { id: "ready", label: `🎁 Ready to Claim (${achievements.filter(a => a.isUnlocked && !a.isClaimed).length})` },
+                    { id: "claimed", label: `Claimed (${achievements.filter(a => a.isClaimed).length})` },
+                    { id: "in_progress", label: `In Progress (${achievements.filter(a => !a.isUnlocked).length})` }
+                  ].map((filterTab) => (
+                    <button
+                      key={filterTab.id}
+                      onClick={() => setAchievementFilter(filterTab.id as any)}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                        achievementFilter === filterTab.id
+                          ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
+                          : "bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800"
+                      }`}
+                    >
+                      {filterTab.label}
+                    </button>
+                  ))}
                 </div>
 
-                {/* 3rd Place */}
-                <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 rounded-full bg-orange-950 border-2 border-orange-600 flex items-center justify-center font-bold text-orange-300 mb-2">
-                    A
-                  </div>
-                  <span className="text-xs font-bold text-white">admin</span>
-                  <span className="text-[10px] text-slate-400">8m • 89%</span>
-                  <div className="w-24 h-20 rounded-t-2xl bg-gradient-to-t from-orange-950 to-orange-800 mt-2 flex items-center justify-center font-black text-xl text-orange-200">
-                    #3
-                  </div>
-                </div>
+                {achievements.some(a => a.isUnlocked && !a.isClaimed) && (
+                  <button
+                    onClick={() => {
+                      const firstUnclaimed = achievements.find(a => a.isUnlocked && !a.isClaimed);
+                      if (firstUnclaimed) setActiveClaimModalBadge(firstUnclaimed);
+                    }}
+                    className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center gap-1.5 transition-all hover:scale-[1.02] animate-pulse"
+                  >
+                    <Trophy className="w-3.5 h-3.5 fill-slate-950" />
+                    <span>Claim Next Reward →</span>
+                  </button>
+                )}
+              </div>
+
+              {/* 20 ACHIEVEMENTS GRID */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                {achievements
+                  .filter((badge) => {
+                    if (achievementFilter === "ready") return badge.isUnlocked && !badge.isClaimed;
+                    if (achievementFilter === "claimed") return badge.isClaimed;
+                    if (achievementFilter === "in_progress") return !badge.isUnlocked;
+                    return true;
+                  })
+                  .map((badge) => {
+                    const percent = Math.min(100, Math.round((badge.progressCurrent / badge.progressTarget) * 100));
+                    return (
+                      <div
+                        key={badge.id}
+                        className={`p-5 rounded-3xl border transition-all duration-200 flex flex-col justify-between gap-4 relative overflow-hidden group ${
+                          badge.isClaimed
+                            ? "bg-gradient-to-br from-[#111827] via-[#0D1527] to-[#0A1020] border-emerald-500/30 shadow-lg"
+                            : badge.isUnlocked
+                            ? "bg-gradient-to-br from-[#111827] via-[#1E1B4B]/35 to-[#0F172A] border-amber-500/50 shadow-xl shadow-amber-500/10 ring-1 ring-amber-400/25"
+                            : "bg-[#111827]/75 border-slate-800/80 opacity-85 hover:opacity-100"
+                        }`}
+                      >
+                        {/* Corner Glow for Unlocked / Ready */}
+                        {badge.isUnlocked && !badge.isClaimed && (
+                          <div className="absolute -top-10 -right-10 w-24 h-24 bg-amber-500/20 rounded-full blur-2xl pointer-events-none animate-pulse"></div>
+                        )}
+
+                        <div className="space-y-3 relative z-10">
+                          {/* Top Row: Icon + Category + XP Reward */}
+                          <div className="flex items-start justify-between gap-3">
+                            <div className={`w-13 h-13 rounded-2xl bg-gradient-to-tr ${badge.gradient} border border-white/20 flex items-center justify-center shadow-lg ${badge.glow} shrink-0 p-3`}>
+                              {renderBadgeIcon(badge.iconType, "w-7 h-7 text-white drop-shadow")}
+                            </div>
+
+                            <div className="flex flex-col items-end gap-1.5">
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-slate-900 border border-slate-800 text-slate-300">
+                                {badge.category}
+                              </span>
+                              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-500/15 border border-amber-500/30 text-amber-300 flex items-center gap-1">
+                                <Zap className="w-3 h-3 fill-amber-300" />
+                                +{badge.xpReward} XP
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Title & Description */}
+                          <div>
+                            <h4 className="font-black text-sm text-white group-hover:text-cyan-300 transition-colors">
+                              {badge.title}
+                            </h4>
+                            <p className="text-xs text-slate-300/90 leading-relaxed mt-1">
+                              {badge.description}
+                            </p>
+                          </div>
+
+                          {/* Requirement & Progress Bar */}
+                          <div className="space-y-1.5 pt-1">
+                            <div className="flex items-center justify-between text-[11px] text-slate-400">
+                              <span className="truncate">{badge.requirement}</span>
+                              <span className="font-bold text-white shrink-0 ml-2">
+                                {badge.progressCurrent}/{badge.progressTarget} {badge.progressUnit} ({percent}%)
+                              </span>
+                            </div>
+                            <div className="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all duration-500 ${
+                                  badge.isClaimed
+                                    ? "bg-emerald-400"
+                                    : badge.isUnlocked
+                                    ? "bg-gradient-to-r from-amber-400 to-yellow-400"
+                                    : "bg-gradient-to-r from-blue-500 to-cyan-400"
+                                }`}
+                                style={{ width: `${percent}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Bottom Status / Action Button */}
+                        <div className="pt-2 relative z-10">
+                          {badge.isClaimed ? (
+                            <div className="w-full py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                              <span>Claimed ✓ (+{badge.xpReward} XP Earned)</span>
+                            </div>
+                          ) : badge.isUnlocked ? (
+                            <button
+                              onClick={() => setActiveClaimModalBadge(badge)}
+                              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02] animate-pulse"
+                            >
+                              <Trophy className="w-3.5 h-3.5 fill-slate-950" />
+                              <span>🎁 Claim Badge & +{badge.xpReward} XP!</span>
+                            </button>
+                          ) : (
+                            <div className="w-full py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 text-xs font-semibold flex items-center justify-center gap-1.5">
+                              <span>🔒 Locked • In Progress ({percent}%)</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             </div>
           ) : (
@@ -2727,6 +3403,96 @@ export default function StudentWebApp() {
             >
               Return to Dashboard
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* 6. CELEBRATORY CLAIM BADGE & XP MODAL */}
+      {activeClaimModalBadge && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in zoom-in duration-200">
+          <div className="w-full max-w-md bg-gradient-to-b from-[#111827] via-[#0F172A] to-[#0A0F1D] border border-amber-500/40 rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_rgba(245,158,11,0.25)] space-y-6 relative text-center overflow-hidden">
+            {/* Ambient Background Glow & Sparks */}
+            <div className="absolute -top-16 -left-16 w-40 h-40 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute -bottom-16 -right-16 w-40 h-40 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            {/* Close Button */}
+            <button
+              onClick={() => setActiveClaimModalBadge(null)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Confetti & Trophy Visual */}
+            <div className="relative mx-auto w-24 h-24 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-300 opacity-25 blur-xl animate-pulse"></div>
+              <div className={`w-20 h-20 rounded-2xl bg-gradient-to-tr ${activeClaimModalBadge.gradient} border-2 border-amber-300/60 shadow-2xl ${activeClaimModalBadge.glow} flex items-center justify-center transform hover:rotate-6 transition-transform`}>
+                {renderBadgeIcon(activeClaimModalBadge.iconType, "w-10 h-10 text-white fill-white/20 drop-shadow")}
+              </div>
+            </div>
+
+            {/* Title & Celebration */}
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] font-bold tracking-wide">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" />
+                <span>NEW ACHIEVEMENT UNLOCKED!</span>
+              </div>
+              <h3 className="text-2xl font-black text-white tracking-tight">
+                {activeClaimModalBadge.title}
+              </h3>
+              <span className="text-[11px] font-semibold text-cyan-400 uppercase tracking-wider block">
+                {activeClaimModalBadge.category} Milestone
+              </span>
+              <p className="text-xs text-slate-300 leading-relaxed font-medium pt-1">
+                {activeClaimModalBadge.description}
+              </p>
+            </div>
+
+            {/* XP Reward Card */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-yellow-500/15 to-orange-500/10 border border-amber-500/30 flex items-center justify-between">
+              <div className="text-left">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">XP Reward</span>
+                <span className="text-xs text-slate-200">Added to your global ranking</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/25 border border-amber-400/40 text-amber-300 font-black text-base shadow-lg shadow-amber-500/20">
+                <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+                <span>+{activeClaimModalBadge.xpReward} XP</span>
+              </div>
+            </div>
+
+            {/* Claim Action Button */}
+            <div className="space-y-2 pt-2">
+              <button
+                onClick={() => {
+                  handleClaimBadge(activeClaimModalBadge.id);
+                  setActiveClaimModalBadge(null);
+                }}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/35 flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+              >
+                <Trophy className="w-4 h-4 fill-slate-950" />
+                <span>Claim Badge & +{activeClaimModalBadge.xpReward} XP 🚀</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveClaimModalBadge(null);
+                  setActiveTab("achievements");
+                }}
+                className="text-[11px] font-semibold text-slate-400 hover:text-white transition-colors"
+              >
+                View All 20 Achievements →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 7. FLOATING CELEBRATION TOAST */}
+      {celebrationToast && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 duration-300">
+          <div className="px-5 py-3 rounded-2xl bg-[#0F172A] border border-amber-500/50 shadow-2xl shadow-amber-500/30 flex items-center gap-3 text-white text-xs font-bold">
+            <Sparkles className="w-5 h-5 text-amber-400 animate-spin" />
+            <span>{celebrationToast}</span>
           </div>
         </div>
       )}
