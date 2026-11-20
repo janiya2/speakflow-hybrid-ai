@@ -83,7 +83,9 @@ import {
   Target,
   Trophy,
   Sparkle,
-  Shield
+  Shield,
+  Headphones,
+  Pause
 } from "lucide-react";
 
 interface TopicModel {
@@ -918,6 +920,128 @@ export default function StudentWebApp() {
 
   // Call History State
   const [callHistory, setCallHistory] = useState<CallSessionRecord[]>([]);
+
+  // Recent Speaking Activity & Review Modal State
+  const [selectedReviewSession, setSelectedReviewSession] = useState<{
+    id: string;
+    topicTitle: string;
+    coachName: string;
+    coachAvatar: string;
+    coachRole: string;
+    coachCountry: string;
+    coachFlag: string;
+    category: string;
+    timeAgo: string;
+    durationFormatted: string;
+    score: number;
+    grade: string;
+    fluencyScore: number;
+    accuracyScore: number;
+    engine: "ON_DEVICE_NANO" | "CLOUD_GEMINI_FLASH";
+    latencyMs: number;
+    audioPreviewText: string;
+    dialogueSnippet: {
+      user: string;
+      ai: string;
+      tip: string;
+    };
+  } | null>(null);
+  const [playingSessionAudioId, setPlayingSessionAudioId] = useState<string | null>(null);
+
+  const defaultRecentSessions = [
+    {
+      id: "session-rec-1",
+      topicTitle: "Business English & Strategic Pitching",
+      coachName: "Coach Sophia Miller",
+      coachAvatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+      coachRole: "Executive Speech & Pitch Coach",
+      coachCountry: "United States",
+      coachFlag: "🇺🇸",
+      category: "Business & Pitching",
+      timeAgo: "2h ago",
+      durationFormatted: "3m 42s",
+      score: 98,
+      grade: "A+",
+      fluencyScore: 98,
+      accuracyScore: 96,
+      engine: "ON_DEVICE_NANO" as const,
+      latencyMs: 14,
+      audioPreviewText: "Hello Janitha! In our executive pitch session, your intonation and pacing reached an outstanding 98% fluency score. Excellent delivery!",
+      dialogueSnippet: {
+        user: "We should deploy on-device Gemini Nano to guarantee sub-20ms inference latency for real-time mobile voice sessions.",
+        ai: "Magnificent technical vocabulary! Your stress on 'on-device' and 'inference latency' sounded completely natural.",
+        tip: "Pro Tip: Maintain an assertive falling pitch when stating performance metrics to reinforce leadership authority.",
+      },
+    },
+    {
+      id: "session-rec-2",
+      topicTitle: "Parisian Café & Everyday Etiquette",
+      coachName: "Coach Camille Laurent",
+      coachAvatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
+      coachRole: "Native French Accent Specialist",
+      coachCountry: "France",
+      coachFlag: "🇫🇷",
+      category: "Travel & Culture",
+      timeAgo: "Yesterday",
+      durationFormatted: "4m 15s",
+      score: 95,
+      grade: "A",
+      fluencyScore: 95,
+      accuracyScore: 94,
+      engine: "CLOUD_GEMINI_FLASH" as const,
+      latencyMs: 240,
+      audioPreviewText: "Bonjour Janitha! Your French ordering cadence at the Parisian café was delightful, with smooth vowel transitions.",
+      dialogueSnippet: {
+        user: "Bonjour madame! Je voudrais commander un café au lait et un croissant s'il vous plaît.",
+        ai: "Très bien Janitha! Your pronunciation of 'croissant' had authentic Parisian tongue positioning.",
+        tip: "Pro Tip: In informal French cafés, keep 's'il vous plaît' smoothly contracted without pause.",
+      },
+    },
+    {
+      id: "session-rec-3",
+      topicTitle: "Tokyo AI Summit Networking & Q&A",
+      coachName: "Coach Kenji Sato",
+      coachAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      coachRole: "Global Tech Liaison Coach",
+      coachCountry: "Japan",
+      coachFlag: "🇯🇵",
+      category: "Tech Networking",
+      timeAgo: "Nov 18",
+      durationFormatted: "2m 50s",
+      score: 96,
+      grade: "A",
+      fluencyScore: 96,
+      accuracyScore: 95,
+      engine: "ON_DEVICE_NANO" as const,
+      latencyMs: 16,
+      audioPreviewText: "Konnichiwa Janitha! Your polite introduction for the Tokyo tech summit networking was clear, polite, and confident.",
+      dialogueSnippet: {
+        user: "Hajimemashite! SpeakFlow AI no CEO Janitha to moushimasu. Onsha no AI purojekuto ni tsuite oshiete kudasai.",
+        ai: "Subarashii desu! Formal business humbleness 'moushimasu' was executed with high professional clarity.",
+        tip: "Pro Tip: A subtle breath pause after 'CEO' creates a calm, commanding conversational rhythm.",
+      },
+    },
+  ];
+
+  const handleToggleAudioPreview = (e: React.MouseEvent, session: (typeof defaultRecentSessions)[0]) => {
+    e.stopPropagation();
+    if (playingSessionAudioId === session.id) {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+      setPlayingSessionAudioId(null);
+    } else {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(session.audioPreviewText);
+        utter.rate = 0.95;
+        utter.onend = () => setPlayingSessionAudioId(null);
+        utter.onerror = () => setPlayingSessionAudioId(null);
+        window.speechSynthesis.speak(utter);
+      }
+      setPlayingSessionAudioId(session.id);
+    }
+  };
 
   // Web Speech API Refs
   const recognitionRef = useRef<any>(null);
@@ -2620,59 +2744,139 @@ export default function StudentWebApp() {
 
                 {/* 4. RECENT ACTIVITY & DELUXE ACHIEVEMENTS SHOWCASE ROW */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                  {/* Left: Recent Activity Feed (5 cols of 12) */}
-                  <div className="md:col-span-5 p-5 rounded-3xl bg-[#111827] border border-slate-800/80 flex flex-col justify-between space-y-4 shadow-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <History className="w-4 h-4 text-cyan-400" />
-                        <h3 className="font-bold text-xs text-white">Recent Activity</h3>
+                  {/* Left: Deluxe Recent Speaking Activity Feed (5 cols of 12) */}
+                  <div className="md:col-span-5 p-5 rounded-3xl bg-gradient-to-br from-[#111827] via-[#0D172A] to-[#0F1E36] border border-cyan-500/30 shadow-xl flex flex-col justify-between space-y-3.5 relative overflow-hidden group/recent">
+                    {/* Ambient High-Tech Glow */}
+                    <div className="absolute -top-10 -left-10 w-44 h-44 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                    {/* Header */}
+                    <div className="flex items-center justify-between relative z-10">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-white flex items-center justify-center shadow-lg shadow-cyan-500/25">
+                          <Headphones className="w-4.5 h-4.5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-bold text-xs text-white">Recent Activity</h3>
+                            <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                              3 Today
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-cyan-300/80 font-medium">
+                            2.5 hrs spoken • Avg 96.5% Fluency
+                          </span>
+                        </div>
                       </div>
+
                       <button
-                        onClick={() => setActiveTab("history")}
-                        className="text-[10px] text-blue-400 hover:text-cyan-300 font-bold transition-colors"
+                        onClick={() => setSelectedReviewSession(defaultRecentSessions[0])}
+                        className="text-[11px] font-bold text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1 group"
+                        title="Open Detailed AI Session Review"
                       >
-                        History →
+                        <span>Review</span>
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                       </button>
                     </div>
 
-                    {/* Activity Feed Items */}
-                    <div className="space-y-2.5">
-                      {/* Item 1 */}
-                      <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700/80 transition-all flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
-                            <Check className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <span className="font-bold text-[11px] text-white block truncate max-w-[140px] sm:max-w-[170px]">
-                              Business English Talk
-                            </span>
-                            <span className="text-[9px] text-emerald-400 font-semibold">98% Accuracy • +250 XP</span>
-                          </div>
-                        </div>
-                        <span className="text-[9px] text-slate-500 font-mono">2h ago</span>
-                      </div>
+                    {/* 3 Rich Interactive Session Cards */}
+                    <div className="space-y-2 relative z-10">
+                      {defaultRecentSessions.map((session) => {
+                        const isAudioPlaying = playingSessionAudioId === session.id;
+                        return (
+                          <div
+                            key={session.id}
+                            onClick={() => setSelectedReviewSession(session)}
+                            className="p-2.5 sm:p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-cyan-500/40 hover:bg-slate-900/80 transition-all duration-200 cursor-pointer group flex items-center justify-between gap-2.5 shadow-sm"
+                          >
+                            {/* Left: Avatar with Flag & Details */}
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="relative shrink-0">
+                                <img
+                                  src={session.coachAvatar}
+                                  alt={session.coachName}
+                                  className="w-9 h-9 rounded-xl object-cover border border-slate-700/80 group-hover:border-cyan-400/60 transition-colors shadow-sm"
+                                />
+                                <span className="absolute -bottom-1 -right-1 text-[10px] leading-none drop-shadow">
+                                  {session.coachFlag}
+                                </span>
+                              </div>
 
-                      {/* Item 2 */}
-                      <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700/80 transition-all flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/30">
-                            <Mic className="w-4 h-4" />
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="font-bold text-[11px] text-white group-hover:text-cyan-300 transition-colors truncate max-w-[130px] sm:max-w-[170px]">
+                                    {session.topicTitle}
+                                  </span>
+                                  {session.engine === "ON_DEVICE_NANO" ? (
+                                    <span className="inline-flex items-center gap-0.5 text-[8px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 rounded-full">
+                                      <Zap className="w-2.5 h-2.5 text-emerald-400" />
+                                      Nano ({session.latencyMs}ms)
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-0.5 text-[8px] font-bold text-cyan-300 bg-cyan-500/15 border border-cyan-500/30 px-1.5 py-0.2 rounded-full">
+                                      <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
+                                      Cloud Flash
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-1.5 mt-0.5 text-[9.5px] text-slate-400">
+                                  <span className="text-slate-300 font-medium">{session.coachName.replace("Coach ", "")}</span>
+                                  <span>•</span>
+                                  <span className="font-mono text-slate-400">{session.durationFormatted}</span>
+                                  <span>•</span>
+                                  <span className="text-slate-500">{session.timeAgo}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Right: Score Pill + Audio Play + Action */}
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {/* Fluency Badge */}
+                              <div className="px-1.5 py-0.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-black text-[10px] flex items-center gap-1">
+                                <span>{session.fluencyScore}%</span>
+                                <span className="text-[8.5px] text-emerald-400 font-bold">{session.grade}</span>
+                              </div>
+
+                              {/* Audio Speech Button */}
+                              <button
+                                onClick={(e) => handleToggleAudioPreview(e, session)}
+                                title={isAudioPlaying ? "Stop Voice Feedback" : "Listen to Coach Voice Review"}
+                                className={`w-6.5 h-6.5 p-1 rounded-xl flex items-center justify-center transition-all ${
+                                  isAudioPlaying
+                                    ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/40 animate-pulse"
+                                    : "bg-slate-800/80 hover:bg-cyan-500/20 text-slate-400 hover:text-cyan-300 border border-slate-700/60"
+                                }`}
+                              >
+                                {isAudioPlaying ? (
+                                  <Pause className="w-3 h-3" />
+                                ) : (
+                                  <Volume2 className="w-3 h-3" />
+                                )}
+                              </button>
+
+                              {/* Review Chevron */}
+                              <div className="w-5 h-5 rounded-lg bg-slate-800/40 group-hover:bg-cyan-500/20 text-slate-500 group-hover:text-cyan-300 flex items-center justify-center transition-all">
+                                <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <span className="font-bold text-[11px] text-white block truncate max-w-[140px] sm:max-w-[170px]">
-                              Airport Check-in Flow
-                            </span>
-                            <span className="text-[9px] text-cyan-400 font-semibold">Fluent • +150 XP</span>
-                          </div>
-                        </div>
-                        <span className="text-[9px] text-slate-500 font-mono">Yesterday</span>
-                      </div>
+                        );
+                      })}
                     </div>
 
-                    <div className="pt-1 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-800/60">
-                      <span>Total Calls: <b className="text-white font-mono">48</b></span>
-                      <span className="text-emerald-400 font-bold">100% Synced</span>
+                    {/* Footer Stats Bar */}
+                    <div className="pt-1.5 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-800/60 relative z-10">
+                      <div className="flex items-center gap-2">
+                        <span>Total: <b className="text-white font-mono">48 Calls</b></span>
+                        <span>•</span>
+                        <span className="text-amber-300 font-bold">+1,250 XP Today</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-emerald-400 font-bold text-[9.5px]">
+                        <Check className="w-3 h-3" />
+                        <span>Firestore Synced</span>
+                      </div>
                     </div>
                   </div>
 
@@ -3834,6 +4038,188 @@ export default function StudentWebApp() {
                 className="text-[11px] font-semibold text-slate-400 hover:text-white transition-colors"
               >
                 View All 20 Achievements →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6.5 DELUXE SPEAKING SESSION REVIEW & TELEMETRY MODAL */}
+      {selectedReviewSession && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in zoom-in duration-200">
+          <div className="w-full max-w-xl bg-gradient-to-br from-[#111827] via-[#0F172A] to-[#0A0F1D] border border-cyan-500/40 rounded-3xl p-6 sm:p-7 shadow-[0_25px_60px_rgba(6,182,212,0.25)] space-y-5 relative overflow-hidden">
+            {/* Ambient High-Tech Glow */}
+            <div className="absolute -top-16 -right-16 w-48 h-48 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Top Bar: Coach Info & Close Button */}
+            <div className="flex items-start justify-between relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <img
+                    src={selectedReviewSession.coachAvatar}
+                    alt={selectedReviewSession.coachName}
+                    className="w-12 h-12 rounded-2xl object-cover border-2 border-cyan-400/50 shadow-lg"
+                  />
+                  <span className="absolute -bottom-1 -right-1 text-sm leading-none drop-shadow">
+                    {selectedReviewSession.coachFlag}
+                  </span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-sm text-white">
+                      {selectedReviewSession.coachName}
+                    </h3>
+                    <span className="text-[10px] text-cyan-300 bg-cyan-500/15 border border-cyan-500/30 px-2 py-0.5 rounded-full font-semibold">
+                      {selectedReviewSession.coachRole}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 font-semibold mt-0.5">
+                    {selectedReviewSession.topicTitle}
+                  </p>
+                  <p className="text-[10px] text-slate-500 mt-0.5 font-mono">
+                    Completed: {selectedReviewSession.timeAgo} • Spoken Duration: {selectedReviewSession.durationFormatted}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                    window.speechSynthesis.cancel();
+                  }
+                  setPlayingSessionAudioId(null);
+                  setSelectedReviewSession(null);
+                }}
+                className="w-8 h-8 rounded-full bg-slate-800/60 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* 4 Metrics Cards Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 relative z-10">
+              <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/80 text-center">
+                <span className="text-[10px] text-slate-400 block font-medium">Overall Score</span>
+                <span className="font-black text-xl text-cyan-400">{selectedReviewSession.score}/100</span>
+                <span className="text-[9px] text-cyan-300 font-bold block">{selectedReviewSession.grade}</span>
+              </div>
+              <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/80 text-center">
+                <span className="text-[10px] text-slate-400 block font-medium">Fluency</span>
+                <span className="font-black text-xl text-emerald-400">{selectedReviewSession.fluencyScore}%</span>
+                <span className="text-[9px] text-emerald-300 font-bold block">Native Cadence</span>
+              </div>
+              <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/80 text-center">
+                <span className="text-[10px] text-slate-400 block font-medium">Accuracy</span>
+                <span className="font-black text-xl text-blue-400">{selectedReviewSession.accuracyScore}%</span>
+                <span className="text-[9px] text-blue-300 font-bold block">Grammar Precision</span>
+              </div>
+              <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/80 text-center">
+                <span className="text-[10px] text-slate-400 block font-medium">Inference Engine</span>
+                <span className="font-black text-base text-amber-400 mt-1 block">
+                  {selectedReviewSession.engine === "ON_DEVICE_NANO" ? "Nano ⚡" : "Cloud ☁️"}
+                </span>
+                <span className="text-[9px] text-amber-300 font-bold block font-mono">
+                  {selectedReviewSession.latencyMs}ms Latency
+                </span>
+              </div>
+            </div>
+
+            {/* Hybrid AI Telemetry Banner */}
+            <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs text-emerald-200 relative z-10">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span className="font-medium text-[11px]">
+                  {selectedReviewSession.engine === "ON_DEVICE_NANO"
+                    ? "Processed 100% On-Device via Chrome Built-in Gemini Nano • Zero Cloud Telemetry Leakage"
+                    : "Processed via Google Gemini 2.5 Flash Cloud Endpoint • Ultra-High Context Window"}
+                </span>
+              </div>
+              <span className="font-mono text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30 text-emerald-300 font-bold shrink-0">
+                100% Private 🔒
+              </span>
+            </div>
+
+            {/* Dialogue Transcript Snippet & Real-Time AI Coaching Critique */}
+            <div className="space-y-2.5 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/90 text-xs relative z-10">
+              <div className="flex items-center justify-between text-[11px] text-slate-400 pb-1 border-b border-slate-800/60 font-semibold">
+                <span>Conversation Transcript & AI Coach Critique</span>
+                <span className="text-cyan-400 font-mono">Turn #3 Analyzed</span>
+              </div>
+
+              {/* Student Speech */}
+              <div className="flex items-start gap-2.5">
+                <div className="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/30 mt-0.5">
+                  <Mic className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-blue-300 block">Janitha (Student Spoken):</span>
+                  <p className="text-slate-200 italic font-serif leading-relaxed">
+                    &ldquo;{selectedReviewSession.dialogueSnippet.user}&rdquo;
+                  </p>
+                </div>
+              </div>
+
+              {/* AI Coach Feedback */}
+              <div className="flex items-start gap-2.5 pt-1">
+                <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30 mt-0.5">
+                  <Bot className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-emerald-300 block">
+                    {selectedReviewSession.coachName} (Feedback):
+                  </span>
+                  <p className="text-slate-300 leading-relaxed">
+                    {selectedReviewSession.dialogueSnippet.ai}
+                  </p>
+                </div>
+              </div>
+
+              {/* Pro Tip */}
+              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2 text-amber-200 text-[11px]">
+                <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span>{selectedReviewSession.dialogueSnippet.tip}</span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 relative z-10">
+              {/* Listen to Voice Feedback */}
+              <button
+                onClick={(e) => handleToggleAudioPreview(e, selectedReviewSession)}
+                className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all ${
+                  playingSessionAudioId === selectedReviewSession.id
+                    ? "bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40 animate-pulse"
+                    : "bg-slate-800 hover:bg-slate-700 text-white border border-slate-700"
+                }`}
+              >
+                {playingSessionAudioId === selectedReviewSession.id ? (
+                  <>
+                    <Pause className="w-4 h-4" />
+                    <span>Stop Voice Audio</span>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-4 h-4 text-cyan-400" />
+                    <span>Listen to Coach Audio Review</span>
+                  </>
+                )}
+              </button>
+
+              {/* Practice This Scenario Again */}
+              <button
+                onClick={() => {
+                  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                    window.speechSynthesis.cancel();
+                  }
+                  setPlayingSessionAudioId(null);
+                  setSelectedReviewSession(null);
+                  launchTopicByKeyword(selectedReviewSession.category.toLowerCase().split(" ")[0] || "business");
+                }}
+                className="py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:opacity-95 text-white font-bold text-xs shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Practice Scenario Again →</span>
               </button>
             </div>
           </div>
