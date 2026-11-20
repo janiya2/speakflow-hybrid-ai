@@ -2145,152 +2145,209 @@ export default function StudentWebApp() {
   return (
     <div className="min-h-screen bg-[#0A0F1D] text-slate-100 flex flex-col md:flex-row selection:bg-blue-500 selection:text-white relative">
       {/* ------------------------------------------------------------- */}
-      {/* 1. LEFT SIDEBAR (1:1 with Screenshot) */}
+      {/* 1. LEFT SIDEBAR (Luxury Cyber-Glass Theme) */}
       {/* ------------------------------------------------------------- */}
       <aside
-        className={`fixed md:sticky top-0 left-0 z-40 h-screen w-64 bg-[#0D111E] border-r border-slate-800/80 flex flex-col justify-between p-5 transition-transform duration-300 ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-          }`}
+        className={`fixed md:sticky top-0 left-0 z-40 h-screen w-68 bg-gradient-to-b from-[#0D111E] via-[#0A0F1D] to-[#080C18] border-r border-slate-800/80 flex flex-col justify-between p-5 transition-transform duration-300 shadow-2xl ${
+          mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
       >
         <div className="space-y-6">
-          {/* Logo */}
+          {/* Logo Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
-                <Bot className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 border border-cyan-400/30 shrink-0">
+                <Bot className="w-5.5 h-5.5 text-white" />
               </div>
               <div>
-                <span className="font-black text-lg text-white tracking-tight">SpeakFlow</span>
-                <p className="text-[10px] text-slate-400">Practice • Speak • Grow</p>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-black text-xl text-white tracking-tight">SpeakFlow</span>
+                  <span className="text-[9px] font-black bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 px-1.5 py-0.5 rounded-md shadow-sm">
+                    AI
+                  </span>
+                </div>
+                <p className="text-[10px] text-cyan-300/80 font-medium">Hybrid Real-Time Voice Coach</p>
               </div>
             </div>
             <button
               onClick={() => setMobileSidebarOpen(false)}
-              className="md:hidden text-slate-400 hover:text-white"
+              className="md:hidden text-slate-400 hover:text-white p-1 rounded-lg"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Navigation Items */}
-          <nav className="space-y-1 text-xs font-semibold">
+          <nav className="space-y-1.5 text-xs font-semibold">
+            {/* Dashboard */}
             <button
               onClick={() => {
                 setActiveTab("dashboard");
                 setActiveCallTopic(null);
                 setMobileSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all ${activeTab === "dashboard" && !activeCallTopic
-                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/30"
-                : "text-slate-400 hover:text-white hover:bg-slate-900/60"
-                }`}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === "dashboard" && !activeCallTopic
+                  ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-bold shadow-lg shadow-blue-600/30 border border-blue-400/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-900/70"
+              }`}
             >
-              <LayoutDashboard className="w-4 h-4" />
-              <span>Dashboard</span>
+              <div className="flex items-center gap-3">
+                <LayoutDashboard className="w-4 h-4" />
+                <span>Dashboard</span>
+              </div>
+              {activeTab === "dashboard" && !activeCallTopic && (
+                <span className="w-1.5 h-4 rounded-full bg-cyan-400 shadow-[0_0_8px_#38BDF8]" />
+              )}
             </button>
 
+            {/* Practice */}
             <button
               onClick={() => {
                 setActiveTab("practice");
                 setActiveCallTopic(null);
                 setMobileSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all ${activeTab === "practice" && !activeCallTopic
-                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/30"
-                : "text-slate-400 hover:text-white hover:bg-slate-900/60"
-                }`}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === "practice" && !activeCallTopic
+                  ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-bold shadow-lg shadow-blue-600/30 border border-blue-400/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-900/70"
+              }`}
             >
-              <Mic className="w-4 h-4" />
-              <span>Practice</span>
+              <div className="flex items-center gap-3">
+                <Mic className="w-4 h-4" />
+                <span>Practice</span>
+              </div>
+              <span className="text-[8.5px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 rounded-full">
+                ⚡ Voice
+              </span>
             </button>
 
+            {/* Conversation AI */}
             <button
               onClick={() => {
                 setActiveTab("conversation");
                 setMobileSidebarOpen(false);
                 launchTopicByKeyword("travel");
               }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all ${activeTab === "conversation"
-                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/30"
-                : "text-slate-400 hover:text-white hover:bg-slate-900/60"
-                }`}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === "conversation"
+                  ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-bold shadow-lg shadow-blue-600/30 border border-blue-400/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-900/70"
+              }`}
             >
-              <MessageCircle className="w-4 h-4" />
-              <span>Conversation AI</span>
+              <div className="flex items-center gap-3">
+                <MessageCircle className="w-4 h-4" />
+                <span>Conversation AI</span>
+              </div>
+              <span className="text-[8.5px] font-bold text-cyan-300 bg-cyan-500/15 border border-cyan-500/30 px-1.5 py-0.2 rounded-full">
+                Live Call
+              </span>
             </button>
 
+            {/* Vocabulary */}
             <button
               onClick={() => {
                 setActiveTab("vocabulary");
                 setActiveCallTopic(null);
                 setMobileSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all ${activeTab === "vocabulary"
-                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/30"
-                : "text-slate-400 hover:text-white hover:bg-slate-900/60"
-                }`}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === "vocabulary"
+                  ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-bold shadow-lg shadow-blue-600/30 border border-blue-400/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-900/70"
+              }`}
             >
-              <BookOpen className="w-4 h-4" />
-              <span>Vocabulary</span>
+              <div className="flex items-center gap-3">
+                <BookOpen className="w-4 h-4" />
+                <span>Vocabulary</span>
+              </div>
+              <span className="text-[8.5px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-1.5 py-0.2 rounded-full">
+                18 Due
+              </span>
             </button>
 
+            {/* Grammar */}
             <button
               onClick={() => {
                 setActiveTab("grammar");
                 setActiveCallTopic(null);
                 setMobileSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all ${activeTab === "grammar"
-                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/30"
-                : "text-slate-400 hover:text-white hover:bg-slate-900/60"
-                }`}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === "grammar"
+                  ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-bold shadow-lg shadow-blue-600/30 border border-blue-400/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-900/70"
+              }`}
             >
-              <GraduationCap className="w-4 h-4" />
-              <span>Grammar</span>
+              <div className="flex items-center gap-3">
+                <GraduationCap className="w-4 h-4" />
+                <span>Grammar</span>
+              </div>
+              <span className="text-[8.5px] font-bold text-purple-300 bg-purple-500/15 border border-purple-500/30 px-1.5 py-0.2 rounded-full">
+                Level B2
+              </span>
             </button>
 
+            {/* Progress */}
             <button
               onClick={() => {
                 setActiveTab("progress");
                 setActiveCallTopic(null);
                 setMobileSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all ${activeTab === "progress"
-                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/30"
-                : "text-slate-400 hover:text-white hover:bg-slate-900/60"
-                }`}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === "progress"
+                  ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-bold shadow-lg shadow-blue-600/30 border border-blue-400/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-900/70"
+              }`}
             >
-              <BarChart3 className="w-4 h-4" />
-              <span>Progress</span>
+              <div className="flex items-center gap-3">
+                <BarChart3 className="w-4 h-4" />
+                <span>Progress</span>
+              </div>
+              <span className="text-[8.5px] font-bold text-emerald-400">96.8%</span>
             </button>
 
+            {/* Achievements */}
             <button
               onClick={() => {
                 setActiveTab("achievements");
                 setActiveCallTopic(null);
                 setMobileSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all ${activeTab === "achievements"
-                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/30"
-                : "text-slate-400 hover:text-white hover:bg-slate-900/60"
-                }`}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === "achievements"
+                  ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-bold shadow-lg shadow-blue-600/30 border border-blue-400/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-900/70"
+              }`}
             >
-              <Trophy className="w-4 h-4" />
-              <span>Achievements</span>
+              <div className="flex items-center gap-3">
+                <Trophy className="w-4 h-4" />
+                <span>Achievements</span>
+              </div>
+              <span className="text-[8.5px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40 px-1.5 py-0.2 rounded-full animate-pulse">
+                🎁 5 Ready
+              </span>
             </button>
 
+            {/* Settings */}
             <button
               onClick={() => {
                 setActiveTab("settings");
                 setActiveCallTopic(null);
                 setMobileSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all ${activeTab === "settings"
-                ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/30"
-                : "text-slate-400 hover:text-white hover:bg-slate-900/60"
-                }`}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all ${
+                activeTab === "settings"
+                  ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-bold shadow-lg shadow-blue-600/30 border border-blue-400/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-900/70"
+              }`}
             >
-              <Compass className="w-4 h-4" />
-              <span>Settings</span>
+              <div className="flex items-center gap-3">
+                <Compass className="w-4 h-4" />
+                <span>Settings</span>
+              </div>
             </button>
           </nav>
         </div>
@@ -2298,47 +2355,56 @@ export default function StudentWebApp() {
         {/* Bottom Section: VIP Card & User Profile */}
         <div className="space-y-4 pt-4 border-t border-slate-800/80">
           {/* Go Premium VIP Card */}
-          <div className="p-4 rounded-2xl bg-gradient-to-b from-[#1E1B4B]/80 via-[#18182E]/90 to-[#0F172A] border border-indigo-500/30 text-center relative overflow-hidden space-y-2.5 shadow-xl">
-            <div className="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto shadow-md">
-              <Crown className="w-4 h-4" />
+          <div className="p-4 rounded-3xl bg-gradient-to-br from-[#1E1B4B] via-[#141838] to-[#0B0F20] border border-amber-500/35 text-center relative overflow-hidden space-y-2.5 shadow-xl group">
+            {/* Ambient Gold Glow */}
+            <div className="absolute -top-8 -right-8 w-24 h-24 bg-amber-500/20 rounded-full blur-xl pointer-events-none" />
+
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/25">
+              <Crown className="w-4.5 h-4.5 fill-slate-950" />
             </div>
             <div>
-              <span className="font-bold text-xs text-white block">Go Premium</span>
-              <p className="text-[10px] text-slate-400">Unlock unlimited AI conversation & more!</p>
+              <span className="font-black text-xs text-white block">SpeakFlow VIP Pro</span>
+              <p className="text-[10px] text-amber-200/80 font-medium">Unlimited Gemini Nano &amp; Cloud</p>
             </div>
             <button
               onClick={() => setShowVipModal(true)}
-              className="w-full py-1.5 px-3 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-600 to-rose-500 hover:opacity-90 text-white font-bold text-[11px] shadow-lg shadow-pink-600/25 flex items-center justify-center gap-1 transition-all"
+              className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02]"
             >
-              <span>Upgrade Now</span>
-              <ArrowRight className="w-3 h-3" />
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{isPremiumMember ? "Manage VIP Pass" : "Upgrade to Pro"}</span>
             </button>
           </div>
 
           {/* User Profile Footer */}
-          <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/70 border border-slate-800">
-            <div className="flex items-center gap-2.5">
-              <img
-                src="/images/janitha-avatar.jpg"
-                alt="Janitha Dilshan"
-                className="w-9 h-9 rounded-full object-cover ring-2 ring-blue-500/50"
-                onError={(e) => {
-                  (e.currentTarget as any).src = "https://ui-avatars.com/api/?name=Janitha+Dilshan&background=3b82f6&color=fff";
-                }}
-              />
-              <div>
-                <span className="font-bold text-xs text-white block">
-                  {user.displayName || "Janitha Dilshan"}
+          <div className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 hover:border-slate-700 transition-all">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="relative shrink-0">
+                <img
+                  src="/images/janitha-avatar.jpg"
+                  alt="Janitha Dilshan"
+                  className="w-9 h-9 rounded-full object-cover ring-2 ring-blue-500/50"
+                  onError={(e) => {
+                    (e.currentTarget as any).src = "https://ui-avatars.com/api/?name=Janitha+Dilshan&background=3b82f6&color=fff";
+                  }}
+                />
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-950 animate-ping" />
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
+              </div>
+              <div className="min-w-0">
+                <span className="font-bold text-xs text-white block truncate">
+                  {user?.displayName || "Janitha Dilshan"}
                 </span>
-                <span className={`text-[10px] flex items-center gap-1 font-semibold ${isPremiumMember ? "text-amber-300" : "text-slate-400"}`}>
+                <span className={`text-[10px] flex items-center gap-1 font-semibold truncate ${
+                  isPremiumMember ? "text-amber-300" : "text-slate-400"
+                }`}>
                   {isPremiumMember ? (
                     <>
-                      <Crown className="w-3 h-3 text-amber-400 fill-amber-400" />
+                      <Crown className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" />
                       <span>VIP Pro Member</span>
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="w-3 h-3 text-slate-500" />
+                      <CheckCircle2 className="w-3 h-3 text-slate-500 shrink-0" />
                       <span>Free Explorer</span>
                     </>
                   )}
@@ -2347,10 +2413,10 @@ export default function StudentWebApp() {
             </div>
             <button
               onClick={handleSignOut}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
               title="Sign Out"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors shrink-0"
             >
-              <LogOut className="w-3.5 h-3.5" />
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -2624,85 +2690,124 @@ export default function StudentWebApp() {
                   </div>
                 </div>
 
-                {/* 2. 4 QUICK STAT CARDS (Clean Uniform Luxury Theme) */}
+                {/* 2. 4 QUICK STAT CARDS (Deluxe Glassmorphic Cyber Suite) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
                   {/* Card 1: Practice Time */}
-                  <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800/80 hover:border-slate-700/90 transition-all flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center">
-                        <Mic className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <span className="text-[11px] text-slate-400 block font-medium">Practice Time</span>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-lg font-bold text-white">2.5 hrs</span>
-                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded">
-                            ↑ +25%
-                          </span>
+                  <div className="p-4.5 rounded-3xl bg-gradient-to-br from-[#111827] via-[#1A1230] to-[#120F24] border border-purple-500/35 hover:border-purple-400/60 shadow-xl shadow-purple-950/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 group flex flex-col justify-between">
+                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-purple-500/20 rounded-full blur-2xl pointer-events-none" />
+                    
+                    <div className="flex items-start justify-between relative z-10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 shrink-0 group-hover:scale-105 transition-transform">
+                          <Mic className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <span className="text-[11px] text-purple-200/80 block font-medium">Practice Time</span>
+                          <span className="text-2xl font-black text-white leading-tight mt-0.5 block">2.5 hrs</span>
                         </div>
                       </div>
+                      <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm">
+                        ↑ +25%
+                      </span>
                     </div>
-                    {/* Mini SVG Sparkline */}
-                    <svg className="w-12 h-6 text-purple-400" fill="none" viewBox="0 0 48 24">
-                      <path d="M0 20 Q 12 12, 24 16 T 48 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    </svg>
+
+                    <div className="mt-3 pt-2.5 border-t border-purple-500/20 flex items-center justify-between text-[10px] relative z-10">
+                      <span className="text-slate-400 font-medium">Daily Goal: 30 mins</span>
+                      {/* Mini SVG Sparkline */}
+                      <svg className="w-16 h-6 text-purple-400 drop-shadow-[0_2px_6px_rgba(168,85,247,0.4)]" fill="none" viewBox="0 0 64 24">
+                        <path d="M0 20 Q 16 14, 32 16 T 64 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                      </svg>
+                    </div>
                   </div>
 
                   {/* Card 2: Lessons Completed */}
-                  <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800/80 hover:border-slate-700/90 transition-all flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center">
-                        <Target className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <span className="text-[11px] text-slate-400 block font-medium">Lessons Completed</span>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-lg font-bold text-white">48</span>
-                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded">
-                            ↑ +12%
-                          </span>
+                  <div className="p-4.5 rounded-3xl bg-gradient-to-br from-[#111827] via-[#0D241E] to-[#0A1A17] border border-emerald-500/35 hover:border-emerald-400/60 shadow-xl shadow-emerald-950/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 group flex flex-col justify-between">
+                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none" />
+
+                    <div className="flex items-start justify-between relative z-10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 flex items-center justify-center shadow-lg shadow-emerald-500/30 shrink-0 group-hover:scale-105 transition-transform font-bold">
+                          <Target className="w-5 h-5 stroke-[2.5]" />
+                        </div>
+                        <div>
+                          <span className="text-[11px] text-emerald-200/80 block font-medium">Lessons Completed</span>
+                          <span className="text-2xl font-black text-white leading-tight mt-0.5 block">48</span>
                         </div>
                       </div>
+                      <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm">
+                        ↑ +12%
+                      </span>
                     </div>
-                    <svg className="w-12 h-6 text-emerald-400" fill="none" viewBox="0 0 48 24">
-                      <path d="M0 18 Q 14 6, 26 12 T 48 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    </svg>
+
+                    <div className="mt-3 pt-2.5 border-t border-emerald-500/20 flex items-center justify-between text-[10px] relative z-10">
+                      <span className="text-slate-400 font-medium">100% Passed</span>
+                      <svg className="w-16 h-6 text-emerald-400 drop-shadow-[0_2px_6px_rgba(16,185,129,0.4)]" fill="none" viewBox="0 0 64 24">
+                        <path d="M0 18 Q 18 6, 36 12 T 64 3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                      </svg>
+                    </div>
                   </div>
 
                   {/* Card 3: Current Streak */}
-                  <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800/80 hover:border-slate-700/90 transition-all flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-amber-600/20 text-amber-400 flex items-center justify-center">
-                        <Star className="w-5 h-5 fill-amber-400" />
+                  <div className="p-4.5 rounded-3xl bg-gradient-to-br from-[#111827] via-[#26160D] to-[#1A0E08] border border-amber-500/35 hover:border-amber-400/60 shadow-xl shadow-amber-950/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 group flex flex-col justify-between">
+                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-amber-500/20 rounded-full blur-2xl pointer-events-none" />
+
+                    <div className="flex items-start justify-between relative z-10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-red-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/30 shrink-0 group-hover:scale-105 transition-transform">
+                          <Flame className="w-5 h-5 fill-white animate-pulse" />
+                        </div>
+                        <div>
+                          <span className="text-[11px] text-amber-200/80 block font-medium">Current Streak</span>
+                          <span className="text-2xl font-black text-white leading-tight mt-0.5 block flex items-center gap-1">
+                            <span>12</span>
+                            <span className="text-base text-amber-400 font-bold">Days 🔥</span>
+                          </span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-[11px] text-slate-400 block font-medium">Current Streak</span>
-                        <span className="text-lg font-bold text-white">12 days 🔥</span>
-                      </div>
+                      <span className="text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full flex items-center gap-0.5 shadow-sm">
+                        Top 5%
+                      </span>
                     </div>
-                    <svg className="w-12 h-6 text-amber-400" fill="none" viewBox="0 0 48 24">
-                      <path d="M0 22 Q 15 15, 30 10 T 48 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    </svg>
+
+                    <div className="mt-3 pt-2.5 border-t border-amber-500/20 flex items-center justify-between text-[10px] relative z-10">
+                      <span className="text-slate-400 font-medium">2x XP Multiplier Active</span>
+                      <svg className="w-16 h-6 text-amber-400 drop-shadow-[0_2px_6px_rgba(245,158,11,0.4)]" fill="none" viewBox="0 0 64 24">
+                        <path d="M0 22 Q 20 14, 40 8 T 64 3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                      </svg>
+                    </div>
                   </div>
 
                   {/* Card 4: Overall Level */}
-                  <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800/80 hover:border-slate-700/90 transition-all flex flex-col justify-between">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-xl bg-yellow-600/20 text-yellow-400 flex items-center justify-center">
-                        <Trophy className="w-5 h-5" />
+                  <div className="p-4.5 rounded-3xl bg-gradient-to-br from-[#111827] via-[#0E1E36] to-[#0B1526] border border-cyan-500/35 hover:border-cyan-400/60 shadow-xl shadow-cyan-950/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 flex flex-col justify-between group">
+                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-cyan-500/20 rounded-full blur-2xl pointer-events-none" />
+
+                    <div className="flex items-start justify-between relative z-10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-cyan-500/30 shrink-0 group-hover:scale-105 transition-transform">
+                          <Trophy className="w-5 h-5 fill-white" />
+                        </div>
+                        <div>
+                          <span className="text-[11px] text-cyan-200/80 block font-medium">Overall Level</span>
+                          <span className="text-base sm:text-lg font-black text-white leading-tight mt-0.5 block">
+                            Intermediate (B2)
+                          </span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-[11px] text-slate-400 block font-medium">Overall Level</span>
-                        <span className="text-sm font-bold text-white">Intermediate</span>
-                      </div>
+                      <span className="text-[10px] font-bold text-cyan-300 bg-cyan-500/15 border border-cyan-500/30 px-2 py-0.5 rounded-full shadow-sm font-mono">
+                        68%
+                      </span>
                     </div>
-                    <div>
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
-                        <span>Progress</span>
-                        <span className="font-bold text-cyan-400">68%</span>
+
+                    <div className="mt-3 pt-2.5 border-t border-cyan-500/20 space-y-1.5 relative z-10">
+                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                        <span>XP Progress</span>
+                        <span className="text-cyan-300 font-bold font-mono">2,450 / 3,000 XP</span>
                       </div>
-                      <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full" style={{ width: "68%" }}></div>
+                      <div className="w-full h-2 rounded-full bg-slate-950 border border-slate-800 overflow-hidden p-0.5">
+                        <div
+                          className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 rounded-full shadow-md shadow-cyan-400/40"
+                          style={{ width: "68%" }}
+                        />
                       </div>
                     </div>
                   </div>
