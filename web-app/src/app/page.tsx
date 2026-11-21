@@ -29,6 +29,7 @@ import {
   executeHybridInference,
   checkOnDeviceNanoAvailability
 } from "@/lib/hybrid-ai";
+import { FULL_MOBILE_TOPICS_CATALOG } from "./topicsCatalog";
 
 type HybridEngineType = "ON_DEVICE_NANO" | "CLOUD_GEMINI_FLASH";
 type HybridModeSetting = "auto" | "nano_only" | "cloud_only";
@@ -111,6 +112,7 @@ interface TopicModel {
   language: string;
   level: string;
   category?: string;
+  subCategory?: string;
   icon: string;
   scenario: string;
   starterPrompt: string;
@@ -706,99 +708,13 @@ const FALLBACK_TOPICS: TopicModel[] = [
     language: "English",
     level: "Intermediate",
     category: "Travel",
+    subCategory: "Sightseeing",
     icon: "✈️",
     scenario: "You are speaking with a local guide in London exploring historic landmarks, Big Ben, and the Thames river.",
     starterPrompt: "Welcome to London! It's a gorgeous evening by the Thames. What would you love to explore first?",
     starterQuestions: ["Have you visited Big Ben or Westminster Abbey yet?", "What's your favorite mode of transport here?"]
   },
-  {
-    id: "sp_1",
-    title: "Talking About Cricket & T20 World Cup",
-    language: "English",
-    level: "Intermediate",
-    category: "Sports",
-    icon: "🏏",
-    scenario: "You are chatting with a passionate cricket fan about recent international matches and legendary players.",
-    starterPrompt: "Hey mate! Did you catch the thrilling cricket match yesterday? Who's your all-time favorite cricket player?",
-    starterQuestions: ["What do you think makes a great captain in cricket?", "Do you prefer Test matches or T20?"]
-  },
-  {
-    id: "sp_2",
-    title: "Playing Football & Premier League",
-    language: "English",
-    level: "Beginner",
-    category: "Sports",
-    icon: "⚽",
-    scenario: "You are talking with a teammate before a friendly weekend football match.",
-    starterPrompt: "Hey! Ready for the football game? Which position do you usually like playing on the field?",
-    starterQuestions: ["Which football club do you support?", "How often do you play football?"]
-  },
-  {
-    id: "tr_1",
-    title: "Airport Check-In & Boarding Gate",
-    language: "English",
-    level: "Beginner",
-    category: "Travel",
-    icon: "✈️",
-    scenario: "You are talking to an airline counter agent checking in your luggage for an international flight.",
-    starterPrompt: "Good morning! Welcome to Airways. May I please see your passport and booking reference?",
-    starterQuestions: ["Do you have any check-in bags or just carry-on?", "Would you prefer a window or aisle seat?"]
-  },
-  {
-    id: "tr_2",
-    title: "Hotel Check-In & Room Requests",
-    language: "English",
-    level: "Beginner",
-    category: "Travel",
-    icon: "🏨",
-    scenario: "You are arriving at a boutique seaside hotel and checking into your reserved room with the receptionist.",
-    starterPrompt: "Welcome to Paradise Resort! How can I assist you today, and under what name is your reservation?",
-    starterQuestions: ["Would you like a room with a balcony view?", "Do you need breakfast included each morning?"]
-  },
-  {
-    id: "1",
-    title: "Job Interview: Self Introduction",
-    language: "English",
-    level: "Intermediate",
-    category: "Career",
-    icon: "💼",
-    scenario: "You are an interviewer at a global company interviewing a candidate for a new role.",
-    starterPrompt: "Hello! Welcome to our interview today. To start off, could you please tell me a little bit about yourself and your background?",
-    starterQuestions: ["Tell me about your previous experience.", "What are your core strengths?"]
-  },
-  {
-    id: "2",
-    title: "Ordering Coffee in Tokyo Cafe",
-    language: "Japanese",
-    level: "Beginner",
-    category: "Food",
-    icon: "☕",
-    scenario: "You are a friendly barista at a popular Shibuya cafe taking a coffee order.",
-    starterPrompt: "いらっしゃいませ！何にしますか？ (Irasshaimase! Nani ni shimasu ka? - Welcome! What would you like to order?)",
-    starterQuestions: ["Hot or iced?", "Takeout or drink here?"]
-  },
-  {
-    id: "3",
-    title: "Ordering K-BBQ in Seoul",
-    language: "Korean",
-    level: "Beginner",
-    category: "Food",
-    icon: "🥩",
-    scenario: "You are a warm Korean BBQ restaurant owner welcoming a guest who wants to try authentic meat.",
-    starterPrompt: "어서오세요! 몇 분이세요? (Eoseo oseyo! Myeot bun-iseyo? - Welcome! How many people are in your party?)",
-    starterQuestions: ["What meat would you like?", "Would you like some kimchi jjigae?"]
-  },
-  {
-    id: "tech_1",
-    title: "AI and The Future of Robotics",
-    language: "English",
-    level: "Advanced",
-    category: "Tech",
-    icon: "🤖",
-    scenario: "You are having an intellectual debate on how AI models and robotics will reshape human jobs.",
-    starterPrompt: "AI is accelerating faster than ever! In your view, will AI help workers or displace them?",
-    starterQuestions: ["What jobs do you think cannot be automated?", "Are you excited about humanoid robots?"]
-  }
+  ...FULL_MOBILE_TOPICS_CATALOG
 ];
 
 export default function StudentWebApp() {
@@ -953,8 +869,16 @@ export default function StudentWebApp() {
     }
   };
 
-  // Topics & Filtering
+  // Topics & Filtering (Full 164+ Mobile App Scenarios Catalog & Multi-Filter Studio)
   const [topics, setTopics] = useState<TopicModel[]>(FALLBACK_TOPICS);
+  const [practiceSelectedCategory, setPracticeSelectedCategory] = useState<string>("All");
+  const [practiceSelectedSubCategory, setPracticeSelectedSubCategory] = useState<string>("All");
+  const [practiceSelectedLevel, setPracticeSelectedLevel] = useState<string>("All");
+  const [practiceSelectedLangFilter, setPracticeSelectedLangFilter] = useState<string>("All");
+  const [practiceViewMode, setPracticeViewMode] = useState<"categories" | "grid">("categories");
+  const [customTopicInput, setCustomTopicInput] = useState<string>("");
+  const [customTopicLevel, setCustomTopicLevel] = useState<string>("Intermediate");
+  const [expandedTopicPreviewId, setExpandedTopicPreviewId] = useState<string | null>(null);
 
   // Gemini Settings & Multi-Key Failover Pool
   const [geminiApiKey, setGeminiApiKey] = useState("");
@@ -1854,12 +1778,24 @@ export default function StudentWebApp() {
         const loaded: TopicModel[] = [];
         querySnapshot.forEach((d) => {
           const data = d.data();
+          const rawTitle = (data.title || "").toLowerCase();
+          let resolvedCat = data.category || "";
+          if (!resolvedCat || resolvedCat === "General") {
+            if (rawTitle.includes("interview") || rawTitle.includes("business") || rawTitle.includes("salary") || rawTitle.includes("standup")) resolvedCat = "Career";
+            else if (rawTitle.includes("coffee") || rawTitle.includes("food") || rawTitle.includes("bbq") || rawTitle.includes("ramen") || rawTitle.includes("restaurant")) resolvedCat = "Food";
+            else if (rawTitle.includes("airport") || rawTitle.includes("hotel") || rawTitle.includes("travel") || rawTitle.includes("train") || rawTitle.includes("taxi")) resolvedCat = "Travel";
+            else if (rawTitle.includes("cricket") || rawTitle.includes("football") || rawTitle.includes("gym") || rawTitle.includes("sport")) resolvedCat = "Sports";
+            else if (rawTitle.includes("movie") || rawTitle.includes("hobby") || rawTitle.includes("hobbies") || rawTitle.includes("game") || rawTitle.includes("music")) resolvedCat = "Entertainment";
+            else if (rawTitle.includes("ai") || rawTitle.includes("tech") || rawTitle.includes("robot")) resolvedCat = "Tech";
+            else resolvedCat = "Social";
+          }
           loaded.push({
             id: d.id,
             title: data.title || "Untitled Scenario",
             language: data.language || "English",
             level: data.level || "Beginner",
-            category: data.category || "General",
+            category: resolvedCat,
+            subCategory: data.subCategory || resolvedCat,
             icon: data.icon || "🎙️",
             scenario: data.scenario || "",
             starterPrompt: data.starterPrompt || "Hello! Let's start practicing.",
@@ -1867,9 +1803,13 @@ export default function StudentWebApp() {
           });
         });
         if (loaded.length > 0) {
-          // Merge with fallback to keep full coverage
+          // Merge with full mobile catalog to guarantee all 164+ scenarios are available
           const existingIds = new Set(loaded.map((t) => t.id));
-          const merged = [...loaded, ...FALLBACK_TOPICS.filter((t) => !existingIds.has(t.id))];
+          const existingTitles = new Set(loaded.map((t) => t.title.toLowerCase().trim()));
+          const merged = [
+            ...FALLBACK_TOPICS,
+            ...loaded.filter((t) => !existingIds.has(t.id) && !existingTitles.has(t.title.toLowerCase().trim()) && !FALLBACK_TOPICS.some(f => f.title.toLowerCase().trim() === t.title.toLowerCase().trim()))
+          ];
           setTopics(merged);
         }
       } catch (err) {
@@ -5806,62 +5746,818 @@ export default function StudentWebApp() {
                 </div>
               </div>
             </div>
-          ) : activeTab === "practice" ? (
+          ) : activeTab === "practice" || activeTab === "conversation" ? (
             /* ----------------------------------------------------------- */
-            /* TAB: PRACTICE TOPIC SCENARIOS CATALOG                        */
+            /* TAB: DELUXE PRACTICE & LIVE VOICE CALLS STUDIO HUB (164+ CALLS) */
             /* ----------------------------------------------------------- */
-            <div className="space-y-6">
-              {/* Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-[#111827] border border-slate-800">
-                <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <Mic className="w-5 h-5 text-blue-400" />
-                    Practice Scenarios Catalog ({filteredTopics.length})
-                  </h2>
-                  <p className="text-xs text-slate-400">Choose any scenario to start a real-time AI phone conversation.</p>
-                </div>
+            (() => {
+              const CATEGORY_META: Record<
+                string,
+                {
+                  label: string;
+                  subtitle: string;
+                  icon: string;
+                  badge: string;
+                  accentText: string;
+                  accentBg: string;
+                  accentBorder: string;
+                  cardBorderHover: string;
+                  topBarGradient: string;
+                  glowBg: string;
+                  btnGradient: string;
+                }
+              > = {
+                Sports: {
+                  label: "Sports & Fitness",
+                  subtitle: "Cricket, Football, NBA, F1, Gym & Athletics",
+                  icon: "🏏",
+                  badge: "🔥 Popular",
+                  accentText: "text-emerald-300",
+                  accentBg: "bg-emerald-500/15",
+                  accentBorder: "border-emerald-500/35",
+                  cardBorderHover: "hover:border-emerald-400/60",
+                  topBarGradient: "from-transparent via-emerald-400 to-transparent",
+                  glowBg: "bg-emerald-500/15",
+                  btnGradient: "from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950"
+                },
+                Travel: {
+                  label: "Travel & Adventure",
+                  subtitle: "Airports, Hotels, Directions, Trains & Cruises",
+                  icon: "✈️",
+                  badge: "⭐ Essential",
+                  accentText: "text-sky-300",
+                  accentBg: "bg-sky-500/15",
+                  accentBorder: "border-sky-500/35",
+                  cardBorderHover: "hover:border-sky-400/60",
+                  topBarGradient: "from-transparent via-sky-400 to-transparent",
+                  glowBg: "bg-sky-500/15",
+                  btnGradient: "from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white"
+                },
+                Food: {
+                  label: "Food & Dining",
+                  subtitle: "Cafes, Fine Dining, Street Food, BBQ & Recipes",
+                  icon: "🍕",
+                  badge: "🍕 Trending",
+                  accentText: "text-amber-300",
+                  accentBg: "bg-amber-500/15",
+                  accentBorder: "border-amber-500/35",
+                  cardBorderHover: "hover:border-amber-400/60",
+                  topBarGradient: "from-transparent via-amber-400 to-transparent",
+                  glowBg: "bg-amber-500/15",
+                  btnGradient: "from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950"
+                },
+                Career: {
+                  label: "Career & Business",
+                  subtitle: "Job Interviews, Startup Pitches, Standups & Salary",
+                  icon: "💼",
+                  badge: "💼 Executive",
+                  accentText: "text-purple-300",
+                  accentBg: "bg-purple-500/15",
+                  accentBorder: "border-purple-500/35",
+                  cardBorderHover: "hover:border-purple-400/60",
+                  topBarGradient: "from-transparent via-purple-400 to-transparent",
+                  glowBg: "bg-purple-500/15",
+                  btnGradient: "from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white"
+                },
+                "Daily Life": {
+                  label: "Daily Life & Shopping",
+                  subtitle: "Retail Shopping, Doctor Visits, Pharmacy & Salon",
+                  icon: "🛍️",
+                  badge: "🛍️ Practical",
+                  accentText: "text-indigo-300",
+                  accentBg: "bg-indigo-500/15",
+                  accentBorder: "border-indigo-500/35",
+                  cardBorderHover: "hover:border-indigo-400/60",
+                  topBarGradient: "from-transparent via-indigo-400 to-transparent",
+                  glowBg: "bg-indigo-500/15",
+                  btnGradient: "from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white"
+                },
+                Social: {
+                  label: "Social & Culture",
+                  subtitle: "Language Meetups, Making Friends & Traditions",
+                  icon: "👋",
+                  badge: "👋 Friendly",
+                  accentText: "text-pink-300",
+                  accentBg: "bg-pink-500/15",
+                  accentBorder: "border-pink-500/35",
+                  cardBorderHover: "hover:border-pink-400/60",
+                  topBarGradient: "from-transparent via-pink-400 to-transparent",
+                  glowBg: "bg-pink-500/15",
+                  btnGradient: "from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white"
+                },
+                Entertainment: {
+                  label: "Entertainment & Media",
+                  subtitle: "Movies, Gaming, Esports, Music Festivals & Anime",
+                  icon: "🎮",
+                  badge: "🎮 Fun",
+                  accentText: "text-rose-300",
+                  accentBg: "bg-rose-500/15",
+                  accentBorder: "border-rose-500/35",
+                  cardBorderHover: "hover:border-rose-400/60",
+                  topBarGradient: "from-transparent via-rose-400 to-transparent",
+                  glowBg: "bg-rose-500/15",
+                  btnGradient: "from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white"
+                },
+                Tech: {
+                  label: "Tech & Future",
+                  subtitle: "AI & Robotics, Space Exploration & Digital Life",
+                  icon: "🤖",
+                  badge: "⚡ Future",
+                  accentText: "text-teal-300",
+                  accentBg: "bg-teal-500/15",
+                  accentBorder: "border-teal-500/35",
+                  cardBorderHover: "hover:border-teal-400/60",
+                  topBarGradient: "from-transparent via-teal-400 to-transparent",
+                  glowBg: "bg-teal-500/15",
+                  btnGradient: "from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-slate-950"
+                }
+              };
 
-                <button
-                  onClick={() => setActiveTab("dashboard")}
-                  className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold self-start sm:self-auto"
-                >
-                  ← Back to Dashboard
-                </button>
-              </div>
+              const ORDERED_CATEGORIES = [
+                "Sports",
+                "Travel",
+                "Food",
+                "Career",
+                "Daily Life",
+                "Social",
+                "Entertainment",
+                "Tech"
+              ];
 
-              {/* Grid of Topics */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredTopics.map((topic) => (
+              const getLangMeta = (langName: string) =>
+                AVAILABLE_LANGUAGES.find((l) => l.name.toLowerCase() === langName.toLowerCase()) ||
+                AVAILABLE_LANGUAGES[0];
+
+              // Topics filtered by the active Language filter first (for accurate category counts)
+              const langFilteredPool = topics.filter((t) => {
+                if (practiceSelectedLangFilter === "All") return true;
+                return t.language.toLowerCase() === practiceSelectedLangFilter.toLowerCase();
+              });
+
+              // Compute dynamic sub-categories available in current category + language pool
+              const availableSubCategories = Array.from(
+                new Set(
+                  langFilteredPool
+                    .filter((t) => practiceSelectedCategory === "All" || (t.category || "Daily Life") === practiceSelectedCategory)
+                    .map((t) => t.subCategory)
+                    .filter((s): s is string => Boolean(s && s.trim().length > 0))
+                )
+              );
+
+              // Full multi-filter application (Language + Category + SubCategory + Level + Search Query)
+              const studioFilteredTopics = langFilteredPool.filter((t) => {
+                const tCat = t.category || "Daily Life";
+                const matchesCat = practiceSelectedCategory === "All" || tCat.toLowerCase() === practiceSelectedCategory.toLowerCase();
+                const matchesSubCat =
+                  practiceSelectedSubCategory === "All" ||
+                  (t.subCategory || "").toLowerCase() === practiceSelectedSubCategory.toLowerCase();
+                const matchesLevel =
+                  practiceSelectedLevel === "All" || t.level.toLowerCase() === practiceSelectedLevel.toLowerCase();
+                const q = searchQuery.trim().toLowerCase();
+                const matchesSearch =
+                  !q ||
+                  t.title.toLowerCase().includes(q) ||
+                  t.scenario.toLowerCase().includes(q) ||
+                  tCat.toLowerCase().includes(q) ||
+                  (t.subCategory || "").toLowerCase().includes(q) ||
+                  (t.starterPrompt || "").toLowerCase().includes(q);
+                return matchesCat && matchesSubCat && matchesLevel && matchesSearch;
+              });
+
+              const handleStartCustomCall = (e: React.FormEvent) => {
+                e.preventDefault();
+                const trimmed = customTopicInput.trim();
+                if (!trimmed) return;
+                const activeLang = practiceSelectedLangFilter === "All" ? selectedLanguage : practiceSelectedLangFilter;
+                const customTopicObj: TopicModel = {
+                  id: "custom_" + Date.now(),
+                  title: trimmed,
+                  language: activeLang,
+                  level: customTopicLevel,
+                  category: "Custom Roleplay",
+                  subCategory: "AI Custom",
+                  icon: "✨",
+                  scenario: `Custom live conversation in ${activeLang} about "${trimmed}". Your AI Coach adapts dynamically to your questions and ideas.`,
+                  starterPrompt: `Hello! Let's talk about ${trimmed}. What interests you most about this topic, or how would you like to begin our conversation?`,
+                  starterQuestions: [
+                    `What is your personal experience or perspective on ${trimmed}?`,
+                    `What key vocabulary or situations around ${trimmed} would you like to practice today?`
+                  ]
+                };
+                setCustomTopicInput("");
+                handleInitiateCallPrompt(customTopicObj);
+              };
+
+              const handleQuickRandomCall = () => {
+                const pool = studioFilteredTopics.length > 0 ? studioFilteredTopics : langFilteredPool.length > 0 ? langFilteredPool : topics;
+                const randomPick = pool[Math.floor(Math.random() * pool.length)];
+                if (randomPick) {
+                  handleInitiateCallPrompt(randomPick);
+                }
+              };
+
+              const renderDeluxeScenarioCard = (topic: TopicModel) => {
+                const catKey = topic.category && CATEGORY_META[topic.category] ? topic.category : "Daily Life";
+                const meta = CATEGORY_META[catKey] || CATEGORY_META["Daily Life"];
+                const langMeta = getLangMeta(topic.language);
+                const isPreviewOpen = expandedTopicPreviewId === topic.id;
+
+                const levelBadgeStyle = topic.level.toLowerCase().includes("adv")
+                  ? "bg-purple-500/20 text-purple-300 border-purple-500/40"
+                  : topic.level.toLowerCase().includes("inter")
+                  ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                  : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
+
+                const xpReward = topic.level.toLowerCase().includes("adv")
+                  ? "+250 XP"
+                  : topic.level.toLowerCase().includes("inter")
+                  ? "+150 XP"
+                  : "+100 XP";
+
+                return (
                   <div
                     key={topic.id}
-                    className="p-5 rounded-2xl bg-[#111827] border border-slate-800 hover:border-blue-500/40 transition-all flex flex-col justify-between space-y-4 group"
+                    className={`p-5 rounded-3xl bg-gradient-to-b from-[#131C31]/95 via-[#0E1628]/95 to-[#090E1A]/95 border border-slate-800/90 ${meta.cardBorderHover} transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(0,0,0,0.65)] flex flex-col justify-between space-y-4 relative overflow-hidden group`}
                   >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-2xl">{topic.icon}</span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-slate-400">
+                    {/* Top Category Neon Line & Corner Glow */}
+                    <div className={`absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r ${meta.topBarGradient} opacity-80`} />
+                    <div className={`absolute -top-12 -right-12 w-32 h-32 ${meta.glowBg} rounded-full blur-3xl pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity`} />
+
+                    <div className="space-y-3 relative z-10">
+                      {/* Top Metadata Row: 3D Icon + Category/SubCategory + Language Flag + Level */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-12 h-12 rounded-2xl ${meta.accentBg} border ${meta.accentBorder} flex items-center justify-center text-2xl shadow-lg group-hover:scale-110 transition-transform duration-300 shrink-0`}>
+                            {topic.icon}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${meta.accentBg} ${meta.accentText} border ${meta.accentBorder}`}>
+                                {catKey}
+                              </span>
+                              {topic.subCategory && topic.subCategory !== catKey && (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700/80 text-slate-300">
+                                  {topic.subCategory}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <img
+                                src={langMeta.flagUrl}
+                                alt={topic.language}
+                                className="w-4 h-3 rounded-[2px] object-cover border border-white/20"
+                              />
+                              <span className="text-[10.5px] font-bold text-slate-300">{topic.language}</span>
+                              <span className="text-slate-600 text-[10px]">•</span>
+                              <span className="text-[10px] font-mono font-bold text-amber-400">{xpReward}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border shrink-0 ${levelBadgeStyle}`}>
                           {topic.level}
                         </span>
                       </div>
-                      <h3 className="font-bold text-sm text-white group-hover:text-cyan-400 transition-colors">
-                        {topic.title}
-                      </h3>
-                      <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                        {topic.scenario}
-                      </p>
+
+                      {/* Title & Scenario Description */}
+                      <div className="space-y-1.5 pt-1">
+                        <h3 className="font-black text-[15px] text-white group-hover:text-cyan-300 transition-colors leading-snug">
+                          {topic.title}
+                        </h3>
+                        <p className="text-xs text-slate-300/85 line-clamp-2 leading-relaxed">
+                          {topic.scenario}
+                        </p>
+                      </div>
+
+                      {/* Coach Starter Prompt Preview Box */}
+                      <div className="p-3 rounded-2xl bg-slate-950/75 border border-slate-800/90 space-y-2">
+                        <div className="flex items-center justify-between text-[10px]">
+                          <span className="font-bold text-cyan-400 flex items-center gap-1">
+                            <Sparkles className="w-3 h-3" />
+                            AI Coach Opening Line:
+                          </span>
+                          {topic.starterQuestions && topic.starterQuestions.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => setExpandedTopicPreviewId(isPreviewOpen ? null : topic.id)}
+                              className="text-[10px] font-bold text-slate-400 hover:text-white underline"
+                            >
+                              {isPreviewOpen ? "Hide Prompts" : `+${topic.starterQuestions.length} Practice Prompts`}
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-300 italic line-clamp-2 leading-relaxed">
+                          &ldquo;{topic.starterPrompt}&rdquo;
+                        </p>
+                        {isPreviewOpen && topic.starterQuestions && topic.starterQuestions.length > 0 && (
+                          <div className="pt-2 border-t border-slate-800/80 space-y-1">
+                            <span className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider block">
+                              Key Questions You Will Practice:
+                            </span>
+                            {topic.starterQuestions.map((q, qIdx) => (
+                              <div key={qIdx} className="text-[10.5px] text-cyan-200/90 flex items-start gap-1.5">
+                                <span className="text-cyan-400 font-bold">•</span>
+                                <span>{q}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    <button
-                      onClick={() => handleInitiateCallPrompt(topic)}
-                      className="w-full py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600 border border-blue-500/30 hover:border-transparent text-blue-300 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
-                    >
-                      <PhoneCall className="w-3.5 h-3.5" />
-                      <span>Start Voice Call</span>
-                    </button>
+                    {/* Bottom Action Row */}
+                    <div className="pt-2 border-t border-slate-800/70 flex items-center justify-between gap-2 relative z-10">
+                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-medium">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span>6 AI Coaches Ready</span>
+                      </div>
+
+                      <button
+                        onClick={() => handleInitiateCallPrompt(topic)}
+                        className={`px-4 py-2.5 rounded-xl bg-gradient-to-r ${meta.btnGradient} font-black text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all transform group-hover:scale-[1.02] active:scale-95`}
+                      >
+                        <PhoneCall className="w-3.5 h-3.5" />
+                        <span>Start Voice Call →</span>
+                      </button>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                );
+              };
+
+              return (
+                <div className="space-y-6">
+                  {/* 1. LUXURY VOICE STUDIO HERO & CUSTOM AI TOPIC BUILDER */}
+                  <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#17153B] via-[#0F172A] to-[#091224] border border-indigo-500/35 p-6 sm:p-7 shadow-2xl">
+                    <div className="absolute -top-20 -left-20 w-72 h-72 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -bottom-20 -right-20 w-72 h-72 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
+
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
+                      {/* Left 7 Cols: Studio Title, Stats & Quick Random Call */}
+                      <div className="lg:col-span-7 space-y-4">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/40 text-emerald-300 text-[11px] font-black uppercase tracking-wider">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                            Live AI Voice Studio • {topics.length} Scenarios
+                          </span>
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 text-[11px] font-bold">
+                            <Zap className="w-3 h-3 text-cyan-400" />
+                            8 Real-World Categories • 6 Languages
+                          </span>
+                        </div>
+
+                        <div>
+                          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
+                            Interactive Speaking &amp; Roleplay Calls Catalog
+                          </h1>
+                          <p className="text-xs sm:text-sm text-slate-300/90 mt-1.5 max-w-2xl leading-relaxed">
+                            Choose any real-world scenario below to start a live phone call with our AI Voice Coaches. Get real-time pronunciation drills, grammar fixes, and CEFR fluency scoring.
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-3 flex-wrap pt-1">
+                          <button
+                            onClick={handleQuickRandomCall}
+                            className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-emerald-500/25 flex items-center gap-2 transition-all hover:scale-[1.02]"
+                          >
+                            <PhoneCall className="w-4 h-4 fill-slate-950" />
+                            <span>
+                              ⚡ Quick Random Call ({practiceSelectedLangFilter === "All" ? selectedLanguage : practiceSelectedLangFilter})
+                            </span>
+                          </button>
+
+                          <button
+                            onClick={() => setActiveTab("dashboard")}
+                            className="px-4 py-2.5 rounded-2xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold transition-all"
+                          >
+                            ← Back to Dashboard
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Right 5 Cols: Custom AI Topic Call Generator (Mobile App Parity!) */}
+                      <div className="lg:col-span-5 p-5 rounded-2xl bg-slate-950/80 border border-indigo-500/40 shadow-xl space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-indigo-300">
+                              <Sparkles className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h3 className="text-xs font-black text-white uppercase tracking-wider">
+                                Speak About Any Custom Topic
+                              </h3>
+                              <p className="text-[10.5px] text-slate-400">
+                                Type any custom scenario &amp; launch an instant AI voice call
+                              </p>
+                            </div>
+                          </div>
+                          <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                            AI Builder
+                          </span>
+                        </div>
+
+                        <form onSubmit={handleStartCustomCall} className="space-y-2.5">
+                          <input
+                            type="text"
+                            value={customTopicInput}
+                            onChange={(e) => setCustomTopicInput(e.target.value)}
+                            placeholder="e.g. Cricket World Cup, SaaS Investor Pitch, Tokyo Travel..."
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700/90 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                          />
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1">
+                              {["Beginner", "Intermediate", "Advanced"].map((lvl) => (
+                                <button
+                                  key={lvl}
+                                  type="button"
+                                  onClick={() => setCustomTopicLevel(lvl)}
+                                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                                    customTopicLevel === lvl
+                                      ? "bg-indigo-600 text-white border border-indigo-400"
+                                      : "bg-slate-900 text-slate-400 border border-slate-800 hover:text-white"
+                                  }`}
+                                >
+                                  {lvl}
+                                </button>
+                              ))}
+                            </div>
+
+                            <button
+                              type="submit"
+                              className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-black text-xs flex items-center gap-1.5 shadow-lg shadow-indigo-600/30 transition-all shrink-0"
+                            >
+                              <PhoneCall className="w-3.5 h-3.5" />
+                              <span>Call Now</span>
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. EXPLORE BY CATEGORY BENTO CARDS (ALL 8 MOBILE APP CATEGORIES) */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between px-1">
+                      <div className="flex items-center gap-2">
+                        <Compass className="w-4 h-4 text-cyan-400" />
+                        <h2 className="text-sm font-black text-white uppercase tracking-wider">
+                          Browse Calls by Category ({ORDERED_CATEGORIES.length} Categories)
+                        </h2>
+                      </div>
+                      {practiceSelectedCategory !== "All" && (
+                        <button
+                          onClick={() => {
+                            setPracticeSelectedCategory("All");
+                            setPracticeSelectedSubCategory("All");
+                          }}
+                          className="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+                        >
+                          <span>Show All Categories ({langFilteredPool.length})</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-9 gap-2.5">
+                      {/* "All Categories" Card */}
+                      <button
+                        onClick={() => {
+                          setPracticeSelectedCategory("All");
+                          setPracticeSelectedSubCategory("All");
+                        }}
+                        className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between gap-2 ${
+                          practiceSelectedCategory === "All"
+                            ? "bg-gradient-to-br from-cyan-500/25 via-blue-600/20 to-slate-900 border-cyan-400 shadow-lg shadow-cyan-500/20 scale-[1.02]"
+                            : "bg-[#111827]/90 border-slate-800/90 hover:border-slate-700"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-2xl">🌟</span>
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                            {langFilteredPool.length}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="font-black text-xs text-white truncate">All Calls</div>
+                          <div className="text-[9.5px] text-slate-400 truncate">Complete Catalog</div>
+                        </div>
+                      </button>
+
+                      {/* 8 Category Cards */}
+                      {ORDERED_CATEGORIES.map((catKey) => {
+                        const meta = CATEGORY_META[catKey];
+                        const count = langFilteredPool.filter((t) => (t.category || "Daily Life") === catKey).length;
+                        const isSelected = practiceSelectedCategory === catKey;
+                        return (
+                          <button
+                            key={catKey}
+                            onClick={() => {
+                              setPracticeSelectedCategory(isSelected ? "All" : catKey);
+                              setPracticeSelectedSubCategory("All");
+                            }}
+                            className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between gap-2 ${
+                              isSelected
+                                ? `bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 ${meta.accentBorder} ring-2 ring-cyan-400/50 shadow-xl scale-[1.02]`
+                                : "bg-[#111827]/90 border-slate-800/90 hover:border-slate-700"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <span className="text-2xl">{meta.icon}</span>
+                              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${meta.accentBg} ${meta.accentText} border ${meta.accentBorder}`}>
+                                {count}
+                              </span>
+                            </div>
+                            <div>
+                              <div className="font-black text-xs text-white truncate">{catKey}</div>
+                              <div className="text-[9.5px] text-slate-400 truncate">{meta.subtitle.split(",")[0]}</div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 3. MULTI-FILTER COMMAND BAR (SEARCH, LANGUAGES, LEVELS, SUBCATEGORIES & VIEW MODE) */}
+                  <div className="p-4 sm:p-5 rounded-3xl bg-[#111827]/95 border border-slate-800/90 shadow-xl space-y-4">
+                    {/* Top Row: Search Bar + Level Filter + View Switcher + Reset */}
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                      {/* Search Input */}
+                      <div className="relative flex-1 max-w-xl">
+                        <Search className="w-4 h-4 text-cyan-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Search 164+ calls by topic, keyword, or scenario (e.g. cricket, airport, pizza, interview)..."
+                          className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-slate-950/90 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                        />
+                        {searchQuery && (
+                          <button
+                            onClick={() => setSearchQuery("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Difficulty Level Filter Pills */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {[
+                          { id: "All", label: "All Levels" },
+                          { id: "Beginner", label: "🌱 Beginner" },
+                          { id: "Intermediate", label: "⚡ Intermediate" },
+                          { id: "Advanced", label: "👑 Advanced" }
+                        ].map((lvl) => (
+                          <button
+                            key={lvl.id}
+                            onClick={() => setPracticeSelectedLevel(lvl.id)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                              practiceSelectedLevel === lvl.id
+                                ? "bg-cyan-500 text-slate-950 font-black shadow-md shadow-cyan-500/20"
+                                : "bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700"
+                            }`}
+                          >
+                            {lvl.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* View Mode Switcher (By Category vs Flat Grid) */}
+                      <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 self-start lg:self-auto">
+                        <button
+                          onClick={() => setPracticeViewMode("categories")}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            practiceViewMode === "categories"
+                              ? "bg-indigo-600 text-white shadow"
+                              : "text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          🗂️ By Category
+                        </button>
+                        <button
+                          onClick={() => setPracticeViewMode("grid")}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            practiceViewMode === "grid"
+                              ? "bg-indigo-600 text-white shadow"
+                              : "text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          ⊞ Grid View
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Second Row: Language Filter Bar with Real Country Flags & Counts */}
+                    <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-800/80 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">
+                          Language:
+                        </span>
+
+                        <button
+                          onClick={() => setPracticeSelectedLangFilter("All")}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                            practiceSelectedLangFilter === "All"
+                              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border border-blue-400/50 shadow-md"
+                              : "bg-slate-900/90 text-slate-300 border border-slate-800 hover:border-slate-700"
+                          }`}
+                        >
+                          <Globe className="w-3.5 h-3.5 text-cyan-300" />
+                          <span>All Languages</span>
+                          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/30 text-cyan-300 font-mono">
+                            {topics.length}
+                          </span>
+                        </button>
+
+                        {AVAILABLE_LANGUAGES.map((lang) => {
+                          const langCount = topics.filter((t) => t.language.toLowerCase() === lang.name.toLowerCase()).length;
+                          const isSelected = practiceSelectedLangFilter.toLowerCase() === lang.name.toLowerCase();
+                          return (
+                            <button
+                              key={lang.id}
+                              onClick={() => {
+                                setPracticeSelectedLangFilter(lang.name);
+                                setSelectedLanguage(lang.name);
+                              }}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                                isSelected
+                                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border border-blue-400/50 shadow-md"
+                                  : "bg-slate-900/90 text-slate-300 border border-slate-800 hover:border-slate-700"
+                              }`}
+                            >
+                              <img
+                                src={lang.flagUrl}
+                                alt={lang.name}
+                                className="w-4 h-3 rounded-[2px] object-cover border border-white/20"
+                              />
+                              <span>{lang.name}</span>
+                              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/30 text-slate-300 font-mono">
+                                {langCount}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Active Filter Summary & Reset */}
+                      {(practiceSelectedCategory !== "All" ||
+                        practiceSelectedSubCategory !== "All" ||
+                        practiceSelectedLevel !== "All" ||
+                        practiceSelectedLangFilter !== "All" ||
+                        searchQuery.trim() !== "") && (
+                        <button
+                          onClick={() => {
+                            setPracticeSelectedCategory("All");
+                            setPracticeSelectedSubCategory("All");
+                            setPracticeSelectedLevel("All");
+                            setPracticeSelectedLangFilter("All");
+                            setSearchQuery("");
+                          }}
+                          className="text-xs font-bold text-rose-400 hover:text-rose-300 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/30"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                          <span>Reset All Filters</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Third Row: Dynamic Sub-Category Quick Pills */}
+                    {availableSubCategories.length > 1 && (
+                      <div className="flex items-center gap-1.5 pt-2.5 border-t border-slate-800/60 overflow-x-auto pb-1">
+                        <span className="text-[10.5px] font-bold text-slate-400 uppercase tracking-wider mr-1 shrink-0">
+                          Sub-Topics:
+                        </span>
+                        <button
+                          onClick={() => setPracticeSelectedSubCategory("All")}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition-all ${
+                            practiceSelectedSubCategory === "All"
+                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/50"
+                              : "bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white"
+                          }`}
+                        >
+                          All ({langFilteredPool.filter((t) => practiceSelectedCategory === "All" || (t.category || "Daily Life") === practiceSelectedCategory).length})
+                        </button>
+                        {availableSubCategories.slice(0, 18).map((sub) => (
+                          <button
+                            key={sub}
+                            onClick={() => setPracticeSelectedSubCategory(practiceSelectedSubCategory === sub ? "All" : sub)}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition-all ${
+                              practiceSelectedSubCategory === sub
+                                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/50"
+                                : "bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white"
+                            }`}
+                          >
+                            {sub}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 4. ACTIVE RESULTS COUNTER BAR */}
+                  <div className="flex items-center justify-between px-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-xs sm:text-sm font-black text-white">
+                        Showing {studioFilteredTopics.length} Live Speaking Scenarios
+                      </span>
+                      {practiceSelectedCategory !== "All" && (
+                        <span className="text-xs font-bold text-cyan-400">
+                          in {CATEGORY_META[practiceSelectedCategory]?.label || practiceSelectedCategory}
+                        </span>
+                      )}
+                      {practiceSelectedLangFilter !== "All" && (
+                        <span className="text-xs font-bold text-indigo-300">
+                          ({practiceSelectedLangFilter})
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-slate-400 hidden sm:inline">
+                      Click any scenario card to select your AI Coach &amp; call duration
+                    </span>
+                  </div>
+
+                  {/* 5. SCENARIOS DISPLAY: CATEGORY-GROUPED VIEW OR FLAT GRID VIEW */}
+                  {studioFilteredTopics.length === 0 ? (
+                    <div className="p-12 rounded-3xl bg-[#111827] border border-slate-800 text-center space-y-4">
+                      <div className="w-14 h-14 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto text-2xl">
+                        🔍
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="text-base font-black text-white">No Scenarios Match Your Current Filter</h3>
+                        <p className="text-xs text-slate-400 max-w-md mx-auto">
+                          Try clearing your search query or switching to &ldquo;All Languages&rdquo; and &ldquo;All Categories&rdquo; to explore all {topics.length} calls.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setPracticeSelectedCategory("All");
+                          setPracticeSelectedSubCategory("All");
+                          setPracticeSelectedLevel("All");
+                          setPracticeSelectedLangFilter("All");
+                          setSearchQuery("");
+                        }}
+                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black text-xs shadow-lg"
+                      >
+                        Reset Filters &amp; Show All {topics.length} Calls
+                      </button>
+                    </div>
+                  ) : practiceViewMode === "categories" && practiceSelectedCategory === "All" ? (
+                    <div className="space-y-8">
+                      {ORDERED_CATEGORIES.map((catKey) => {
+                        const catTopics = studioFilteredTopics.filter((t) => (t.category || "Daily Life") === catKey);
+                        if (catTopics.length === 0) return null;
+                        const meta = CATEGORY_META[catKey] || CATEGORY_META["Daily Life"];
+
+                        return (
+                          <div key={catKey} className="space-y-4">
+                            {/* Category Section Banner Header */}
+                            <div className={`p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#111827] via-[#0F172A] to-[#111827] border ${meta.accentBorder} flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg`}>
+                              <div className="flex items-center gap-3.5">
+                                <div className={`w-12 h-12 rounded-2xl ${meta.accentBg} border ${meta.accentBorder} flex items-center justify-center text-2xl shadow-md`}>
+                                  {meta.icon}
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="text-base sm:text-lg font-black text-white">
+                                      {meta.label}
+                                    </h3>
+                                    <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${meta.accentBg} ${meta.accentText} border ${meta.accentBorder}`}>
+                                      {catTopics.length} Scenarios
+                                    </span>
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-800 hidden sm:inline">
+                                      {meta.badge}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-slate-400 mt-0.5">
+                                    {meta.subtitle}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <button
+                                onClick={() => setPracticeSelectedCategory(catKey)}
+                                className={`px-3.5 py-2 rounded-xl ${meta.accentBg} border ${meta.accentBorder} ${meta.accentText} text-xs font-black hover:scale-105 transition-transform self-start sm:self-auto`}
+                              >
+                                Focus {catKey} ({catTopics.length}) →
+                              </button>
+                            </div>
+
+                            {/* Category Scenarios 3-Column Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {catTopics.map((topic) => renderDeluxeScenarioCard(topic))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {studioFilteredTopics.map((topic) => renderDeluxeScenarioCard(topic))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()
           ) : activeTab === "vocabulary" ? (
             /* ----------------------------------------------------------- */
             /* TAB: VOCABULARY DRILLS                                      */

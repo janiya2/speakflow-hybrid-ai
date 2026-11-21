@@ -1,0 +1,2460 @@
+export interface CatalogTopicModel {
+  id: string;
+  title: string;
+  language: string;
+  level: string;
+  category: string;
+  subCategory?: string;
+  icon: string;
+  scenario: string;
+  starterPrompt: string;
+  starterQuestions?: string[];
+}
+
+export const FULL_MOBILE_TOPICS_CATALOG: CatalogTopicModel[] = [
+  {
+    "id": "sp_1",
+    "title": "Talking About Cricket: T20 World Cup",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Cricket",
+    "icon": "🏏",
+    "scenario": "You are chatting with a passionate cricket fan about recent international matches and legendary players.",
+    "starterPrompt": "Hey mate! Did you catch the thrilling cricket match yesterday? Who's your all-time favorite cricket player?",
+    "starterQuestions": [
+      "What do you think makes a great captain in cricket?",
+      "Do you prefer Test matches or T20?"
+    ]
+  },
+  {
+    "id": "sp_2",
+    "title": "Playing Football & Premier League",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Sports",
+    "subCategory": "Football",
+    "icon": "⚽",
+    "scenario": "You are talking with a teammate before a friendly weekend football match.",
+    "starterPrompt": "Hey! Ready for the football game? Which position do you usually like playing on the field?",
+    "starterQuestions": [
+      "Which football club do you support?",
+      "How often do you play football?"
+    ]
+  },
+  {
+    "id": "sp_3",
+    "title": "Gym Workout Routine & Fitness Goals",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Fitness",
+    "icon": "🏋️",
+    "scenario": "You are discussing workout plans, protein intake, and staying fit with a personal trainer at the gym.",
+    "starterPrompt": "Welcome to the fitness center! Tell me, what specific fitness goals are you hoping to achieve this year?",
+    "starterQuestions": [
+      "Do you prefer weight training or cardio?",
+      "What is your favorite exercise?"
+    ]
+  },
+  {
+    "id": "sp_4",
+    "title": "Tennis Match & Grand Slam Stars",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Tennis",
+    "icon": "🎾",
+    "scenario": "You are having a casual discussion with a tennis coach at a club.",
+    "starterPrompt": "Hi there! It is a lovely sunny day for tennis. Have you ever played singles or doubles before?",
+    "starterQuestions": [
+      "Who is your favorite Grand Slam tennis star?",
+      "How do you practice your serve?"
+    ]
+  },
+  {
+    "id": "sp_5",
+    "title": "Olympic Games & Track and Field",
+    "language": "English",
+    "level": "Advanced",
+    "category": "Sports",
+    "subCategory": "Olympics",
+    "icon": "🥇",
+    "scenario": "You are having a deep discussion about world records and Olympic athletes with a sports journalist.",
+    "starterPrompt": "Hello! Watching Olympic athletes push human limits is truly inspiring. Which Olympic event excites you the most?",
+    "starterQuestions": [
+      "Do you think training or genetics matters more?",
+      "What record seems impossible to break?"
+    ]
+  },
+  {
+    "id": "sp_6",
+    "title": "Japanese Baseball: Tokyo Giants Game",
+    "language": "Japanese",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Baseball",
+    "icon": "⚾",
+    "scenario": "You are talking with a Japanese baseball enthusiast at Tokyo Dome.",
+    "starterPrompt": "野球はお好きですか？日本のプロ野球でどのチームを応援していますか？ (Yakyuu wa osuki desu ka? Do you like baseball? Which Japanese team do you support?)",
+    "starterQuestions": [
+      "ドームの雰囲気はどうですか？ (How is the stadium atmosphere?)",
+      "野球をしたことがありますか？ (Have you ever played baseball?)"
+    ]
+  },
+  {
+    "id": "sp_7",
+    "title": "Korean Taekwondo & Martial Arts",
+    "language": "Korean",
+    "level": "Beginner",
+    "category": "Sports",
+    "subCategory": "Martial Arts",
+    "icon": "🥋",
+    "scenario": "You are talking with a friendly Korean martial arts instructor.",
+    "starterPrompt": "안녕하세요! 태권도나 다른 운동을 해보신 적이 있으신가요? (Annyeonghaseyo! Have you ever practiced Taekwondo or any exercise?)",
+    "starterQuestions": [
+      "어떤 운동을 가장 좋아하세요? (Which exercise do you like most?)",
+      "건강을 위해 무엇을 하시나요? (What do you do for health?)"
+    ]
+  },
+  {
+    "id": "sp_8",
+    "title": "Basketball & NBA Playoff Thrills",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Basketball",
+    "icon": "🏀",
+    "scenario": "You are chatting with a basketball coach about three-point shooting, favorite NBA franchises, and clutch moments.",
+    "starterPrompt": "Hey there! Did you catch that buzzer-beater shot in last night's basketball game? Who's your favorite NBA player?",
+    "starterQuestions": [
+      "Do you enjoy playing basketball or watching?",
+      "Who is the greatest of all time: Jordan or LeBron?"
+    ]
+  },
+  {
+    "id": "sp_9",
+    "title": "Swimming & Aquatic Endurance Training",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Sports",
+    "subCategory": "Swimming",
+    "icon": "🏊",
+    "scenario": "You are discussing freestyle lap pacing, breathing technique, and pool workouts with a swimming instructor.",
+    "starterPrompt": "Hello! Swimming is one of the best full-body workouts. Do you swim for cardio or just for fun on hot days?",
+    "starterQuestions": [
+      "Which stroke do you find most challenging: butterfly or breaststroke?",
+      "How many laps do you usually aim for?"
+    ]
+  },
+  {
+    "id": "sp_10",
+    "title": "Badminton Club: Fast Smashes & Rally Drills",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Badminton",
+    "icon": "🏸",
+    "scenario": "You are warming up with your badminton partner before an intense doubles tournament match.",
+    "starterPrompt": "Hi! Great to see you on the court. Are your wrists warmed up for some fast cross-court smashes today?",
+    "starterQuestions": [
+      "Do you prefer playing singles or doubles badminton?",
+      "How do you defend against a steep smash?"
+    ]
+  },
+  {
+    "id": "sp_11",
+    "title": "Road Cycling & Tour de France Strategy",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Cycling",
+    "icon": "🚴",
+    "scenario": "You are talking with an endurance cyclist about aerodynamic bikes, cadence, and grueling mountain stages.",
+    "starterPrompt": "Good morning! What an incredible morning for a long bike ride. What kind of bike do you ride most often?",
+    "starterQuestions": [
+      "Do you prefer climbing steep hills or sprinting on flats?",
+      "Have you ever followed the Tour de France?"
+    ]
+  },
+  {
+    "id": "sp_12",
+    "title": "Formula 1 Racing: Pit Stops & Pole Positions",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Motorsport",
+    "icon": "🏎️",
+    "scenario": "You are debating race strategies, tire degradation, and team rivalries with an avid Formula 1 fan.",
+    "starterPrompt": "Welcome to race weekend! The qualifying session was unbelievable. Which F1 team are you backing for the podium?",
+    "starterQuestions": [
+      "Who do you consider the fastest driver on the grid?",
+      "What do you think makes street circuits like Monaco so demanding?"
+    ]
+  },
+  {
+    "id": "sp_13",
+    "title": "Boxing & Combat Sports Sparring",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Boxing",
+    "icon": "🥊",
+    "scenario": "You are wrapping your hands and talking footwork, defense, and jab combinations with a boxing coach.",
+    "starterPrompt": "Hey champ! Ready to hit the heavy bag today? How are your combinations and head movement feeling?",
+    "starterQuestions": [
+      "What do you think is more crucial: punching power or ring stamina?",
+      "Which classic boxing fight is your all-time favorite?"
+    ]
+  },
+  {
+    "id": "sp_14",
+    "title": "Golf: 18 Holes & The Perfect Swing",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Sports",
+    "subCategory": "Golf",
+    "icon": "⛳",
+    "scenario": "You are having a relaxed conversation at the golf clubhouse after completing a round on the green.",
+    "starterPrompt": "Good afternoon! How did your round go today? Did you manage to stay out of the sand traps and water hazards?",
+    "starterQuestions": [
+      "What is the strongest club in your golf bag?",
+      "How do you keep your composure during a tricky putt?"
+    ]
+  },
+  {
+    "id": "sp_15",
+    "title": "Volleyball & Beach Smash Tournaments",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Sports",
+    "subCategory": "Volleyball",
+    "icon": "🏐",
+    "scenario": "You are teaming up with a beach volleyball player for a sunny weekend competition on the sand.",
+    "starterPrompt": "Hey teammate! The sand is warm and the breeze is light. Ready to practice our serves and sets?",
+    "starterQuestions": [
+      "Do you prefer playing on the beach or indoor hard courts?",
+      "What is your best strategy for blocking at the net?"
+    ]
+  },
+  {
+    "id": "sp_16",
+    "title": "Surfing & Catching Ocean Waves",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Surfing",
+    "icon": "🏄",
+    "scenario": "You are waxing your surfboard and chatting with a surf instructor about ocean currents and wave swell.",
+    "starterPrompt": "Aloha! The swell is looking fantastic today with clean offshore sets. Have you caught any good waves yet?",
+    "starterQuestions": [
+      "Do you ride a longboard or a shortboard?",
+      "How do you prepare mentally when facing large wave sets?"
+    ]
+  },
+  {
+    "id": "sp_17",
+    "title": "Table Tennis: Spin, Slices & Rapid Rallies",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Table Tennis",
+    "icon": "🏓",
+    "scenario": "You are playing ping pong at a recreational club and talking about top-spin serves and paddle rubbers.",
+    "starterPrompt": "Nice rally! That backhand slice had unbelievable spin. How long have you been playing table tennis?",
+    "starterQuestions": [
+      "Do you rely more on heavy spin or quick placement?",
+      "Do you use shakehand or penhold grip?"
+    ]
+  },
+  {
+    "id": "sp_18",
+    "title": "Mountain Hiking & Wilderness Backpacking",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Sports",
+    "subCategory": "Hiking",
+    "icon": "🥾",
+    "scenario": "You are resting at a scenic mountain overlook and talking with a fellow trekker about trail navigation.",
+    "starterPrompt": "Hello there! What a breathtaking panoramic view from the summit. How was the trail incline for you today?",
+    "starterQuestions": [
+      "What essential gear do you always carry in your backpack?",
+      "What is the most memorable mountain you have climbed?"
+    ]
+  },
+  {
+    "id": "sp_19",
+    "title": "Yoga, Core Flexibility & Breathwork",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Sports",
+    "subCategory": "Yoga",
+    "icon": "🧘",
+    "scenario": "You are cooling down after an energizing Vinyasa flow session with your yoga teacher.",
+    "starterPrompt": "Namaste. Wonderful practice today! How did your body and breathing feel during the warrior poses?",
+    "starterQuestions": [
+      "Do you practice yoga primarily for flexibility or mental relaxation?",
+      "What is your favorite pose to hold?"
+    ]
+  },
+  {
+    "id": "sp_20",
+    "title": "Marathon Training: 42km Endurance & Pacing",
+    "language": "English",
+    "level": "Advanced",
+    "category": "Sports",
+    "subCategory": "Running",
+    "icon": "🏃",
+    "scenario": "You are discussing hydration gels, heart rate zones, and long run milestones with a distance running coach.",
+    "starterPrompt": "Hey runner! Great job logging those early morning miles. What distance are you training for right now?",
+    "starterQuestions": [
+      "How do you push through the mental barrier after the 30-kilometer mark?",
+      "What running shoes do you swear by?"
+    ]
+  },
+  {
+    "id": "sp_21",
+    "title": "Winter Sports: Alpine Skiing & Snowboarding",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Skiing",
+    "icon": "⛷️",
+    "scenario": "You are riding the chairlift up a snow-covered mountain talking about fresh powder runs and slope difficulty.",
+    "starterPrompt": "Brrr, it is crisp up here! The fresh powder snow looks amazing today. Do you prefer skis or a snowboard?",
+    "starterQuestions": [
+      "Have you ever attempted a black diamond slope?",
+      "What is your favorite ski resort to visit in winter?"
+    ]
+  },
+  {
+    "id": "sp_22",
+    "title": "Rugby Match: Scrums, Tackles & Team Spirit",
+    "language": "English",
+    "level": "Advanced",
+    "category": "Sports",
+    "subCategory": "Rugby",
+    "icon": "🏉",
+    "scenario": "You are talking with a rugby club captain about sportsmanship, intense tackles, and set-piece scrums.",
+    "starterPrompt": "Good match today! Rugby demands incredible physical toughness. Which position do you play on the squad?",
+    "starterQuestions": [
+      "What makes team culture in rugby so unique compared to other sports?",
+      "Do you prefer Six Nations or World Cup rugby?"
+    ]
+  },
+  {
+    "id": "sp_es_1",
+    "title": "El Clásico: Real Madrid vs FC Barcelona",
+    "language": "Spanish",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Fútbol",
+    "icon": "⚽",
+    "scenario": "Estás debatiendo sobre el clásico del fútbol español con un aficionado apasionado en un café de Madrid.",
+    "starterPrompt": "¡Hola amigo! ¿Qué opinas del clásico del fin de semana? ¿Quién crees que se llevará la victoria este año?",
+    "starterQuestions": [
+      "¿Prefieres ver el partido en el estadio o con amigos en casa?",
+      "¿Quién es tu jugador favorito de la liga española?"
+    ]
+  },
+  {
+    "id": "sp_es_2",
+    "title": "Partido de Pádel con Amigos en el Club",
+    "language": "Spanish",
+    "level": "Beginner",
+    "category": "Sports",
+    "subCategory": "Pádel",
+    "icon": "🎾",
+    "scenario": "Estás organizando un partido de pádel por parejas en el club deportivo local.",
+    "starterPrompt": "¡Buenas tardes! Nos falta una persona para completar el partido de pádel. ¿Te apetece jugar un set con nosotros?",
+    "starterQuestions": [
+      "¿Sueles jugar en el lado derecho o izquierdo de la pista?",
+      "¿Cuánto tiempo llevas jugando al pádel?"
+    ]
+  },
+  {
+    "id": "sp_es_3",
+    "title": "Ciclismo y La Vuelta a España",
+    "language": "Spanish",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Ciclismo",
+    "icon": "🚴",
+    "scenario": "Hablas sobre ciclismo de montaña y las etapas míticas de la Vuelta a España con un ciclista experimentado.",
+    "starterPrompt": "¡Hola! Las rutas de montaña por aquí son increíbles para pedalear. ¿Sueles salir en bicicleta los fines de semana?",
+    "starterQuestions": [
+      "¿Prefieres bicicleta de montaña o de carretera?",
+      "¿Cuál es el puerto de montaña más duro que has subido?"
+    ]
+  },
+  {
+    "id": "sp_jp_1",
+    "title": "大相撲観戦と両国国技館",
+    "language": "Japanese",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "相撲",
+    "icon": "🤼",
+    "scenario": "両国国技館で日本の伝統スポーツである大相撲についてファンと話しています。",
+    "starterPrompt": "大相撲を見たことがありますか？好きな力士や印象に残る取組はありますか？",
+    "starterQuestions": [
+      "相撲の伝統や儀式についてどう思いますか？",
+      "実際に生で観戦したことがありますか？"
+    ]
+  },
+  {
+    "id": "sp_jp_2",
+    "title": "サッカーJリーグ観戦とスタジアム応援",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Sports",
+    "subCategory": "サッカー",
+    "icon": "⚽",
+    "scenario": "スタジアムでJリーグの白熱した試合についてサポーターと熱く語り合っています。",
+    "starterPrompt": "今日の試合はとても熱気がありますね！Jリーグでどのクラブを応援していますか？",
+    "starterQuestions": [
+      "スタジアムグルメや応援の雰囲気はどうですか？",
+      "日本代表の試合もよく見ますか？"
+    ]
+  },
+  {
+    "id": "sp_kr_1",
+    "title": "KBO 프로야구 직관과 응원 문화",
+    "language": "Korean",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "야구",
+    "icon": "⚾",
+    "scenario": "잠실야구장에서 열정적인 한국 프로야구 응원 문화와 치킨 맥주에 대해 대화합니다.",
+    "starterPrompt": "한국 야구장의 응원 열기는 정말 최고예요! 오늘 어느 팀을 응원하러 오셨나요?",
+    "starterQuestions": [
+      "야구장에서 치맥 드셔보셨나요?",
+      "가장 좋아하는 KBO 야구 선수가 누구인가요?"
+    ]
+  },
+  {
+    "id": "sp_kr_2",
+    "title": "e스포츠와 롤챔스 리그 (LCK)",
+    "language": "Korean",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "e스포츠",
+    "icon": "🎮",
+    "scenario": "한국의 세계적인 e스포츠 문화와 프로게이머들에 대해 토론합니다.",
+    "starterPrompt": "한국 e스포츠 경기 보신 적 있으세요? 가장 좋아하는 프로게이머나 게임이 무엇인가요?",
+    "starterQuestions": [
+      "직접 게임하는 것을 좋아하시나요, 보는 것을 좋아하시나요?",
+      "e스포츠가 올림픽 종목이 되는 것에 대해 어떻게 생각하세요?"
+    ]
+  },
+  {
+    "id": "sp_ar_1",
+    "title": "دوري روشن السعودي ونجوم كرة القدم",
+    "language": "Arabic",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "كرة القدم",
+    "icon": "⚽",
+    "scenario": "أنت تتحدث مع مشجع كروي في الرياض حول منافسات دوري روشن وأشهر اللاعبين العالميين.",
+    "starterPrompt": "أهلاً بك! كيف ترى منافسات الدوري السعودي هذا الموسم؟ من هو فريقك المفضل؟",
+    "starterQuestions": [
+      "ما رأيك في تطور كرة القدم في العالم العربي؟",
+      "هل تفضل مشاهدة المباريات في الملعب أم مع الأصدقاء؟"
+    ]
+  },
+  {
+    "id": "sp_ar_2",
+    "title": "ركوب الخيل والفروسية العربية الأصيلة",
+    "language": "Arabic",
+    "level": "Beginner",
+    "category": "Sports",
+    "subCategory": "فروسية",
+    "icon": "🐎",
+    "scenario": "تتحدث مع مدرب فروسية في نادٍ للخيول العربية الأصيلة حول أسرار ركوب الخيل.",
+    "starterPrompt": "مرحباً بك! الخيل العربي معروف بجماله وسرعته وذكائه. هل مارست رياضة ركوب الخيل من قبل؟",
+    "starterQuestions": [
+      "ما الذي يعجبك أكثر في الخيول العربية؟",
+      "هل ترغب في تعلم قفز الحواجز؟"
+    ]
+  },
+  {
+    "id": "sp_ta_1",
+    "title": "ஐபிஎல் கிரிக்கெட் மற்றும் சென்னை சூப்பர் கிங்ஸ்",
+    "language": "Tamil",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "கிரிக்கெட்",
+    "icon": "🏏",
+    "scenario": "சென்னை மைதானத்தில் நடக்கும் விறுவிறுப்பான கிரிக்கெட் போட்டி பற்றி நண்பருடன் பேசுகிறீர்கள்.",
+    "starterPrompt": "வணக்கம் நண்பா! நேற்றைய கிரிக்கெட் மேட்ச் பார்த்தீர்களா? உங்களுக்கு பிடித்த அணி எது?",
+    "starterQuestions": [
+      "தோனியின் ஆட்டம் பற்றி உங்கள் கருத்து என்ன?",
+      "நீங்கள் எப்போதாவது மைதானத்திற்கு சென்று போட்டி பார்த்திருக்கிறீர்களா?"
+    ]
+  },
+  {
+    "id": "sp_ta_2",
+    "title": "பாரம்பரிய கபடி விளையாட்டு மற்றும் புரோ கபடி",
+    "language": "Tamil",
+    "level": "Beginner",
+    "category": "Sports",
+    "subCategory": "கபடி",
+    "icon": "🤼",
+    "scenario": "பாரம்பரிய தமிழர்களின் வீர விளையாட்டான கபடி போட்டி பற்றி உடற்பயிற்சி ஆசிரியரிடம் பேசுகிறீர்கள்.",
+    "starterPrompt": "கபடி என்பது தமிழர்களின் பாரம்பரிய வீர விளையாட்டு. நீங்கள் பள்ளியிலோ கல்லூரியிலோ கபடி ஆடியிருக்கிறீர்களா?",
+    "starterQuestions": [
+      "ரைடர் பிடிப்பதை விட டேக்கிள் செய்வது உங்களுக்கு பிடிக்குமா?",
+      "புரோ கபடி லீக் போட்டிகளை பார்ப்பீர்களா?"
+    ]
+  },
+  {
+    "id": "tr_1",
+    "title": "Airport Check-In & Boarding Gate",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Airport",
+    "icon": "✈️",
+    "scenario": "You are talking to an airline counter agent checking in your luggage for an international flight.",
+    "starterPrompt": "Good morning! Welcome to Airways. May I please see your passport and booking reference?",
+    "starterQuestions": [
+      "Do you have any check-in bags or just carry-on?",
+      "Would you prefer a window or aisle seat?"
+    ]
+  },
+  {
+    "id": "tr_2",
+    "title": "Hotel Check-In & Room Requests",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Hotel",
+    "icon": "🏨",
+    "scenario": "You are arriving at a boutique seaside hotel and checking into your reserved room with the receptionist.",
+    "starterPrompt": "Welcome to Paradise Resort! How can I assist you today, and under what name is your reservation?",
+    "starterQuestions": [
+      "Would you like a room with a balcony view?",
+      "Do you need breakfast included each morning?"
+    ]
+  },
+  {
+    "id": "tr_3",
+    "title": "Asking For Street Directions in a New City",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Directions",
+    "icon": "🗺️",
+    "scenario": "You are lost in a foreign downtown district and stopping a friendly local pedestrian for directions.",
+    "starterPrompt": "Excuse me! I seem to be a little turned around. Where are you trying to get to in the city center?",
+    "starterQuestions": [
+      "Are you looking for the subway station?",
+      "Is this your first time visiting this city?"
+    ]
+  },
+  {
+    "id": "tr_4",
+    "title": "Renting a Car for a Scenic Road Trip",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Travel",
+    "subCategory": "Transport",
+    "icon": "🚗",
+    "scenario": "You are speaking with a car rental agent choosing vehicle type and insurance coverage.",
+    "starterPrompt": "Hello! Welcome to Scenic Cars. What type of vehicle are you looking to drive during your vacation?",
+    "starterQuestions": [
+      "Would you like an SUV or a compact car?",
+      "How many days will your road trip be?"
+    ]
+  },
+  {
+    "id": "tr_5",
+    "title": "Train Ticket at Shinjuku Station",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Transport",
+    "icon": "🚅",
+    "scenario": "You are buying a Shinkansen bullet train ticket from a station attendant in Tokyo.",
+    "starterPrompt": "いらっしゃいませ。京都までの新幹線チケットですか？指定席と自由席どちらがよろしいですか？ (Welcome. Shinkansen ticket to Kyoto? Reserved or non-reserved seat?)",
+    "starterQuestions": [
+      "何時の電車に乗りますか？ (What time train would you like to take?)",
+      "窓側の席がよろしいですか？ (Would you prefer a window seat?)"
+    ]
+  },
+  {
+    "id": "tr_6",
+    "title": "Checking into a Traditional Ryokan in Kyoto",
+    "language": "Japanese",
+    "level": "Intermediate",
+    "category": "Travel",
+    "subCategory": "Hotel",
+    "icon": "🏯",
+    "scenario": "You are arriving at a beautiful traditional Japanese onsen inn.",
+    "starterPrompt": "ようこそお越しくださいました。ご予約のお名前を伺ってもよろしいでしょうか？ (Welcome! May I please have the name on your reservation?)",
+    "starterQuestions": [
+      "夕食は何時がご希望ですか？ (What time would you prefer dinner?)",
+      "温泉はもう入られましたか？ (Have you tried the hot springs yet?)"
+    ]
+  },
+  {
+    "id": "tr_7",
+    "title": "Taking a Taxi to Hongdae in Seoul",
+    "language": "Korean",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Transport",
+    "icon": "🚕",
+    "scenario": "You just stepped into a taxi in downtown Seoul and are telling the driver your destination.",
+    "starterPrompt": "어서오세요! 어디로 모실까요? (Welcome! Where can I take you today?)",
+    "starterQuestions": [
+      "홍대입구역 어디쯤에 내려드릴까요? (Where around Hongdae Station should I drop you?)",
+      "서울 여행은 처음이세요? (Is this your first trip to Seoul?)"
+    ]
+  },
+  {
+    "id": "fd_1",
+    "title": "Ordering Coffee & Pastry in a Cozy Cafe",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "Cafe",
+    "icon": "☕",
+    "scenario": "You are ordering a warm specialty beverage and snack from a barista in a local artisan coffee shop.",
+    "starterPrompt": "Hi there! Welcome to The Roastery. What can I brew up fresh for you today?",
+    "starterQuestions": [
+      "Do you want regular dairy milk or oat milk?",
+      "Would you like that for here or to go?"
+    ]
+  },
+  {
+    "id": "fd_2",
+    "title": "Dining at an Italian Restaurant",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Food",
+    "subCategory": "Restaurant",
+    "icon": "🍝",
+    "scenario": "You are enjoying an evening meal and asking the waiter for menu recommendations and wine pairing.",
+    "starterPrompt": "Buona sera! Welcome to Trattoria Bella. Are you ready to order, or would you like to hear today's chef specials?",
+    "starterQuestions": [
+      "Do you prefer homemade pasta or wood-fired pizza?",
+      "Any dietary restrictions or allergies?"
+    ]
+  },
+  {
+    "id": "fd_3",
+    "title": "Street Food Market: Tasting Exotic Dishes",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Food",
+    "subCategory": "Street Food",
+    "icon": "🍢",
+    "scenario": "You are exploring a bustling outdoor night market stall with spicy noodles and skewers.",
+    "starterPrompt": "Hey! Come try our famous spicy grilled skewers! How much chili heat can you handle?",
+    "starterQuestions": [
+      "Have you ever tried local street snacks before?",
+      "What is the most unique food you ever ate?"
+    ]
+  },
+  {
+    "id": "fd_4",
+    "title": "Cooking Recipe & Favorite Ingredients",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Food",
+    "subCategory": "Cooking",
+    "icon": "🍳",
+    "scenario": "You are sharing your favorite home-cooked dish and cooking tips with a fellow foodie.",
+    "starterPrompt": "I love cooking at home! Tell me, what is one dish you really enjoy making from scratch?",
+    "starterQuestions": [
+      "What secret spices or ingredients do you add?",
+      "Who taught you how to cook?"
+    ]
+  },
+  {
+    "id": "fd_5",
+    "title": "Ordering Ramen at an Authentic Tokyo Shop",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "Restaurant",
+    "icon": "🍜",
+    "scenario": "You are sitting at the wooden counter of a famous tonkotsu ramen shop in Tokyo.",
+    "starterPrompt": "へい、いらっしゃい！ラーメンのスープの濃さと麺の硬さはどうしますか？ (Welcome! How rich would you like your broth, and how firm your noodles?)",
+    "starterQuestions": [
+      "トッピングに煮玉子はつけますか？ (Would you like a soft-boiled egg topping?)",
+      "替え玉（おかわり）はいかがですか？ (Would you like an extra noodle refill?)"
+    ]
+  },
+  {
+    "id": "fd_6",
+    "title": "Korean BBQ in Gangnam: Ordering Samgyeopsal",
+    "language": "Korean",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "Restaurant",
+    "icon": "🥩",
+    "scenario": "You are sitting around a charcoal grill at a popular Seoul K-BBQ restaurant with a hospitable owner.",
+    "starterPrompt": "어서오세요! 삼겹살 2인분 드릴까요, 아니면 소고기 갈비가 좋으세요? (Welcome! Shall I bring 2 servings of pork belly, or beef ribs?)",
+    "starterQuestions": [
+      "된장찌개나 밥도 같이 준비해 드릴까요? (Shall I prepare soybean stew and rice together?)",
+      "김치도 같이 구워 드릴까요? (Shall I grill the kimchi for you?)"
+    ]
+  },
+  {
+    "id": "fd_7",
+    "title": "Ordering Bingsu Dessert in Hongdae",
+    "language": "Korean",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "Dessert",
+    "icon": "🍧",
+    "scenario": "You are cooling off on a warm afternoon ordering shaved ice dessert at a dessert cafe in Seoul.",
+    "starterPrompt": "주문 도와드릴게요! 인절미 빙수랑 망고 빙수 중에 어떤 것으로 하시겠어요? (Can I take your order? Between injeolmi bingsu and mango bingsu, which one?)",
+    "starterQuestions": [
+      "사이즈는 레귤러로 드릴까요? (Regular size?)",
+      "포장이세요, 드시고 가세요? (To go, or having it here?)"
+    ]
+  },
+  {
+    "id": "car_1",
+    "title": "Job Interview: Tell Me About Yourself",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Career",
+    "subCategory": "Interview",
+    "icon": "💼",
+    "scenario": "You are interviewing for an exciting international role with the senior hiring manager.",
+    "starterPrompt": "Hello! Welcome to our interview. To start off, could you walk me through your background and experience?",
+    "starterQuestions": [
+      "What are your greatest professional strengths?",
+      "Why do you want to work for our organization?"
+    ]
+  },
+  {
+    "id": "car_2",
+    "title": "Explaining Strengths, Weaknesses & Goals",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Career",
+    "subCategory": "Interview",
+    "icon": "🎯",
+    "scenario": "The interviewer asks you behavioral questions about challenges and professional growth.",
+    "starterPrompt": "Thank you. Now tell me about a time you faced a difficult deadline or conflict at work and overcame it.",
+    "starterQuestions": [
+      "What is an area you are currently trying to improve?",
+      "Where do you see yourself in 3 years?"
+    ]
+  },
+  {
+    "id": "car_3",
+    "title": "Team Standup: Sprint Progress Update",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Career",
+    "subCategory": "Meeting",
+    "icon": "💻",
+    "scenario": "You are participating in a daily agile standup meeting with your software engineering team.",
+    "starterPrompt": "Good morning team! Let's go around. What did you accomplish yesterday and what are you working on today?",
+    "starterQuestions": [
+      "Are there any blockers preventing your progress?",
+      "Do you need help with code review?"
+    ]
+  },
+  {
+    "id": "car_4",
+    "title": "Salary Negotiation & Benefits Discussion",
+    "language": "English",
+    "level": "Advanced",
+    "category": "Career",
+    "subCategory": "Negotiation",
+    "icon": "🤝",
+    "scenario": "You are discussing a job offer compensation package with the company HR director.",
+    "starterPrompt": "We are thrilled to offer you this role! Having reviewed the offer letter, what are your thoughts on the compensation?",
+    "starterQuestions": [
+      "What salary expectations did you have in mind?",
+      "Are you interested in remote work flexibility?"
+    ]
+  },
+  {
+    "id": "car_5",
+    "title": "Business Introductions & Business Card Exchange",
+    "language": "Japanese",
+    "level": "Intermediate",
+    "category": "Career",
+    "subCategory": "Business Etiquette",
+    "icon": "📇",
+    "scenario": "You are meeting an important Japanese business client and exchanging meishi (business cards).",
+    "starterPrompt": "初めまして。本日はお時間をいただき誠にありがとうございます。名刺を交換させていただけますでしょうか？ (Nice to meet you. Thank you for your time today. May we exchange business cards?)",
+    "starterQuestions": [
+      "御社の事業について簡単にご紹介いただけますか？ (Could you briefly introduce your company?)",
+      "日本でのビジネス経験はございますか？ (Do you have business experience in Japan?)"
+    ]
+  },
+  {
+    "id": "car_6",
+    "title": "Korean Company Interview (면접)",
+    "language": "Korean",
+    "level": "Intermediate",
+    "category": "Career",
+    "subCategory": "Interview",
+    "icon": "🏢",
+    "scenario": "You are sitting across from a panel of Korean corporate interviewers at a leading tech firm.",
+    "starterPrompt": "지원자님, 먼저 긴장을 푸시고 간단하게 자기소개 부탁드립니다. (Applicant, please relax and give a brief self-introduction.)",
+    "starterQuestions": [
+      "우리 회사에 지원하게 된 특별한 동기가 있나요? (What motivated you to apply to our company?)",
+      "스트레스를 받을 때는 어떻게 해소하시나요? (How do you relieve stress?)"
+    ]
+  },
+  {
+    "id": "ent_1",
+    "title": "Favorite Movies & Cinema Trends",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Entertainment",
+    "subCategory": "Movies",
+    "icon": "🎬",
+    "scenario": "You are meeting a film enthusiast chatting about recent blockbusters and favorite directors.",
+    "starterPrompt": "Hey! What is the latest movie or series you watched that completely blew your mind?",
+    "starterQuestions": [
+      "Do you prefer sci-fi, comedy, or thriller films?",
+      "Do you enjoy watching in theatres or at home?"
+    ]
+  },
+  {
+    "id": "ent_2",
+    "title": "Gaming & Esports: PC vs Console",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Entertainment",
+    "subCategory": "Gaming",
+    "icon": "🎮",
+    "scenario": "You are talking with a fellow gamer about favorite multiplayer games and story-driven campaigns.",
+    "starterPrompt": "What games have you been playing lately? Do you prefer gaming on PC, PlayStation, or mobile?",
+    "starterQuestions": [
+      "What was the most memorable game from your childhood?",
+      "Do you watch esports tournaments?"
+    ]
+  },
+  {
+    "id": "ent_3",
+    "title": "Music Festivals & Musical Taste",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Entertainment",
+    "subCategory": "Music",
+    "icon": "🎵",
+    "scenario": "You are having a fun conversation with a friend about music genres and favorite live concerts.",
+    "starterPrompt": "I always have music playing in my headphones! What kind of music gets you into the best mood?",
+    "starterQuestions": [
+      "Have you ever been to a live concert or music festival?",
+      "Can you play any musical instruments?"
+    ]
+  },
+  {
+    "id": "ent_4",
+    "title": "Discussing Anime & Manga Favorites",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Entertainment",
+    "subCategory": "Anime",
+    "icon": "⛩️",
+    "scenario": "You are talking with an Akihabara anime fan about legendary anime series and manga.",
+    "starterPrompt": "日本のアニメやマンガはお好きですか？一番好きな作品は何ですか？ (Do you like Japanese anime or manga? What is your favorite series?)",
+    "starterQuestions": [
+      "最近見ているアニメはありますか？ (Is there an anime you are currently watching?)",
+      "秋葉原に行ったことはありますか？ (Have you ever been to Akihabara?)"
+    ]
+  },
+  {
+    "id": "ent_5",
+    "title": "K-Pop Music & K-Drama Favorites",
+    "language": "Korean",
+    "level": "Beginner",
+    "category": "Entertainment",
+    "subCategory": "K-Culture",
+    "icon": "🎤",
+    "scenario": "You are chatting with a university student in Seoul about K-pop idols and trending Korean dramas.",
+    "starterPrompt": "혹시 좋아하는 K-POP 아이돌이나 한국 드라마가 있으신가요? (Do you happen to have a favorite K-pop idol or Korean drama?)",
+    "starterQuestions": [
+      "한국 노래 중에 자주 듣는 곡이 있나요? (Is there a Korean song you listen to often?)",
+      "한국 문화에 관심 갖게 된 계기가 무엇인가요? (How did you get interested in Korean culture?)"
+    ]
+  },
+  {
+    "id": "dl_1",
+    "title": "Clothes Shopping & Trying on Sizes",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Daily Life",
+    "subCategory": "Shopping",
+    "icon": "🛍️",
+    "scenario": "You are in a fashion retail store asking the shop assistant for sizes and trying clothes in the fitting room.",
+    "starterPrompt": "Hi there! Looking for anything in particular today? We have a great summer collection over here.",
+    "starterQuestions": [
+      "What size do you usually wear?",
+      "Would you like to try that on in the fitting room?"
+    ]
+  },
+  {
+    "id": "dl_2",
+    "title": "Visiting the Doctor: Describing Symptoms",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Daily Life",
+    "subCategory": "Health",
+    "icon": "🩺",
+    "scenario": "You are visiting a clinic and explaining how you feel to a caring medical doctor.",
+    "starterPrompt": "Good afternoon. Please have a seat. What seems to be bothering you today?",
+    "starterQuestions": [
+      "How long have you had this fever or headache?",
+      "Are you currently taking any prescription medications?"
+    ]
+  },
+  {
+    "id": "dl_3",
+    "title": "At the Pharmacy: Buying Medicine",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Daily Life",
+    "subCategory": "Pharmacy",
+    "icon": "💊",
+    "scenario": "You are talking to a pharmacist asking for advice on allergy or pain relief tablets.",
+    "starterPrompt": "Hello! How can I help you at the pharmacy counter today?",
+    "starterQuestions": [
+      "Do you have a doctor's prescription?",
+      "Do these tablets cause any drowsiness?"
+    ]
+  },
+  {
+    "id": "dl_4",
+    "title": "Hair Salon: Getting a Fresh Haircut",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Daily Life",
+    "subCategory": "Salon",
+    "icon": "💇",
+    "scenario": "You are sitting in the barber or salon chair discussing how short you want your hair styled.",
+    "starterPrompt": "Hey! Welcome to the salon. How are we doing your hair today — just a trim or a totally new style?",
+    "starterQuestions": [
+      "How short would you like the sides?",
+      "Do you use styling wax or gel?"
+    ]
+  },
+  {
+    "id": "dl_5",
+    "title": "Shopping at a Japanese Convenience Store (Konbini)",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Daily Life",
+    "subCategory": "Shopping",
+    "icon": "🏪",
+    "scenario": "You are paying for bento and drinks at a 7-Eleven or Lawson in Tokyo.",
+    "starterPrompt": "いらっしゃいませ！お弁当は温めますか？ (Welcome! Would you like me to heat up your bento?)",
+    "starterQuestions": [
+      "お箸は何膳おつけしますか？ (How many pairs of chopsticks would you like?)",
+      "レジ袋はご利用ですか？ (Would you like a plastic bag?)"
+    ]
+  },
+  {
+    "id": "dl_6",
+    "title": "Buying Cosmetics in Myeongdong, Seoul",
+    "language": "Korean",
+    "level": "Beginner",
+    "category": "Daily Life",
+    "subCategory": "Shopping",
+    "icon": "💄",
+    "scenario": "You are browsing skincare and face masks with a friendly shop assistant in Seoul.",
+    "starterPrompt": "어서오세요 고객님! 요즘 환절기라 수분 크림이랑 마스크팩이 인기인데, 피부 타입이 어떻게 되세요? (Welcome! What is your skin type?)",
+    "starterQuestions": [
+      "선물용이신가요, 직접 쓰실 건가요? (Is this a gift, or for yourself?)",
+      "테스트 한번 해보시겠어요? (Would you like to try a sample?)"
+    ]
+  },
+  {
+    "id": "tech_1",
+    "title": "Artificial Intelligence & Future of Work",
+    "language": "English",
+    "level": "Advanced",
+    "category": "Tech",
+    "subCategory": "AI",
+    "icon": "🤖",
+    "scenario": "You are having a deep intellectual debate on how AI models and robotics will reshape human jobs.",
+    "starterPrompt": "AI is accelerating faster than anyone anticipated. In your view, will AI help workers or displace them?",
+    "starterQuestions": [
+      "What jobs do you think are impossible to automate?",
+      "Are you excited or nervous about AGI?"
+    ]
+  },
+  {
+    "id": "tech_2",
+    "title": "Space Exploration & Colonizing Mars",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Tech",
+    "subCategory": "Space",
+    "icon": "🚀",
+    "scenario": "You are discussing rocket technology, space tourism, and lunar bases with an aerospace enthusiast.",
+    "starterPrompt": "If you were offered a one-way ticket to travel and live on Mars, would you take it?",
+    "starterQuestions": [
+      "Why do humans have such a deep drive to explore space?",
+      "What is your favorite space mission?"
+    ]
+  },
+  {
+    "id": "tech_3",
+    "title": "Smartphone Addiction vs Digital Detox",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Tech",
+    "subCategory": "Digital Life",
+    "icon": "📱",
+    "scenario": "You are discussing screen time habits and social media impact with a lifestyle writer.",
+    "starterPrompt": "Almost everyone checks their phone first thing in the morning! How many hours of screen time do you average daily?",
+    "starterQuestions": [
+      "Have you ever tried doing a 24-hour digital detox?",
+      "Which app consumes most of your time?"
+    ]
+  },
+  {
+    "id": "soc_1",
+    "title": "First Day at a Global Language Exchange Meetup",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Social",
+    "subCategory": "Meetup",
+    "icon": "👋",
+    "scenario": "You just arrived at a casual international networking meetup and are breaking the ice with a fellow attendee.",
+    "starterPrompt": "Hey there! Mind if I join you? What brings you out to this language exchange tonight?",
+    "starterQuestions": [
+      "Where are you originally from?",
+      "What languages are you currently learning?"
+    ]
+  },
+  {
+    "id": "soc_2",
+    "title": "Talking About Weekend Plans & Relaxation",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Social",
+    "subCategory": "Weekend",
+    "icon": "🌴",
+    "scenario": "It is Friday afternoon and a coworker asks what exciting things you have planned for the weekend.",
+    "starterPrompt": "Finally, Friday is here! Do you have any exciting plans lined up for the weekend?",
+    "starterQuestions": [
+      "Do you prefer staying home relaxing or going outdoors?",
+      "What is your ideal Sunday morning?"
+    ]
+  },
+  {
+    "id": "soc_3",
+    "title": "Self Introduction in Tokyo (自己紹介)",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Social",
+    "subCategory": "Introduction",
+    "icon": "🌸",
+    "scenario": "You are introducing yourself at a Japanese language conversation club in Tokyo.",
+    "starterPrompt": "初めまして！自己紹介をお願いできますか？お名前と、日本語を勉強している理由を教えてください！ (Nice to meet you! Could you please introduce yourself?)",
+    "starterQuestions": [
+      "日本で一番行きたい場所はどこですか？ (Where in Japan do you want to visit most?)",
+      "普段の休日は何をしていますか？ (What do you usually do on days off?)"
+    ]
+  },
+  {
+    "id": "soc_4",
+    "title": "Making Friends in Seoul (친구 사귀기)",
+    "language": "Korean",
+    "level": "Beginner",
+    "category": "Social",
+    "subCategory": "Introduction",
+    "icon": "🤝",
+    "scenario": "You are chatting with a friendly Korean peer at an international language meetup.",
+    "starterPrompt": "반가워요! 한국어 공부한 지 얼마나 되셨어요? (Nice to meet you! How long have you been studying Korean?)",
+    "starterQuestions": [
+      "취미가 무엇인가요? (What are your hobbies?)",
+      "한국 음식 중에 매운 것도 잘 드세요? (Can you eat spicy Korean food well?)"
+    ]
+  },
+  {
+    "id": "spn_1",
+    "title": "Ordering Tapas & Paella in Madrid",
+    "language": "Spanish",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "Restaurant",
+    "icon": "🥘",
+    "scenario": "You are ordering dinner at a traditional tavern in central Madrid.",
+    "starterPrompt": "¡Hola! Bienvenidos a nuestra taberna. ¿Qué tapas les apetece probar hoy?",
+    "starterQuestions": [
+      "¿Prefieren paella de mariscos o mixta?",
+      "¿Desean una jarra de sangría o agua con gas?"
+    ]
+  },
+  {
+    "id": "spn_2",
+    "title": "Hotel Check-In in Barcelona",
+    "language": "Spanish",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Hotel",
+    "icon": "🏨",
+    "scenario": "You are checking into your boutique hotel on Las Ramblas.",
+    "starterPrompt": "¡Buenas tardes! Bienvenido al Hotel Ramblas. ¿Tiene una reserva a su nombre?",
+    "starterQuestions": [
+      "¿Desea una habitación con balcón o vista al jardín?",
+      "¿A qué hora le gustaría tomar el desayuno?"
+    ]
+  },
+  {
+    "id": "spn_3",
+    "title": "Job Interview in Spanish (Entrevista de Trabajo)",
+    "language": "Spanish",
+    "level": "Intermediate",
+    "category": "Career",
+    "subCategory": "Interview",
+    "icon": "💼",
+    "scenario": "You are interviewing for a professional position at a Spanish company.",
+    "starterPrompt": "¡Hola! Gracias por venir a la entrevista. Para comenzar, ¿podría contarme un poco sobre usted?",
+    "starterQuestions": [
+      "¿Cuáles son sus mayores fortalezas profesionales?",
+      "¿Por qué le gustaría trabajar con nosotros?"
+    ]
+  },
+  {
+    "id": "spn_4",
+    "title": "Talking About Football & El Clásico",
+    "language": "Spanish",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Football",
+    "icon": "⚽",
+    "scenario": "You are discussing Spanish football with a passionate fan in Madrid.",
+    "starterPrompt": "¡Qué partido tan emocionante el fin de semana! ¿Quién es tu equipo favorito en La Liga?",
+    "starterQuestions": [
+      "¿Crees que el Real Madrid o el Barcelona ganarán la liga este año?",
+      "¿Juegas fútbol los fines de semana?"
+    ]
+  },
+  {
+    "id": "ar_1",
+    "title": "Ordering Shawarma & Fresh Juice in Cairo",
+    "language": "Arabic",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "Street Food",
+    "icon": "🥙",
+    "scenario": "You are ordering fresh food at a famous restaurant in downtown Cairo.",
+    "starterPrompt": "أهلاً وسهلاً بك! ماذا تحب أن تطلب اليوم؟ لدينا شاورما لحم ودجاج طازجة ولذيذة!",
+    "starterQuestions": [
+      "هل تحب إضافة صوص الطحينة والثوم؟",
+      "هل ترغب في عصير مانجو أو برتقال طازج؟"
+    ]
+  },
+  {
+    "id": "ar_2",
+    "title": "Airport Check-In in Dubai (مطار دبي)",
+    "language": "Arabic",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Airport",
+    "icon": "✈️",
+    "scenario": "You are checking in at Dubai International Airport with the counter agent.",
+    "starterPrompt": "مرحباً بك في دبي! هل يمكنني رؤية جواز سفرك وتذكرة الطيران من فضلك؟",
+    "starterQuestions": [
+      "كم حقيبة ترغب في شحنها اليوم؟",
+      "هل تفضل مقعداً بجانب النافذة أم في الممر؟"
+    ]
+  },
+  {
+    "id": "ar_3",
+    "title": "Casual Meeting & Arabic Coffee (تعارف وقهوة)",
+    "language": "Arabic",
+    "level": "Beginner",
+    "category": "Social",
+    "subCategory": "Introduction",
+    "icon": "☕",
+    "scenario": "You are meeting an Arabic-speaking acquaintance at a cafe.",
+    "starterPrompt": "السلام عليكم ورحمة الله! تشرفت بلقائك اليوم. كيف حالك وما هي أخبارك؟",
+    "starterQuestions": [
+      "منذ متى وأنت تتعلم اللغة العربية؟",
+      "ما هي هواياتك المفضلة في أوقات الفراغ؟"
+    ]
+  },
+  {
+    "id": "ar_4",
+    "title": "Job Interview in Arabic (مقابلة عمل)",
+    "language": "Arabic",
+    "level": "Intermediate",
+    "category": "Career",
+    "subCategory": "Interview",
+    "icon": "🏢",
+    "scenario": "You are attending a job interview with a regional director in Riyadh.",
+    "starterPrompt": "أهلاً وسهلاً بك في شركتنا. هل يمكنك أن تعطينا نبذة مختصرة عن نفسك وخبرتك؟",
+    "starterQuestions": [
+      "ما هي أهم إنجازاتك في وظيفتك السابقة؟",
+      "لماذا اخترت التقدم لهذه الوظيفة بالتحديد؟"
+    ]
+  },
+  {
+    "id": "ta_1",
+    "title": "Ordering Dosa & Filter Coffee in Chennai",
+    "language": "Tamil",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "Restaurant",
+    "icon": "☕",
+    "scenario": "You are having breakfast at a popular South Indian restaurant.",
+    "starterPrompt": "வணக்கம்! என்ன சாப்பிடறீங்க? சூடான மசால் தோசையும் பில்டர் காப்பியும் ரெடியா இருக்கு!",
+    "starterQuestions": [
+      "தேங்காய் சட்னி, காரச் சட்னி வைக்கட்டுமா?",
+      "காப்பில சர்க்கரை கம்மியா போடட்டுமா?"
+    ]
+  },
+  {
+    "id": "ta_2",
+    "title": "Taking an Auto-Rickshaw (Tuk-Tuk) in Colombo",
+    "language": "Tamil",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Transport",
+    "icon": "🛺",
+    "scenario": "You are hiring an auto-rickshaw to travel across town.",
+    "starterPrompt": "வணக்கம் அண்ணா! எங்க போகணும்? மீட்டர் போடுறேன், வாங்க ஏறுங்க!",
+    "starterQuestions": [
+      "கொழும்பு போர்ட் பக்கமா, இல்ல வெள்ளவத்தையா?",
+      "டிராபிக் அதிகமா இருக்கு, மெயின் ரோடு வழியா போகலாமா?"
+    ]
+  },
+  {
+    "id": "ta_3",
+    "title": "Talking About Cricket: World Cup & IPL",
+    "language": "Tamil",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Cricket",
+    "icon": "🏏",
+    "scenario": "You are chatting passionately about cricket and favorite players with a friend.",
+    "starterPrompt": "வணக்கம் நண்பா! நேத்து மேட்ச் பாத்தீங்களா? கடைசி ஓவர் வரைக்கும் பயங்கர திரில்லிங்கா போச்சு!",
+    "starterQuestions": [
+      "உங்களுக்கு பிடிச்ச கிரிக்கெட் பிளேயர் யார்?",
+      "இந்த வருஷம் யார் கோப்பையை வெல்வாங்கன்னு நினைக்கிறீங்க?"
+    ]
+  },
+  {
+    "id": "ta_4",
+    "title": "Tech Job Interview in Tamil (நேர்காணல்)",
+    "language": "Tamil",
+    "level": "Intermediate",
+    "category": "Career",
+    "subCategory": "Interview",
+    "icon": "💼",
+    "scenario": "You are having a professional job interview in Tamil.",
+    "starterPrompt": "வணக்கம்! நேர்காணலுக்கு வந்ததுக்கு நன்றி. உங்களைப் பத்தியும் உங்க வேலை அனுபவம் பத்தியும் கொஞ்சம் சொல்லுங்க.",
+    "starterQuestions": [
+      "உங்களுடைய பலம் மற்றும் லட்சியம் என்ன?",
+      "எங்க நிறுவனத்தில் சேர விரும்புவதற்கு காரணம் என்ன?"
+    ]
+  },
+  {
+    "id": "jp_9",
+    "title": "Sumo Wrestling Tournament in Ryogoku",
+    "language": "Japanese",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Sumo",
+    "icon": "🤼",
+    "scenario": "You are watching the Grand Sumo Tournament at Ryogoku Kokugikan in Tokyo.",
+    "starterPrompt": "こんにちは！国技館の熱気はすごいですね！大相撲を見るのは初めてですか？お気に入りの力士はいますか？",
+    "starterQuestions": [
+      "横綱の取組が楽しみですね！",
+      "ちゃんこ鍋を食べに行きませんか？"
+    ]
+  },
+  {
+    "id": "jp_10",
+    "title": "Climbing Mount Fuji: Trail Advice",
+    "language": "Japanese",
+    "level": "Intermediate",
+    "category": "Travel",
+    "subCategory": "Adventure",
+    "icon": "🗻",
+    "scenario": "You are discussing climbing routes and gear at a Mount Fuji mountain lodge.",
+    "starterPrompt": "お疲れ様です！富士山頂までの道のりは順調ですか？ご来光（朝日）を見る予定ですか？",
+    "starterQuestions": [
+      "高山病の症状は大丈夫ですか？",
+      "どのルートから登ってきましたか？"
+    ]
+  },
+  {
+    "id": "jp_11",
+    "title": "Sushi Bar Omakase in Ginza",
+    "language": "Japanese",
+    "level": "Intermediate",
+    "category": "Food",
+    "subCategory": "Sushi",
+    "icon": "🍣",
+    "scenario": "You are seated at an authentic Ginza sushi counter ordering omakase from the master chef.",
+    "starterPrompt": "いらっしゃいませ。本日の一番おすすめは豊洲直送の本マグロです。わさびはお入れしてよろしいですか？",
+    "starterQuestions": [
+      "苦手なネタやアレルギーはございますか？",
+      "赤身と中トロ、どちらがお好みですか？"
+    ]
+  },
+  {
+    "id": "jp_12",
+    "title": "Izakaya Night: Ordering Yakitori & Drinks",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "Izakaya",
+    "icon": "🍶",
+    "scenario": "You are enjoying an evening dinner with coworkers at a lively Japanese pub.",
+    "starterPrompt": "お疲れ様でした！とりあえず生ビールで乾杯しましょうか？焼き鳥はタレと塩、どちらにしますか？",
+    "starterQuestions": [
+      "おすすめの枝豆と唐揚げも頼みますか？",
+      "日本酒もお試しになりますか？"
+    ]
+  },
+  {
+    "id": "jp_13",
+    "title": "Renting a Kimono in Gion, Kyoto",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Culture",
+    "icon": "👘",
+    "scenario": "You are selecting and renting a traditional kimono for a stroll around Kyoto shrines.",
+    "starterPrompt": "いらっしゃいませ！京都の散策にぴったりの着物が揃っていますよ。どんな色や柄がお好みですか？",
+    "starterQuestions": [
+      "帯の色はどちらを合わせましょうか？",
+      "草履や巾着バッグも選びますか？"
+    ]
+  },
+  {
+    "id": "jp_14",
+    "title": "Job Interview at a Tokyo Tech Startup",
+    "language": "Japanese",
+    "level": "Advanced",
+    "category": "Career",
+    "subCategory": "Interview",
+    "icon": "💼",
+    "scenario": "You are interviewing for a software engineering position in Tokyo.",
+    "starterPrompt": "本日は面接にお越しいただきありがとうございます。まずは簡単に自己紹介と職務経歴をお願いできますか？",
+    "starterQuestions": [
+      "弊社のプロダクトに興味を持った理由は何ですか？",
+      "あなたの最大の強みとこれまでの実績を教えてください。"
+    ]
+  },
+  {
+    "id": "jp_15",
+    "title": "Asking for Directions in Shibuya Scramble",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Daily Life",
+    "subCategory": "Directions",
+    "icon": "🚦",
+    "scenario": "You are asking a friendly Tokyo local for directions to Shibuya Sky observatory.",
+    "starterPrompt": "すみません、道に迷ってしまったようですね！どちらに行きたいですか？渋谷スカイの展望台ですか？",
+    "starterQuestions": [
+      "ハチ公口の改札から行きますか？",
+      "エレベーターの場所をご案内しましょうか？"
+    ]
+  },
+  {
+    "id": "jp_16",
+    "title": "Visiting a Shinto Shrine: Temizuya & Prayers",
+    "language": "Japanese",
+    "level": "Intermediate",
+    "category": "Social",
+    "subCategory": "Tradition",
+    "icon": "⛩️",
+    "scenario": "A Japanese friend is showing you how to wash hands at temizuya and pray (2 bows, 2 claps, 1 bow).",
+    "starterPrompt": "神社へようこそ！お参りの前に手水舎で手と口を清めましょう。二礼二拍手一礼のやり方を知っていますか？",
+    "starterQuestions": [
+      "おみくじを引いて運勢を占ってみますか？",
+      "絵馬に願い事を書いてみますか？"
+    ]
+  },
+  {
+    "id": "jp_17",
+    "title": "Singing Karaoke with Friends in Shinjuku",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Entertainment",
+    "subCategory": "Karaoke",
+    "icon": "🎤",
+    "scenario": "You are at a karaoke box in Shinjuku picking songs and ordering drinks.",
+    "starterPrompt": "カラオケルームに到着しました！飲み放題にしますか？最初に歌いたい曲は決まりましたか？",
+    "starterQuestions": [
+      "J-POPやアニメソングは歌えますか？",
+      "デンモク（タッチパネル）で曲を入れましょうか？"
+    ]
+  },
+  {
+    "id": "jp_18",
+    "title": "Doctor Visit: Describing Cold & Fever Symptoms",
+    "language": "Japanese",
+    "level": "Intermediate",
+    "category": "Daily Life",
+    "subCategory": "Health",
+    "icon": "🏥",
+    "scenario": "You are explaining your symptoms to a doctor at a Tokyo medical clinic.",
+    "starterPrompt": "こんにちは。今日はどうされましたか？いつから熱や咳の症状がありますか？",
+    "starterQuestions": [
+      "喉の痛みや頭痛はありますか？",
+      "お薬のアレルギーはございますか？"
+    ]
+  },
+  {
+    "id": "jp_19",
+    "title": "Buying Souvenirs (Omiyage) at Haneda Airport",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Shopping",
+    "icon": "🎁",
+    "scenario": "You are shopping for popular Japanese snacks like Tokyo Banana and matcha sweets before flight.",
+    "starterPrompt": "東京のお土産はいかがですか？東京ばな奈や抹茶のお菓子が一番人気ですよ。プレゼント用にお包みしますか？",
+    "starterQuestions": [
+      "賞味期限はいつまでかご確認しますか？",
+      "免税手続き（Tax Free）をご利用ですか？"
+    ]
+  },
+  {
+    "id": "jp_20",
+    "title": "Japanese Tea Ceremony (Sadou) & Matcha",
+    "language": "Japanese",
+    "level": "Advanced",
+    "category": "Social",
+    "subCategory": "Culture",
+    "icon": "🍵",
+    "scenario": "You are attending a serene traditional matcha tea ceremony with a tea master in Kyoto.",
+    "starterPrompt": "一期一会の茶会へようこそ。まずは季節の和菓子をお召し上がりください。お茶の味はいかがですか？",
+    "starterQuestions": [
+      "茶碗を二度回す作法をご知っていますか？",
+      "お抹茶のほろ苦さと甘い和菓子の組み合わせはいかがですか？"
+    ]
+  },
+  {
+    "id": "es_8",
+    "title": "Ordering Tapas & Paella at a Madrid Plaza",
+    "language": "Spanish",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "Tapas",
+    "icon": "🥘",
+    "scenario": "You are sitting at an outdoor terrace in Plaza Mayor, Madrid, ordering delicious tapas, sangría, and seafood paella.",
+    "starterPrompt": "¡Buenas tardes! Bienvenido a nuestra terraza en Madrid. ¿Le gustaría empezar con unas tapas de jamón ibérico o prefiere ver la carta de paellas?",
+    "starterQuestions": [
+      "¿Tienen opciones vegetarianas?",
+      "¿Qué paella me recomienda el chef?"
+    ]
+  },
+  {
+    "id": "es_9",
+    "title": "El Clásico & Football Passion in Barcelona",
+    "language": "Spanish",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Fútbol",
+    "icon": "⚽",
+    "scenario": "You are discussing the exciting El Clásico derby with a passionate Spanish football supporter at a sports bar.",
+    "starterPrompt": "¡Hola amigo! El partido de anoche estuvo increíble. ¿A qué equipo apoyas en La Liga, al Real Madrid o al Barcelona?",
+    "starterQuestions": [
+      "¿Quién crees que ganará el campeonato este año?",
+      "¿Cuál es tu jugador histórico favorito?"
+    ]
+  },
+  {
+    "id": "es_10",
+    "title": "Checking In at an Andalusian Boutique Hotel",
+    "language": "Spanish",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Hotel",
+    "icon": "🏨",
+    "scenario": "You have just arrived at a historic hotel in Seville and are checking into your room with the receptionist.",
+    "starterPrompt": "¡Bienvenido a Sevilla! Tengo una reserva confirmada a su nombre. ¿Desea una habitación con vista al patio andaluz?",
+    "starterQuestions": [
+      "¿A qué hora se sirve el desayuno?",
+      "¿Podría ayudarme con recomendaciones para ver un espectáculo de flamenco?"
+    ]
+  },
+  {
+    "id": "es_11",
+    "title": "Job Interview for a Bilingual Tech Consultant",
+    "language": "Spanish",
+    "level": "Advanced",
+    "category": "Career",
+    "subCategory": "Entrevista",
+    "icon": "💼",
+    "scenario": "You are interviewing for an international tech consultancy position with a hiring manager in Mexico City.",
+    "starterPrompt": "Estimado candidato, gracias por conectarse. Cuéntenos, ¿cuál ha sido el proyecto tecnológico más desafiante que ha liderado con éxito?",
+    "starterQuestions": [
+      "¿Cómo gestiona equipos multiculturales y remotos?",
+      "¿Qué metodologías ágiles utiliza en su día a día?"
+    ]
+  },
+  {
+    "id": "es_12",
+    "title": "Exploring AI Innovations & Hispanic Tech Startups",
+    "language": "Spanish",
+    "level": "Intermediate",
+    "category": "Tech",
+    "subCategory": "Tecnología",
+    "icon": "🤖",
+    "scenario": "You are having a forward-looking conversation about artificial intelligence and voice coaches at an innovation summit.",
+    "starterPrompt": "¡Qué tal! La inteligencia artificial está transformando la educación y la comunicación. ¿Cómo cree que la IA híbrida mejorará el aprendizaje de idiomas?",
+    "starterQuestions": [
+      "¿Qué herramientas de IA utiliza regularmente?",
+      "¿Cree que la voz reemplazará a las pantallas en el futuro?"
+    ]
+  },
+  {
+    "id": "kr_11",
+    "title": "Korean BBQ (Samgyeopsal) & Table Etiquette",
+    "language": "Korean",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "K-Food",
+    "icon": "🥩",
+    "scenario": "You are grilling pork belly (samgyeopsal) with a Korean friend at a lively Seoul BBQ restaurant.",
+    "starterPrompt": "어서오세요! 삼겹살 2인분 먼저 올려드릴게요. 쌈장과 마늘 넣어서 쌈 싸 드시는 법 아시나요? (Welcome! I will put on 2 servings of pork belly. Do you know how to wrap it with ssamjang and garlic?)",
+    "starterQuestions": [
+      "된장찌개나 냉면도 같이 주문할까요?",
+      "한국 음식 중에 가장 좋아하는 게 무엇인가요?"
+    ]
+  },
+  {
+    "id": "kr_12",
+    "title": "Riding the KTX Bullet Train to Busan",
+    "language": "Korean",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "KTX",
+    "icon": "🚅",
+    "scenario": "You are boarding the high-speed KTX train at Seoul Station headed for Haeundae Beach in Busan.",
+    "starterPrompt": "부산행 KTX 열차에 탑승하셨군요! 창가 쪽 좌석이 편안하신가요? 부산에 도착하면 가장 먼저 어디에 가실 계획이신가요? (You boarded the KTX to Busan! Is your window seat comfortable? Where do you plan to go first when you arrive in Busan?)",
+    "starterQuestions": [
+      "해운대 해수욕장이나 자갈치 시장에 가보셨나요?",
+      "기차 안에서 먹을 간식을 사셨나요?"
+    ]
+  },
+  {
+    "id": "kr_13",
+    "title": "Job Interview at a Pangyo Tech Valley Startup",
+    "language": "Korean",
+    "level": "Advanced",
+    "category": "Career",
+    "subCategory": "면접",
+    "icon": "💼",
+    "scenario": "You are having an interview for an AI software engineering position in South Korea's Pangyo Silicon Valley.",
+    "starterPrompt": "판교 테크노밸리 면접에 참석해 주셔서 감사합니다. 지원자님께서 최근에 개발하신 인공지능 프로젝트 경험에 대해 말씀해 주시겠어요? (Thank you for attending the Pangyo Techno Valley interview. Could you tell us about your recent AI project experience?)",
+    "starterQuestions": [
+      "협업 과정에서 발생한 기술적 문제를 어떻게 해결하셨나요?",
+      "입사 후 어떤 기여를 하고 싶으신가요?"
+    ]
+  },
+  {
+    "id": "kr_14",
+    "title": "Visiting a Traditional Hanok Cafe in Bukchon",
+    "language": "Korean",
+    "level": "Intermediate",
+    "category": "Social",
+    "subCategory": "Cafe",
+    "icon": "☕",
+    "scenario": "You are relaxing in a serene Bukchon Hanok village tea house chatting about Korean culture and architecture.",
+    "starterPrompt": "북촌 한옥마을 분위기가 정말 고즈넉하죠? 따뜻한 오미자차 한 잔 어떠세요? 한국 전통 가옥에 대해 어떻게 생각하시나요? (The Bukchon Hanok village atmosphere is so tranquil, right? How about a warm Omija tea? What do you think of traditional Korean houses?)",
+    "starterQuestions": [
+      "한국 전통 다과인 약과나 한과를 드셔보셨나요?",
+      "서울에서 가장 마음에 드는 명소는 어디인가요?"
+    ]
+  },
+  {
+    "id": "kr_15",
+    "title": "Fitness Routine & Gym Training in Gangnam",
+    "language": "Korean",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "헬스",
+    "icon": "🏋️",
+    "scenario": "You are discussing workout split routines and health goals with a friendly personal trainer in Gangnam.",
+    "starterPrompt": "안녕하세요! 강남 피트니스 센터에 오신 것을 환영합니다. 평소에 웨이트 트레이닝과 유산소 운동 중 어떤 것을 즐겨 하시나요? (Hello! Welcome to the Gangnam Fitness Center. Do you usually enjoy weight training or cardio more?)",
+    "starterQuestions": [
+      "하루에 물과 단백질을 얼마나 섭취하시나요?",
+      "달성하고 싶은 구체적인 체력 목표가 있으신가요?"
+    ]
+  },
+  {
+    "id": "ar_7",
+    "title": "Traditional Shawarma & Arabic Coffee (Qahwa)",
+    "language": "Arabic",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "مطاعم",
+    "icon": "☕",
+    "scenario": "You are ordering hot Arabic shawarma with garlic toum and cardamom-infused Arabic coffee at a popular cafe.",
+    "starterPrompt": "أهلاً وسهلاً بك في مطعمنا! هل تفضل شاورما الدجاج أم شاورما اللحم مع صلصة الثوم؟ وما رأيك في فنجان قهوة عربية بالهيل؟",
+    "starterQuestions": [
+      "هل تحب الأطباق العربية التقليدية مثل الحمص والتبولة؟",
+      "هل تفضل القهوة بسكر خفيف أم بدون سكر؟"
+    ]
+  },
+  {
+    "id": "ar_8",
+    "title": "Navigating Dubai International Airport & Metro",
+    "language": "Arabic",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "سفر",
+    "icon": "✈️",
+    "scenario": "You are asking customer service at Dubai Airport about connecting baggage and the Dubai Metro Red Line.",
+    "starterPrompt": "مرحباً بك في دبي! كيف يمكنني مساعدتك في رحلتك اليوم؟ هل تبحث عن بوابة المغادرة أم تريد ركوب مترو دبي؟",
+    "starterQuestions": [
+      "كم من الوقت يستغرق الوصول إلى برج خليفة؟",
+      "أين يمكنني شراء بطاقة نول (Nol Card) للمترو؟"
+    ]
+  },
+  {
+    "id": "ar_9",
+    "title": "Football Passion & World Cup Memories",
+    "language": "Arabic",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "كرة القدم",
+    "icon": "⚽",
+    "scenario": "You are chatting with an enthusiastic Arab sports fan about historic World Cup matches and local football leagues.",
+    "starterPrompt": "يا هلا والله! كرة القدم هي شغف الملايين في العالم العربي. ما هي أفضل مباراة شاهدتها في كأس العالم؟",
+    "starterQuestions": [
+      "من هو أفضل لاعب عربي في رأيك، محمد صلاح أم رياض محرز؟",
+      "هل تتابع الدوري الإنجليزي الممتاز؟"
+    ]
+  },
+  {
+    "id": "ar_10",
+    "title": "Business Meeting & Tech Startup Pitch",
+    "language": "Arabic",
+    "level": "Advanced",
+    "category": "Career",
+    "subCategory": "أعمال",
+    "icon": "💼",
+    "scenario": "You are presenting an AI innovation project to Arab business executives and investors in Riyadh.",
+    "starterPrompt": "السلام عليكم ورحمة الله. يشرفنا لقاؤك اليوم لبحث فرص الاستثمار والابتكار في مجال الذكاء الاصطناعي. تفضل بتقديم عرضك.",
+    "starterQuestions": [
+      "ما هي الميزة التنافسية لمنتجك في السوق الخليجي؟",
+      "كيف تخطط لتوسيع نموذج أعمالك خلال العامين القادمين؟"
+    ]
+  },
+  {
+    "id": "ar_11",
+    "title": "Shopping for Spices & Perfumes at the Souq",
+    "language": "Arabic",
+    "level": "Intermediate",
+    "category": "Daily Life",
+    "subCategory": "تسوق",
+    "icon": "🛍️",
+    "scenario": "You are browsing a historic old town market (Souq) bargaining for saffron, oud perfume, and dates.",
+    "starterPrompt": "يا هلا ومرحبا! تفضل جرب هذا العود الملكي المميز وزعفران الدرجة الأولى. ما الذي تبحث عنه اليوم؟",
+    "starterQuestions": [
+      "كم سعر هذا العطر التراثي؟",
+      "هل يمكن أن تقدم لي تخفيضاً مناسباً إذا اشتريت كمية أكبر؟"
+    ]
+  },
+  {
+    "id": "ta_7",
+    "title": "Crispy Ghee Roast Dosa & Filter Coffee",
+    "language": "Tamil",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "உணவு",
+    "icon": "☕",
+    "scenario": "You are enjoying morning breakfast at a bustling Chennai restaurant ordering hot ghee roast and filter coffee.",
+    "starterPrompt": "வணக்கம்! காலை உணவு சாப்பிட வந்திருக்கீங்களா? சூடான நெய் ரோஸ்ட் தோசையும் டிகிரி பில்டர் காப்பியும் கொண்டு வரவா?",
+    "starterQuestions": [
+      "சாம்பார், தக்காளி சட்னி, தேங்காய் சட்னி எல்லாம் பிடிக்குமா?",
+      "உங்களுக்கு தமிழ்நாட்டு உணவுகளில் எது ரொம்ப பிடிக்கும்?"
+    ]
+  },
+  {
+    "id": "ta_8",
+    "title": "Chennai Super Kings (CSK) & IPL Passion",
+    "language": "Tamil",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "கிரிக்கெட்",
+    "icon": "🏏",
+    "scenario": "You are having an energetic chat with a die-hard cricket fan about Chepauk Stadium and CSK matches.",
+    "starterPrompt": "விசில் போடு! சேப்பாக்கம் மைதானத்தில் சிஎஸ்கே (CSK) மேட்ச் பார்க்க போறது எப்பவுமே சிலிர்ப்பா இருக்கும். உங்களுக்கு தோனி பிடிக்குமா?",
+    "starterQuestions": [
+      "இந்த சீசன்ல கப் ஜெயிக்க வாய்ப்பு யாருக்கு இருக்கு?",
+      "உங்களுக்குப் பிடித்த சிறந்த கிரிக்கெட் வீரர் யார்?"
+    ]
+  },
+  {
+    "id": "ta_9",
+    "title": "Scenic Mountain Train Journey to Ooty",
+    "language": "Tamil",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "பயணம்",
+    "icon": "🚂",
+    "scenario": "You are traveling on the famous Nilgiri Mountain toy train enjoying misty tea gardens and mountain air.",
+    "starterPrompt": "வணக்கம்! நீலகிரி மலை ரயிலில் பயணம் செய்வது எவ்வளவு அருமையா இருக்கு பாருங்க! ஊட்டியில் என்னென்ன இடங்களை பார்க்க போறீங்க?",
+    "starterQuestions": [
+      "தேயிலைத் தோட்டம் மற்றும் ஏரிக்கு போகப் போறீங்களா?",
+      "இந்த மலைப்பயணத்தில் உங்களுக்கு பிடித்த காட்சி எது?"
+    ]
+  },
+  {
+    "id": "ta_10",
+    "title": "Software Engineer Tech Interview at Tidel Park",
+    "language": "Tamil",
+    "level": "Advanced",
+    "category": "Career",
+    "subCategory": "நேர்காணல்",
+    "icon": "💼",
+    "scenario": "You are participating in a technical discussion and code review with a senior software architect in Chennai.",
+    "starterPrompt": "வணக்கம், எங்கள் நிறுவனத்தின் தொழில்நுட்ப நேர்காணலுக்கு நல்வரவு. உங்களுடைய முந்தைய மென்பொருள் திட்டங்கள் பற்றி சுருக்கமாக கூறுங்கள்.",
+    "starterQuestions": [
+      "பெரிய அளவிலான சிஸ்டம் வடிவமைப்பில் நீங்கள் எதிர்கொண்ட சவால் என்ன?",
+      "எங்கள் நிறுவனத்தில் நீங்கள் எந்தப் பிரிவில் பணியாற்ற விரும்புகிறீர்கள்?"
+    ]
+  },
+  {
+    "id": "ta_11",
+    "title": "Shopping for Silk & Festive Wear in T. Nagar",
+    "language": "Tamil",
+    "level": "Beginner",
+    "category": "Daily Life",
+    "subCategory": "ஷாப்பிங்",
+    "icon": "🛍️",
+    "scenario": "You are shopping for traditional silk attire and festive gifts on Chennai's lively shopping streets.",
+    "starterPrompt": "வணக்கம் வாங்க! தீபாவளி மற்றும் விசேஷங்களுக்கு ஏற்ற அழகிய பட்டுப் புடவைகளும் ஆடைகளும் இருக்கு. உங்களுக்கு எந்த நிறம் பிடிக்கும்?",
+    "starterQuestions": [
+      "பாரம்பரிய காஞ்சிபுரம் பட்டு ஆடைகளை பார்க்க விரும்புறீங்களா?",
+      "இதன் தரம் மற்றும் விலை பற்றிய விவரங்கள் சொல்லவா?"
+    ]
+  },
+  {
+    "id": "en_new_1",
+    "title": "Ordering Specialty Coffee from an Artisan Barista",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "Coffee",
+    "icon": "☕",
+    "scenario": "You are visiting a third-wave artisan coffee roastery selecting single-origin beans and brewing style.",
+    "starterPrompt": "Good morning! Welcome to our craft roastery. Are you in the mood for an espresso-based drink like a flat white, or a pour-over brew?",
+    "starterQuestions": [
+      "Do you prefer fruity Ethiopian notes or chocolaty Colombian roasts?",
+      "Would you like oat milk or whole milk with that?"
+    ]
+  },
+  {
+    "id": "en_new_2",
+    "title": "London Underground Tube & City Sightseeing",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Transit",
+    "icon": "🚇",
+    "scenario": "You are navigating the London Underground Tube station asking a transit assistant for line transfers to Big Ben.",
+    "starterPrompt": "Mind the gap! Welcome to central London. Are you trying to reach Westminster for Big Ben, or heading towards the Tower of London?",
+    "starterQuestions": [
+      "Do you have a contactless payment card for the turnstile?",
+      "Would you prefer taking the scenic double-decker bus instead?"
+    ]
+  },
+  {
+    "id": "en_new_3",
+    "title": "Pitching an AI Voice Agent to Silicon Valley Investors",
+    "language": "English",
+    "level": "Advanced",
+    "category": "Career",
+    "subCategory": "Startup Pitch",
+    "icon": "🚀",
+    "scenario": "You are pitching SpeakFlow AI's hybrid on-device voice architecture to venture capital partners in San Francisco.",
+    "starterPrompt": "Thanks for having us! We built SpeakFlow AI to eliminate latency and cloud costs by combining on-device neural TTS with SpeakFlow Neural AI. What metrics would you like us to walk through first?",
+    "starterQuestions": [
+      "How does your hybrid model reduce cloud API expenses at scale?",
+      "What is your customer retention strategy across non-English speaking markets?"
+    ]
+  },
+  {
+    "id": "en_new_4",
+    "title": "NBA Basketball Championship Finals Debate",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Basketball",
+    "icon": "🏀",
+    "scenario": "You are breaking down game-winning buzzer-beaters and playoff predictions with fellow basketball fans.",
+    "starterPrompt": "What an unbelievable fourth quarter comeback last night! Did you see that clutch three-pointer in the final seconds?",
+    "starterQuestions": [
+      "Who do you think deserves the Finals MVP award this season?",
+      "Do you prioritize elite three-point shooting or lock-down defense in playoff games?"
+    ]
+  },
+  {
+    "id": "en_new_5",
+    "title": "The Future of Autonomous AI & Robotics",
+    "language": "English",
+    "level": "Advanced",
+    "category": "Tech",
+    "subCategory": "AI & Robotics",
+    "icon": "🤖",
+    "scenario": "You are having a deep philosophical and technical debate with an AI robotics engineer about artificial general intelligence.",
+    "starterPrompt": "The speed of AI progress over the last two years has been breathtaking. In your view, will humanoid robots become common household companions within this decade?",
+    "starterQuestions": [
+      "What safety guardrails are most critical as autonomous systems advance?",
+      "How will multimodal models transform how humans interact with machines?"
+    ]
+  },
+  {
+    "id": "jp_new_1",
+    "title": "Akihabara Retro Gaming & Anime Collectibles",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Entertainment",
+    "subCategory": "Gaming",
+    "icon": "🎮",
+    "scenario": "You are browsing vintage Nintendo games and anime figures in a multi-story hobby shop in Akihabara, Tokyo.",
+    "starterPrompt": "いらっしゃいませ！秋葉原のレトロゲームコーナーへようこそ。ファミコンやゲームボーイのソフトをお探しですか？",
+    "starterQuestions": [
+      "子どもの頃に遊んだ思い出のゲームは何ですか？",
+      "アニメの限定フィギュアも見ていきますか？"
+    ]
+  },
+  {
+    "id": "jp_new_2",
+    "title": "Selecting Shinkansen Ekiben Lunchbox at Tokyo Station",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Shinkansen",
+    "icon": "🚄",
+    "scenario": "You are choosing a famous regional bento box (Ekiben) before boarding the bullet train to Kyoto.",
+    "starterPrompt": "新幹線のご旅行ですね！駅弁屋では全国のご当地弁当が200種類以上揃っています。海鮮弁当とお肉の弁当、どちらが気になりますか？",
+    "starterQuestions": [
+      "温かいお茶とお手拭きはお付けしますか？",
+      "富士山が見える進行方向右側の座席を予約しましたか？"
+    ]
+  },
+  {
+    "id": "jp_new_3",
+    "title": "Late-Night Tonkotsu Ramen Counter Order",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "Ramen",
+    "icon": "🍜",
+    "scenario": "You are customizing your noodle firmness and broth richness at an authentic Fukuoka-style ramen counter.",
+    "starterPrompt": "へい、いらっしゃい！とんこつラーメンですね。麺の硬さは「かため」「バリカタ」どちらにしましょうか？ニンニクはお入れしますか？",
+    "starterQuestions": [
+      "替え玉（追加の麺）や味付け煮玉子はいかがですか？",
+      "スープの濃さは普通でよろしいですか？"
+    ]
+  },
+  {
+    "id": "food_en_1",
+    "title": "Artisan Pizza & Craft Gelato in Little Italy",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "Italian",
+    "icon": "🍕",
+    "scenario": "You are ordering wood-fired Margherita pizza and authentic pistachio gelato in a lively Italian trattoria.",
+    "starterPrompt": "Welcome to our trattoria! The wood-fired oven is roaring hot. Are you in the mood for our classic Margherita or a spicy diavola pizza today?",
+    "starterQuestions": [
+      "Do you prefer thin crispy crust or Neapolitan style dough?",
+      "Would you like a scoop of artisanal pistachio gelato for dessert?"
+    ]
+  },
+  {
+    "id": "food_en_2",
+    "title": "Burgers, BBQ Ribs & Smokey Brisket at Texas Grill",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "BBQ",
+    "icon": "🍔",
+    "scenario": "You are selecting hickory-smoked ribs, brisket, and custom cheeseburgers at a bustling Texas smokehouse.",
+    "starterPrompt": "Howdy partner! Everything here is smoked low and slow for 14 hours. Would you like a half-rack of ribs or our double brisket smashburger?",
+    "starterQuestions": [
+      "Do you like sweet barbecue sauce or tangy mustard glaze?",
+      "Can I get you sides of mac and cheese or crispy coleslaw?"
+    ]
+  },
+  {
+    "id": "food_en_3",
+    "title": "Michelin Fine Dining & 5-Course Wine Pairing",
+    "language": "English",
+    "level": "Advanced",
+    "category": "Food",
+    "subCategory": "Fine Dining",
+    "icon": "🍷",
+    "scenario": "You are conversing with a distinguished sommelier during an upscale tasting menu dinner.",
+    "starterPrompt": "Good evening. For your second course featuring seared scallops, our sommelier recommends a crisp Chablis. May I pour a taste for you?",
+    "starterQuestions": [
+      "Do you lean towards mineral-driven whites or rich oaky Chardonnays?",
+      "Are there any dietary preferences we should accommodate for dessert?"
+    ]
+  },
+  {
+    "id": "food_en_4",
+    "title": "Sushi Conveyor Belt (Kaitenzushi) Ordering",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "Sushi",
+    "icon": "🍣",
+    "scenario": "You are seated at a bustling conveyor belt sushi bar ordering freshly torched salmon and miso soup.",
+    "starterPrompt": "Welcome! You can grab any color-coded plate from the belt or order fresh rolls directly from the digital screen. What are you craving first?",
+    "starterQuestions": [
+      "Do you like salmon nigiri or spicy tuna rolls?",
+      "Would you like hot green tea or chilled edamame to start?"
+    ]
+  },
+  {
+    "id": "food_en_5",
+    "title": "Vegan Cafe & Gluten-Free Plant-Based Bowls",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Food",
+    "subCategory": "Healthy Food",
+    "icon": "🥗",
+    "scenario": "You are customizing an organic acai bowl with chia seeds and almond butter at an eco-friendly wellness cafe.",
+    "starterPrompt": "Hello there! All our grain bowls and smoothies are 100% organic and dairy-free. Would you like our matcha power bowl or tropical dragonfruit bowl?",
+    "starterQuestions": [
+      "Which plant-based milk do you prefer, oat, almond, or coconut?",
+      "Would you like extra hemp seeds or cacao nibs on top?"
+    ]
+  },
+  {
+    "id": "food_en_6",
+    "title": "Baking French Pastries & Croissants with a Chef",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Food",
+    "subCategory": "Bakery",
+    "icon": "🥐",
+    "scenario": "You are participating in a pastry masterclass learning the art of laminated dough and pain au chocolat.",
+    "starterPrompt": "Bonjour! The secret to flaky French croissants is maintaining proper butter lamination and temperature. Ready to fold your first pastry dough?",
+    "starterQuestions": [
+      "Have you ever baked with yeast dough before?",
+      "Do you prefer dark chocolate pain au chocolat or almond croissants?"
+    ]
+  },
+  {
+    "id": "food_es_1",
+    "title": "Churros con Chocolate en una Chocolatería Tradicional",
+    "language": "Spanish",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "Churros",
+    "icon": "☕",
+    "scenario": "You are ordering freshly fried churros and thick dipping chocolate at a historic café in Madrid.",
+    "starterPrompt": "¡Buenos días! Nada como unos churros crujientes con chocolate caliente para empezar la mañana. ¿Cuántos churros o porras le gustaría pedir?",
+    "starterQuestions": [
+      "¿Prefiere el chocolate espeso o más ligero?",
+      "¿Le ponemos un poco de azúcar glas por encima?"
+    ]
+  },
+  {
+    "id": "food_es_2",
+    "title": "Mercado Gastronómico: Degustación de Quesos y Jamón Serrano",
+    "language": "Spanish",
+    "level": "Intermediate",
+    "category": "Food",
+    "subCategory": "Mercado",
+    "icon": "🧀",
+    "scenario": "You are touring a bustling covered food market sampling cured Manchego cheeses and vintage wines.",
+    "starterPrompt": "¡Hola! Este queso manchego curado tiene más de doce meses de maduración. Pruébelo con esta rebanada de pan con tomate, ¿qué le parece el sabor?",
+    "starterQuestions": [
+      "¿Prefiere quesos suaves o con sabor más intenso?",
+      "¿Desea llevarse una cuña envasada al vacío para su viaje?"
+    ]
+  },
+  {
+    "id": "food_es_3",
+    "title": "Tacos Al Pastor y Guacamole en una Taquería de Barrio",
+    "language": "Spanish",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "Tacos",
+    "icon": "🌮",
+    "scenario": "You are ordering marinated pork tacos with pineapple, cilantro, and fresh salsa verde at a neighborhood taqueria.",
+    "starterPrompt": "¡Pásele, güero! ¿Cuántos de pastor le servimos? Salen con piña, cebollita y cilantro. ¿Le pone salsa verde o de la que pica más?",
+    "starterQuestions": [
+      "¿Prefiere tortillas de maíz o de harina?",
+      "¿Le gustaría acompañar con una horchata bien fría?"
+    ]
+  },
+  {
+    "id": "food_kr_1",
+    "title": "Tteokbokki & Kimbap at a Lively Pocha Street Stall (포장마차)",
+    "language": "Korean",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "분식",
+    "icon": "🍢",
+    "scenario": "You are enjoying spicy rice cakes (tteokbokki) and warm fish cake broth at a bustling street food tent in Seoul.",
+    "starterPrompt": "어서오세요! 날씨가 쌀쌀한데 따뜻한 어묵 국물 먼저 한 컵 드세요. 매콤한 떡볶이랑 바삭한 튀김 같이 드릴까요? (Welcome! Have a warm cup of fish cake broth. Shall I serve spicy tteokbokki and crispy tempura together?)",
+    "starterQuestions": [
+      "매운 음식 잘 드시나요? (Can you handle spicy food?)",
+      "순대나 김밥도 같이 곁들여 드릴까요? (Would you like sundae or kimbap as well?)"
+    ]
+  },
+  {
+    "id": "food_kr_2",
+    "title": "Crispy Chimaek: Korean Fried Chicken & Draft Beer (치맥)",
+    "language": "Korean",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "치맥",
+    "icon": "🍗",
+    "scenario": "You are enjoying an evening feast of double-fried Korean garlic soy chicken and draft beer with friends along the Han River.",
+    "starterPrompt": "한강에서 치맥(치킨과 맥주)하기 딱 좋은 저녁이네요! 바삭한 후라이드와 달콤한 양념 반반으로 주문할까요? (It is a great evening for Chimaek at the Han River! Shall we order half crispy fried and half sweet seasoned chicken?)",
+    "starterQuestions": [
+      "시원한 생맥주도 같이 주문할까요? (Shall we order cold draft beer together?)",
+      "치킨 무 많이 드릴까요? (Would you like extra pickled radish?)"
+    ]
+  },
+  {
+    "id": "food_kr_3",
+    "title": "Traditional Kimchi Making (Kimjang) Experience",
+    "language": "Korean",
+    "level": "Intermediate",
+    "category": "Food",
+    "subCategory": "김치",
+    "icon": "🥬",
+    "scenario": "You are participating in a hands-on cultural workshop seasoning salted napa cabbage with red chili paste and garlic.",
+    "starterPrompt": "김장 체험에 오신 것을 환영합니다! 절인 배추 잎 사이사이에 양념 속을 골고루 바르는 것이 핵심이에요. 손맛을 한번 내보실까요? (Welcome to the Kimjang experience! Spreading seasoning between salted cabbage leaves is key. Ready to try with your hands?)",
+    "starterQuestions": [
+      "갓 담근 배추김치 맛이 어떠세요? (How does the freshly made kimchi taste?)",
+      "수육(삶은 돼지고기)과 함께 싸서 드셔보시겠어요? (Would you like to try it wrapped with boiled pork?)"
+    ]
+  },
+  {
+    "id": "food_ar_1",
+    "title": "Majlis Feast: Traditional Mandi & Biryani with Lamb",
+    "language": "Arabic",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "مندي",
+    "icon": "🍗",
+    "scenario": "You are seated on traditional carpets at an authentic Arabian restaurant sharing a large platter of slow-roasted spiced lamb mandi.",
+    "starterPrompt": "حيّاك الله في مجلسنا! اليوم أعددنا مندي لحم طازج مدفون في التنور. هل تحب الأرز البسمتي مع المكسرات والزبيب وصلصة الدقوس الحارة؟",
+    "starterQuestions": [
+      "هل جربت المندي التقليدي من قبل؟",
+      "هل تحب اللحم الطري المتبل بالزعفران والهيل؟"
+    ]
+  },
+  {
+    "id": "food_ar_2",
+    "title": "Lebanese Mezze: Hummus, Mutabbal & Hot Fresh Pita",
+    "language": "Arabic",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "مقبلات",
+    "icon": "🫓",
+    "scenario": "You are dining at a seaside Lebanese bistro ordering cold mezze plates, stuffed grape leaves (Warak Enab), and fresh mint lemonade.",
+    "starterPrompt": "أهلاً بك! مائدة المازة اللبنانية جاهزة. لدينا حمص بالطحينة، متبل باذنجان مشوي، وتبولة طازجة بزيت الزيتون البكر. ماذا تفضل أن نبدأ به؟",
+    "starterQuestions": [
+      "هل تفضل الخبز الساخن من الفرن مباشرة؟",
+      "ما رأيك في عصير ليموناضة بالنعناع المنعش؟"
+    ]
+  },
+  {
+    "id": "food_ar_3",
+    "title": "Sweet Baklava & Pistachio Kunafa at an Oriental Sweet Shop",
+    "language": "Arabic",
+    "level": "Intermediate",
+    "category": "Food",
+    "subCategory": "حلويات",
+    "icon": "🍯",
+    "scenario": "You are selecting freshly baked cheese kunafa with sugar syrup and pistachio baklava at a celebrated pastry shop.",
+    "starterPrompt": "يا مئة أهلاً وسهلاً! كنافة الجبن النابلسية الساخنة خرجت لتوها من الفرن ومعطرة بماء الزهر. هل نضع عليها فستق حلبي مطحون وقطر خفيف؟",
+    "starterQuestions": [
+      "هل تحب الكنافة الخشنة أم الناعمة بالجبن؟",
+      "هل تريد علبة مشكلة من البقلاوة بالفستق لتأخذها معك؟"
+    ]
+  },
+  {
+    "id": "food_ta_1",
+    "title": "Chettinad Spicy Pepper Chicken & Parotta Feast",
+    "language": "Tamil",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "செட்டிநாடு",
+    "icon": "🍗",
+    "scenario": "You are dining at an authentic Tamil restaurant ordering flaky layered parotta and spicy Chettinad pepper chicken gravy.",
+    "starterPrompt": "வணக்கம்! செட்டிநாடு ஸ்பெஷல் மிளகு சிக்கன் மற்றும் மொறுமொறு புரோட்டா ரெடியா இருக்கு. எவ்வளவு புரோட்டா சாப்பிட ஆசைப்படுறீங்க?",
+    "starterQuestions": [
+      "சால்னா ஊற்றி பிசைந்து சாப்பிட பிடிக்குமா?",
+      "காரசாரமான நாட்டுக்கோழி வறுவல் சுவைக்க விரும்புறீங்களா?"
+    ]
+  },
+  {
+    "id": "food_ta_2",
+    "title": "Madurai Famous Jigarthanda & Street Sweets",
+    "language": "Tamil",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "ஜிகர்தண்டா",
+    "icon": "🍧",
+    "scenario": "You are refreshing yourself on a hot evening with a cold glass of famous Madurai Jigarthanda with almond gum and ice cream.",
+    "starterPrompt": "வணக்கம்! மதுரை பாரம்பரிய ஸ்பெஷல் ஜிகர்தண்டா குடிக்க வந்திருக்கீங்களா? பாதாம் பிசின், பால்கோவா மற்றும் ஐஸ்கிரீம் போட்டு ஸ்பெஷலா தரவா?",
+    "starterQuestions": [
+      "குளிர்ச்சியான ஜிகர்தண்டா சுவை எப்படி இருக்கு?",
+      "மதுரை மல்லிப்பூ மற்றும் உணவு கலாச்சாரம் பிடிச்சிருக்கா?"
+    ]
+  },
+  {
+    "id": "food_ta_3",
+    "title": "Traditional South Indian Banana Leaf Rice Meal (சாப்பாடு)",
+    "language": "Tamil",
+    "level": "Intermediate",
+    "category": "Food",
+    "subCategory": "சாப்பாடு",
+    "icon": "🍛",
+    "scenario": "You are experiencing an elaborate traditional South Indian feast served on a fresh green banana leaf with sambar, rasam, and payasam.",
+    "starterPrompt": "வாழை இலை விருந்துக்கு நல்வரவு! இலை நுனியில் உப்பு, ஊறுகாய், பாயாசம் வச்சிருக்கோம். சூடான சாதத்தில் நெய் ஊற்றி சாம்பார் விடவா?",
+    "starterQuestions": [
+      "கூட்டு, பொரியல், அப்பளம் எல்லாம் போதுமானதா இருக்கா?",
+      "சாப்பிட்டு முடித்ததும் இலையை நம்மை நோக்கி மடிப்பது மரியாதை என்று தெரியுமா?"
+    ]
+  },
+  {
+    "id": "food_jp_1",
+    "title": "Matcha Parfait & Dango at a Uji Green Tea Cafe",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Food",
+    "subCategory": "甘味",
+    "icon": "🍡",
+    "scenario": "You are enjoying traditional matcha desserts and sweet soy glazed dango in a historic Kyoto tea garden.",
+    "starterPrompt": "いらっしゃいませ。宇治抹茶を贅沢に使った特製抹茶パフェと、焼きたてのみたらし団子はいかがですか？甘さ控えめで人気ですよ。",
+    "starterQuestions": [
+      "温かいほうじ茶もお持ちしましょうか？",
+      "抹茶の濃厚なアイスはお口に合いますか？"
+    ]
+  },
+  {
+    "id": "food_jp_2",
+    "title": "Teppanyaki Master Grill: Wagyu Beef Performance",
+    "language": "Japanese",
+    "level": "Advanced",
+    "category": "Food",
+    "subCategory": "鉄板焼き",
+    "icon": "🥩",
+    "scenario": "You are sitting in front of a master teppanyaki chef watching theatrical flame grilling of A5 Kobe Wagyu beef.",
+    "starterPrompt": "今晩は。本日のメインは厳選されたA5ランクの神戸牛サーロインでございます。焼き加減はミディアムレアでよろしいでしょうか？",
+    "starterQuestions": [
+      "わさび塩と特製ガーリックチップ、どちらで召し上がりますか？",
+      "鉄板で仕上げるガーリックライスもご用意いたしますか？"
+    ]
+  },
+  {
+    "id": "travel_en_1",
+    "title": "Airport Lost Baggage Claim & Flight Rebooking",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Travel",
+    "subCategory": "Airport",
+    "icon": "🧳",
+    "scenario": "You are speaking with an airline baggage assistance agent filing a missing luggage report and confirming your hotel delivery.",
+    "starterPrompt": "Hello! I understand your connecting bag did not appear on the carousel. Do you have your baggage claim tag so I can trace it in our global system?",
+    "starterQuestions": [
+      "Can you describe the color and brand of your suitcase?",
+      "What address would you like our courier to deliver it to once found?"
+    ]
+  },
+  {
+    "id": "travel_en_2",
+    "title": "Booking an Island Scuba Diving & Coral Reef Tour",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Adventure",
+    "icon": "🤿",
+    "scenario": "You are inquiring about introductory scuba diving certifications and sea turtle snorkeling trips at an island dive shop.",
+    "starterPrompt": "Hey there! Welcome to tropical paradise. The sea conditions are crystal clear today. Are you a certified diver or looking to try a beginner discover dive?",
+    "starterQuestions": [
+      "Have you ever snorkeled or used scuba gear before?",
+      "Would you like to join our morning boat trip to Turtle Reef?"
+    ]
+  },
+  {
+    "id": "travel_en_3",
+    "title": "Renting an RV Campervan for a National Park Road Trip",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Travel",
+    "subCategory": "Road Trip",
+    "icon": "🚐",
+    "scenario": "You are picking up a campervan at an outdoor rental depot reviewing generator usage, campsite hookups, and GPS maps.",
+    "starterPrompt": "Welcome! Your four-berth campervan is fully inspected and prepped for the highway. Have you ever driven a vehicle of this size before?",
+    "starterQuestions": [
+      "Do you have reservations at national park campgrounds with electric hookups?",
+      "Would you like outdoor folding chairs and a barbecue grill included?"
+    ]
+  },
+  {
+    "id": "travel_en_4",
+    "title": "Checking into a Luxury Mountain Ski Chalet",
+    "language": "English",
+    "level": "Intermediate",
+    "category": "Travel",
+    "subCategory": "Ski Resort",
+    "icon": "🎿",
+    "scenario": "You are checking into an Alpine ski lodge inquiring about lift passes, heated ski lockers, and shuttle routes to the slopes.",
+    "starterPrompt": "Welcome to the lodge! The mountain received 20 inches of fresh powder overnight. Would you like us to activate your multi-day ski lift passes now?",
+    "starterQuestions": [
+      "Do you need rental equipment like skis, boots, or helmets?",
+      "Would you like to book a table for our evening fireside fondue dinner?"
+    ]
+  },
+  {
+    "id": "travel_en_5",
+    "title": "Historic European River Cruise & Castle Tour",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Cruise",
+    "icon": "🚢",
+    "scenario": "You are chatting with the cruise director on the sun deck as your riverboat glides past medieval castles and riverside vineyards.",
+    "starterPrompt": "Good afternoon! We are currently cruising through the UNESCO Rhine Valley gorge. Can you spot the medieval hilltop fortress on your right?",
+    "starterQuestions": [
+      "Are you joining our guided walking tour of the historic town this afternoon?",
+      "How do you like the panoramic view from the upper sun deck?"
+    ]
+  },
+  {
+    "id": "travel_en_6",
+    "title": "Currency Exchange & Travel Insurance Queries",
+    "language": "English",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Finance",
+    "icon": "💱",
+    "scenario": "You are converting currency at a reputable international exchange kiosk and asking about fee-free ATM withdrawals.",
+    "starterPrompt": "Hello! Our foreign currency exchange rates are updated live today. What currency would you like to buy or convert from?",
+    "starterQuestions": [
+      "Would you prefer a mix of small and large denominations for daily spending?",
+      "Do you have your passport ready for verification?"
+    ]
+  },
+  {
+    "id": "travel_es_1",
+    "title": "Comprando Billetes de Tren AVE de Alta Velocidad",
+    "language": "Spanish",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Tren AVE",
+    "icon": "🚄",
+    "scenario": "You are purchasing high-speed AVE train tickets at Madrid Atocha station traveling to Valencia.",
+    "starterPrompt": "¡Buenos días! Bienvenido a Renfe. ¿Desea viajar en clase estándar o confort en el tren AVE de alta velocidad? El trayecto dura menos de dos horas.",
+    "starterQuestions": [
+      "¿Prefiere asiento de ventanilla o de pasillo?",
+      "¿Tiene billete de ida y vuelta o solo de ida?"
+    ]
+  },
+  {
+    "id": "travel_es_2",
+    "title": "Excursión a la Alhambra de Granada con un Guía Local",
+    "language": "Spanish",
+    "level": "Intermediate",
+    "category": "Travel",
+    "subCategory": "Turismo",
+    "icon": "🏰",
+    "scenario": "You are touring the breathtaking Nasrid Palaces and Generalife gardens of the Alhambra with an art historian guide.",
+    "starterPrompt": "¡Bienvenidos a la Alhambra! La arquitectura hispanomusulmana de estos patios y arcos es única en el mundo. ¿Aprecia los detalles tallados en las paredes?",
+    "starterQuestions": [
+      "¿Tiene sus entradas con acceso a los Palacios Nazaríes?",
+      "¿Qué leyenda sobre este palacio le llama más la atención?"
+    ]
+  },
+  {
+    "id": "travel_es_3",
+    "title": "Alquiler de Coche en Mallorca para Recorrer Calas Escondidas",
+    "language": "Spanish",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "Playas",
+    "icon": "🚗",
+    "scenario": "You are picking up a rental car at Palma airport to explore turquoise Mediterranean beaches and mountain coves.",
+    "starterPrompt": "¡Hola! Su coche compacto con aire acondicionado está listo en el aparcamiento. ¿Desea incluir seguro a todo riesgo sin franquicia?",
+    "starterQuestions": [
+      "¿Tiene carnet de conducir internacional válido?",
+      "¿Le gustaría que le recomiende las mejores calas vírgenes de la isla?"
+    ]
+  },
+  {
+    "id": "travel_kr_1",
+    "title": "Jeju Island Olle Trail & Sunrise Peak Exploration (제주도 성산일출봉)",
+    "language": "Korean",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "제주도",
+    "icon": "🏝️",
+    "scenario": "You are planning a scenic coastal hike along the Jeju Olle Trail and watching the sunrise over Seongsan Ilchulbong crater.",
+    "starterPrompt": "제주도에 오신 것을 진심으로 환영합니다! 푸른 바다와 성산일출봉 풍경이 정말 아름답죠? 올레길 코스를 걸어보실 계획인가요? (Welcome to Jeju Island! Isn't the blue sea and Sunrise Peak stunning? Are you planning to hike the Olle trail?)",
+    "starterQuestions": [
+      "제주 흑돼지나 신선한 해산물 드셔보셨나요? (Have you tried Jeju black pork or fresh seafood?)",
+      "한라산 등산 계획도 있으신가요? (Do you also have plans to climb Hallasan mountain?)"
+    ]
+  },
+  {
+    "id": "travel_kr_2",
+    "title": "Seoul Subway Transfer & T-Money Card Inquiries (지하철 환승)",
+    "language": "Korean",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "지하철",
+    "icon": "🚇",
+    "scenario": "You are asking station staff at Seoul Station how to reload a T-money transit card and transfer from Line 1 to Line 4.",
+    "starterPrompt": "안녕하세요! 지하철 이용에 도움이 필요하신가요? 티머니 교통카드 충전은 저쪽 자동발매기에서 한국어와 영어로 가능합니다. 어디로 가시나요? (Hello! Do you need help using the subway? T-money reloading is available right over there in English and Korean. Where are you heading?)",
+    "starterQuestions": [
+      "환승 통로 안내 표지판이 잘 보이시나요? (Can you clearly see the transfer signs?)",
+      "급행열차와 일반열차의 차이를 알고 계신가요? (Do you know the difference between express and local trains?)"
+    ]
+  },
+  {
+    "id": "travel_kr_3",
+    "title": "Booking a Traditional Hanok Homestay in Jeonju (전주 한옥마을)",
+    "language": "Korean",
+    "level": "Intermediate",
+    "category": "Travel",
+    "subCategory": "한옥숙박",
+    "icon": "🏮",
+    "scenario": "You are checking into an authentic Hanok guesthouse with heated ondol floors in the historic Jeonju Hanok Village.",
+    "starterPrompt": "전주 한옥마을 숙소에 도착하셨군요! 바닥에 따뜻한 온돌이 들어와 포근할 거예요. 내일 아침 전주 콩나물국밥이나 비빔밥을 드시겠어요? (Welcome to your Jeonju Hanok stay! The warm ondol floor will make you cozy. Would you like bean sprout soup or bibimbap for breakfast tomorrow?)",
+    "starterQuestions": [
+      "온돌방에서 요를 깔고 주무시는 것은 처음이신가요? (Is it your first time sleeping on a futon on an ondol floor?)",
+      "경기전과 한복 체험 거리를 둘러보실 계획인가요? (Do you plan to tour Gyeonggijeon shrine and Hanbok rental street?)"
+    ]
+  },
+  {
+    "id": "travel_ar_1",
+    "title": "Desert Safari & Dune Bashing in Arabian Sands",
+    "language": "Arabic",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "سفاري",
+    "icon": "🏜️",
+    "scenario": "You are joining a 4x4 desert safari tour riding across golden sand dunes, riding camels, and watching the sunset.",
+    "starterPrompt": "مرحباً بك في مغامرة الصحراء العربية! سيارة الدفع الرباعي جاهزة لركوب الكثبان الرملية الذهبية. هل أنت مستعد لتجربة حماسية وممتعة؟",
+    "starterQuestions": [
+      "هل تحب ركوب الجمال والتقاط صور تذكارية مع الصقور؟",
+      "هل ترغب في حضور حفل الشواء والموسيقى التراثية في المخيم المسائي؟"
+    ]
+  },
+  {
+    "id": "travel_ar_2",
+    "title": "Visiting Burj Khalifa Observatory & Dancing Fountains",
+    "language": "Arabic",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "معالم",
+    "icon": "🏙️",
+    "scenario": "You are standing on the 124th floor observation deck of Burj Khalifa admiring the skyline views of Dubai and the Arabian Gulf.",
+    "starterPrompt": "أهلاً بك في قمة برج خليفة، أطول مبنى في العالم! المنظر من هذا الارتفاع البانورامي مذهل للغاية. هل يمكنك رؤية جزر النخلة والبحر؟",
+    "starterQuestions": [
+      "هل حجزت تذكرة وقت غروب الشمس لمشاهدة عرض النوافير الراقصة؟",
+      "ما هو أكثر معلم سياحي أثار إعجابك في دبي حتى الآن؟"
+    ]
+  },
+  {
+    "id": "travel_ar_3",
+    "title": "Cruising on a Traditional Wooden Dhow in Dubai Creek",
+    "language": "Arabic",
+    "level": "Intermediate",
+    "category": "Travel",
+    "subCategory": "رحلة بحرية",
+    "icon": "⛵",
+    "scenario": "You are relaxing on a traditional wooden boat (Dhow) gliding through historic Dubai Creek between Deira and Bur Dubai.",
+    "starterPrompt": "مساء الخير والأنوار! رحلة السفينة الخشبية التراثية (الداو) في خور دبي تأخذنا في رحلة عبر تاريخ التجارة القديم. هل تستمتع بالهواء العليل ومناظر الأبراج المضيئة؟",
+    "starterQuestions": [
+      "هل زرت أسواق التوابل والذهب التقليدية القريبة؟",
+      "هل تحب تناول العشاء البحري مع أنغام الموسيقى الشرقية على متن السفينة؟"
+    ]
+  },
+  {
+    "id": "travel_ta_1",
+    "title": "Visiting the Historic Meenakshi Temple in Madurai",
+    "language": "Tamil",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "கோவில்",
+    "icon": "🛕",
+    "scenario": "You are touring the grand Meenakshi Amman Temple in Madurai admiring the thousand-pillar hall and towering sculpted gopurams.",
+    "starterPrompt": "வணக்கம்! மதுரை மீனாட்சி அம்மன் கோவில் ஆயிரம் கால் மண்டபமும், வண்ணமயமான கோபுர சிற்பங்களும் உலகப் பிரசித்தி பெற்றவை. கோவில் அழகை ரசிக்கிறீர்களா?",
+    "starterQuestions": [
+      "கோவிலின் பிரமாண்ட கோபுரங்களை புகைப்படம் எடுத்தீர்களா?",
+      "இங்குள்ள வரலாற்றுச் சிற்பங்கள் மற்றும் மரபுகள் பற்றி தெரிந்துகொள்ள ஆசையா?"
+    ]
+  },
+  {
+    "id": "travel_ta_2",
+    "title": "Beach Walk & Sea Breeze at Marina Beach, Chennai",
+    "language": "Tamil",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "கடற்கரை",
+    "icon": "🏖️",
+    "scenario": "You are taking an evening stroll along the world's second longest urban beach in Chennai enjoying sea breeze and roasted corn.",
+    "starterPrompt": "வணக்கம்! மாலை நேரத்தில் மெரினா கடற்கரையில் காற்று வாங்குவது சென்னை மக்களுக்கு ரொம்ப பிடிக்கும். சுடச்சுட சுட்ட சோளம் அல்லது சுண்டல் சாப்பிடலாமா?",
+    "starterQuestions": [
+      "கடற்கரை கலங்கரை விளக்கம் (Lighthouse) உச்சிக்கு போய் பார்த்தீங்களா?",
+      "அலைகளின் சத்தமும் மெல்லிய காற்று வீசுவதும் மனசுக்கு எவ்வளவு அமைதியா இருக்கு பாருங்க!"
+    ]
+  },
+  {
+    "id": "travel_ta_3",
+    "title": "Boat Ride & Boathouse Stay in Kanyakumari Waters",
+    "language": "Tamil",
+    "level": "Intermediate",
+    "category": "Travel",
+    "subCategory": "படகு சவாரி",
+    "icon": "⛵",
+    "scenario": "You are taking a ferry boat ride to the Vivekananda Rock Memorial and Thiruvalluvar Statue at the confluence of three oceans in Kanyakumari.",
+    "starterPrompt": "கன்னியாகுமரி முக்கடல் சங்கமத்திற்கு நல்வரவு! விவேகானந்தர் பாறை நினைவு மண்டபத்திற்கு படகில் செல்வது சிலிர்ப்பான அனுபவம். கடலின் மூன்று நிறங்கள் தெரிகிறதா?",
+    "starterQuestions": [
+      "சூரிய உதயம் மற்றும் சூரிய அஸ்தமனம் இரண்டுமே இங்கு தெரிவது வியப்பானதுதானே?",
+      "133 அடி உயர திருவள்ளுவர் சிலையை அருகில் சென்று பார்க்க படகு டிக்கெட் எடுத்தாச்சா?"
+    ]
+  },
+  {
+    "id": "travel_jp_1",
+    "title": "Hot Spring Onsen Etiquette & Ryokan Stay in Hakone",
+    "language": "Japanese",
+    "level": "Intermediate",
+    "category": "Travel",
+    "subCategory": "温泉",
+    "icon": "♨️",
+    "scenario": "You are staying at a traditional Hakone hot spring inn (Ryokan) learning bathing etiquette and wearing a relaxed yukata robe.",
+    "starterPrompt": "箱根の温泉旅館へようこそ！大浴場に入る前に体を洗い場で流すのが日本の温泉マナーです。浴衣に着替えて露天風呂を満喫しませんか？",
+    "starterQuestions": [
+      "富士山が見える露天風呂はお試しになりましたか？",
+      "夕食にお部屋で提供される旬の会席料理はいかがでしたか？"
+    ]
+  },
+  {
+    "id": "travel_jp_2",
+    "title": "Tokyo Metro Navigation & Suica Card IC Tap",
+    "language": "Japanese",
+    "level": "Beginner",
+    "category": "Travel",
+    "subCategory": "地下鉄",
+    "icon": "🚇",
+    "scenario": "You are tapping your digital Suica card through Tokyo Metro ticket gates and asking an attendant about Ginza Line transfers.",
+    "starterPrompt": "すみません、銀座線への乗り換えですね！Suicaカードを改札機にピッとタッチして、黄色い矢印に沿って階段を下りてください。どちらの駅まで行かれますか？",
+    "starterQuestions": [
+      "Suicaの残高が足りているかチャージ機で確認しましたか？",
+      "東京メトロの路線図アプリをお持ちですか？"
+    ]
+  }
+];
