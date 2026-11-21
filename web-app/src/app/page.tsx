@@ -785,12 +785,21 @@ export default function StudentWebApp() {
   const isLight = themeMode === "light";
   const handleSetTheme = (nextTheme: "dark" | "light") => {
     setThemeMode(nextTheme);
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle("theme-light", nextTheme === "light");
+    }
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem("speakflow_theme", nextTheme);
       } catch (_) {}
     }
   };
+
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle("theme-light", themeMode === "light");
+    }
+  }, [themeMode]);
 
   // Top Bar State
   const [selectedLanguage, setSelectedLanguage] = useState<string>("English");
@@ -4553,20 +4562,42 @@ export default function StudentWebApp() {
             : [];
 
           return (
-            <header className="h-16 border-b border-slate-800/80 bg-[#0A0F1D]/90 backdrop-blur-xl sticky top-0 z-30 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-              {/* Left Cluster: Mobile Menu + Active View Pill + Live Quick Search */}
+            <header
+              className={`h-16 border-b backdrop-blur-xl sticky top-0 z-30 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 transition-colors ${
+                isLight
+                  ? "border-slate-200 bg-white/95 text-slate-900 shadow-sm"
+                  : "border-slate-800/80 bg-[#0A0F1D]/95 text-slate-100"
+              }`}
+            >
+              {/* Left Cluster: Mobile Menu + Active View Pill + Live Command Spotlight Search */}
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <button
                   onClick={() => setMobileSidebarOpen(true)}
-                  className="md:hidden text-slate-400 hover:text-white p-1.5 rounded-xl bg-slate-900 border border-slate-800 shrink-0"
+                  className={`md:hidden p-1.5 rounded-xl border shrink-0 transition-colors ${
+                    isLight
+                      ? "text-slate-600 hover:text-slate-900 bg-slate-100 border-slate-200"
+                      : "text-slate-400 hover:text-white bg-slate-900 border-slate-800"
+                  }`}
                 >
                   <Menu className="w-5 h-5" />
                 </button>
 
                 {/* Active Page Context Badge */}
-                <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 shrink-0">
-                  <span className="text-xs font-black text-white">{currentTabMeta.title}</span>
-                  <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                <div
+                  className={`hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-xl border shrink-0 ${
+                    isLight ? "bg-slate-100 border-slate-200" : "bg-slate-900/90 border-slate-800"
+                  }`}
+                >
+                  <span className={`text-xs font-black ${isLight ? "text-slate-900" : "text-white"}`}>
+                    {currentTabMeta.title}
+                  </span>
+                  <span
+                    className={`text-[9.5px] font-bold px-2 py-0.5 rounded-md border ${
+                      isLight
+                        ? "bg-blue-50 text-blue-700 border-blue-200"
+                        : "bg-cyan-500/15 text-cyan-300 border-cyan-500/30"
+                    }`}
+                  >
                     {currentTabMeta.badge}
                   </span>
                 </div>
@@ -4577,14 +4608,24 @@ export default function StudentWebApp() {
                     className={`p-[1px] rounded-2xl transition-all duration-300 ${
                       isSearchFocused || trimmedHeaderSearch
                         ? "bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 shadow-[0_0_24px_rgba(34,211,238,0.28)]"
+                        : isLight
+                        ? "bg-slate-200 hover:bg-blue-300"
                         : "bg-gradient-to-r from-slate-700/80 via-slate-800/80 to-slate-700/80 hover:from-cyan-500/50 hover:to-indigo-500/50"
                     }`}
                   >
-                    <div className="relative flex items-center bg-[#090E1C]/95 backdrop-blur-xl rounded-[15px]">
+                    <div
+                      className={`relative flex items-center rounded-[15px] ${
+                        isLight ? "bg-slate-50" : "bg-[#090E1C]"
+                      }`}
+                    >
                       <div className="pl-3.5 pr-2 flex items-center pointer-events-none">
                         <Search
                           className={`w-4 h-4 transition-colors ${
-                            isSearchFocused || trimmedHeaderSearch ? "text-cyan-400" : "text-slate-400"
+                            isSearchFocused || trimmedHeaderSearch
+                              ? isLight
+                                ? "text-blue-600"
+                                : "text-cyan-400"
+                              : "text-slate-400"
                           }`}
                         />
                       </div>
@@ -4596,25 +4637,43 @@ export default function StudentWebApp() {
                         onBlur={() => setTimeout(() => setIsSearchFocused(false), 180)}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search calls, vocab, grammar..."
-                        className="w-full bg-transparent py-2 sm:py-2.5 pr-20 text-xs sm:text-[13px] text-white placeholder-slate-400/80 focus:outline-none font-medium"
+                        className={`w-full bg-transparent py-2 sm:py-2.5 pr-24 text-xs sm:text-[13px] focus:outline-none font-medium ${
+                          isLight ? "text-slate-900 placeholder-slate-500" : "text-white placeholder-slate-400"
+                        }`}
                       />
                       <div className="absolute right-2.5 flex items-center gap-1.5">
                         {searchQuery ? (
                           <button
                             type="button"
                             onClick={() => setSearchQuery("")}
-                            className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                            className={`p-1 rounded-lg transition-colors ${
+                              isLight
+                                ? "bg-slate-200 hover:bg-slate-300 text-slate-700"
+                                : "bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white"
+                            }`}
                             title="Clear search"
                           >
                             <X className="w-3.5 h-3.5" />
                           </button>
                         ) : (
                           <>
-                            <span className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-cyan-500/10 border border-cyan-500/25 text-[10px] font-bold text-cyan-300">
+                            <span
+                              className={`hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-[10px] font-bold ${
+                                isLight
+                                  ? "bg-blue-50 border-blue-200 text-blue-700"
+                                  : "bg-cyan-500/15 border-cyan-500/30 text-cyan-300"
+                              }`}
+                            >
                               <Sparkles className="w-2.5 h-2.5" />
-                              <span>164+ Calls</span>
+                              <span>{topics.length}+ Calls</span>
                             </span>
-                            <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-800/90 border border-slate-700 text-[10px] font-mono text-slate-300 shadow-inner">
+                            <kbd
+                              className={`hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-md border text-[10px] font-mono shadow-inner ${
+                                isLight
+                                  ? "bg-white border-slate-300 text-slate-600"
+                                  : "bg-slate-800 border-slate-700 text-slate-300"
+                              }`}
+                            >
                               ⌘K
                             </kbd>
                           </>
@@ -4623,16 +4682,26 @@ export default function StudentWebApp() {
                     </div>
                   </div>
 
-                  {/* Quick-Jump Spotlight Dropdown (Live Results OR Suggested Chips on Focus) */}
+                  {/* SOLID OPAQUE Quick-Jump Spotlight Dropdown (Zero bleed-through!) */}
                   {(trimmedHeaderSearch || isSearchFocused) && (
-                    <div className="absolute left-0 right-0 mt-2.5 bg-[#0B1222]/98 backdrop-blur-2xl border border-cyan-500/40 rounded-2xl p-3 shadow-[0_24px_60px_rgba(0,0,0,0.85)] z-50 space-y-2.5">
+                    <div
+                      className={`absolute left-0 right-0 mt-2.5 rounded-2xl p-4 z-[70] space-y-3 border ${
+                        isLight
+                          ? "bg-white border-slate-200 shadow-[0_24px_60px_rgba(15,23,42,0.18)]"
+                          : "bg-[#091022] border-cyan-500/50 shadow-[0_24px_65px_rgba(0,0,0,0.96)]"
+                      }`}
+                    >
                       {!trimmedHeaderSearch ? (
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1">
-                            <span>Popular Voice Quick-Jumps</span>
-                            <span className="text-cyan-400 font-mono">ESC to close</span>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider px-0.5">
+                            <span className={isLight ? "text-slate-500" : "text-slate-400"}>
+                              Popular Voice Quick-Jumps
+                            </span>
+                            <span className={`font-mono ${isLight ? "text-blue-600" : "text-cyan-400"}`}>
+                              ESC to close
+                            </span>
                           </div>
-                          <div className="flex flex-wrap gap-1.5">
+                          <div className="flex flex-wrap gap-2">
                             {["Job Interview", "Cricket", "Travel", "Startup Pitch", "Japanese", "Ordering Food"].map(
                               (chip) => (
                                 <button
@@ -4642,18 +4711,62 @@ export default function StudentWebApp() {
                                     e.preventDefault();
                                     setSearchQuery(chip);
                                   }}
-                                  className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-cyan-950/60 border border-slate-800 hover:border-cyan-400/50 text-[11px] font-semibold text-slate-200 hover:text-cyan-200 transition-all"
+                                  className={`px-3 py-1.5 rounded-xl border text-[11px] font-semibold transition-all flex items-center gap-1.5 ${
+                                    isLight
+                                      ? "bg-slate-50 hover:bg-blue-50 border-slate-200 hover:border-blue-300 text-slate-700 hover:text-blue-700"
+                                      : "bg-[#111B33] hover:bg-cyan-950 border-slate-700/80 hover:border-cyan-400/60 text-slate-200 hover:text-cyan-200"
+                                  }`}
                                 >
-                                  🔍 {chip}
+                                  <Search className="w-3 h-3 opacity-75" />
+                                  <span>{chip}</span>
                                 </button>
                               )
                             )}
                           </div>
+
+                          <div
+                            className={`pt-2.5 border-t flex items-center justify-between gap-2 flex-wrap ${
+                              isLight ? "border-slate-200" : "border-slate-800"
+                            }`}
+                          >
+                            <span className={`text-[10px] font-bold ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                              Jump to Studio:
+                            </span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {[
+                                { id: "practice" as const, label: "164+ Calls" },
+                                { id: "conversation" as const, label: "AI Studio" },
+                                { id: "vocabulary" as const, label: "Vocabulary" },
+                                { id: "grammar" as const, label: "Grammar Vault" }
+                              ].map((navItem) => (
+                                <button
+                                  key={navItem.id}
+                                  type="button"
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    setActiveTab(navItem.id);
+                                    setIsSearchFocused(false);
+                                  }}
+                                  className={`px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition-colors ${
+                                    isLight
+                                      ? "bg-blue-50/70 hover:bg-blue-100 border-blue-200 text-blue-700"
+                                      : "bg-blue-950/60 hover:bg-blue-900 border-blue-500/30 text-cyan-300"
+                                  }`}
+                                >
+                                  {navItem.label} →
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       ) : (
                         <>
-                          <div className="px-1.5 pb-1.5 flex items-center justify-between text-[10px] text-slate-400 border-b border-slate-800">
-                            <span className="font-bold text-slate-300">
+                          <div
+                            className={`px-1 pb-2 flex items-center justify-between text-[10.5px] border-b ${
+                              isLight ? "border-slate-200 text-slate-500" : "border-slate-800 text-slate-400"
+                            }`}
+                          >
+                            <span className={`font-bold ${isLight ? "text-slate-800" : "text-slate-200"}`}>
                               Matching Voice Calls ({quickSearchMatches.length})
                             </span>
                             <button
@@ -4664,14 +4777,16 @@ export default function StudentWebApp() {
                                 setSearchQuery("");
                                 setIsSearchFocused(false);
                               }}
-                              className="text-cyan-400 hover:text-cyan-300 font-bold"
+                              className={`font-bold ${isLight ? "text-blue-600 hover:text-blue-700" : "text-cyan-400 hover:text-cyan-300"}`}
                             >
                               Browse Full Catalog →
                             </button>
                           </div>
                           {quickSearchMatches.length === 0 ? (
-                            <div className="px-3 py-4 text-xs text-slate-400 text-center space-y-2">
-                              <p>No catalog match for &ldquo;{searchQuery}&rdquo;</p>
+                            <div className="px-3 py-4 text-xs text-center space-y-2">
+                              <p className={isLight ? "text-slate-500" : "text-slate-400"}>
+                                No catalog match for &ldquo;{searchQuery}&rdquo;
+                              </p>
                               <button
                                 type="button"
                                 onMouseDown={(e) => {
@@ -4691,13 +4806,13 @@ export default function StudentWebApp() {
                                     starterQuestions: [`Tell me your thoughts on ${customText}.`]
                                   });
                                 }}
-                                className="px-3 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-bold text-[11px] hover:bg-cyan-500 hover:text-slate-950 transition-colors"
+                                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-[11px] shadow-md hover:brightness-110 transition-all"
                               >
                                 ✨ Launch Custom AI Call: &ldquo;{searchQuery}&rdquo; →
                               </button>
                             </div>
                           ) : (
-                            <div className="space-y-1">
+                            <div className="space-y-1.5">
                               {quickSearchMatches.map((t) => (
                                 <button
                                   key={t.id}
@@ -4708,12 +4823,22 @@ export default function StudentWebApp() {
                                     setIsSearchFocused(false);
                                     handleInitiateCallPrompt(t);
                                   }}
-                                  className="w-full px-3 py-2 rounded-xl hover:bg-cyan-950/40 border border-transparent hover:border-cyan-500/30 flex items-center justify-between gap-2 text-left transition-all group"
+                                  className={`w-full px-3 py-2.5 rounded-xl border flex items-center justify-between gap-2 text-left transition-all group ${
+                                    isLight
+                                      ? "bg-slate-50 hover:bg-blue-50 border-slate-200 hover:border-blue-300"
+                                      : "bg-[#111B33] hover:bg-cyan-950/70 border-slate-800 hover:border-cyan-500/50"
+                                  }`}
                                 >
                                   <div className="flex items-center gap-2.5 min-w-0">
                                     <span className="text-base shrink-0">{t.icon}</span>
                                     <div className="min-w-0">
-                                      <div className="text-xs font-bold text-white truncate group-hover:text-cyan-300">
+                                      <div
+                                        className={`text-xs font-bold truncate ${
+                                          isLight
+                                            ? "text-slate-900 group-hover:text-blue-700"
+                                            : "text-white group-hover:text-cyan-300"
+                                        }`}
+                                      >
                                         {t.title}
                                       </div>
                                       <div className="text-[10px] text-slate-400">
@@ -4721,7 +4846,13 @@ export default function StudentWebApp() {
                                       </div>
                                     </div>
                                   </div>
-                                  <span className="px-2.5 py-1 rounded-lg bg-cyan-500/15 text-cyan-300 text-[10px] font-black shrink-0 group-hover:bg-cyan-400 group-hover:text-slate-950 transition-colors">
+                                  <span
+                                    className={`px-2.5 py-1 rounded-lg text-[10px] font-black shrink-0 transition-colors ${
+                                      isLight
+                                        ? "bg-blue-600 text-white"
+                                        : "bg-cyan-500/20 text-cyan-300 group-hover:bg-cyan-400 group-hover:text-slate-950"
+                                    }`}
+                                  >
                                     Call →
                                   </span>
                                 </button>
@@ -4735,22 +4866,66 @@ export default function StudentWebApp() {
                 </div>
               </div>
 
-              {/* Right Cluster: Unified Executive Telemetry Dock */}
-              <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+              {/* Right Cluster: Unified Executive Telemetry Dock + Dark/Light Switcher */}
+              <div className="flex items-center gap-2 shrink-0">
+                {/* Dark / Light Mode Switcher in Logged-In Header */}
+                <div
+                  className={`flex items-center p-0.5 rounded-xl border transition-colors ${
+                    isLight ? "bg-slate-100 border-slate-200" : "bg-slate-900 border-slate-800"
+                  }`}
+                  role="group"
+                  aria-label="Theme Mode Toggle"
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleSetTheme("light")}
+                    className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10.5px] font-bold transition-all ${
+                      isLight
+                        ? "bg-white text-amber-600 shadow-sm border border-slate-200"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                    title="Switch to Light Mode"
+                  >
+                    <Sun className="w-3.5 h-3.5" />
+                    <span className="hidden 2xl:inline">Light</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSetTheme("dark")}
+                    className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10.5px] font-bold transition-all ${
+                      !isLight
+                        ? "bg-slate-800 text-cyan-300 shadow-sm border border-cyan-500/30"
+                        : "text-slate-500 hover:text-slate-900"
+                    }`}
+                    title="Switch to Dark Mode"
+                  >
+                    <Moon className="w-3.5 h-3.5" />
+                    <span className="hidden 2xl:inline">Dark</span>
+                  </button>
+                </div>
+
                 {/* Live AI Hybrid Engine Status Pill */}
                 <button
                   type="button"
                   onClick={() => setActiveTab("settings")}
-                  className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-950/45 hover:bg-cyan-950/70 border border-cyan-500/30 text-xs shadow-sm transition-colors"
+                  className={`hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs shadow-sm transition-colors ${
+                    isLight
+                      ? "bg-cyan-50 hover:bg-cyan-100 border-cyan-200 text-slate-800"
+                      : "bg-cyan-950/45 hover:bg-cyan-950/70 border-cyan-500/30 text-white"
+                  }`}
                   title="Configure Hybrid Edge / Cloud AI Engine"
                 >
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
                   </span>
-                  <span className="font-mono text-[11px] text-cyan-300 font-bold">SpeakFlow Neural</span>
-                  <span className="text-[10px] text-slate-600">•</span>
-                  <span className="text-[10.5px] text-emerald-300 font-semibold">12ms Edge</span>
+                  <span className={`font-mono text-[11px] font-bold ${isLight ? "text-cyan-700" : "text-cyan-300"}`}>
+                    SpeakFlow Neural
+                  </span>
+                  <span className="text-[10px] text-slate-500">•</span>
+                  <span className={`text-[10.5px] font-semibold ${isLight ? "text-emerald-700" : "text-emerald-300"}`}>
+                    12ms Edge
+                  </span>
                 </button>
 
                 {/* Daily Streak & XP Pill */}
@@ -5024,7 +5199,7 @@ export default function StudentWebApp() {
         <main className={activeCallTopic ? "w-full h-screen overflow-hidden p-0 bg-[#030612] flex flex-col justify-center" : "p-4 sm:p-6 lg:p-8 pb-28 md:pb-8 space-y-6 w-full max-w-[1680px] mx-auto"}>
           {/* IF ACTIVE CALL IS RUNNING: FULL SCREEN LIVE AI VIDEO CALL STUDIO */}
           {activeCallTopic ? (
-            <div className="fixed inset-0 z-50 bg-[#030612] w-screen h-screen max-h-screen overflow-hidden p-2 sm:p-3 flex flex-col justify-between select-none">
+            <div className="fixed inset-0 z-50 bg-[#030612] w-screen h-screen max-h-screen overflow-hidden p-2 sm:p-3 flex flex-col justify-between select-none keep-dark-hero">
               <div className="w-full h-full max-w-[1720px] mx-auto bg-gradient-to-b from-[#0e1628] via-[#090d18] to-[#04060c] border border-cyan-500/40 rounded-2xl sm:rounded-3xl p-2.5 sm:p-3.5 shadow-[0_20px_70px_rgba(0,0,0,0.85)] relative overflow-hidden flex flex-col justify-between min-h-0">
               {/* Top ambient lights */}
               <div className="absolute -top-16 -left-16 w-60 h-60 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
@@ -5822,7 +5997,7 @@ export default function StudentWebApp() {
               {/* LEFT & CENTER MAIN COLUMN (8 cols of 12) */}
               <div className="lg:col-span-8 flex flex-col justify-between gap-6">
                 {/* 1. HERO BANNER: Welcome Back Janitha! (Fully Visible Artwork & Centered Typography) */}
-                <div className="relative rounded-3xl overflow-hidden border border-blue-500/30 bg-[#0B132B] shadow-[0_20px_50px_rgba(30,58,138,0.3)] min-h-[250px] sm:min-h-[275px] lg:min-h-[290px] flex items-center justify-center pt-12 pb-6 px-5 sm:p-8">
+                <div className="relative rounded-3xl overflow-hidden border border-blue-500/30 bg-[#0B132B] shadow-[0_20px_50px_rgba(30,58,138,0.3)] min-h-[250px] sm:min-h-[275px] lg:min-h-[290px] flex items-center justify-center pt-12 pb-6 px-5 sm:p-8 keep-dark-hero">
                   {/* High Resolution Background Artwork (Full Robot on Left, Full Globe on Right, Clean Center) */}
                   <img
                     src="/images/hero_banner_panoramic_clean.jpg"
@@ -7595,7 +7770,7 @@ export default function StudentWebApp() {
               return (
                 <div className="space-y-6">
                   {/* 1. FULL-BLEED PANORAMIC CONVERSATION AI HERO STAGE (Matches SpeakFlow Dashboard Aesthetic) */}
-                  <div className="relative rounded-3xl overflow-hidden border border-cyan-500/40 bg-[#081330] shadow-[0_24px_65px_rgba(30,64,175,0.4)] min-h-[290px] sm:min-h-[330px] p-6 sm:p-8 lg:p-10 flex items-center">
+                  <div className="relative rounded-3xl overflow-hidden border border-cyan-500/40 bg-[#081330] shadow-[0_24px_65px_rgba(30,64,175,0.4)] min-h-[290px] sm:min-h-[330px] p-6 sm:p-8 lg:p-10 flex items-center keep-dark-hero">
                     {/* Seamless Full-Width Background Illustration */}
                     <img
                       src="/images/conversation_lounge_full_bg.jpg"
@@ -8007,7 +8182,7 @@ export default function StudentWebApp() {
                             }`}
                           >
                             {/* Large Studio Portrait Header */}
-                            <div className="relative h-44 w-full overflow-hidden bg-slate-900">
+                            <div className="relative h-44 w-full overflow-hidden bg-slate-900 keep-dark-hero">
                               <img
                                 src={coach.avatar}
                                 alt={coach.name}

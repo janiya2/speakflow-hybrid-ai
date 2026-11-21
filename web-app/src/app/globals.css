@@ -200,4 +200,173 @@ video::cue {
   animation: emberSpark3 2.6s ease-out infinite 1.2s;
 }
 
+/* ------------------------------------------------------------- */
+/* DUAL SYSTEM: CLEAN EXECUTIVE LIGHT MODE (html.theme-light)    */
+/* Preserves dark-artwork hero banners & video studio (.keep-dark-hero) */
+/* ------------------------------------------------------------- */
+html.theme-light {
+  color-scheme: light;
+}
+
+html.theme-light body {
+  background: #f3f6fb !important;
+  color: #0f172a !important;
+}
+
+html.theme-light ::-webkit-scrollbar-track {
+  background: #e2e8f0;
+}
+html.theme-light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+html.theme-light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Root & Shell Surfaces */
+html.theme-light .min-h-screen.bg-\[\#0A0F1D\] {
+  background-color: #f3f6fb !important;
+  color: #0f172a !important;
+}
+
+html.theme-light aside {
+  background: linear-gradient(180deg, #ffffff 0%, #f8faff 55%, #f1f5fd 100%) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 8px 0 30px rgba(15, 23, 42, 0.05) !important;
+}
+
+html.theme-light header:not(.keep-dark-hero) {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05) !important;
+}
+
+html.theme-light header:not(.keep-dark-hero) [class*="bg-[#111827]"],
+html.theme-light header:not(.keep-dark-hero) [class*="bg-[#0F172A]"],
+html.theme-light header:not(.keep-dark-hero) [class*="bg-[#0B0F19]"],
+html.theme-light header:not(.keep-dark-hero) [class*="bg-slate-900"] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.theme-light header:not(.keep-dark-hero) [class*="bg-slate-950"],
+html.theme-light header:not(.keep-dark-hero) [class*="bg-slate-800"] {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.theme-light header:not(.keep-dark-hero) .text-slate-300,
+html.theme-light header:not(.keep-dark-hero) .text-slate-400 {
+  color: #475569 !important;
+}
+
+html.theme-light header:not(.keep-dark-hero) .text-amber-300 {
+  color: #b45309 !important;
+}
+
+html.theme-light header:not(.keep-dark-hero) .text-cyan-300,
+html.theme-light header:not(.keep-dark-hero) .text-cyan-400 {
+  color: #0284c7 !important;
+}
+
+/* Mobile Bottom Nav in Light Mode */
+html.theme-light nav[aria-label="Mobile Navigation"] {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 -8px 30px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Elevated Light Cards & Panels (outside .keep-dark-hero) */
+html.theme-light main :not(.keep-dark-hero) [class*="bg-[#111827]"],
+html.theme-light main :not(.keep-dark-hero) [class*="bg-[#0F172A]"],
+html.theme-light main :not(.keep-dark-hero) [class*="bg-[#0C1222]"],
+html.theme-light main :not(.keep-dark-hero) [class*="bg-[#0B1224]"],
+html.theme-light main :not(.keep-dark-hero) [class*="bg-[#090E1A]"],
+html.theme-light main :not(.keep-dark-hero) [class*="bg-[#0A0F1D]"],
+html.theme-light main :not(.keep-dark-hero) [class*="from-[#121F44]"],
+html.theme-light main :not(.keep-dark-hero) [class*="from-[#10263D]"],
+html.theme-light main :not(.keep-dark-hero) [class*="from-[#1B1948]"],
+html.theme-light main :not(.keep-dark-hero) [class*="from-[#1c143d]"],
+html.theme-light main :not(.keep-dark-hero) [class*="from-[#0F1B3D]"] {
+  background-image: none !important;
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 8px 26px rgba(15, 23, 42, 0.05) !important;
+}
+
+html.theme-light aside [class*="bg-slate-9"],
+html.theme-light aside [class*="bg-[#0"],
+html.theme-light main :not(.keep-dark-hero) [class*="bg-slate-950"],
+html.theme-light main :not(.keep-dark-hero) [class*="bg-slate-900"],
+html.theme-light main :not(.keep-dark-hero) [class*="bg-[#070E22]"],
+html.theme-light main :not(.keep-dark-hero) [class*="bg-[#070D1E]"],
+html.theme-light main :not(.keep-dark-hero) [class*="bg-[#091128]"] {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Crisp Dark Ink Typography inside Light Surfaces */
+html.theme-light aside :not([class*="from-blue-600"]):not([class*="from-indigo-600"]):not([class*="from-amber-400"]):not([class*="from-cyan-400"]) .text-white,
+html.theme-light aside .text-white,
+html.theme-light main :not(.keep-dark-hero) .text-white,
+html.theme-light header:not(.keep-dark-hero) .text-white {
+  color: #0f172a !important;
+}
+
+/* Preserve white text on solid dark/vivid accent buttons & active sidebar pills */
+html.theme-light [class*="from-blue-600"] *,
+html.theme-light [class*="from-blue-600"].text-white,
+html.theme-light [class*="from-blue-500"] *,
+html.theme-light [class*="from-blue-500"].text-white,
+html.theme-light [class*="bg-blue-600"],
+html.theme-light [class*="bg-indigo-600"],
+html.theme-light [class*="bg-emerald-600"],
+html.theme-light [class*="bg-purple-600"],
+html.theme-light [class*="bg-rose-500"],
+html.theme-light [class*="bg-rose-600"] {
+  color: #ffffff !important;
+}
+
+html.theme-light .keep-dark-hero .text-white {
+  color: #ffffff !important;
+}
+html.theme-light .keep-dark-hero .text-slate-950 {
+  color: #020617 !important;
+}
+
+/* Muted text legibility in Light Mode */
+html.theme-light aside .text-slate-300,
+html.theme-light aside .text-slate-400,
+html.theme-light main :not(.keep-dark-hero) .text-slate-200,
+html.theme-light main :not(.keep-dark-hero) .text-slate-300,
+html.theme-light main :not(.keep-dark-hero) .text-slate-400,
+html.theme-light main :not(.keep-dark-hero) .text-blue-100\/85,
+html.theme-light main :not(.keep-dark-hero) .text-blue-200\/75 {
+  color: #475569 !important;
+}
+
+/* Borders & Accent Readability on White Backgrounds */
+html.theme-light main :not(.keep-dark-hero) .text-cyan-300,
+html.theme-light main :not(.keep-dark-hero) .text-cyan-400 {
+  color: #0284c7 !important;
+}
+html.theme-light main :not(.keep-dark-hero) .text-emerald-300,
+html.theme-light main :not(.keep-dark-hero) .text-emerald-400 {
+  color: #059669 !important;
+}
+html.theme-light main :not(.keep-dark-hero) .text-purple-300,
+html.theme-light main :not(.keep-dark-hero) .text-purple-400 {
+  color: #7c3aed !important;
+}
+html.theme-light main :not(.keep-dark-hero) .text-amber-300,
+html.theme-light main :not(.keep-dark-hero) .text-amber-400 {
+  color: #d97706 !important;
+}
+
+html.theme-light input:not(.keep-dark-hero input),
+html.theme-light select:not(.keep-dark-hero select) {
+  color: #0f172a !important;
+}
+
+
 
