@@ -7276,85 +7276,72 @@ export default function StudentWebApp() {
 
               return (
                 <div className="space-y-6">
-                  {/* 1. LUMINOUS SAPPHIRE HERO STAGE (Matches SpeakFlow Dashboard Aesthetic + Open Unobstructed 3D Robot Stage) */}
-                  <div className="relative rounded-3xl overflow-hidden border border-blue-500/35 bg-gradient-to-br from-[#0B173D] via-[#12265D] to-[#081230] shadow-[0_24px_65px_rgba(30,64,175,0.35)] p-6 sm:p-8">
-                    {/* Ambient Sapphire & Cyan Halo Glows */}
-                    <div className="absolute -top-20 -left-20 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
-                    <div className="absolute -bottom-24 right-10 w-80 h-80 bg-cyan-400/20 rounded-full blur-3xl pointer-events-none" />
+                  {/* 1. FULL-BLEED PANORAMIC CONVERSATION AI HERO STAGE (Matches SpeakFlow Dashboard Aesthetic) */}
+                  <div className="relative rounded-3xl overflow-hidden border border-cyan-500/40 bg-[#081330] shadow-[0_24px_65px_rgba(30,64,175,0.4)] min-h-[290px] sm:min-h-[330px] p-6 sm:p-8 lg:p-10 flex items-center">
+                    {/* Seamless Full-Width Background Illustration */}
+                    <img
+                      src="/images/conversation_lounge_full_bg.jpg"
+                      alt="SpeakFlow AI Conversation Lounge Hero"
+                      className="absolute inset-0 w-full h-full object-cover object-right pointer-events-none select-none opacity-95"
+                    />
+                    {/* Gentle Left-Weighted Gradient Overlay for Razor-Sharp Typography while Right Visual Glows Full-Bleed */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#060E27]/90 via-[#0A163B]/55 to-transparent pointer-events-none" />
                     <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-cyan-400/80 via-blue-400/80 to-indigo-400/80 pointer-events-none" />
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
-                      {/* Left Editorial Column (7 cols) */}
-                      <div className="lg:col-span-7 space-y-4">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-400/15 border border-cyan-400/40 text-cyan-200 text-[10.5px] font-black uppercase tracking-wider backdrop-blur-md">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                            <span>AI Conversation Lounge • {selectedLanguage}</span>
-                          </span>
-                          <span className="px-2.5 py-1 rounded-full bg-blue-500/20 border border-blue-400/35 text-blue-200 text-[10px] font-bold">
-                            Practice + Vocabulary + Grammar Unified
-                          </span>
-                        </div>
+                    {/* Top-Right Telemetry Pills */}
+                    <div className="hidden sm:flex items-center gap-2 absolute top-4 right-5 z-20">
+                      <span className="px-3 py-1 rounded-full bg-slate-950/75 backdrop-blur-md border border-cyan-400/40 text-cyan-200 text-[11px] font-bold flex items-center gap-1.5 shadow-lg">
+                        <Bot className="w-3.5 h-3.5 text-cyan-300" />
+                        <span>Coach: {selectedCoach.name}</span>
+                      </span>
+                      <span className="px-3 py-1 rounded-full bg-slate-950/75 backdrop-blur-md border border-emerald-400/40 text-emerald-200 text-[11px] font-bold flex items-center gap-1.5 shadow-lg">
+                        <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>SpeakFlow Neural • 12ms</span>
+                      </span>
+                    </div>
 
-                        <div className="space-y-2.5">
-                          <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-[1.12] drop-shadow-[0_4px_16px_rgba(0,0,0,0.45)]">
-                            Interactive Voice Studio <br className="hidden sm:inline" />
-                            <span className="bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300 bg-clip-text text-transparent">
-                              &amp; 3-in-1 Live Coaching
-                            </span>
-                          </h2>
-                          <p className="text-xs sm:text-sm text-blue-100/85 max-w-xl leading-relaxed">
-                            Blend real-world <strong className="text-white">Roleplay Scenarios</strong>, active{" "}
-                            <strong className="text-emerald-300">Vocabulary Targets</strong>, and your personal{" "}
-                            <strong className="text-cyan-300">Grammar Repairs</strong> inside one seamless AI voice call.
-                          </p>
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-3 pt-1">
-                          <button
-                            type="button"
-                            onClick={handleLaunchCombinedCall}
-                            className="px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 hover:brightness-110 text-slate-950 font-black text-xs shadow-xl shadow-cyan-500/30 flex items-center gap-2 transition-all hover:scale-[1.02]"
-                          >
-                            <PhoneCall className="w-4 h-4 fill-slate-950" />
-                            <span>Start 3-in-1 Combined Call ({selectedLanguage}) →</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setActiveTab("practice")}
-                            className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-md text-white text-xs font-bold transition-all"
-                          >
-                            Browse All {topics.length}+ Catalog →
-                          </button>
-                        </div>
-
-                        {/* Telemetry Footer Pills */}
-                        <div className="flex flex-wrap items-center gap-2 pt-1">
-                          <span className="px-3 py-1 rounded-xl bg-slate-950/50 border border-blue-400/25 text-[11px] font-semibold text-blue-100 flex items-center gap-1.5">
-                            <Bot className="w-3.5 h-3.5 text-cyan-300" />
-                            <span>Coach: {selectedCoach.name}</span>
-                          </span>
-                          <span className="px-3 py-1 rounded-xl bg-slate-950/50 border border-emerald-400/25 text-[11px] font-semibold text-emerald-200 flex items-center gap-1.5">
-                            <Zap className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>SpeakFlow Neural • 12ms</span>
-                          </span>
-                        </div>
+                    {/* Left Editorial Content Overlay */}
+                    <div className="relative z-10 max-w-xl space-y-4">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-400/20 border border-cyan-400/45 text-cyan-200 text-[10.5px] font-black uppercase tracking-wider backdrop-blur-md">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                          <span>AI Conversation Lounge • {selectedLanguage}</span>
+                        </span>
+                        <span className="px-2.5 py-1 rounded-full bg-blue-500/25 border border-blue-400/40 text-blue-100 text-[10px] font-bold backdrop-blur-md">
+                          Practice + Vocabulary + Grammar Unified
+                        </span>
                       </div>
 
-                      {/* Right Open 3D Robot Stage Column (5 cols - Completely Uncovered Artwork!) */}
-                      <div className="lg:col-span-5 flex items-center justify-center relative">
-                        <div className="relative w-full max-w-[360px] lg:max-w-none aspect-square sm:aspect-[5/4] flex items-center justify-center">
-                          <div className="absolute inset-4 rounded-full bg-cyan-400/20 blur-2xl pointer-events-none" />
-                          <img
-                            src="/images/conversation_lounge_bot.jpg"
-                            alt="SpeakFlow AI Conversation Lounge Coach Bot"
-                            className="w-full h-full object-contain rounded-3xl select-none pointer-events-none drop-shadow-[0_18px_40px_rgba(34,211,238,0.28)]"
-                            style={{
-                              WebkitMaskImage: "radial-gradient(ellipse at center, black 58%, transparent 98%)",
-                              maskImage: "radial-gradient(ellipse at center, black 58%, transparent 98%)"
-                            }}
-                          />
-                        </div>
+                      <div className="space-y-2.5">
+                        <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-[1.12] drop-shadow-[0_4px_18px_rgba(0,0,0,0.85)]">
+                          Interactive Voice Studio <br className="hidden sm:inline" />
+                          <span className="bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-200 bg-clip-text text-transparent">
+                            &amp; 3-in-1 Live Coaching
+                          </span>
+                        </h2>
+                        <p className="text-xs sm:text-sm text-blue-100/90 max-w-lg leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                          Blend real-world <strong className="text-white">Roleplay Scenarios</strong>, active{" "}
+                          <strong className="text-emerald-300">Vocabulary Targets</strong>, and your personal{" "}
+                          <strong className="text-cyan-300">Grammar Repairs</strong> inside one seamless AI voice call.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3 pt-1">
+                        <button
+                          type="button"
+                          onClick={handleLaunchCombinedCall}
+                          className="px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 hover:brightness-110 text-slate-950 font-black text-xs shadow-xl shadow-cyan-500/35 flex items-center gap-2 transition-all hover:scale-[1.02]"
+                        >
+                          <PhoneCall className="w-4 h-4 fill-slate-950" />
+                          <span>Start 3-in-1 Combined Call ({selectedLanguage}) →</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("practice")}
+                          className="px-4 py-3 rounded-2xl bg-slate-950/65 hover:bg-slate-900/80 border border-white/25 backdrop-blur-md text-white text-xs font-bold transition-all"
+                        >
+                          Browse All {topics.length}+ Catalog →
+                        </button>
                       </div>
                     </div>
                   </div>
