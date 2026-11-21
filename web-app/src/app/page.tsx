@@ -2469,6 +2469,49 @@ export default function StudentWebApp() {
     return matchesLang && matchesSearch;
   });
 
+  // Dynamic contextual power words for active conversation
+  const getTopicPowerWords = (title: string, scenario: string) => {
+    const text = (title + " " + scenario).toLowerCase();
+    if (text.includes("cricket")) {
+      return [
+        { word: "Captaincy", xp: 50, prompt: "What makes an exceptional captain in cricket?" },
+        { word: "World Cup", xp: 50, prompt: "Which T20 World Cup final was the most unforgettable?" },
+        { word: "Match Winner", xp: 50, prompt: "Who do you consider the ultimate match winner?" },
+        { word: "Super Over", xp: 50, prompt: "How high is the pressure during a Super Over?" },
+        { word: "Batting Lineup", xp: 50, prompt: "Does top-order depth decide the game?" }
+      ];
+    }
+    if (text.includes("travel") || text.includes("tourism") || text.includes("airport")) {
+      return [
+        { word: "Boarding Pass", xp: 50, prompt: "Where do I present my boarding pass at the gate?" },
+        { word: "Local Cuisine", xp: 50, prompt: "I'd love to try some authentic local cuisine here!" },
+        { word: "Flight Delay", xp: 50, prompt: "Could you tell me if there is a flight delay?" },
+        { word: "Sightseeing", xp: 50, prompt: "What are the top three sightseeing landmarks nearby?" },
+        { word: "Hidden Gems", xp: 50, prompt: "Are there any hidden gems tourists often miss?" }
+      ];
+    }
+    if (text.includes("pitch") || text.includes("business") || text.includes("hybrid") || text.includes("tech")) {
+      return [
+        { word: "Hybrid AI", xp: 50, prompt: "Our Hybrid AI architecture combines on-device Nano with cloud Gemini." },
+        { word: "Inference Latency", xp: 50, prompt: "We achieve sub-20ms inference latency on-device." },
+        { word: "Scalability", xp: 50, prompt: "How does this infrastructure guarantee global scalability?" },
+        { word: "Competitive Edge", xp: 50, prompt: "Our core competitive edge is 100% offline privacy." },
+        { word: "User Retention", xp: 50, prompt: "Real-time voice feedback dramatically boosts user retention." }
+      ];
+    }
+    return [
+      { word: "Fluency", xp: 50, prompt: "I am actively working on improving my spoken fluency." },
+      { word: "Perspective", xp: 50, prompt: "From my perspective, consistent daily practice is essential." },
+      { word: "Confidence", xp: 50, prompt: "Speaking regularly builds natural conversational confidence." },
+      { word: "Pronunciation", xp: 50, prompt: "Could you give me tips on natural rhythm and pronunciation?" },
+      { word: "Communication", xp: 50, prompt: "Clear communication is my primary goal in learning languages." }
+    ];
+  };
+
+  const currentPowerWords = activeCallTopic ? getTopicPowerWords(activeCallTopic.title, activeCallTopic.scenario) : [];
+  const spokenTranscriptAll = conversationTurns.map((t) => t.text.toLowerCase()).join(" ");
+  const completedWordsCount = currentPowerWords.filter((pw) => spokenTranscriptAll.includes(pw.word.toLowerCase())).length;
+
   return (
     <div className="min-h-screen bg-[#0A0F1D] text-slate-100 flex flex-col md:flex-row selection:bg-blue-500 selection:text-white relative">
       {/* ------------------------------------------------------------- */}
@@ -2842,7 +2885,7 @@ export default function StudentWebApp() {
         <main className={activeCallTopic ? "w-full min-h-screen p-2 sm:p-4 bg-[#030612] flex flex-col justify-center" : "p-4 sm:p-6 lg:p-8 space-y-6 w-full max-w-[1680px] mx-auto"}>
           {/* IF ACTIVE CALL IS RUNNING: FULL SCREEN LIVE AI VIDEO CALL STUDIO */}
           {activeCallTopic ? (
-            <div className="w-full max-w-7xl mx-auto bg-gradient-to-b from-[#0e1628] via-[#090d18] to-[#04060c] border border-cyan-500/40 rounded-3xl p-3 sm:p-5 shadow-[0_20px_70px_rgba(0,0,0,0.85)] relative overflow-hidden flex flex-col justify-between min-h-[calc(100vh-2rem)] space-y-3">
+            <div className="w-full max-w-[1680px] mx-auto bg-gradient-to-b from-[#0e1628] via-[#090d18] to-[#04060c] border border-cyan-500/40 rounded-3xl p-3 sm:p-5 shadow-[0_20px_70px_rgba(0,0,0,0.85)] relative overflow-hidden flex flex-col justify-between min-h-[calc(100vh-2rem)] space-y-3">
               {/* Top ambient lights */}
               <div className="absolute -top-16 -left-16 w-60 h-60 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute -bottom-16 -right-16 w-60 h-60 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
@@ -2951,8 +2994,8 @@ export default function StudentWebApp() {
                       </div>
                     )}
 
-                    {/* Widescreen Cinematic Coach Video Feed */}
-                    <div className="w-full max-w-2xl aspect-[16/10] sm:aspect-video rounded-3xl p-1 sm:p-1.5 transition-all duration-500 shadow-2xl mx-auto relative group z-10">
+                    {/* Widescreen Cinematic Coach Video Feed + Dynamic Interactive Flanks */}
+                    <div className="w-full max-w-4xl xl:max-w-5xl 2xl:max-w-6xl aspect-video rounded-3xl p-1 sm:p-1.5 transition-all duration-500 shadow-2xl mx-auto relative group z-10">
                       <div className={`w-full h-full rounded-[22px] overflow-hidden relative bg-slate-950 transition-all duration-500 border-2 ${
                         isBotSpeaking
                           ? "border-cyan-400 shadow-[0_0_50px_rgba(56,189,248,0.6)]"
@@ -3005,6 +3048,67 @@ export default function StudentWebApp() {
                           <span className="text-[10px] text-cyan-300 font-normal hidden sm:inline">• {selectedCoach.accent}</span>
                         </div>
 
+                        {/* Left Flank HUD: Interactive Mission Target Vocabulary */}
+                        <div className="absolute top-14 left-3 z-30 hidden md:flex flex-col gap-1.5 max-w-[170px] pointer-events-auto animate-in fade-in duration-300">
+                          <div className="px-2.5 py-1 rounded-xl bg-slate-950/85 border border-cyan-500/40 backdrop-blur-md shadow-lg text-[10px] font-black uppercase tracking-wider text-cyan-300 flex items-center justify-between">
+                            <span className="flex items-center gap-1">
+                              <Sparkles className="w-3 h-3 text-cyan-400" />
+                              Power Words
+                            </span>
+                            <span className="text-[9px] font-mono text-emerald-400 font-bold">
+                              {completedWordsCount}/{currentPowerWords.length}
+                            </span>
+                          </div>
+                          {currentPowerWords.map((pw, pwIdx) => {
+                            const isUsed = spokenTranscriptAll.includes(pw.word.toLowerCase());
+                            return (
+                              <button
+                                key={pwIdx}
+                                onClick={() => handleUserSpeech(pw.prompt)}
+                                className={`px-2.5 py-1 rounded-xl text-[10px] font-bold text-left transition-all border backdrop-blur-md flex items-center justify-between group/pw ${
+                                  isUsed
+                                    ? "bg-emerald-500/25 border-emerald-400/60 text-emerald-300 shadow-md shadow-emerald-500/20"
+                                    : "bg-slate-950/80 border-slate-800 text-slate-300 hover:border-cyan-400/50 hover:text-white"
+                                }`}
+                                title={`Click to say: "${pw.prompt}"`}
+                              >
+                                <span className="truncate">{pw.word}</span>
+                                {isUsed ? (
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                                ) : (
+                                  <span className="text-[8px] text-slate-500 font-mono group-hover/pw:text-cyan-300">
+                                    +{pw.xp}XP
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Right Flank HUD: Real-Time Acoustic & Cadence Telemetry */}
+                        <div className="absolute top-14 right-3 z-30 hidden md:flex flex-col gap-1.5 max-w-[160px] pointer-events-auto animate-in fade-in duration-300">
+                          <div className="px-2.5 py-1 rounded-xl bg-slate-950/85 border border-purple-500/40 backdrop-blur-md shadow-lg text-[10px] font-black uppercase tracking-wider text-purple-300 flex items-center gap-1">
+                            <Activity className="w-3 h-3 text-purple-400 animate-pulse" />
+                            <span>Cadence Flow</span>
+                          </div>
+                          <div className="p-2 rounded-xl bg-slate-950/80 border border-slate-800/80 backdrop-blur-md space-y-1.5 text-left">
+                            <div className="flex items-center justify-between text-[9px] text-slate-400">
+                              <span>Speaking Pace</span>
+                              <span className="font-mono text-cyan-300 font-bold">132 WPM</span>
+                            </div>
+                            <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                              <div className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full w-[78%]" />
+                            </div>
+                            <div className="flex items-center justify-between text-[9px] text-slate-400 pt-0.5">
+                              <span>Clarity & Tone</span>
+                              <span className="font-mono text-emerald-400 font-bold">98% Crisp</span>
+                            </div>
+                            <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                              <div className="h-full bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full w-[94%]" />
+                            </div>
+                          </div>
+                        </div>
+
                         {/* Top-Right Resolution & Subtitle Toggle HUD */}
                         <div className="absolute top-3 right-3 z-30 flex items-center gap-2">
                           <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-950/80 border border-slate-700/80 text-[10px] font-mono text-cyan-300 backdrop-blur-md shadow-lg">
@@ -3021,6 +3125,27 @@ export default function StudentWebApp() {
                             CC {showSubtitles ? "ON" : "OFF"}
                           </button>
                         </div>
+
+                        {/* Live Dynamic Audio Frequency Spectrum Bars (Dancing Waveform) */}
+                        {(isBotSpeaking || isUserSpeaking) && (
+                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex items-end gap-1 px-3 py-1 rounded-full bg-slate-950/85 backdrop-blur-md border border-cyan-500/30 shadow-lg pointer-events-none">
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping mr-1" />
+                            {[12, 18, 26, 14, 22, 30, 20, 16, 28, 24, 18, 32, 22, 16, 28, 14, 20, 26, 18, 12].map((baseH, bIdx) => (
+                              <span
+                                key={bIdx}
+                                className={`w-1 rounded-full transition-all duration-100 ${
+                                  isBotSpeaking
+                                    ? "bg-cyan-400 shadow-[0_0_6px_#38bdf8]"
+                                    : "bg-emerald-400 shadow-[0_0_6px_#34d399]"
+                                }`}
+                                style={{
+                                  height: `${Math.max(4, (baseH * (micVolumeLevel > 10 ? micVolumeLevel / 50 : 0.8)) % 28 + 4)}px`,
+                                  animation: `pulse ${0.6 + (bIdx % 5) * 0.15}s ease-in-out infinite`
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
 
                         {/* Bottom Center Dynamic Live State Pill */}
                         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
