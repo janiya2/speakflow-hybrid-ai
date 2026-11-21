@@ -133,7 +133,7 @@ const COACHES: CoachModel[] = [
     avatar: "/images/coaches/sophia.jpg",
     voice: "en-US-JennyNeural",
     talkingVideo: "/videos/coaches/sophia.mp4",
-    idleVideo: "/videos/coaches/sophia.mp4"
+    idleVideo: ""
   },
   {
     id: "sarah",
@@ -166,7 +166,7 @@ const COACHES: CoachModel[] = [
     avatar: "/images/coaches/chloe.jpg",
     voice: "fr-FR-DeniseNeural",
     talkingVideo: "/videos/coaches/chloe.mp4",
-    idleVideo: "/videos/coaches/chloe.mp4"
+    idleVideo: ""
   },
   {
     id: "alex",
@@ -964,6 +964,41 @@ export default function StudentWebApp() {
   const [showSubtitles, setShowSubtitles] = useState(true);
   const [isAudioSlowMode, setIsAudioSlowMode] = useState(false);
   const userVideoRef = useRef<HTMLVideoElement | null>(null);
+  const talkingVideoRef = useRef<HTMLVideoElement | null>(null);
+  const idleVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  const startCoachTalkingVideo = () => {
+    setIsBotSpeaking(true);
+    if (idleVideoRef.current) {
+      try {
+        idleVideoRef.current.pause();
+      } catch (_) {}
+    }
+    if (talkingVideoRef.current) {
+      try {
+        talkingVideoRef.current.currentTime = 0;
+        const p = talkingVideoRef.current.play();
+        if (p !== undefined) p.catch(() => {});
+      } catch (_) {}
+    }
+  };
+
+  const stopCoachTalkingVideo = () => {
+    setIsBotSpeaking(false);
+    if (talkingVideoRef.current) {
+      try {
+        talkingVideoRef.current.pause();
+        talkingVideoRef.current.currentTime = 0;
+      } catch (_) {}
+    }
+    if (idleVideoRef.current) {
+      try {
+        idleVideoRef.current.currentTime = 0;
+        const p = idleVideoRef.current.play();
+        if (p !== undefined) p.catch(() => {});
+      } catch (_) {}
+    }
+  };
 
   const toggleCamera = async () => {
     if (isCameraActive) {
@@ -1266,7 +1301,10 @@ export default function StudentWebApp() {
 
   useEffect(() => {
     isCallActiveRef.current = !!activeCallTopic;
-  }, [activeCallTopic]);
+    if (activeCallTopic) {
+      stopCoachTalkingVideo();
+    }
+  }, [activeCallTopic, selectedCoach]);
 
   useEffect(() => {
     isBotSpeakingRef.current = isBotSpeaking;
@@ -1488,9 +1526,11 @@ export default function StudentWebApp() {
     };
   }, []);
 
-  // 7. Text-To-Speech (TTS) Engine
+  // 7. Text-To-Speech (TTS) Engine — Synchronized Audio & Lip Movement
   const speakText = async (text: string, langName: string) => {
-    setIsBotSpeaking(true);
+    // 1. DO NOT animate lips until audio actually plays from speaker!
+    stopListening();
+    stopCoachTalkingVideo();
     setBotCaption(text);
     setConversationTurns((prev) => [
       ...prev,
@@ -1508,34 +1548,50 @@ export default function StudentWebApp() {
     try {
       const ttsUrl = `/api/tts?text=${encodeURIComponent(text)}&coach=${selectedCoach.id}&gender=${selectedCoach.gender}&language=${encodeURIComponent(langName)}`;
       const audio = new Audio(ttsUrl);
+      audio.volume = 1.0;
       activeAudioRef.current = audio;
 
+      // 2. ONLY start lip movement when audio ACTUALLY starts playing out of speaker!
+      audio.onplaying = () => {
+        startCoachTalkingVideo();
+      };
+
+      // 3. Exact instant speech ends or is paused, stop lip movement immediately!
       audio.onended = () => {
-        setIsBotSpeaking(false);
+        stopCoachTalkingVideo();
         activeAudioRef.current = null;
         startListening();
         scheduleProactiveNudge();
       };
 
+      audio.onpause = () => {
+        stopCoachTalkingVideo();
+      };
+
       audio.onerror = () => {
         console.warn("Neural TTS server failed, falling back to Web Speech Synthesis.");
+        stopCoachTalkingVideo();
         fallbackBrowserTts(text, langName);
       };
 
       await audio.play();
       return;
     } catch (e) {
+      stopCoachTalkingVideo();
       fallbackBrowserTts(text, langName);
     }
   };
 
   const fallbackBrowserTts = (text: string, langName: string) => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      setIsBotSpeaking(false);
+      stopCoachTalkingVideo();
       startListening();
       return;
     }
     window.speechSynthesis.cancel();
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = isAudioSlowMode ? 0.75 : 0.95;
     utterance.pitch = selectedCoach.gender === "female" ? 1.15 : 0.9;
@@ -1563,13 +1619,16 @@ export default function StudentWebApp() {
     else if (langName === "Spanish") targetLang = "es-ES";
     utterance.lang = targetLang;
 
+    utterance.onstart = () => {
+      startCoachTalkingVideo();
+    };
     utterance.onend = () => {
-      setIsBotSpeaking(false);
+      stopCoachTalkingVideo();
       startListening();
       scheduleProactiveNudge();
     };
     utterance.onerror = () => {
-      setIsBotSpeaking(false);
+      stopCoachTalkingVideo();
       startListening();
     };
     window.speechSynthesis.speak(utterance);
@@ -1626,7 +1685,7 @@ export default function StudentWebApp() {
       recognition.lang = targetLang;
 
       recognition.onstart = () => {
-        setIsUserSpeaking(true);
+        setIsUserSpeaking(false);
         setMicPermissionError(false);
       };
 
@@ -1647,6 +1706,7 @@ export default function StudentWebApp() {
         if (liveWords) {
           setUserCaption(liveWords);
           setIsUserSpeaking(true);
+          stopCoachTalkingVideo();
         }
 
         // When user finishes a phrase, debounce before sending to AI
@@ -1761,6 +1821,7 @@ export default function StudentWebApp() {
   // 11. Process User Speech Turn
   const handleUserSpeech = async (spokenText: string) => {
     stopListening();
+    stopCoachTalkingVideo();
     setIsProcessing(true);
     setUserSpeechTurnsCount((prev) => prev + 1);
     if (proactiveNudgeTimerRef.current) clearTimeout(proactiveNudgeTimerRef.current);
@@ -2863,116 +2924,135 @@ export default function StudentWebApp() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 items-stretch relative z-10">
                 {/* Left/Center: High-Definition AI Video Call Screen (8 cols) */}
                 <div className="lg:col-span-8 flex flex-col justify-between rounded-3xl bg-gradient-to-tr from-[#050914] via-[#091122] to-[#040710] border-2 border-cyan-500/30 shadow-[0_0_50px_rgba(56,189,248,0.2)] p-4 sm:p-6 relative overflow-hidden min-h-[460px]">
-                  {/* Video Screen Top Banner */}
-                  <div className="flex items-center justify-between relative z-20">
-                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950/70 border border-slate-800 text-[11px] font-bold text-slate-200 backdrop-blur-md">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>Coach {selectedCoach.name}</span>
-                      <span className="text-cyan-400 font-mono text-[10px]">({selectedCoach.accent})</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-[10px] font-mono text-cyan-300">
-                        HD 1080p 60fps • Neural Voice
-                      </span>
-                      <button
-                        onClick={() => setShowSubtitles(!showSubtitles)}
-                        className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-all ${
-                          showSubtitles
-                            ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
-                            : "bg-slate-900 border-slate-800 text-slate-400"
-                        }`}
-                      >
-                        CC {showSubtitles ? "ON" : "OFF"}
-                      </button>
-                    </div>
-                  </div>
-
                   {/* Central Coach Presence & Dynamic Video Animation */}
-                  <div className="flex-1 flex flex-col items-center justify-center my-2 relative">
+                  <div className="flex-1 flex flex-col items-center justify-center my-1 relative w-full">
                     {/* Ambient Blurred Studio Video Backdrop */}
-                    <video
-                      key={`${selectedCoach.id}-backdrop`}
-                      src={isBotSpeaking ? selectedCoach.talkingVideo : selectedCoach.idleVideo}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      className="absolute inset-0 w-full h-full object-cover blur-3xl scale-125 opacity-30 pointer-events-none transition-opacity duration-500"
-                    />
+                    {selectedCoach.idleVideo ? (
+                      <video
+                        key={`${selectedCoach.id}-backdrop`}
+                        src={isBotSpeaking ? selectedCoach.talkingVideo : selectedCoach.idleVideo}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover blur-3xl scale-110 opacity-25 pointer-events-none transition-opacity duration-700"
+                      />
+                    ) : (
+                      <img
+                        key={`${selectedCoach.id}-backdrop-img`}
+                        src={selectedCoach.avatar}
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover blur-3xl scale-110 opacity-20 pointer-events-none"
+                      />
+                    )}
 
                     {/* Concentric Audio Pulse Rings when Speaking */}
                     {isBotSpeaking && (
-                      <>
-                        <div className="absolute w-64 h-64 rounded-3xl border-2 border-cyan-400 animate-ping opacity-30 pointer-events-none" />
-                        <div className="absolute w-80 h-80 rounded-3xl border border-blue-500 animate-pulse opacity-20 pointer-events-none" />
-                      </>
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-[85%] max-w-xl aspect-video rounded-3xl border-2 border-cyan-400/30 animate-ping opacity-20" />
+                        <div className="absolute w-[95%] max-w-2xl aspect-video rounded-3xl border border-blue-500/25 animate-pulse opacity-20" />
+                      </div>
                     )}
 
-                    {/* Coach Large Studio Avatar Video Feed */}
-                    <div className="relative group z-10">
-                      <div className={`w-44 h-44 sm:w-56 sm:h-56 rounded-3xl p-1.5 transition-all duration-300 ${
+                    {/* Widescreen Cinematic Coach Video Feed */}
+                    <div className="w-full max-w-2xl aspect-[16/10] sm:aspect-video rounded-3xl p-1 sm:p-1.5 transition-all duration-500 shadow-2xl mx-auto relative group z-10">
+                      <div className={`w-full h-full rounded-[22px] overflow-hidden relative bg-slate-950 transition-all duration-500 border-2 ${
                         isBotSpeaking
-                          ? "bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-500 shadow-[0_0_60px_rgba(56,189,248,0.7)] scale-105"
+                          ? "border-cyan-400 shadow-[0_0_50px_rgba(56,189,248,0.6)]"
                           : isUserSpeaking
-                          ? "bg-gradient-to-tr from-emerald-400 to-teal-500 shadow-[0_0_50px_rgba(16,185,129,0.5)] scale-100"
-                          : "bg-gradient-to-tr from-slate-700 to-slate-800 shadow-2xl"
+                          ? "border-emerald-400 shadow-[0_0_40px_rgba(16,185,129,0.5)]"
+                          : "border-slate-700/80 shadow-2xl"
                       }`}>
-                        <div className="w-full h-full rounded-[22px] overflow-hidden relative bg-slate-900 shadow-inner">
-                          {/* Fallback Poster Portrait */}
-                          <img
-                            src={selectedCoach.avatar}
-                            alt={selectedCoach.name}
-                            className="absolute inset-0 w-full h-full object-cover"
-                          />
+                        {/* Fallback Portrait Image */}
+                        <img
+                          src={selectedCoach.avatar}
+                          alt={selectedCoach.name}
+                          className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-300 ${
+                            !isBotSpeaking && !selectedCoach.idleVideo ? "opacity-100 z-10" : "opacity-0 pointer-events-none"
+                          }`}
+                        />
 
-                          {/* Idle / Listening Video Loop */}
+                        {/* Idle / Listening Video Loop */}
+                        {selectedCoach.idleVideo && (
                           <video
+                            ref={idleVideoRef}
                             key={`${selectedCoach.id}-idle-feed`}
                             src={selectedCoach.idleVideo}
                             autoPlay
                             loop
                             muted
                             playsInline
-                            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+                            className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-300 ${
                               !isBotSpeaking ? "opacity-100 z-10" : "opacity-0 pointer-events-none"
                             }`}
                           />
+                        )}
 
-                          {/* Talking / Speaking Video Loop */}
-                          <video
-                            key={`${selectedCoach.id}-talking-feed`}
-                            src={selectedCoach.talkingVideo}
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
-                              isBotSpeaking ? "opacity-100 z-10" : "opacity-0 pointer-events-none"
+                        {/* Talking / Speaking Video Feed (Imperatively driven on audio.onplaying) */}
+                        <video
+                          ref={talkingVideoRef}
+                          key={`${selectedCoach.id}-talking-feed`}
+                          src={selectedCoach.talkingVideo}
+                          loop
+                          muted
+                          playsInline
+                          className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-300 ${
+                            isBotSpeaking ? "opacity-100 z-20" : "opacity-0 pointer-events-none"
+                          }`}
+                        />
+
+                        {/* Top-Left Floating Coach Badge inside Video */}
+                        <div className="absolute top-3 left-3 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/80 border border-slate-700/80 backdrop-blur-md text-xs font-bold text-white shadow-lg">
+                          <span className={`w-2.5 h-2.5 rounded-full ${isBotSpeaking ? "bg-cyan-400 animate-ping" : "bg-emerald-400"}`} />
+                          <span>{selectedCoach.name}</span>
+                          <span className="text-[10px] text-cyan-300 font-normal hidden sm:inline">• {selectedCoach.accent}</span>
+                        </div>
+
+                        {/* Top-Right Resolution & Subtitle Toggle HUD */}
+                        <div className="absolute top-3 right-3 z-30 flex items-center gap-2">
+                          <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-950/80 border border-slate-700/80 text-[10px] font-mono text-cyan-300 backdrop-blur-md shadow-lg">
+                            HD 1080p • 60fps
+                          </span>
+                          <button
+                            onClick={() => setShowSubtitles(!showSubtitles)}
+                            className={`px-2.5 py-1 rounded-xl text-[10px] font-bold border transition-all backdrop-blur-md shadow-lg ${
+                              showSubtitles
+                                ? "bg-cyan-500/25 border-cyan-400 text-cyan-300"
+                                : "bg-slate-950/80 border-slate-700 text-slate-400"
                             }`}
-                          />
+                          >
+                            CC {showSubtitles ? "ON" : "OFF"}
+                          </button>
+                        </div>
+
+                        {/* Bottom Center Dynamic Live State Pill */}
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+                          {isBotSpeaking && (
+                            <div className="px-4 py-1.5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-black text-xs shadow-xl shadow-cyan-500/50 flex items-center gap-2 whitespace-nowrap animate-bounce">
+                              <Volume2 className="w-4 h-4 animate-pulse" />
+                              <span>{selectedCoach.name} is Speaking...</span>
+                            </div>
+                          )}
+                          {isUserSpeaking && (
+                            <div className="px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black text-xs shadow-xl shadow-emerald-500/50 flex items-center gap-2 whitespace-nowrap animate-bounce">
+                              <Mic className="w-4 h-4 animate-pulse" />
+                              <span>Hearing Your Speech...</span>
+                            </div>
+                          )}
+                          {!isBotSpeaking && !isUserSpeaking && isProcessing && (
+                            <div className="px-4 py-1.5 rounded-full bg-purple-600 text-white font-black text-xs shadow-xl shadow-purple-600/50 flex items-center gap-2 whitespace-nowrap animate-pulse">
+                              <Sparkles className="w-4 h-4" />
+                              <span>Gemini Nano Thinking...</span>
+                            </div>
+                          )}
+                          {!isBotSpeaking && !isUserSpeaking && !isProcessing && (
+                            <div className="px-3.5 py-1 rounded-full bg-slate-950/75 border border-slate-700/80 text-slate-300 font-semibold text-[11px] backdrop-blur-md flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                              <span>Your Turn to Speak</span>
+                            </div>
+                          )}
                         </div>
                       </div>
-
-                      {/* State Pills */}
-                      {isBotSpeaking && (
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-black text-xs shadow-lg shadow-cyan-500/40 flex items-center gap-1.5 whitespace-nowrap animate-bounce">
-                          <Volume2 className="w-3.5 h-3.5 animate-pulse" />
-                          <span>{selectedCoach.name} is Speaking...</span>
-                        </div>
-                      )}
-                      {isUserSpeaking && (
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/40 flex items-center gap-1.5 whitespace-nowrap animate-bounce">
-                          <Mic className="w-3.5 h-3.5 animate-pulse" />
-                          <span>Hearing Your Speech...</span>
-                        </div>
-                      )}
-                      {!isBotSpeaking && !isUserSpeaking && isProcessing && (
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-purple-600 text-white font-black text-xs shadow-lg shadow-purple-600/40 flex items-center gap-1.5 whitespace-nowrap animate-pulse">
-                          <Sparkles className="w-3.5 h-3.5" />
-                          <span>Gemini Nano Thinking...</span>
-                        </div>
-                      )}
                     </div>
 
                     {/* LIVE MICROPHONE INPUT & DECIBEL LEVEL HUD */}
