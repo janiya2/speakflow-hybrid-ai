@@ -327,7 +327,7 @@ const DEFAULT_LANDING_CONFIG: LandingPageConfig = {
   statFluency: "98.4%",
   statLanguages: "6 Languages",
   feature1Title: "Hybrid On-Device AI Engine",
-  feature1Desc: "Zero-latency voice feedback powered by Gemini Nano on-device with smart cloud fallback.",
+  feature1Desc: "Zero-latency voice feedback powered by SpeakFlow Neural Engine on-device with smart cloud fallback.",
   feature2Title: "100+ Real Voice Scenarios",
   feature2Desc: "Immersive simulated phone calls across Food, Travel, Business, Airport, and Sports.",
   feature3Title: "Live Subtitles & Instant Scoring",
@@ -410,9 +410,9 @@ const DEFAULT_ACHIEVEMENTS: AchievementBadge[] = [
   },
   {
     id: "nano_pioneer",
-    title: "Gemini Nano Pioneer",
+    title: "Neural Engine Pioneer",
     category: "Accuracy & Mastery",
-    description: "Practiced with on-device Gemini Nano hybrid AI with zero cloud latency.",
+    description: "Practiced with on-device SpeakFlow Neural Engine with zero cloud latency.",
     iconType: "zap",
     gradient: "from-emerald-400 to-teal-500",
     accentBorder: "border-emerald-500/40",
@@ -968,7 +968,7 @@ export default function StudentWebApp() {
   const [hybridLatency, setHybridLatency] = useState<number>(0);
   const [hybridModeSetting, setHybridModeSetting] = useState<HybridModeSetting>("auto");
   const [simulateOffline, setSimulateOffline] = useState<boolean>(false);
-  const [engineModelLabel, setEngineModelLabel] = useState<string>("Cloud Gemini 2.5 Flash");
+  const [engineModelLabel, setEngineModelLabel] = useState<string>("SpeakFlow Cloud Neural v2.5");
   const keyCooldownsRef = useRef<Map<string, number>>(new Map());
 
   // AI Voice Coach Persona Selection
@@ -2415,7 +2415,11 @@ export default function StudentWebApp() {
 
     setHybridEngine(hybridResult.engineUsed);
     setHybridLatency(hybridResult.latencyMs);
-    setEngineModelLabel(hybridResult.modelIdentifier || "Cloud Gemini 2.5 Flash");
+    setEngineModelLabel(
+      hybridResult.modelIdentifier
+        ? hybridResult.modelIdentifier.replace(/gemini/gi, "SpeakFlow Neural")
+        : "SpeakFlow Cloud Neural v2.5"
+    );
     setIsProcessing(false);
 
     if (hybridResult.hasCorrection && drillModeEnabled) {
@@ -3402,30 +3406,32 @@ export default function StudentWebApp() {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                   </span>
-                  <span className="text-[9.5px] font-black tracking-wider text-cyan-300 uppercase">Hybrid AI Engine</span>
+                  <span className="text-[9.5px] font-black tracking-wider text-cyan-300 uppercase">SpeakFlow Neural</span>
                 </div>
-                <span className="text-[8.5px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20">
-                  12ms Sub-Cadence
+                <span className="text-[8.5px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 whitespace-nowrap">
+                  Sub-12ms Edge
                 </span>
               </div>
-              <div className="pt-2 space-y-1 text-[10.5px]">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400 text-[10px] flex items-center gap-1">
-                    <Cpu className="w-3 h-3 text-cyan-400" /> Edge Model:
+              <div className="pt-2 space-y-1.5 text-[10.5px]">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-slate-400 text-[10px] flex items-center gap-1 shrink-0">
+                    <Cpu className="w-3 h-3 text-cyan-400" /> Edge Core:
                   </span>
-                  <span className="font-semibold text-white text-[10px]">Gemini Nano 3.2B</span>
+                  <span className="font-semibold text-white text-[10px] truncate">SpeakFlow Nano v3.2</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400 text-[10px] flex items-center gap-1">
-                    <Cloud className="w-3 h-3 text-blue-400" /> Cloud Burst:
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-slate-400 text-[10px] flex items-center gap-1 shrink-0">
+                    <Cloud className="w-3 h-3 text-blue-400" /> Cloud Ultra:
                   </span>
-                  <span className="font-semibold text-white text-[10px]">Gemini 2.5 Flash</span>
+                  <span className="font-semibold text-white text-[10px] truncate">SpeakFlow Cloud v2.5</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400 text-[10px] flex items-center gap-1">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-slate-400 text-[10px] flex items-center gap-1 shrink-0">
                     <ShieldCheck className="w-3 h-3 text-emerald-400" /> Privacy:
                   </span>
-                  <span className="text-emerald-300 font-bold text-[9.5px]">100% Offline Capable</span>
+                  <span className="text-emerald-300 font-bold text-[9.5px] whitespace-nowrap bg-emerald-500/15 px-1.5 py-0.2 rounded border border-emerald-500/30">
+                    100% On-Device
+                  </span>
                 </div>
               </div>
             </div>
@@ -3441,7 +3447,7 @@ export default function StudentWebApp() {
               </div>
               <div>
                 <span className="font-black text-xs text-white block">SpeakFlow VIP Pro</span>
-                <p className="text-[9.5px] text-amber-200/80 font-medium">Unlimited Gemini Nano &amp; Cloud</p>
+                <p className="text-[9.5px] text-amber-200/80 font-medium">Unlimited Voice AI &amp; All 8 Coaches</p>
               </div>
               <button
                 onClick={() => setShowVipModal(true)}
@@ -3550,15 +3556,15 @@ export default function StudentWebApp() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-400"></span>
                 </span>
-                <span className="font-mono text-[11px] text-cyan-300 font-bold">⚡ Gemini Nano 12ms</span>
+                <span className="font-mono text-[11px] text-cyan-300 font-bold">⚡ SpeakFlow Neural • 12ms</span>
                 <span className="text-[10px] text-slate-600">|</span>
-                <span className="text-[10.5px] text-slate-300 font-medium">On-Device</span>
+                <span className="text-[10.5px] text-slate-300 font-medium">Edge AI</span>
               </div>
 
               {/* Daily Streak Indicator */}
               <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold shadow-sm">
                 <Flame className="w-4 h-4 text-amber-400 fill-amber-400 animate-pulse" />
-                <span>12 Days</span>
+                <span>{realAnalytics.streakDays} Days</span>
                 <span className="text-[8.5px] bg-amber-500/25 text-amber-200 px-1.5 py-0.2 rounded-full font-black">
                   2x XP
                 </span>
@@ -3767,12 +3773,12 @@ export default function StudentWebApp() {
                   {simulateOffline || hybridEngine === "ON_DEVICE_NANO" ? (
                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400 text-emerald-300 text-xs font-mono font-bold shadow-md shadow-emerald-500/30">
                       <Zap className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400 animate-bounce" />
-                      <span>⚡ Gemini Nano ({hybridLatency || 12}ms • On-Device)</span>
+                      <span>⚡ SpeakFlow Edge Neural ({hybridLatency || 12}ms • On-Device)</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-xs font-mono font-bold shadow-md shadow-cyan-500/30">
                       <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-                      <span>☁️ Cloud Gemini 2.5 Flash ({hybridLatency || 140}ms)</span>
+                      <span>☁️ SpeakFlow Cloud Neural ({hybridLatency || 140}ms)</span>
                     </div>
                   )}
 
@@ -3784,7 +3790,7 @@ export default function StudentWebApp() {
                         ? "bg-amber-500/20 border-amber-400 text-amber-300 shadow-md shadow-amber-500/30"
                         : "bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-300 hover:text-white"
                     }`}
-                    title="Simulate offline flight mode to demo instant On-Device Gemini Nano takeover"
+                    title="Simulate offline flight mode to demo instant On-Device SpeakFlow Neural takeover"
                   >
                     {simulateOffline ? <WifiOff className="w-3.5 h-3.5" /> : <Wifi className="w-3.5 h-3.5" />}
                     <span>{simulateOffline ? "✈️ Flight Mode: ON" : "✈️ Flight Mode: OFF"}</span>
@@ -4035,7 +4041,7 @@ export default function StudentWebApp() {
                           ) : isProcessing ? (
                             <div className="px-4 py-1.5 rounded-full bg-purple-600 text-white font-black text-xs shadow-xl shadow-purple-600/50 flex items-center gap-2 whitespace-nowrap animate-pulse">
                               <Sparkles className="w-4 h-4" />
-                              <span>Gemini Nano Thinking...</span>
+                              <span>SpeakFlow AI Thinking...</span>
                             </div>
                           ) : (
                             <div className="px-3.5 py-1 rounded-full bg-slate-950/75 border border-slate-700/80 text-slate-300 font-semibold text-[11px] backdrop-blur-md flex items-center gap-1.5">
@@ -4340,7 +4346,7 @@ export default function StudentWebApp() {
                       <span>{selectedCoach.name}'s Real-Time Tip:</span>
                     </div>
                     <p className="text-slate-300 text-left">
-                      Focus on speaking in full sentences. Gemini Nano evaluates cadence & grammar automatically.
+                      Focus on speaking in full sentences. SpeakFlow Voice AI evaluates cadence & grammar automatically.
                     </p>
                   </div>
                 </div>
@@ -4398,7 +4404,7 @@ export default function StudentWebApp() {
                   {isProcessing ? (
                     <span className="text-cyan-400 font-bold animate-pulse flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5" />
-                      Gemini Nano Processing Voice Turn...
+                      SpeakFlow Neural Processing Voice Turn...
                     </span>
                   ) : (
                     <span className="flex items-center gap-1.5 text-slate-300">
@@ -4445,7 +4451,7 @@ export default function StudentWebApp() {
                   <div className="absolute top-3.5 right-4 sm:top-4 sm:right-6 flex items-center gap-2 z-20">
                     <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/75 border border-cyan-500/40 text-cyan-300 text-[11px] font-bold backdrop-blur-md shadow-lg shadow-cyan-950/40">
                       <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                      <span>Gemini Nano Hybrid AI</span>
+                      <span>SpeakFlow Neural Core</span>
                     </div>
                     <button
                       onClick={() => setActiveTab("achievements")}
@@ -4668,11 +4674,11 @@ export default function StudentWebApp() {
 
                     {/* Middle: Big Stat Text */}
                     <div className="relative z-10 my-2">
-                      <div className="flex items-baseline gap-2 truncate">
-                        <span className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-[0_2px_12px_rgba(255,255,255,0.2)] font-sans truncate">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-[0_2px_12px_rgba(255,255,255,0.2)] font-sans whitespace-nowrap">
                           {realAnalytics.fluencyTierTitle}
                         </span>
-                        <span className="text-[10px] font-black text-cyan-300 bg-cyan-500/25 px-2 py-0.5 rounded-lg border border-cyan-400/40 shadow-sm">
+                        <span className="text-[10px] font-black text-cyan-300 bg-cyan-500/25 px-2 py-0.5 rounded-lg border border-cyan-400/40 shadow-sm shrink-0">
                           {realAnalytics.avgFluency}%
                         </span>
                       </div>
@@ -5682,7 +5688,7 @@ export default function StudentWebApp() {
                     </h4>
 
                     <p className="text-[11px] text-slate-300 leading-relaxed font-serif italic">
-                      &ldquo;Explain why on-device Gemini Nano guarantees sub-20ms voice response with 100% privacy.&rdquo;
+                      &ldquo;Explain why SpeakFlow&apos;s hybrid neural voice architecture guarantees sub-20ms response with 100% privacy.&rdquo;
                     </p>
 
                     {/* Target & Reward Bar */}
@@ -5905,7 +5911,7 @@ export default function StudentWebApp() {
                     <GraduationCap className="w-5 h-5 text-purple-400" />
                     Intelligent Grammar Fixes
                   </h2>
-                  <p className="text-xs text-slate-400">Common spoken slips caught and repaired by Gemini AI.</p>
+                  <p className="text-xs text-slate-400">Common spoken slips caught and repaired by SpeakFlow Voice Engine.</p>
                 </div>
                 <button
                   onClick={() => setActiveTab("dashboard")}
@@ -6324,7 +6330,7 @@ export default function StudentWebApp() {
 
                     <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
                       <span className="text-slate-400">Speech Audio Inference:</span>
-                      <span className="font-bold text-emerald-400">Gemini Nano 3.2B + Cloud 2.5 Flash</span>
+                      <span className="font-bold text-emerald-400">SpeakFlow Neural Core v3.2 + Cloud Burst</span>
                     </div>
                   </div>
                 </div>
@@ -6727,7 +6733,7 @@ export default function StudentWebApp() {
             <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-950/60 border border-slate-800 text-[10px] text-slate-400 relative z-10">
               <div className="flex items-center gap-1.5">
                 <Zap className="w-3.5 h-3.5 text-yellow-400" />
-                <span>Powered by <strong className="text-white">Gemini Nano Hybrid AI</strong></span>
+                <span>Powered by <strong className="text-white">SpeakFlow Neural Voice Engine</strong></span>
               </div>
               <div className="flex items-center gap-1 text-emerald-400 font-mono">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -6795,7 +6801,7 @@ export default function StudentWebApp() {
               </div>
               <h3 className="text-xl sm:text-2xl font-black text-white">SpeakFlow VIP Membership</h3>
               <p className="text-xs text-slate-300 max-w-md mx-auto">
-                Unlimited real-time phone calls, Gemini Nano on-device AI, and all 6 master speech coaches
+                Unlimited real-time phone calls, SpeakFlow on-device AI, and all 8 master speech coaches
               </p>
             </div>
 
@@ -6827,8 +6833,8 @@ export default function StudentWebApp() {
                   <div className="text-lg font-black text-cyan-400 mt-1">$9.99 <span className="text-[10px] text-slate-400 font-normal">/ month</span></div>
                   <ul className="text-[10px] text-slate-300 space-y-1 mt-2">
                     <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-cyan-400" /> Unlimited voice minutes</li>
-                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-cyan-400" /> All 6 master coaches</li>
-                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-cyan-400" /> Gemini Nano on-device</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-cyan-400" /> All 8 master coaches</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-cyan-400" /> SpeakFlow on-device Neural</li>
                   </ul>
                 </div>
               </div>
@@ -7207,7 +7213,7 @@ export default function StudentWebApp() {
                         </span>
                       </div>
                       <span className="text-[11px] text-cyan-300/90 font-mono block mt-0.5">
-                        ⚡ Evaluated with Gemini Nano On-Device Acoustic Engine
+                        ⚡ Evaluated with SpeakFlow Neural Acoustic Engine
                       </span>
                     </div>
                   </div>
@@ -7644,8 +7650,8 @@ export default function StudentWebApp() {
                 <Zap className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span className="font-medium text-[11px]">
                   {selectedReviewSession.engine === "ON_DEVICE_NANO"
-                    ? "Processed 100% On-Device via Chrome Built-in Gemini Nano • Zero Cloud Telemetry Leakage"
-                    : "Processed via Google Gemini 2.5 Flash Cloud Endpoint • Ultra-High Context Window"}
+                    ? "Processed 100% On-Device via SpeakFlow Neural Edge Core • Zero Cloud Telemetry Leakage"
+                    : "Processed via SpeakFlow Ultra Cloud Neural Endpoint • Ultra-High Context Window"}
                 </span>
               </div>
               <span className="font-mono text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30 text-emerald-300 font-bold shrink-0">
