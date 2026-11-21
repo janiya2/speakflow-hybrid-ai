@@ -189,28 +189,6 @@ const COACHES: CoachModel[] = [
     voice: "ja-JP-NanamiNeural",
     talkingVideo: "/videos/coaches/aoi.mp4",
     idleVideo: "/videos/coaches/aoi_idle.mp4"
-  },
-  {
-    id: "sophia",
-    name: "Sophia Miller",
-    gender: "female",
-    tagline: "Executive Speech & Silicon Valley Pitch Coach",
-    accent: "American English 🇺🇸 / Executive Tone",
-    avatar: "/images/coaches/sophia.jpg",
-    voice: "en-US-JennyNeural",
-    talkingVideo: "/videos/coaches/sophia_widescreen.mp4",
-    idleVideo: "/videos/coaches/sophia_idle.mp4"
-  },
-  {
-    id: "chloe",
-    name: "Camille Laurent",
-    gender: "female",
-    tagline: "French & European Accent & Conversational Master",
-    accent: "French 🇫🇷 / Elegant Tone",
-    avatar: "/images/coaches/chloe.jpg",
-    voice: "fr-FR-DeniseNeural",
-    talkingVideo: "/videos/coaches/chloe_widescreen.mp4",
-    idleVideo: "/videos/coaches/chloe_idle.mp4"
   }
 ];
 
@@ -1092,9 +1070,9 @@ export default function StudentWebApp() {
     {
       id: "session-rec-1",
       topicTitle: "Business English & Strategic Pitching",
-      coachName: "Coach Sophia Miller",
-      coachAvatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
-      coachRole: "Executive Speech & Pitch Coach",
+      coachName: "Coach Sarah Jenkins",
+      coachAvatar: "/images/coaches/sarah.jpg",
+      coachRole: "Warm & Patient • Master English Tutor",
       coachCountry: "United States",
       coachFlag: "🇺🇸",
       category: "Business & Pitching",
@@ -1115,11 +1093,11 @@ export default function StudentWebApp() {
     },
     {
       id: "session-rec-2",
-      topicTitle: "Parisian Café & Everyday Etiquette",
-      coachName: "Coach Camille Laurent",
-      coachAvatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
-      coachRole: "Native French Accent Specialist",
-      coachCountry: "France",
+      topicTitle: "Cambridge Debating & Everyday Etiquette",
+      coachName: "Coach Emma Watson",
+      coachAvatar: "/images/coaches/emma.jpg",
+      coachRole: "Executive & Cambridge Business English",
+      coachCountry: "United Kingdom",
       coachFlag: "🇫🇷",
       category: "Travel & Culture",
       timeAgo: "Yesterday",
@@ -1270,7 +1248,7 @@ export default function StudentWebApp() {
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
         const utter = new SpeechSynthesisUtterance(
-          "Hi Janitha! I am Coach Sophia. In today's AI voice challenge, your mission is to pitch your SpeakFlow Hybrid AI architecture in under three minutes. Speak with confidence, maintain steady cadence, and aim for 95% fluency. Whenever you are ready, tap Call Coach Sophia and let's begin!"
+          "Hi Janitha! I am Coach Sarah. In today's AI voice challenge, your mission is to pitch your SpeakFlow Hybrid AI architecture in under three minutes. Speak with confidence, maintain steady cadence, and aim for 95% fluency. Whenever you are ready, tap Call Coach Sarah and let's begin!"
         );
         utter.rate = 0.95;
         utter.onend = () => setIsPlayingChallengeAudio(false);
@@ -4627,8 +4605,8 @@ export default function StudentWebApp() {
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className="relative shrink-0">
                         <img
-                          src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80"
-                          alt="Coach Sophia Miller"
+                          src="/images/coaches/sarah.jpg"
+                          alt="Coach Sarah Jenkins"
                           className="w-10 h-10 rounded-xl object-cover border border-indigo-400/50 shadow-md"
                         />
                         <span className="absolute -bottom-1 -right-1 text-[11px] leading-none drop-shadow">
@@ -4638,11 +4616,11 @@ export default function StudentWebApp() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className="font-bold text-xs text-white truncate">
-                            Coach Sophia Miller
+                            Coach Sarah Jenkins
                           </span>
                         </div>
                         <span className="text-[9.5px] text-slate-400 block truncate font-medium">
-                          Executive Speech &amp; VC Pitch Coach
+                          Warm & Patient • Master English Tutor
                         </span>
                       </div>
                     </div>
@@ -4650,7 +4628,7 @@ export default function StudentWebApp() {
                     {/* Live Audio Challenge Preview Button */}
                     <button
                       onClick={handleToggleChallengeAudio}
-                      title={isPlayingChallengeAudio ? "Stop Audio Briefing" : "Listen to Coach Sophia's Briefing"}
+                      title={isPlayingChallengeAudio ? "Stop Audio Briefing" : "Listen to Coach Sarah's Briefing"}
                       className={`px-2 py-1 rounded-xl text-[9px] font-bold flex items-center gap-1 transition-all shrink-0 ${
                         isPlayingChallengeAudio
                           ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/40 animate-pulse"
@@ -4710,7 +4688,7 @@ export default function StudentWebApp() {
                     className="w-full py-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-black text-xs shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-98 relative z-10"
                   >
                     <PhoneCall className="w-4 h-4 animate-bounce" />
-                    <span>Call Coach Sophia Now (14ms Nano) →</span>
+                    <span>Call Coach Sarah Now (14ms Nano) →</span>
                   </button>
                 </div>
 
@@ -5284,7 +5262,7 @@ export default function StudentWebApp() {
                     <Bot className="w-3.5 h-3.5" />
                   </div>
                   <h4 className="text-xs font-black uppercase tracking-wider text-slate-200">
-                    Choose Your AI Speech Coach (8 Available)
+                    Choose Your AI Speech Coach (6 Available)
                   </h4>
                 </div>
                 <span className="text-[11px] font-bold text-cyan-300 flex items-center gap-1">
@@ -5293,8 +5271,8 @@ export default function StudentWebApp() {
                 </span>
               </div>
 
-              {/* Coach Cards Grid (Full 8 Coaches Visible - No Inner Scroll Clipping) */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {/* Coach Cards Grid (Full 6 Coaches Visible: 3 Female, 3 Male - Balanced 3x2 Grid) */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {COACHES.map((coach) => {
                   const isSelected = selectedCoach.id === coach.id;
                   const isVoicePlaying = previewingCoachVoiceId === coach.id;
