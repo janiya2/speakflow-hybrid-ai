@@ -31,7 +31,9 @@ import {
   Smartphone,
   Check,
   ExternalLink,
-  HelpCircle
+  HelpCircle,
+  QrCode,
+  Download
 } from "lucide-react";
 
 interface PracticePackage {
@@ -67,6 +69,11 @@ export default function PackagesPage() {
   const [paywallTitle, setPaywallTitle] = useState("Unlock Full Access");
   const [paywallSubtitle, setPaywallSubtitle] = useState("Learn anytime and anywhere at your own pace");
   const [savingSubscription, setSavingSubscription] = useState(false);
+
+  // Google Play Store & APK Download Links (Web App VIP Sync)
+  const [playStoreUrl, setPlayStoreUrl] = useState("https://play.google.com/store/apps/details?id=com.innoxpert.speakflow");
+  const [apkDownloadUrl, setApkDownloadUrl] = useState("https://github.com/janithad2/speakflow-ai/releases/download/v1.0.0/speakflow-ai.apk");
+  const [savingAppLinks, setSavingAppLinks] = useState(false);
 
   // Packages list
   const [packages, setPackages] = useState<PracticePackage[]>([]);
@@ -144,6 +151,15 @@ export default function PackagesPage() {
           paywallSubtitle: "Unlimited practice with all 6 native AI coaches",
           updatedAt: serverTimestamp(),
         });
+      }
+
+      // 2.5 Fetch Play Store & APK Download URLs from lang_settings/landing_page
+      const landingRef = doc(db, COLLECTIONS.SETTINGS, "landing_page");
+      const landingSnap = await getDoc(landingRef);
+      if (landingSnap.exists()) {
+        const lData = landingSnap.data();
+        if (lData.playStoreUrl) setPlayStoreUrl(lData.playStoreUrl);
+        if (lData.apkDownloadUrl) setApkDownloadUrl(lData.apkDownloadUrl);
       }
 
       // 3. Fetch Packages from lang_packages
@@ -250,6 +266,31 @@ export default function PackagesPage() {
       setStatusMessage({ type: "error", text: "Failed to save subscription settings: " + err.message });
     } finally {
       setSavingSubscription(false);
+    }
+  };
+
+  const handleSaveAppLinks = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingAppLinks(true);
+    setStatusMessage(null);
+    try {
+      await setDoc(
+        doc(db, COLLECTIONS.SETTINGS, "landing_page"),
+        {
+          playStoreUrl: playStoreUrl.trim(),
+          apkDownloadUrl: apkDownloadUrl.trim(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+      setStatusMessage({
+        type: "success",
+        text: "Google Play Store & Direct APK URLs updated! The website VIP upgrade modal and QR codes are now updated.",
+      });
+    } catch (err: any) {
+      setStatusMessage({ type: "error", text: "Failed to update App Store links: " + err.message });
+    } finally {
+      setSavingAppLinks(false);
     }
   };
 
@@ -746,6 +787,136 @@ export default function PackagesPage() {
                   Auto-renewable, cancel anytime • Google Play Store
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION 1.5: GOOGLE PLAY STORE & APK DOWNLOAD LINKS (WEBSITE VIP BILLING SYNC) */}
+      <div className="rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900/95 to-sky-950/40 border border-sky-500/30 p-6 shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-sky-500/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-800 gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center">
+              <Smartphone className="w-5 h-5 text-sky-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                Mobile App Distribution & Google Play Sync Links
+                <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                  Web VIP Gateway
+                </span>
+              </h2>
+              <p className="text-xs text-slate-400">
+                The Web App prompts users to subscribe via Google Play In-App Billing on Android. Enter your approved Play Store URL & APK link here.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 bg-slate-950/60 px-3 py-1.5 rounded-xl border border-slate-800">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>Real-time Sync Active</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Link Form */}
+          <form onSubmit={handleSaveAppLinks} className="lg:col-span-8 space-y-5">
+            <div className="space-y-4">
+              {/* Play Store URL Input */}
+              <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Rocket className="w-3.5 h-3.5 text-sky-400" />
+                    Google Play Store URL
+                  </label>
+                  {playStoreUrl && (
+                    <a
+                      href={playStoreUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-sky-400 hover:text-sky-300 flex items-center gap-1 underline"
+                    >
+                      Test Link <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  value={playStoreUrl}
+                  onChange={(e) => setPlayStoreUrl(e.target.value)}
+                  placeholder="https://play.google.com/store/apps/details?id=com.innoxpert.speakflow"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2.5 text-white text-xs font-mono focus:border-sky-500 focus:outline-none"
+                />
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  💡 Once Google reviews and approves the app submission, paste the official Play Store link here. The Website VIP modal and QR Code will instantly point learners directly to this listing.
+                </p>
+              </div>
+
+              {/* Direct APK Download URL */}
+              <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Download className="w-3.5 h-3.5 text-emerald-400" />
+                    Direct APK Download Link (Beta / Sideload)
+                  </label>
+                  {apkDownloadUrl && (
+                    <a
+                      href={apkDownloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 underline"
+                    >
+                      Test Download <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  value={apkDownloadUrl}
+                  onChange={(e) => setApkDownloadUrl(e.target.value)}
+                  placeholder="https://github.com/janithad2/speakflow-ai/releases/download/v1.0.0/speakflow-ai.apk"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3.5 py-2.5 text-white text-xs font-mono focus:border-emerald-500 focus:outline-none"
+                />
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  Direct Android package URL for beta testers and judges who want to sideload without Play Store.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <button
+                type="submit"
+                disabled={savingAppLinks}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-sky-500/25 transition-all"
+              >
+                <Save className="w-4 h-4" />
+                {savingAppLinks ? "Saving..." : "Save App Distribution Links"}
+              </button>
+              <span className="text-xs text-slate-500">
+                Instantly updates QR codes on Web App & Landing Page.
+              </span>
+            </div>
+          </form>
+
+          {/* Live Dynamic QR Code Preview */}
+          <div className="lg:col-span-4 bg-slate-950/80 p-5 rounded-2xl border border-slate-800 text-center space-y-3">
+            <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-300">
+              <QrCode className="w-4 h-4 text-sky-400" />
+              <span>Live Scannable QR Code</span>
+            </div>
+            <div className="p-3 bg-slate-900 rounded-2xl border border-sky-500/30 inline-block shadow-inner">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(playStoreUrl || apkDownloadUrl || "https://play.google.com")}&color=38-189-248&bgcolor=15-23-42`}
+                alt="App Download QR Code"
+                className="w-40 h-40 rounded-xl mx-auto shadow-md"
+              />
+            </div>
+            <p className="text-[11px] text-slate-400">
+              Scan with your phone camera to test direct link navigation.
+            </p>
+            <div className="text-[10px] text-sky-400 font-mono break-all px-2 py-1 bg-slate-900 rounded-lg border border-slate-800">
+              {playStoreUrl ? playStoreUrl.slice(0, 48) + "..." : "No URL set"}
             </div>
           </div>
         </div>

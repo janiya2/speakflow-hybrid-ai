@@ -99,7 +99,10 @@ import {
   Send,
   Cpu,
   Cloud,
-  ShieldCheck
+  ShieldCheck,
+  QrCode,
+  Copy,
+  Edit3
 } from "lucide-react";
 
 interface TopicModel {
@@ -823,6 +826,7 @@ export default function StudentWebApp() {
     | "progress"
     | "achievements"
     | "settings"
+    | "profile"
     | "history";
   const [activeTab, setActiveTab] = useState<MainTab>("dashboard");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -839,6 +843,18 @@ export default function StudentWebApp() {
   const [premiumPlanName, setPremiumPlanName] = useState<string>("Annual VIP Pro Pass");
   const [premiumExpiryDate, setPremiumExpiryDate] = useState<string>("2027-01-15");
   const [streakFreezesCount, setStreakFreezesCount] = useState<number>(2);
+
+  // User Profile Settings State (Matching Mobile App Profile)
+  const [profileDisplayName, setProfileDisplayName] = useState<string>("Janitha Dilshan");
+  const [profileNativeLang, setProfileNativeLang] = useState<string>("Sinhala (සිංහල)");
+  const [profileTargetLang, setProfileTargetLang] = useState<string>("English (US / UK)");
+  const [profileDailyGoalMins, setProfileDailyGoalMins] = useState<number>(10);
+  const [showEditProfileModal, setShowEditProfileModal] = useState<boolean>(false);
+  const [editNameInput, setEditNameInput] = useState<string>("Janitha Dilshan");
+  const [editNativeInput, setEditNativeInput] = useState<string>("Sinhala (සිංහල)");
+  const [editTargetInput, setEditTargetInput] = useState<string>("English (US / UK)");
+  const [editGoalInput, setEditGoalInput] = useState<number>(10);
+  const [copiedAppUrl, setCopiedAppUrl] = useState<boolean>(false);
 
   const toggleMembershipTier = () => {
     const nextVal = !isPremiumMember;
@@ -1297,11 +1313,60 @@ export default function StudentWebApp() {
         } else {
           localStorage.setItem("speakflow_user_sessions", JSON.stringify(initialDefaultRecentSessions));
         }
+        // Load User Profile Settings
+        const savedProfile = localStorage.getItem("speakflow_user_profile");
+        if (savedProfile) {
+          const parsed = JSON.parse(savedProfile);
+          if (parsed.displayName) {
+            setProfileDisplayName(parsed.displayName);
+            setEditNameInput(parsed.displayName);
+          }
+          if (parsed.nativeLang) {
+            setProfileNativeLang(parsed.nativeLang);
+            setEditNativeInput(parsed.nativeLang);
+          }
+          if (parsed.targetLang) {
+            setProfileTargetLang(parsed.targetLang);
+            setEditTargetInput(parsed.targetLang);
+          }
+          if (parsed.dailyGoalMins) {
+            setProfileDailyGoalMins(parsed.dailyGoalMins);
+            setEditGoalInput(parsed.dailyGoalMins);
+          }
+        }
       } catch (err) {
-        console.warn("Could not read local sessions:", err);
+        console.warn("Could not read local sessions or profile:", err);
       }
     }
   }, []);
+
+  const handleSaveProfile = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const updated = {
+      displayName: editNameInput.trim() || profileDisplayName,
+      nativeLang: editNativeInput.trim() || profileNativeLang,
+      targetLang: editTargetInput.trim() || profileTargetLang,
+      dailyGoalMins: Number(editGoalInput) || profileDailyGoalMins,
+    };
+    setProfileDisplayName(updated.displayName);
+    setProfileNativeLang(updated.nativeLang);
+    setProfileTargetLang(updated.targetLang);
+    setProfileDailyGoalMins(updated.dailyGoalMins);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("speakflow_user_profile", JSON.stringify(updated));
+      } catch (_) {}
+    }
+    setShowEditProfileModal(false);
+  };
+
+  const handleCopyAppUrl = (url: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(url);
+      setCopiedAppUrl(true);
+      setTimeout(() => setCopiedAppUrl(false), 2500);
+    }
+  };
 
   // Backwards Compatibility Pointer
   const defaultRecentSessions = userSessions;
@@ -3264,6 +3329,26 @@ export default function StudentWebApp() {
                   Podium &amp; System
                 </span>
                 <nav className="space-y-1 text-xs font-semibold">
+                  {/* My Profile */}
+                  <button
+                    onClick={() => {
+                      setActiveTab("profile");
+                      setActiveCallTopic(null);
+                      setMobileSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl transition-all ${
+                      activeTab === "profile"
+                        ? "bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-bold shadow-lg shadow-blue-600/30 border border-blue-400/40"
+                        : "text-slate-400 hover:text-white hover:bg-slate-900/70"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <UserIcon className="w-4 h-4" />
+                      <span>My Profile</span>
+                    </div>
+                    <span className="text-[8.5px] font-bold text-cyan-400">View</span>
+                  </button>
+
                   {/* Achievements */}
                   <button
                     onClick={() => {
@@ -3368,23 +3453,31 @@ export default function StudentWebApp() {
             </div>
 
             {/* User Profile Footer */}
-            <div className="flex items-center justify-between p-2 rounded-2xl bg-slate-950/80 border border-slate-800/80 hover:border-slate-700 transition-all">
+            <div
+              onClick={() => {
+                setActiveTab("profile");
+                setActiveCallTopic(null);
+                setMobileSidebarOpen(false);
+              }}
+              className="flex items-center justify-between p-2 rounded-2xl bg-slate-950/80 border border-slate-800/80 hover:border-cyan-500/50 hover:bg-slate-900/90 transition-all cursor-pointer group"
+              title="Click to view My Profile"
+            >
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="relative shrink-0">
                   <img
                     src="/images/janitha-avatar.jpg"
-                    alt="Janitha Dilshan"
-                    className="w-9 h-9 rounded-full object-cover ring-2 ring-blue-500/50"
+                    alt={profileDisplayName}
+                    className="w-9 h-9 rounded-full object-cover ring-2 ring-blue-500/50 group-hover:ring-cyan-400 transition-all"
                     onError={(e) => {
-                      (e.currentTarget as any).src = "https://ui-avatars.com/api/?name=Janitha+Dilshan&background=3b82f6&color=fff";
+                      (e.currentTarget as any).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=3b82f6&color=fff`;
                     }}
                   />
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-950 animate-ping" />
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
                 </div>
                 <div className="min-w-0">
-                  <span className="font-bold text-xs text-white block truncate">
-                    {user?.displayName || "Janitha Dilshan"}
+                  <span className="font-bold text-xs text-white block truncate group-hover:text-cyan-300 transition-colors">
+                    {profileDisplayName}
                   </span>
                   <span className={`text-[10px] flex items-center gap-1 font-semibold truncate ${
                     isPremiumMember ? "text-amber-300" : "text-slate-400"
@@ -3404,7 +3497,10 @@ export default function StudentWebApp() {
                 </div>
               </div>
               <button
-                onClick={handleSignOut}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSignOut();
+                }}
                 title="Sign Out"
                 className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors shrink-0"
               >
@@ -6080,6 +6176,283 @@ export default function StudentWebApp() {
                   })}
               </div>
             </div>
+          ) : activeTab === "profile" ? (
+            /* ----------------------------------------------------------- */
+            /* TAB: DEDICATED USER PROFILE & LANGUAGE LEARNING HUB         */
+            /* ----------------------------------------------------------- */
+            <div className="space-y-6">
+              {/* 1. Profile Hero & Identity Card */}
+              <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-[#111827] via-[#0E162B] to-[#141C38] border border-cyan-500/30 shadow-2xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="absolute -top-12 -left-12 w-48 h-48 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
+
+                <div className="flex items-center gap-4 sm:gap-6 relative z-10">
+                  <div className="relative shrink-0">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full p-1 bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-500 shadow-xl shadow-cyan-500/30">
+                      <img
+                        src="/images/janitha-avatar.jpg"
+                        alt={profileDisplayName}
+                        className="w-full h-full object-cover rounded-full"
+                        onError={(e) => {
+                          (e.currentTarget as any).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=3b82f6&color=fff`;
+                        }}
+                      />
+                    </div>
+                    <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-400 ring-2 ring-slate-950 animate-ping" />
+                    <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-xl sm:text-2xl font-black text-white">{profileDisplayName}</h2>
+                      <button
+                        onClick={() => {
+                          setEditNameInput(profileDisplayName);
+                          setEditNativeInput(profileNativeLang);
+                          setEditTargetInput(profileTargetLang);
+                          setEditGoalInput(profileDailyGoalMins);
+                          setShowEditProfileModal(true);
+                        }}
+                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                        title="Edit Profile Details"
+                      >
+                        <Edit3 className="w-3.5 h-3.5 text-cyan-400" />
+                      </button>
+                    </div>
+
+                    <p className="text-xs text-slate-400 font-mono">@janiya2 • InnoXpert Technologies</p>
+
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1 shadow-sm">
+                        <Crown className="w-3 h-3 text-amber-400 fill-amber-400" />
+                        <span>{isPremiumMember ? "VIP Pro Champion" : "Free Explorer"}</span>
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-mono">
+                        {realAnalytics.cefrBadge}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] text-slate-400 bg-slate-800/80 border border-slate-700">
+                        Joined Nov 2024
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Top Action Buttons */}
+                <div className="flex flex-wrap items-center gap-2.5 relative z-10 self-start md:self-auto">
+                  <button
+                    onClick={() => setShowVipModal(true)}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 flex items-center gap-1.5 transition-all hover:scale-[1.02]"
+                  >
+                    <Crown className="w-3.5 h-3.5 fill-slate-950" />
+                    <span>Manage VIP Pass (Scan QR)</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab("dashboard")}
+                    className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                  >
+                    ← Back to Dashboard
+                  </button>
+                </div>
+              </div>
+
+              {/* 2. Top 4 Metric Highlights */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 rounded-2xl bg-[#111827] border border-purple-500/30 space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">Total Practice</span>
+                  <div className="text-2xl font-black text-white">{realAnalytics.totalHours} <span className="text-xs text-purple-300">HRS</span></div>
+                  <span className="text-[10px] text-slate-400 block">{realAnalytics.totalMinsLogged} minutes recorded</span>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#111827] border border-cyan-500/30 space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">Fluency Tier</span>
+                  <div className="text-2xl font-black text-white">{realAnalytics.avgFluency}%</div>
+                  <span className="text-[10px] text-cyan-300 font-bold block">{realAnalytics.fluencyTierTitle} ({realAnalytics.cefrBadge})</span>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#111827] border border-amber-500/30 space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Mastery XP</span>
+                  <div className="text-2xl font-black text-white">{realAnalytics.totalXp.toLocaleString()}</div>
+                  <span className="text-[10px] text-amber-300/80 block">Level 4 Fluent Speaker</span>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#111827] border border-emerald-500/30 space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Streak Record</span>
+                  <div className="text-2xl font-black text-white">{realAnalytics.streakDays} <span className="text-xs text-emerald-300">DAYS 🔥</span></div>
+                  <span className="text-[10px] text-emerald-300 font-bold block">2x XP Boost Active</span>
+                </div>
+              </div>
+
+              {/* 3. Detailed Settings & Membership Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Language Preferences Card */}
+                <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Languages className="w-5 h-5 text-cyan-400" />
+                      <h3 className="font-bold text-sm text-white">Language Learning Profile</h3>
+                    </div>
+                    <button
+                      onClick={() => setShowEditProfileModal(true)}
+                      className="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-semibold"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                      <span>Change</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-3 text-xs">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                      <span className="text-slate-400">Mother Tongue (Native):</span>
+                      <span className="font-bold text-white">{profileNativeLang}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                      <span className="text-slate-400">Target Learning Language:</span>
+                      <span className="font-bold text-cyan-300">{profileTargetLang}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                      <span className="text-slate-400">Daily Practice Target:</span>
+                      <span className="font-bold text-amber-300">{profileDailyGoalMins} mins/day</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                      <span className="text-slate-400">Preferred Speech Coach:</span>
+                      <span className="font-bold text-white">Coach Sophia Miller (US Accent)</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                      <span className="text-slate-400">Speech Audio Inference:</span>
+                      <span className="font-bold text-emerald-400">Gemini Nano 3.2B + Cloud 2.5 Flash</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Membership & Play Store Billing Card */}
+                <div className="p-6 rounded-3xl bg-[#111827] border border-amber-500/30 space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Crown className="w-5 h-5 text-amber-400" />
+                      <h3 className="font-bold text-sm text-white">VIP Membership &amp; Billing</h3>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      Active
+                    </span>
+                  </div>
+
+                  <div className="space-y-3 text-xs">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                      <span className="text-slate-400">Current Plan:</span>
+                      <span className="font-black text-amber-300">Annual VIP Pro Pass ($59.99/yr)</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                      <span className="text-slate-400">Billing Provider:</span>
+                      <span className="font-bold text-white flex items-center gap-1.5">
+                        <Smartphone className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Google Play Store In-App Purchases</span>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                      <span className="text-slate-400">Next Renewal Date:</span>
+                      <span className="font-bold text-white">January 15, 2027</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                      <span className="text-slate-400">Streak Freeze Protection:</span>
+                      <span className="font-bold text-cyan-300">2 / 2 Shields Active 🛡️</span>
+                    </div>
+
+                    <button
+                      onClick={() => setShowVipModal(true)}
+                      className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.01]"
+                    >
+                      <QrCode className="w-4 h-4 text-cyan-300" />
+                      <span>Scan QR to Manage or Upgrade in Mobile App</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Top Unlocked Badges Showcase */}
+              <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-5 h-5 text-amber-400" />
+                    <h3 className="font-bold text-sm text-white">Your Unlocked Badges &amp; Medals</h3>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab("achievements")}
+                    className="text-xs text-amber-400 hover:underline font-semibold"
+                  >
+                    View All 20 Badges →
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  {achievements.slice(0, 5).map((badge) => (
+                    <div
+                      key={badge.id}
+                      onClick={() => setActiveTab("achievements")}
+                      className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col items-center text-center space-y-1.5 cursor-pointer hover:border-amber-400/50 transition-all"
+                    >
+                      <div className={`w-11 h-11 rounded-xl bg-gradient-to-tr ${badge.gradient} flex items-center justify-center shadow`}>
+                        {renderBadgeIcon(badge.iconType, "w-5 h-5 text-white")}
+                      </div>
+                      <span className="text-xs font-bold text-white truncate max-w-[100px]">{badge.title}</span>
+                      <span className="text-[9px] font-bold text-amber-400">+{badge.xpReward} XP</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 5. Recent Speaking Activity List */}
+              <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <History className="w-5 h-5 text-cyan-400" />
+                    <h3 className="font-bold text-sm text-white">Recent Real Practice Records</h3>
+                  </div>
+                  <span className="text-xs text-slate-400">{userSessions.length} total sessions</span>
+                </div>
+
+                <div className="space-y-2.5">
+                  {userSessions.slice(0, 3).map((session) => (
+                    <div
+                      key={session.id}
+                      className="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800 flex items-center justify-between gap-3"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <img
+                          src={session.coachAvatar}
+                          alt={session.coachName}
+                          className="w-10 h-10 rounded-xl object-cover border border-slate-700"
+                        />
+                        <div className="min-w-0">
+                          <h4 className="font-bold text-xs text-white truncate">{session.topicTitle}</h4>
+                          <span className="text-[10px] text-slate-400">{session.coachName} • {session.durationFormatted}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-xs font-black text-cyan-400 bg-cyan-500/15 border border-cyan-400/30 px-2 py-0.5 rounded-lg">
+                          {session.fluencyScore}% ({session.grade})
+                        </span>
+                        <button
+                          onClick={(e) => handleToggleAudioPreview(e, session)}
+                          className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300"
+                          title="Listen to Coach Voice Review"
+                        >
+                          <Volume2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           ) : (
             /* TAB: PROGRESS & HISTORY */
             <div className="space-y-6">
@@ -6397,64 +6770,327 @@ export default function StudentWebApp() {
       )}
 
       {/* ------------------------------------------------------------- */}
-      {/* 4. VIP UPGRADE MODAL                                          */}
+      {/* ------------------------------------------------------------- */}
+      {/* 4. VIP UPGRADE & GOOGLE PLAY IN-APP BILLING SYNC MODAL */}
       {/* ------------------------------------------------------------- */}
       {showVipModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-gradient-to-b from-[#1E1B4B] to-[#0A0F1D] border border-pink-500/40 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 relative">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-in fade-in duration-200">
+          <div className="w-full max-w-2xl bg-gradient-to-b from-[#131b2e] via-[#0d1527] to-[#070b16] border border-amber-500/40 rounded-3xl p-5 sm:p-7 shadow-[0_25px_80px_rgba(0,0,0,0.9)] relative overflow-hidden my-auto space-y-5">
+            {/* Ambient Corner Glows */}
+            <div className="absolute -top-12 -left-12 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/80 to-transparent" />
+
             <button
               onClick={() => setShowVipModal(false)}
+              className="absolute top-5 right-5 w-8 h-8 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all z-20"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Header: Title & Badges */}
+            <div className="text-center space-y-1.5 relative z-10 pt-1">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 via-orange-500 to-yellow-300 text-slate-950 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/30">
+                <Crown className="w-6 h-6 fill-slate-950" />
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-white">SpeakFlow VIP Membership</h3>
+              <p className="text-xs text-slate-300 max-w-md mx-auto">
+                Unlimited real-time phone calls, Gemini Nano on-device AI, and all 6 master speech coaches
+              </p>
+            </div>
+
+            {/* 3 Tier Comparison Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10">
+              {/* Free Explorer */}
+              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-2">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-white">Free Explorer</span>
+                    <span className="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.2 rounded font-mono">Starter</span>
+                  </div>
+                  <div className="text-lg font-black text-slate-200 mt-1">$0 <span className="text-[10px] text-slate-400 font-normal">/ forever</span></div>
+                  <ul className="text-[10px] text-slate-400 space-y-1 mt-2">
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-slate-400" /> 10 mins daily voice</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-slate-400" /> 2 AI coaches</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-slate-400" /> Standard cloud AI</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Monthly VIP */}
+              <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/40 flex flex-col justify-between space-y-2 relative">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-cyan-300">Monthly VIP</span>
+                    <span className="text-[9px] bg-cyan-500/20 text-cyan-300 px-1.5 py-0.2 rounded font-bold">Popular</span>
+                  </div>
+                  <div className="text-lg font-black text-cyan-400 mt-1">$9.99 <span className="text-[10px] text-slate-400 font-normal">/ month</span></div>
+                  <ul className="text-[10px] text-slate-300 space-y-1 mt-2">
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-cyan-400" /> Unlimited voice minutes</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-cyan-400" /> All 6 master coaches</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-cyan-400" /> Gemini Nano on-device</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Annual VIP Pro Pass */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-b from-amber-500/15 via-purple-950/40 to-slate-900 border-2 border-amber-400/60 flex flex-col justify-between space-y-2 relative shadow-lg shadow-amber-500/10">
+                <div className="absolute -top-2.5 right-3 bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 px-2 py-0.2 rounded-full text-[9px] font-black uppercase tracking-wider shadow">
+                  Save 50%
+                </div>
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-black text-xs text-amber-300">Annual VIP Pro</span>
+                  </div>
+                  <div className="text-lg font-black text-amber-400 mt-1">$59.99 <span className="text-[10px] text-slate-400 font-normal">/ year</span></div>
+                  <ul className="text-[10px] text-amber-200/90 space-y-1 mt-2">
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-amber-400" /> Everything in Monthly</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-amber-400" /> 2x XP Multiplier Boost</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-amber-400" /> 2 Streak Freezes 🛡️</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Google Play In-App Purchase & Auto-Sync Explainer Banner */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-cyan-500/10 border border-amber-400/40 text-left space-y-1.5 relative z-10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Smartphone className="w-4 h-4 text-amber-400" />
+                  <h4 className="font-bold text-xs text-white">
+                    In-App Purchase via Google Play Store
+                  </h4>
+                </div>
+                <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Auto-Syncs with Web</span>
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                To purchase or change your VIP package, install the <b className="text-white">SpeakFlow Mobile App</b> on your Android phone. When you subscribe through Google Play In-App Billing on mobile, your VIP benefits <b className="text-cyan-300">instantly and automatically sync to this Web Dashboard</b> for your account!
+              </p>
+            </div>
+
+            {/* QR Code & Direct Download Row */}
+            {(() => {
+              const appTargetUrl = landingConfig.playStoreUrl || landingConfig.apkDownloadUrl || "https://play.google.com/store/apps/details?id=com.innoxpert.speakflow";
+              const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(appTargetUrl)}&color=38-189-248&bgcolor=15-23-42`;
+
+              return (
+                <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800/90 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 relative z-10">
+                  {/* Glowing QR Code Frame */}
+                  <div className="relative shrink-0 flex flex-col items-center">
+                    <div className="w-36 h-36 rounded-2xl p-2 bg-[#0F172A] border-2 border-cyan-400/50 shadow-xl shadow-cyan-500/20 flex items-center justify-center relative overflow-hidden group">
+                      <img
+                        src={qrImgUrl}
+                        alt="Scan QR to Download SpeakFlow App"
+                        className="w-full h-full object-contain rounded-xl"
+                        onError={(e) => {
+                          (e.currentTarget as any).src = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://play.google.com/store/apps/details?id=com.innoxpert.speakflow";
+                        }}
+                      />
+                      <div className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-[pulse_2s_infinite]" />
+                    </div>
+                    <span className="text-[10px] text-cyan-300 font-bold mt-1.5 flex items-center gap-1">
+                      <QrCode className="w-3 h-3" />
+                      <span>Point Phone Camera</span>
+                    </span>
+                  </div>
+
+                  {/* Actions & Instructions */}
+                  <div className="space-y-3 flex-1 text-center sm:text-left">
+                    <div>
+                      <h5 className="font-bold text-xs text-white">Scan with Phone or Click to Install</h5>
+                      <p className="text-[11px] text-slate-400 leading-relaxed mt-0.5">
+                        Open your phone camera to instantly scan and download SpeakFlow AI from Google Play or direct APK.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                      {/* Play Store Link */}
+                      <a
+                        href={appTargetUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="py-2 px-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 flex items-center gap-1.5 transition-all hover:scale-[1.02]"
+                      >
+                        <Smartphone className="w-3.5 h-3.5" />
+                        <span>Google Play Store</span>
+                      </a>
+
+                      {/* Direct APK Link */}
+                      <a
+                        href={landingConfig.apkDownloadUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="py-2 px-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 flex items-center gap-1.5 transition-all hover:scale-[1.02]"
+                      >
+                        <Download className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Download APK</span>
+                      </a>
+
+                      {/* Copy Link Button */}
+                      <button
+                        onClick={() => handleCopyAppUrl(appTargetUrl)}
+                        className="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs border border-slate-700 flex items-center gap-1.5 transition-all"
+                        title="Copy App Download Link"
+                      >
+                        {copiedAppUrl ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <span className="text-emerald-400 font-bold">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Copy Link</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Active Membership Status */}
+                    <div className="pt-1 text-[10.5px]">
+                      {isPremiumMember ? (
+                        <span className="text-emerald-400 font-bold flex items-center justify-center sm:justify-start gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Active for user {profileDisplayName} (Synced with Google Play)</span>
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">
+                          Current status: Free Explorer • Upgrade via Android App to unlock full VIP.
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            <div className="flex items-center justify-between pt-1 relative z-10">
+              <span className="text-[10px] text-slate-500">
+                Play Store links editable via Admin Panel CMS
+              </span>
+              <button
+                onClick={() => setShowVipModal(false)}
+                className="py-2 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-all"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------- */}
+      {/* EDIT USER PROFILE MODAL                                       */}
+      {/* ------------------------------------------------------------- */}
+      {showEditProfileModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-gradient-to-b from-[#151D33] via-[#0D1527] to-[#080D1A] border border-cyan-500/40 rounded-3xl p-6 shadow-2xl space-y-4 relative">
+            <button
+              onClick={() => setShowEditProfileModal(false)}
               className="absolute top-5 right-5 text-slate-400 hover:text-white"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="text-center space-y-2">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-pink-500 flex items-center justify-center mx-auto shadow-lg shadow-pink-500/30">
-                <Crown className="w-6 h-6 text-white" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+                <Edit3 className="w-5 h-5" />
               </div>
-              <h3 className="text-xl font-black text-white">SpeakFlow VIP Membership</h3>
-              <p className="text-xs text-slate-300">Unlimited real-time phone calls & AI coaches across all languages</p>
-            </div>
-
-            <div className="space-y-3">
-              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-xs text-white block">Monthly VIP Pass</span>
-                  <span className="text-[10px] text-slate-400">Unlimited Gemini Nano + Cloud inferences</span>
-                </div>
-                <span className="font-black text-sm text-cyan-400">$9.99 / mo</span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-900/40 to-purple-900/40 border border-pink-500/40 flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-xs text-white flex items-center gap-1.5">
-                    Annual Pro Pass <span className="text-[9px] bg-pink-500 text-white px-1.5 py-0.2 rounded font-bold">SAVE 40%</span>
-                  </span>
-                  <span className="text-[10px] text-slate-300">Includes all 6 language studios & certificates</span>
-                </div>
-                <span className="font-black text-sm text-pink-400">$59.99 / yr</span>
+              <div>
+                <h3 className="font-bold text-base text-white">Edit Learning Profile</h3>
+                <p className="text-xs text-slate-400">Update your student identity and daily fluency goals</p>
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
-              <span className="text-[11px] text-emerald-400 font-semibold block">
-                ✓ Active for user {user.displayName || "Janitha Dilshan"}
-              </span>
-              <span className="text-[10px] text-slate-400">
-                Subscription synced with Google Play Store Billing in Mobile App.
-              </span>
-            </div>
+            <form onSubmit={handleSaveProfile} className="space-y-3.5 pt-2">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Full Display Name
+                </label>
+                <input
+                  type="text"
+                  value={editNameInput}
+                  onChange={(e) => setEditNameInput(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                  required
+                />
+              </div>
 
-            <button
-              onClick={() => {
-                alert("You are recognized as an VIP Champion! Unlimited access is active.");
-                setShowVipModal(false);
-              }}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-600 to-rose-500 text-white font-bold text-xs shadow-lg shadow-pink-600/30 transition-all"
-            >
-              Continue VIP Experience
-            </button>
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Native Language (Mother Tongue)
+                </label>
+                <select
+                  value={editNativeInput}
+                  onChange={(e) => setEditNativeInput(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                >
+                  <option value="Sinhala (සිංහල)">Sinhala (සිංහල)</option>
+                  <option value="English (United States)">English (United States)</option>
+                  <option value="English (United Kingdom)">English (United Kingdom)</option>
+                  <option value="Tamil (தமிழ்)">Tamil (தமிழ்)</option>
+                  <option value="Japanese (日本語)">Japanese (日本語)</option>
+                  <option value="French (Français)">French (Français)</option>
+                  <option value="Spanish (Español)">Spanish (Español)</option>
+                  <option value="German (Deutsch)">German (Deutsch)</option>
+                  <option value="Korean (한국어)">Korean (한국어)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Target Learning Language
+                </label>
+                <select
+                  value={editTargetInput}
+                  onChange={(e) => setEditTargetInput(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                >
+                  <option value="English (US / UK)">English (US / UK)</option>
+                  <option value="French (Parisian Accent)">French (Parisian Accent)</option>
+                  <option value="Spanish (Castilian / Latin)">Spanish (Castilian / Latin)</option>
+                  <option value="Japanese (Tokyo Standard)">Japanese (Tokyo Standard)</option>
+                  <option value="German (Standard Hochdeutsch)">German (Standard Hochdeutsch)</option>
+                  <option value="Korean (Seoul Accent)">Korean (Seoul Accent)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Daily Speaking Goal (Minutes)
+                </label>
+                <select
+                  value={editGoalInput}
+                  onChange={(e) => setEditGoalInput(Number(e.target.value))}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                >
+                  <option value={5}>5 Minutes / Day (Quick Warmup)</option>
+                  <option value={10}>10 Minutes / Day (Standard Sprint)</option>
+                  <option value={15}>15 Minutes / Day (Accelerated Learner)</option>
+                  <option value={20}>20 Minutes / Day (Intensive Immersion)</option>
+                  <option value={30}>30 Minutes / Day (Mastery Immersion)</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEditProfileModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-xs font-bold shadow-lg shadow-blue-500/25"
+                >
+                  Save Profile Changes
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
