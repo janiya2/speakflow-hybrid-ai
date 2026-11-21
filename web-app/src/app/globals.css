@@ -201,15 +201,15 @@ video::cue {
 }
 
 /* ------------------------------------------------------------- */
-/* DUAL SYSTEM: CLEAN EXECUTIVE LIGHT MODE (html.theme-light)    */
-/* Preserves dark-artwork hero banners & video studio (.keep-dark-hero) */
+/* DUAL SYSTEM: COMPLETE DAYLIGHT LIGHT MODE (html.theme-light)  */
+/* Covers Sidebar, Header, All Tabs, Calling UI, Radar & Modals  */
 /* ------------------------------------------------------------- */
 html.theme-light {
   color-scheme: light;
 }
 
 html.theme-light body {
-  background: #f3f6fb !important;
+  background: #eff4fb !important;
   color: #0f172a !important;
 }
 
@@ -223,149 +223,301 @@ html.theme-light ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* Root & Shell Surfaces */
-html.theme-light .min-h-screen.bg-\[\#0A0F1D\] {
-  background-color: #f3f6fb !important;
+/* 1. Main Canvas, Sidebar, Header, Call Wrapper & Mobile Dock */
+html.theme-light .min-h-screen,
+html.theme-light [class*="bg-[#030612]"],
+html.theme-light [class*="bg-[#0A0F1D]"] {
+  background-color: #eff4fb !important;
   color: #0f172a !important;
 }
 
 html.theme-light aside {
-  background: linear-gradient(180deg, #ffffff 0%, #f8faff 55%, #f1f5fd 100%) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8faff 60%, #f1f5fd 100%) !important;
   border-color: #e2e8f0 !important;
-  box-shadow: 8px 0 30px rgba(15, 23, 42, 0.05) !important;
+  box-shadow: 6px 0 28px rgba(15, 23, 42, 0.05) !important;
 }
 
-html.theme-light header:not(.keep-dark-hero) {
+html.theme-light header {
   background: rgba(255, 255, 255, 0.96) !important;
   border-color: #e2e8f0 !important;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05) !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
 }
 
-html.theme-light header:not(.keep-dark-hero) [class*="bg-[#111827]"],
-html.theme-light header:not(.keep-dark-hero) [class*="bg-[#0F172A]"],
-html.theme-light header:not(.keep-dark-hero) [class*="bg-[#0B0F19]"],
-html.theme-light header:not(.keep-dark-hero) [class*="bg-slate-900"] {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-}
-
-html.theme-light header:not(.keep-dark-hero) [class*="bg-slate-950"],
-html.theme-light header:not(.keep-dark-hero) [class*="bg-slate-800"] {
-  background-color: #f8fafc !important;
-  border-color: #e2e8f0 !important;
-}
-
-html.theme-light header:not(.keep-dark-hero) .text-slate-300,
-html.theme-light header:not(.keep-dark-hero) .text-slate-400 {
-  color: #475569 !important;
-}
-
-html.theme-light header:not(.keep-dark-hero) .text-amber-300 {
-  color: #b45309 !important;
-}
-
-html.theme-light header:not(.keep-dark-hero) .text-cyan-300,
-html.theme-light header:not(.keep-dark-hero) .text-cyan-400 {
-  color: #0284c7 !important;
-}
-
-/* Mobile Bottom Nav in Light Mode */
 html.theme-light nav[aria-label="Mobile Navigation"] {
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
   border-color: #cbd5e1 !important;
   box-shadow: 0 -8px 30px rgba(15, 23, 42, 0.08) !important;
 }
 
-/* Elevated Light Cards & Panels (outside .keep-dark-hero) */
-html.theme-light main :not(.keep-dark-hero) [class*="bg-[#111827]"],
-html.theme-light main :not(.keep-dark-hero) [class*="bg-[#0F172A]"],
-html.theme-light main :not(.keep-dark-hero) [class*="bg-[#0C1222]"],
-html.theme-light main :not(.keep-dark-hero) [class*="bg-[#0B1224]"],
-html.theme-light main :not(.keep-dark-hero) [class*="bg-[#090E1A]"],
-html.theme-light main :not(.keep-dark-hero) [class*="bg-[#0A0F1D]"],
-html.theme-light main :not(.keep-dark-hero) [class*="from-[#121F44]"],
-html.theme-light main :not(.keep-dark-hero) [class*="from-[#10263D]"],
-html.theme-light main :not(.keep-dark-hero) [class*="from-[#1B1948]"],
-html.theme-light main :not(.keep-dark-hero) [class*="from-[#1c143d]"],
-html.theme-light main :not(.keep-dark-hero) [class*="from-[#0F1B3D]"] {
+/* 2. Primary Neutral Card & Container Surfaces (Dashboards, Call Panels, Modals, Tabs) */
+html.theme-light [class*="bg-[#111827]"],
+html.theme-light [class*="bg-[#0F172A]"],
+html.theme-light [class*="bg-[#0C1222]"],
+html.theme-light [class*="bg-[#0B1224]"],
+html.theme-light [class*="bg-[#0B0F19]"],
+html.theme-light [class*="bg-[#0B132B]"],
+html.theme-light [class*="bg-[#090E1A]"],
+html.theme-light [class*="bg-[#081330]"],
+html.theme-light [class*="bg-[#091022]"],
+html.theme-light [class*="bg-[#111B33]"],
+html.theme-light [class*="bg-slate-900"],
+html.theme-light [class*="from-[#111827]"],
+html.theme-light [class*="from-[#0F172A]"],
+html.theme-light [class*="from-[#0F1830]"],
+html.theme-light [class*="from-[#0e1628]"],
+html.theme-light [class*="from-[#050914]"],
+html.theme-light [class*="from-[#090E1A]"],
+html.theme-light [class*="from-[#131C31]"],
+html.theme-light [class*="from-[#131b2e]"],
+html.theme-light [class*="from-[#131B32]"],
+html.theme-light [class*="from-[#151D33]"],
+html.theme-light [class*="from-[#121B36]"],
+html.theme-light [class*="from-[#121D3A]"],
+html.theme-light [class*="from-[#161933]"],
+html.theme-light [class*="from-[#161B33]"],
+html.theme-light [class*="from-[#1b2547]"],
+html.theme-light [class*="from-[#101a33]"],
+html.theme-light [class*="from-slate-900"],
+html.theme-light [class*="from-slate-950"] {
   background-image: none !important;
   background-color: #ffffff !important;
   border-color: #e2e8f0 !important;
-  box-shadow: 0 8px 26px rgba(15, 23, 42, 0.05) !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05) !important;
 }
 
-html.theme-light aside [class*="bg-slate-9"],
-html.theme-light aside [class*="bg-[#0"],
-html.theme-light main :not(.keep-dark-hero) [class*="bg-slate-950"],
-html.theme-light main :not(.keep-dark-hero) [class*="bg-slate-900"],
-html.theme-light main :not(.keep-dark-hero) [class*="bg-[#070E22]"],
-html.theme-light main :not(.keep-dark-hero) [class*="bg-[#070D1E]"],
-html.theme-light main :not(.keep-dark-hero) [class*="bg-[#091128]"] {
-  background-color: #f8fafc !important;
+/* 3. Nested Sub-Cards, Inputs, Pill Docks & Inner Transcript Boxes */
+html.theme-light [class*="bg-slate-950"],
+html.theme-light [class*="bg-slate-800"],
+html.theme-light [class*="bg-[#070E22]"],
+html.theme-light [class*="bg-[#070D1E]"],
+html.theme-light [class*="bg-[#090E1C]"],
+html.theme-light [class*="bg-[#091128]"],
+html.theme-light [class*="bg-[#051c14]"],
+html.theme-light [class*="bg-[#0d1d1c]"] {
+  background-image: none !important;
+  background-color: #f1f5f9 !important;
   border-color: #e2e8f0 !important;
 }
 
-/* Crisp Dark Ink Typography inside Light Surfaces */
-html.theme-light aside :not([class*="from-blue-600"]):not([class*="from-indigo-600"]):not([class*="from-amber-400"]):not([class*="from-cyan-400"]) .text-white,
-html.theme-light aside .text-white,
-html.theme-light main :not(.keep-dark-hero) .text-white,
-html.theme-light header:not(.keep-dark-hero) .text-white {
+/* 4. Tinted Coloured Bento Cards (Soft Daylight Pastel Gradients instead of muddy dark tints) */
+/* Purple / Violet Tinted Cards */
+html.theme-light [class*="from-[#1c143d]"],
+html.theme-light [class*="from-[#1E1B4B]"],
+html.theme-light [class*="from-[#1B1948]"],
+html.theme-light [class*="from-[#17153B]"],
+html.theme-light [class*="from-[#1A1536]"],
+html.theme-light [class*="from-[#201436]"],
+html.theme-light [class*="from-[#23153C]"],
+html.theme-light [class*="bg-purple-950"],
+html.theme-light [class*="bg-indigo-950"] {
+  background-image: linear-gradient(180deg, #f5f3ff 0%, #ffffff 100%) !important;
+  background-color: #f5f3ff !important;
+  border-color: #ddd6fe !important;
+  box-shadow: 0 8px 22px rgba(109, 40, 217, 0.07) !important;
+}
+
+/* Emerald / Mint Tinted Cards */
+html.theme-light [class*="from-[#0e3025]"],
+html.theme-light [class*="from-[#06291c]"],
+html.theme-light [class*="from-[#10263D]"],
+html.theme-light [class*="from-[#0F2422]"],
+html.theme-light [class*="from-[#0F292A]"],
+html.theme-light [class*="from-emerald-950"],
+html.theme-light [class*="bg-emerald-950"] {
+  background-image: linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%) !important;
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  box-shadow: 0 8px 22px rgba(5, 150, 105, 0.07) !important;
+}
+
+/* Amber / Gold / VIP Tinted Cards */
+html.theme-light [class*="from-[#381e0c]"],
+html.theme-light [class*="from-amber-950"] {
+  background-image: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%) !important;
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+  box-shadow: 0 8px 22px rgba(217, 119, 6, 0.08) !important;
+}
+
+/* Cyan / Blue / Sky Tinted Cards (incl. SpeakFlow Neural Sidebar Panel & Practice Pillars) */
+html.theme-light [class*="from-[#102a45]"],
+html.theme-light [class*="from-[#121F44]"],
+html.theme-light [class*="from-[#0c1f38]"],
+html.theme-light [class*="from-[#0e1c33]"],
+html.theme-light [class*="from-[#0F1B3D]"],
+html.theme-light [class*="from-[#0F243C]"],
+html.theme-light [class*="from-cyan-950"],
+html.theme-light [class*="from-blue-950"],
+html.theme-light [class*="bg-cyan-950"],
+html.theme-light [class*="bg-blue-950"] {
+  background-image: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%) !important;
+  background-color: #eff6ff !important;
+  border-color: #bfdbfe !important;
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.07) !important;
+}
+
+/* Rose Tinted Alert Containers */
+html.theme-light [class*="bg-rose-950"],
+html.theme-light [class*="from-rose-950"] {
+  background-image: linear-gradient(180deg, #fff1f2 0%, #ffffff 100%) !important;
+  background-color: #fff1f2 !important;
+  border-color: #fecdd3 !important;
+}
+
+/* Modal Overlays */
+html.theme-light [class*="bg-black/8"] {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+}
+
+/* 5. Crisp High-Contrast Daylight Borders & Typography */
+html.theme-light [class*="border-slate-8"],
+html.theme-light [class*="border-slate-7"] {
+  border-color: #e2e8f0 !important;
+}
+
+html.theme-light .text-white:not(.bg-clip-text),
+html.theme-light [class*="text-slate-100"],
+html.theme-light [class*="text-slate-200"] {
   color: #0f172a !important;
 }
 
-/* Preserve white text on solid dark/vivid accent buttons & active sidebar pills */
-html.theme-light [class*="from-blue-600"] *,
-html.theme-light [class*="from-blue-600"].text-white,
-html.theme-light [class*="from-blue-500"] *,
-html.theme-light [class*="from-blue-500"].text-white,
-html.theme-light [class*="bg-blue-600"],
-html.theme-light [class*="bg-indigo-600"],
-html.theme-light [class*="bg-emerald-600"],
-html.theme-light [class*="bg-purple-600"],
-html.theme-light [class*="bg-rose-500"],
-html.theme-light [class*="bg-rose-600"] {
-  color: #ffffff !important;
+html.theme-light [class*="text-slate-300"] {
+  color: #334155 !important;
 }
-
-html.theme-light .keep-dark-hero .text-white {
-  color: #ffffff !important;
-}
-html.theme-light .keep-dark-hero .text-slate-950 {
-  color: #020617 !important;
-}
-
-/* Muted text legibility in Light Mode */
-html.theme-light aside .text-slate-300,
-html.theme-light aside .text-slate-400,
-html.theme-light main :not(.keep-dark-hero) .text-slate-200,
-html.theme-light main :not(.keep-dark-hero) .text-slate-300,
-html.theme-light main :not(.keep-dark-hero) .text-slate-400,
-html.theme-light main :not(.keep-dark-hero) .text-blue-100\/85,
-html.theme-light main :not(.keep-dark-hero) .text-blue-200\/75 {
+html.theme-light [class*="text-slate-400"] {
   color: #475569 !important;
 }
+html.theme-light [class*="text-slate-500"] {
+  color: #64748b !important;
+}
 
-/* Borders & Accent Readability on White Backgrounds */
-html.theme-light main :not(.keep-dark-hero) .text-cyan-300,
-html.theme-light main :not(.keep-dark-hero) .text-cyan-400 {
+html.theme-light [class*="text-cyan-100"],
+html.theme-light [class*="text-cyan-200"],
+html.theme-light [class*="text-cyan-300"],
+html.theme-light [class*="text-cyan-400"],
+html.theme-light [class*="text-sky-300"] {
   color: #0284c7 !important;
 }
-html.theme-light main :not(.keep-dark-hero) .text-emerald-300,
-html.theme-light main :not(.keep-dark-hero) .text-emerald-400 {
-  color: #059669 !important;
+html.theme-light [class*="text-blue-100"],
+html.theme-light [class*="text-blue-200"],
+html.theme-light [class*="text-blue-300"] {
+  color: #1d4ed8 !important;
 }
-html.theme-light main :not(.keep-dark-hero) .text-purple-300,
-html.theme-light main :not(.keep-dark-hero) .text-purple-400 {
-  color: #7c3aed !important;
+html.theme-light [class*="text-emerald-100"],
+html.theme-light [class*="text-emerald-200"],
+html.theme-light [class*="text-emerald-300"],
+html.theme-light [class*="text-emerald-400"],
+html.theme-light [class*="text-teal-300"] {
+  color: #047857 !important;
 }
-html.theme-light main :not(.keep-dark-hero) .text-amber-300,
-html.theme-light main :not(.keep-dark-hero) .text-amber-400 {
-  color: #d97706 !important;
+html.theme-light [class*="text-amber-100"],
+html.theme-light [class*="text-amber-200"],
+html.theme-light [class*="text-amber-300"],
+html.theme-light [class*="text-amber-400"] {
+  color: #b45309 !important;
+}
+html.theme-light [class*="text-purple-100"],
+html.theme-light [class*="text-purple-200"],
+html.theme-light [class*="text-purple-300"],
+html.theme-light [class*="text-purple-400"],
+html.theme-light [class*="text-indigo-300"] {
+  color: #6d28d9 !important;
+}
+html.theme-light [class*="text-rose-200"],
+html.theme-light [class*="text-rose-300"],
+html.theme-light [class*="text-pink-300"] {
+  color: #be123c !important;
 }
 
-html.theme-light input:not(.keep-dark-hero input),
-html.theme-light select:not(.keep-dark-hero select) {
+html.theme-light input,
+html.theme-light select,
+html.theme-light textarea {
   color: #0f172a !important;
+}
+
+/* 6. Solid Saturated Buttons & Active Nav Pills (ALWAYS preserve white text!) */
+html.theme-light [class*="from-blue-600"],
+html.theme-light [class*="from-blue-600"] *,
+html.theme-light [class*="from-blue-500"]:not([class*="via-"]):not([class*="bg-white"]),
+html.theme-light [class*="from-blue-500"].text-white,
+html.theme-light [class*="from-blue-500"].text-white *,
+html.theme-light [class*="from-indigo-500"],
+html.theme-light [class*="from-indigo-500"] *,
+html.theme-light [class*="from-indigo-600"],
+html.theme-light [class*="from-indigo-600"] *,
+html.theme-light [class*="from-purple-500"].text-white,
+html.theme-light [class*="from-purple-500"].text-white *,
+html.theme-light [class*="from-purple-600"],
+html.theme-light [class*="from-purple-600"] *,
+html.theme-light [class*="from-cyan-500"].text-white,
+html.theme-light [class*="from-cyan-500"].text-white *,
+html.theme-light [class*="from-rose-500"],
+html.theme-light [class*="from-rose-500"] *,
+html.theme-light [class*="from-rose-600"],
+html.theme-light [class*="from-rose-600"] *,
+html.theme-light [class*="bg-blue-600"],
+html.theme-light [class*="bg-blue-600"] *,
+html.theme-light [class*="bg-indigo-600"],
+html.theme-light [class*="bg-indigo-600"] *,
+html.theme-light [class*="bg-emerald-600"],
+html.theme-light [class*="bg-emerald-600"] *,
+html.theme-light [class*="bg-purple-600"],
+html.theme-light [class*="bg-purple-600"] *,
+html.theme-light [class*="bg-rose-600"],
+html.theme-light [class*="bg-rose-600"] *,
+html.theme-light [class*="bg-rose-500"],
+html.theme-light [class*="bg-rose-500"] * {
+  color: #ffffff !important;
+}
+
+html.theme-light .keep-dark-hero [class*="bg-white/1"] {
+  background-color: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  color: #ffffff !important;
+}
+
+html.theme-light [class*="from-amber-400"].text-slate-950,
+html.theme-light [class*="from-amber-400"].text-slate-950 *,
+html.theme-light [class*="from-emerald-400"].text-slate-950,
+html.theme-light [class*="from-emerald-400"].text-slate-950 *,
+html.theme-light [class*="from-cyan-400"].text-slate-950,
+html.theme-light [class*="from-cyan-400"].text-slate-950 * {
+  color: #0f172a !important;
+}
+
+/* 7. HERO ARTWORK & VIDEO FRAMES (.keep-dark-hero): Higher Specificity Restoration */
+html.theme-light .keep-dark-hero {
+  background-color: #081330 !important;
+  color: #ffffff !important;
+}
+html.theme-light .keep-dark-hero .text-white:not(.bg-clip-text) {
+  color: #ffffff !important;
+}
+html.theme-light .keep-dark-hero [class*="text-blue-100"],
+html.theme-light .keep-dark-hero [class*="text-slate-200"],
+html.theme-light .keep-dark-hero [class*="text-slate-300"] {
+  color: #e2e8f0 !important;
+}
+html.theme-light .keep-dark-hero [class*="text-cyan-200"],
+html.theme-light .keep-dark-hero [class*="text-cyan-300"] {
+  color: #67e8f9 !important;
+}
+html.theme-light .keep-dark-hero [class*="text-emerald-200"],
+html.theme-light .keep-dark-hero [class*="text-emerald-300"],
+html.theme-light .keep-dark-hero [class*="text-emerald-400"] {
+  color: #6ee7b7 !important;
+}
+html.theme-light .keep-dark-hero [class*="text-amber-300"],
+html.theme-light .keep-dark-hero [class*="text-amber-400"] {
+  color: #fcd34d !important;
+}
+html.theme-light .keep-dark-hero [class*="bg-slate-950"] {
+  background-color: rgba(2, 6, 23, 0.78) !important;
+  border-color: rgba(56, 189, 248, 0.35) !important;
+}
+html.theme-light .keep-dark-hero [class*="bg-slate-900"] {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
 }
 
 

@@ -5199,7 +5199,7 @@ export default function StudentWebApp() {
         <main className={activeCallTopic ? "w-full h-screen overflow-hidden p-0 bg-[#030612] flex flex-col justify-center" : "p-4 sm:p-6 lg:p-8 pb-28 md:pb-8 space-y-6 w-full max-w-[1680px] mx-auto"}>
           {/* IF ACTIVE CALL IS RUNNING: FULL SCREEN LIVE AI VIDEO CALL STUDIO */}
           {activeCallTopic ? (
-            <div className="fixed inset-0 z-50 bg-[#030612] w-screen h-screen max-h-screen overflow-hidden p-2 sm:p-3 flex flex-col justify-between select-none keep-dark-hero">
+            <div className="fixed inset-0 z-50 bg-[#030612] w-screen h-screen max-h-screen overflow-hidden p-2 sm:p-3 flex flex-col justify-between select-none">
               <div className="w-full h-full max-w-[1720px] mx-auto bg-gradient-to-b from-[#0e1628] via-[#090d18] to-[#04060c] border border-cyan-500/40 rounded-2xl sm:rounded-3xl p-2.5 sm:p-3.5 shadow-[0_20px_70px_rgba(0,0,0,0.85)] relative overflow-hidden flex flex-col justify-between min-h-0">
               {/* Top ambient lights */}
               <div className="absolute -top-16 -left-16 w-60 h-60 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
@@ -5280,7 +5280,7 @@ export default function StudentWebApp() {
                 {/* Left/Center: High-Definition AI Video Call Screen (8 cols) */}
                 <div className="lg:col-span-8 flex flex-col justify-between rounded-2xl sm:rounded-3xl bg-gradient-to-tr from-[#050914] via-[#091122] to-[#040710] border-2 border-cyan-500/30 shadow-[0_0_50px_rgba(56,189,248,0.2)] p-2 sm:p-3 relative overflow-hidden h-full min-h-0">
                   {/* Central Coach Presence & Dynamic Video Animation */}
-                  <div className="flex-1 min-h-0 flex flex-col items-center justify-center my-0.5 relative w-full overflow-hidden">
+                  <div className="flex-1 min-h-0 flex flex-col items-center justify-center my-0.5 relative w-full overflow-hidden rounded-2xl bg-[#050914] keep-dark-hero">
                     {/* Ambient Blurred Studio Video Backdrop */}
                     {selectedCoach.idleVideo ? (
                       <video
