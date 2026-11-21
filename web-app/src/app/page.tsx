@@ -747,6 +747,20 @@ export default function StudentWebApp() {
   // Landing Page CMS configuration
   const [landingConfig, setLandingConfig] = useState<LandingPageConfig>(DEFAULT_LANDING_CONFIG);
 
+  // Mobile App & Admin Panel Subscription Plans (Synced from Firestore lang_settings/subscription_plans)
+  const [subscriptionConfig, setSubscriptionConfig] = useState({
+    trialDays: 3,
+    weeklyName: "Weekly Access",
+    weeklyPrice: "$1.99",
+    monthlyName: "Monthly Pro",
+    monthlyPrice: "$3.99",
+    yearlyName: "Yearly VIP",
+    yearlyPrice: "$39.00",
+    yearlySavings: "Save 92%",
+    paywallTitle: "Unlock Full Access",
+    paywallSubtitle: "Unlimited practice with all 6 native AI coaches & SpeakFlow Edge AI"
+  });
+
   // Active Navigation Tab
   type MainTab =
     | "dashboard"
@@ -771,7 +785,7 @@ export default function StudentWebApp() {
 
   // Membership Tier & Expiration System (Free vs VIP Pro)
   const [isPremiumMember, setIsPremiumMember] = useState<boolean>(true);
-  const [premiumPlanName, setPremiumPlanName] = useState<string>("Annual VIP Pro Pass");
+  const [premiumPlanName, setPremiumPlanName] = useState<string>("Yearly VIP");
   const [premiumExpiryDate, setPremiumExpiryDate] = useState<string>("2027-01-15");
   const [streakFreezesCount, setStreakFreezesCount] = useState<number>(2);
 
@@ -1957,20 +1971,39 @@ export default function StudentWebApp() {
     setMicVolumeLevel(0);
   };
 
-  // 1. Load Landing Settings from Firestore (Synced with Admin Panel CMS)
+  // 1. Load Landing & Mobile Subscription Settings from Firestore (Synced with Admin Panel CMS)
   useEffect(() => {
-    async function fetchLanding() {
+    async function fetchLandingAndSubscriptions() {
       try {
-        const docRef = doc(db, COLLECTIONS.SETTINGS, "landing_page");
-        const snap = await getDoc(docRef);
-        if (snap.exists()) {
-          setLandingConfig({ ...DEFAULT_LANDING_CONFIG, ...snap.data() });
+        const [landingSnap, subSnap] = await Promise.all([
+          getDoc(doc(db, COLLECTIONS.SETTINGS, "landing_page")),
+          getDoc(doc(db, COLLECTIONS.SETTINGS, "subscription_plans"))
+        ]);
+        if (landingSnap.exists()) {
+          setLandingConfig({ ...DEFAULT_LANDING_CONFIG, ...landingSnap.data() });
+        }
+        if (subSnap.exists()) {
+          const s = subSnap.data();
+          setSubscriptionConfig((prev) => ({
+            ...prev,
+            trialDays: typeof s.trialDays === "number" ? s.trialDays : Number(s.trialDays) || prev.trialDays,
+            weeklyName: s.weeklyName || prev.weeklyName,
+            weeklyPrice: s.weeklyPrice || prev.weeklyPrice,
+            monthlyName: s.monthlyName || prev.monthlyName,
+            monthlyPrice: s.monthlyPrice || prev.monthlyPrice,
+            yearlyName: s.yearlyName || prev.yearlyName,
+            yearlyPrice: s.yearlyPrice || prev.yearlyPrice,
+            yearlySavings: s.yearlySavings || prev.yearlySavings,
+            paywallTitle: s.paywallTitle || prev.paywallTitle,
+            paywallSubtitle: s.paywallSubtitle || prev.paywallSubtitle
+          }));
+          if (s.yearlyName) setPremiumPlanName(s.yearlyName);
         }
       } catch (e) {
-        console.warn("Could not fetch landing config from Firestore, using defaults", e);
+        console.warn("Could not fetch landing/subscription config from Firestore, using defaults", e);
       }
     }
-    fetchLanding();
+    fetchLandingAndSubscriptions();
   }, []);
 
   // 2. Auth State Observer
@@ -6088,7 +6121,7 @@ export default function StudentWebApp() {
                         className="w-full py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-[11px] shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02]"
                       >
                         <Crown className="w-3.5 h-3.5 fill-slate-950" />
-                        <span>Unlock Pro Package ($9.99/mo) →</span>
+                        <span>Start {subscriptionConfig.trialDays}-Day Free Trial ({subscriptionConfig.weeklyPrice}/wk) →</span>
                       </button>
                     </div>
                   )}
@@ -9293,503 +9326,720 @@ export default function StudentWebApp() {
             })()
           ) : activeTab === "achievements" ? (
             /* ----------------------------------------------------------- */
-            /* TAB: 20 ACHIEVEMENTS & WEEKLY CHAMPIONSHIP HUB              */
+            /* TAB: 20 ACHIEVEMENTS & ESPORTS CHAMPIONSHIP TROPHY ARENA    */
             /* ----------------------------------------------------------- */
-            <div className="space-y-6">
-              {/* Top Banner & XP Stats */}
-              <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-r from-[#111827] via-[#0E172E] to-[#121B35] border border-cyan-500/30 shadow-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                <div className="space-y-1.5">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 text-[10px] font-bold tracking-wide">
-                    <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-                    <span>GAMIFICATION & PROGRESS REWARDS</span>
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
-                    <Trophy className="w-6 h-6 text-amber-400" />
-                    Achievements & Weekly Championship Hub
-                  </h2>
-                  <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
-                    Earn badges through spoken practice time, continuous daily streaks, and weekly fluency sprints. Claim badges to level up your global XP score!
-                  </p>
-                </div>
+            (() => {
+              const unlockedCount = achievements.filter((a) => a.isUnlocked).length;
+              const readyCount = achievements.filter((a) => a.isUnlocked && !a.isClaimed).length;
+              const claimedCount = achievements.filter((a) => a.isClaimed).length;
+              const leaderboardRows = [
+                {
+                  rank: 1,
+                  name: profileDisplayName,
+                  handle: "@janiya2 • You",
+                  avatar: "/images/janitha-avatar.jpg",
+                  cefr: realAnalytics.cefrBadge,
+                  mins: `${realAnalytics.totalMinsLogged}m ${realAnalytics.totalRemainingSecs}s`,
+                  fluency: realAnalytics.avgFluency,
+                  xp: realAnalytics.totalXp,
+                  isYou: true
+                },
+                {
+                  rank: 2,
+                  name: "Elena Rostova",
+                  handle: "@elena_r",
+                  initials: "ER",
+                  color: "from-cyan-500 to-blue-600",
+                  cefr: "CEFR B2",
+                  mins: "18m 20s",
+                  fluency: 86,
+                  xp: 1620,
+                  isYou: false
+                },
+                {
+                  rank: 3,
+                  name: "Jaji Perera",
+                  handle: "@jaji_dev",
+                  initials: "JP",
+                  color: "from-purple-500 to-indigo-600",
+                  cefr: "CEFR B1",
+                  mins: "13m 10s",
+                  fluency: 78,
+                  xp: 1180,
+                  isYou: false
+                },
+                {
+                  rank: 4,
+                  name: "Kenji Takahashi",
+                  handle: "@kenji_jp",
+                  initials: "KT",
+                  color: "from-emerald-500 to-teal-600",
+                  cefr: "CEFR B1",
+                  mins: "9m 45s",
+                  fluency: 74,
+                  xp: 890,
+                  isYou: false
+                },
+                {
+                  rank: 5,
+                  name: "Marco Silva",
+                  handle: "@marco_es",
+                  initials: "MS",
+                  color: "from-rose-500 to-orange-600",
+                  cefr: "CEFR A2",
+                  mins: "6m 30s",
+                  fluency: 69,
+                  xp: 640,
+                  isYou: false
+                }
+              ];
 
-                {/* User Stats Ribbons */}
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="px-4 py-2.5 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 flex items-center gap-2">
-                    <Zap className="w-4 h-4 fill-amber-300" />
-                    <div>
-                      <span className="text-[10px] uppercase font-bold text-amber-400/80 block">Total XP</span>
-                      <span className="text-sm font-black text-white">{totalXp.toLocaleString()} XP</span>
+              return (
+                <div className="space-y-6">
+                  {/* Top Trophy Room Banner */}
+                  <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#121B36] via-[#0D1528] to-[#080D1B] border border-cyan-500/35 shadow-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden">
+                    <div className="absolute -top-16 -right-16 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="space-y-1.5 relative z-10">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/35 text-amber-300 text-[10px] font-black tracking-wider uppercase">
+                        <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Executive Trophy Room &amp; Global Rankings</span>
+                      </div>
+                      <h2 className="text-xl sm:text-2xl font-black text-white">
+                        Achievements &amp; Fluency Championship Arena
+                      </h2>
+                      <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+                        Synced live with your real speaking calls, vocabulary mastery, and repaired grammar rules. Unlock medals to climb the global CEFR leaderboard.
+                      </p>
                     </div>
-                  </div>
 
-                  <div className="px-4 py-2.5 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 flex items-center gap-2">
-                    <Trophy className="w-4 h-4 text-cyan-400" />
-                    <div>
-                      <span className="text-[10px] uppercase font-bold text-cyan-400/80 block">Badges Unlocked</span>
-                      <span className="text-sm font-black text-white">{achievements.filter(a => a.isUnlocked).length} / 20</span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => setActiveTab("dashboard")}
-                    className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all"
-                  >
-                    ← Dashboard
-                  </button>
-                </div>
-              </div>
-
-              {/* Weekly Winners Championship Podium */}
-              <div className="p-6 sm:p-8 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
-                <div className="text-center space-y-1">
-                  <h3 className="text-sm sm:text-base font-bold text-white flex items-center justify-center gap-2">
-                    <Crown className="w-4 h-4 text-amber-400" />
-                    Weekly Winners Championship Podium
-                  </h3>
-                  <p className="text-xs text-slate-400">Top learners this week ranked by spoken conversation minutes.</p>
-                </div>
-
-                <div className="flex items-end justify-center gap-3 sm:gap-6 pt-4 max-w-lg mx-auto">
-                  {/* 2nd Place */}
-                  <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 rounded-full bg-slate-700 border-2 border-slate-400 flex items-center justify-center font-bold text-white mb-2">
-                      J
-                    </div>
-                    <span className="text-xs font-bold text-white">Jaji</span>
-                    <span className="text-[10px] text-slate-400">13m • 50%</span>
-                    <div className="w-24 sm:w-28 h-28 rounded-t-2xl bg-gradient-to-t from-slate-800 to-slate-700 mt-2 flex items-center justify-center font-black text-xl text-slate-300">
-                      #2
-                    </div>
-                  </div>
-
-                  {/* 1st Place (Janitha Dilshan) */}
-                  <div className="flex flex-col items-center">
-                    <Crown className="w-6 h-6 text-amber-400 mb-1 animate-bounce" />
-                    <img
-                      src="/images/janitha-avatar.jpg"
-                      alt="Janitha Dilshan"
-                      className="w-16 h-16 rounded-full object-cover ring-4 ring-amber-400 mb-2 shadow-lg shadow-amber-400/20"
-                    />
-                    <span className="text-xs font-bold text-amber-300">{profileDisplayName}</span>
-                    <span className="text-[10px] text-amber-200">{realAnalytics.totalMinsLogged}m • {realAnalytics.avgFluency}%</span>
-                    <div className="w-28 sm:w-32 h-36 rounded-t-2xl bg-gradient-to-t from-amber-600 to-amber-500 mt-2 flex items-center justify-center font-black text-2xl text-slate-950 shadow-xl shadow-amber-500/20">
-                      #1
-                    </div>
-                  </div>
-
-                  {/* 3rd Place */}
-                  <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 rounded-full bg-orange-950 border-2 border-orange-600 flex items-center justify-center font-bold text-orange-300 mb-2">
-                      A
-                    </div>
-                    <span className="text-xs font-bold text-white">admin</span>
-                    <span className="text-[10px] text-slate-400">8m • 89%</span>
-                    <div className="w-24 sm:w-28 h-20 rounded-t-2xl bg-gradient-to-t from-orange-950 to-orange-800 mt-2 flex items-center justify-center font-black text-xl text-orange-200">
-                      #3
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Badges Filter Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-[#111827] border border-slate-800">
-                <div className="flex flex-wrap items-center gap-2">
-                  {[
-                    { id: "all", label: `All Badges (20)` },
-                    { id: "ready", label: `🎁 Ready to Claim (${achievements.filter(a => a.isUnlocked && !a.isClaimed).length})` },
-                    { id: "claimed", label: `Claimed (${achievements.filter(a => a.isClaimed).length})` },
-                    { id: "in_progress", label: `In Progress (${achievements.filter(a => !a.isUnlocked).length})` }
-                  ].map((filterTab) => (
-                    <button
-                      key={filterTab.id}
-                      onClick={() => setAchievementFilter(filterTab.id as any)}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${achievementFilter === filterTab.id
-                        ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
-                        : "bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800"
-                        }`}
-                    >
-                      {filterTab.label}
-                    </button>
-                  ))}
-                </div>
-
-                {achievements.some(a => a.isUnlocked && !a.isClaimed) && (
-                  <button
-                    onClick={() => {
-                      const firstUnclaimed = achievements.find(a => a.isUnlocked && !a.isClaimed);
-                      if (firstUnclaimed) setActiveClaimModalBadge(firstUnclaimed);
-                    }}
-                    className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center gap-1.5 transition-all hover:scale-[1.02] animate-pulse"
-                  >
-                    <Trophy className="w-3.5 h-3.5 fill-slate-950" />
-                    <span>Claim Next Reward →</span>
-                  </button>
-                )}
-              </div>
-
-              {/* 20 ACHIEVEMENTS GRID */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                {achievements
-                  .filter((badge) => {
-                    if (achievementFilter === "ready") return badge.isUnlocked && !badge.isClaimed;
-                    if (achievementFilter === "claimed") return badge.isClaimed;
-                    if (achievementFilter === "in_progress") return !badge.isUnlocked;
-                    return true;
-                  })
-                  .map((badge) => {
-                    const percent = Math.min(100, Math.round((badge.progressCurrent / badge.progressTarget) * 100));
-                    return (
-                      <div
-                        key={badge.id}
-                        className={`p-5 rounded-3xl border transition-all duration-200 flex flex-col justify-between gap-4 relative overflow-hidden group ${badge.isClaimed
-                          ? "bg-gradient-to-br from-[#111827] via-[#0D1527] to-[#0A1020] border-emerald-500/30 shadow-lg"
-                          : badge.isUnlocked
-                            ? "bg-gradient-to-br from-[#111827] via-[#1E1B4B]/35 to-[#0F172A] border-amber-500/50 shadow-xl shadow-amber-500/10 ring-1 ring-amber-400/25"
-                            : "bg-[#111827]/75 border-slate-800/80 opacity-85 hover:opacity-100"
-                          }`}
-                      >
-                        {/* Corner Glow for Unlocked / Ready */}
-                        {badge.isUnlocked && !badge.isClaimed && (
-                          <div className="absolute -top-10 -right-10 w-24 h-24 bg-amber-500/20 rounded-full blur-2xl pointer-events-none animate-pulse"></div>
-                        )}
-
-                        <div className="space-y-3 relative z-10">
-                          {/* Top Row: Icon + Category + XP Reward */}
-                          <div className="flex items-start justify-between gap-3">
-                            <div className={`w-13 h-13 rounded-2xl bg-gradient-to-tr ${badge.gradient} border border-white/20 flex items-center justify-center shadow-lg ${badge.glow} shrink-0 p-3`}>
-                              {renderBadgeIcon(badge.iconType, "w-7 h-7 text-white drop-shadow")}
-                            </div>
-
-                            <div className="flex flex-col items-end gap-1.5">
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-slate-900 border border-slate-800 text-slate-300">
-                                {badge.category}
-                              </span>
-                              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-500/15 border border-amber-500/30 text-amber-300 flex items-center gap-1">
-                                <Zap className="w-3 h-3 fill-amber-300" />
-                                +{badge.xpReward} XP
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Title & Description */}
-                          <div>
-                            <h4 className="font-black text-sm text-white group-hover:text-cyan-300 transition-colors">
-                              {badge.title}
-                            </h4>
-                            <p className="text-xs text-slate-300/90 leading-relaxed mt-1">
-                              {badge.description}
-                            </p>
-                          </div>
-
-                          {/* Requirement & Progress Bar */}
-                          <div className="space-y-1.5 pt-1">
-                            <div className="flex items-center justify-between text-[11px] text-slate-400">
-                              <span className="truncate">{badge.requirement}</span>
-                              <span className="font-bold text-white shrink-0 ml-2">
-                                {badge.progressCurrent}/{badge.progressTarget} {badge.progressUnit} ({percent}%)
-                              </span>
-                            </div>
-                            <div className="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden">
-                              <div
-                                className={`h-full rounded-full transition-all duration-500 ${badge.isClaimed
-                                  ? "bg-emerald-400"
-                                  : badge.isUnlocked
-                                    ? "bg-gradient-to-r from-amber-400 to-yellow-400"
-                                    : "bg-gradient-to-r from-blue-500 to-cyan-400"
-                                  }`}
-                                style={{ width: `${percent}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Bottom Status / Action Button */}
-                        <div className="pt-2 relative z-10">
-                          {badge.isClaimed ? (
-                            <div className="w-full py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5">
-                              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                              <span>Claimed ✓ (+{badge.xpReward} XP Earned)</span>
-                            </div>
-                          ) : badge.isUnlocked ? (
-                            <button
-                              onClick={() => setActiveClaimModalBadge(badge)}
-                              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02] animate-pulse"
-                            >
-                              <Trophy className="w-3.5 h-3.5 fill-slate-950" />
-                              <span>🎁 Claim Badge & +{badge.xpReward} XP!</span>
-                            </button>
-                          ) : (
-                            <div className="w-full py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 text-xs font-semibold flex items-center justify-center gap-1.5">
-                              <span>🔒 Locked • In Progress ({percent}%)</span>
-                            </div>
-                          )}
+                    <div className="flex flex-wrap items-center gap-3 relative z-10">
+                      <div className="px-4 py-2.5 rounded-2xl bg-amber-500/15 border border-amber-500/35 text-amber-300 flex items-center gap-2.5">
+                        <Zap className="w-4 h-4 fill-amber-300" />
+                        <div>
+                          <span className="text-[9.5px] uppercase font-bold text-amber-400/80 block">Real Earned XP</span>
+                          <span className="text-sm font-black text-white">{realAnalytics.totalXp.toLocaleString()} XP</span>
                         </div>
                       </div>
-                    );
-                  })}
-              </div>
-            </div>
-          ) : activeTab === "profile" ? (
-            /* ----------------------------------------------------------- */
-            /* TAB: DEDICATED USER PROFILE & LANGUAGE LEARNING HUB         */
-            /* ----------------------------------------------------------- */
-            <div className="space-y-6">
-              {/* 1. Profile Hero & Identity Card */}
-              <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-[#111827] via-[#0E162B] to-[#141C38] border border-cyan-500/30 shadow-2xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="absolute -top-12 -left-12 w-48 h-48 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
 
-                <div className="flex items-center gap-4 sm:gap-6 relative z-10">
-                  <div className="relative shrink-0">
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full p-1 bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-500 shadow-xl shadow-cyan-500/30">
-                      <img
-                        src="/images/janitha-avatar.jpg"
-                        alt={profileDisplayName}
-                        className="w-full h-full object-cover rounded-full"
-                        onError={(e) => {
-                          (e.currentTarget as any).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=3b82f6&color=fff`;
-                        }}
-                      />
-                    </div>
-                    <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-400 ring-2 ring-slate-950 animate-ping" />
-                    <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
-                  </div>
+                      <div className="px-4 py-2.5 rounded-2xl bg-cyan-500/15 border border-cyan-500/35 text-cyan-300 flex items-center gap-2.5">
+                        <Trophy className="w-4 h-4 text-cyan-400" />
+                        <div>
+                          <span className="text-[9.5px] uppercase font-bold text-cyan-400/80 block">Badges Unlocked</span>
+                          <span className="text-sm font-black text-white">{unlockedCount} / 20</span>
+                        </div>
+                      </div>
 
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-xl sm:text-2xl font-black text-white">{profileDisplayName}</h2>
                       <button
-                        onClick={() => {
-                          setEditNameInput(profileDisplayName);
-                          setEditNativeInput(profileNativeLang);
-                          setEditTargetInput(profileTargetLang);
-                          setEditGoalInput(profileDailyGoalMins);
-                          setShowEditProfileModal(true);
-                        }}
-                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
-                        title="Edit Profile Details"
+                        onClick={() => setActiveTab("dashboard")}
+                        className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all"
                       >
-                        <Edit3 className="w-3.5 h-3.5 text-cyan-400" />
+                        ← Dashboard
                       </button>
                     </div>
+                  </div>
 
-                    <p className="text-xs text-slate-400 font-mono">@janiya2 • InnoXpert Technologies</p>
+                  {/* EXECUTIVE 2-COLUMN ESPORTS LEADERBOARD & STANDING ARENA (Replaces Cartoon Podium) */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                    {/* Left (5 cols): Your Live Rank Spotlight */}
+                    <div className="lg:col-span-5 p-6 rounded-3xl bg-gradient-to-b from-[#1A1536] via-[#11182C] to-[#0A0F1E] border border-amber-400/40 shadow-2xl flex flex-col justify-between relative overflow-hidden">
+                      <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
 
-                    <div className="flex flex-wrap items-center gap-2 pt-1">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1 shadow-sm">
-                        <Crown className="w-3 h-3 text-amber-400 fill-amber-400" />
-                        <span>{isPremiumMember ? "VIP Pro Champion" : "Free Explorer"}</span>
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-mono">
-                        {realAnalytics.cefrBadge}
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] text-slate-400 bg-slate-800/80 border border-slate-700">
-                        Joined Nov 2024
-                      </span>
+                      <div className="flex items-center justify-between relative z-10">
+                        <span className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
+                          <Crown className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          <span>Weekly Rank #1 Champion</span>
+                        </span>
+                        <span className="text-[10px] font-mono text-emerald-400 font-bold">Live Verified</span>
+                      </div>
+
+                      <div className="flex items-center gap-4 my-5 relative z-10">
+                        <div className="relative shrink-0">
+                          <div className="w-20 h-20 rounded-2xl p-0.5 bg-gradient-to-tr from-amber-400 via-yellow-300 to-orange-500 shadow-xl shadow-amber-500/30">
+                            <img
+                              src="/images/janitha-avatar.jpg"
+                              alt={profileDisplayName}
+                              className="w-full h-full object-cover rounded-[14px]"
+                            />
+                          </div>
+                          <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-xl bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-lg border-2 border-slate-950">
+                            #1
+                          </span>
+                        </div>
+
+                        <div className="min-w-0 space-y-1">
+                          <h3 className="text-lg font-black text-white truncate">{profileDisplayName}</h3>
+                          <p className="text-xs text-cyan-300 font-bold">
+                            {realAnalytics.fluencyTierTitle} • {realAnalytics.cefrBadge}
+                          </p>
+                          <div className="flex items-center gap-2 text-[11px] text-slate-300">
+                            <span className="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700 font-mono">
+                              🎙️ {realAnalytics.totalFormattedCompact}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700 font-mono">
+                              🔥 {realAnalytics.streakDays}d Active
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Real Milestone Meter */}
+                      <div className="p-3.5 rounded-2xl bg-slate-950/75 border border-slate-800 space-y-2 relative z-10">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-slate-300 font-bold">Badge Completion Progress</span>
+                          <span className="text-amber-300 font-black font-mono">
+                            {unlockedCount}/20 ({Math.round((unlockedCount / 20) * 100)}%)
+                          </span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                          <div
+                            className="h-full bg-gradient-to-r from-amber-400 via-yellow-400 to-emerald-400 rounded-full"
+                            style={{ width: `${Math.round((unlockedCount / 20) * 100)}%` }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+                          <span>Claimed: {claimedCount} badges</span>
+                          <span className="text-emerald-400 font-bold">Ready to claim: {readyCount}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right (7 cols): High-Precision Cohort Leaderboard Table */}
+                    <div className="lg:col-span-7 p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4 flex flex-col justify-between">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-base font-black text-white flex items-center gap-2">
+                            <Award className="w-4 h-4 text-cyan-400" />
+                            <span>Global Weekly Spoken Leaderboard</span>
+                          </h3>
+                          <p className="text-[11px] text-slate-400">
+                            Ranked by verified speaking fluency, real XP earned, and active conversation cadence.
+                          </p>
+                        </div>
+                        <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-slate-900 border border-slate-700 text-slate-300">
+                          Season #12
+                        </span>
+                      </div>
+
+                      <div className="space-y-2">
+                        {leaderboardRows.map((row) => (
+                          <div
+                            key={row.rank}
+                            className={`p-3 rounded-2xl border flex items-center justify-between gap-3 transition-all ${
+                              row.isYou
+                                ? "bg-gradient-to-r from-amber-500/15 via-indigo-950/50 to-slate-900 border-amber-400/50 shadow-md"
+                                : "bg-slate-950/70 border-slate-800/80 hover:border-slate-700"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <span
+                                className={`w-7 h-7 rounded-lg font-black text-xs flex items-center justify-center shrink-0 ${
+                                  row.rank === 1
+                                    ? "bg-amber-400 text-slate-950 shadow shadow-amber-400/40"
+                                    : row.rank === 2
+                                    ? "bg-slate-300 text-slate-950"
+                                    : row.rank === 3
+                                    ? "bg-amber-700 text-white"
+                                    : "bg-slate-800 text-slate-400"
+                                }`}
+                              >
+                                #{row.rank}
+                              </span>
+
+                              {row.avatar ? (
+                                <img
+                                  src={row.avatar}
+                                  alt={row.name}
+                                  className="w-9 h-9 rounded-xl object-cover border border-amber-400/50 shrink-0"
+                                />
+                              ) : (
+                                <div
+                                  className={`w-9 h-9 rounded-xl bg-gradient-to-br ${row.color} flex items-center justify-center font-black text-xs text-white shrink-0`}
+                                >
+                                  {row.initials}
+                                </div>
+                              )}
+
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <span className={`text-xs font-black truncate ${row.isYou ? "text-amber-300" : "text-white"}`}>
+                                    {row.name}
+                                  </span>
+                                  <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shrink-0">
+                                    {row.cefr}
+                                  </span>
+                                </div>
+                                <span className="text-[10px] text-slate-400 block truncate">
+                                  {row.handle} • {row.mins} spoken
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 shrink-0">
+                              <div className="hidden sm:block w-24">
+                                <div className="flex items-center justify-between text-[9.5px] font-mono mb-0.5">
+                                  <span className="text-slate-400">Fluency</span>
+                                  <span className="text-emerald-300 font-bold">{row.fluency}%</span>
+                                </div>
+                                <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                                  <div
+                                    className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full"
+                                    style={{ width: `${row.fluency}%` }}
+                                  />
+                                </div>
+                              </div>
+                              <span className="text-xs font-black font-mono text-amber-300 min-w-[64px] text-right">
+                                {row.xp.toLocaleString()} XP
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
+
+                  {/* Badges Filter Bar */}
+                  <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-[#111827] border border-slate-800">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {[
+                        { id: "all", label: `All Badges (20)` },
+                        { id: "ready", label: `🎁 Ready to Claim (${readyCount})` },
+                        { id: "claimed", label: `Claimed (${claimedCount})` },
+                        { id: "in_progress", label: `In Progress (${achievements.filter((a) => !a.isUnlocked).length})` }
+                      ].map((filterTab) => (
+                        <button
+                          key={filterTab.id}
+                          onClick={() => setAchievementFilter(filterTab.id as any)}
+                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                            achievementFilter === filterTab.id
+                              ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
+                              : "bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800"
+                          }`}
+                        >
+                          {filterTab.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {achievements.some((a) => a.isUnlocked && !a.isClaimed) && (
+                      <button
+                        onClick={() => {
+                          const firstUnclaimed = achievements.find((a) => a.isUnlocked && !a.isClaimed);
+                          if (firstUnclaimed) setActiveClaimModalBadge(firstUnclaimed);
+                        }}
+                        className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center gap-1.5 transition-all hover:scale-[1.02]"
+                      >
+                        <Trophy className="w-3.5 h-3.5 fill-slate-950" />
+                        <span>Claim Next Reward →</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* 20 ACHIEVEMENTS GRID */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {achievements
+                      .filter((badge) => {
+                        if (achievementFilter === "ready") return badge.isUnlocked && !badge.isClaimed;
+                        if (achievementFilter === "claimed") return badge.isClaimed;
+                        if (achievementFilter === "in_progress") return !badge.isUnlocked;
+                        return true;
+                      })
+                      .map((badge) => {
+                        const percent = Math.min(100, Math.round((badge.progressCurrent / badge.progressTarget) * 100));
+                        return (
+                          <div
+                            key={badge.id}
+                            className={`p-5 rounded-3xl border transition-all duration-200 flex flex-col justify-between gap-4 relative overflow-hidden group ${
+                              badge.isClaimed
+                                ? "bg-gradient-to-br from-[#111827] via-[#0D1527] to-[#0A1020] border-emerald-500/30 shadow-lg"
+                                : badge.isUnlocked
+                                ? "bg-gradient-to-br from-[#111827] via-[#1E1B4B]/35 to-[#0F172A] border-amber-500/50 shadow-xl shadow-amber-500/10 ring-1 ring-amber-400/25"
+                                : "bg-[#111827]/75 border-slate-800/80 opacity-85 hover:opacity-100"
+                            }`}
+                          >
+                            <div className="space-y-3 relative z-10">
+                              <div className="flex items-start justify-between gap-3">
+                                <div
+                                  className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${badge.gradient} border border-white/20 flex items-center justify-center shadow-lg ${badge.glow} shrink-0 p-2.5`}
+                                >
+                                  {renderBadgeIcon(badge.iconType, "w-6 h-6 text-white drop-shadow")}
+                                </div>
+
+                                <div className="flex flex-col items-end gap-1.5">
+                                  <span className="px-2 py-0.5 rounded-full text-[9.5px] font-bold tracking-wide uppercase bg-slate-900 border border-slate-800 text-slate-300">
+                                    {badge.category}
+                                  </span>
+                                  <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-500/15 border border-amber-500/30 text-amber-300 flex items-center gap-1">
+                                    <Zap className="w-3 h-3 fill-amber-300" />
+                                    +{badge.xpReward} XP
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div>
+                                <h4 className="font-black text-sm text-white group-hover:text-cyan-300 transition-colors">
+                                  {badge.title.replace(/Gemini Nano/gi, "SpeakFlow Edge")}
+                                </h4>
+                                <p className="text-xs text-slate-300/90 leading-relaxed mt-1">
+                                  {badge.description.replace(/Gemini Nano/gi, "SpeakFlow Edge AI")}
+                                </p>
+                              </div>
+
+                              <div className="space-y-1.5 pt-1">
+                                <div className="flex items-center justify-between text-[11px] text-slate-400">
+                                  <span className="truncate">{badge.requirement}</span>
+                                  <span className="font-bold text-white shrink-0 ml-2">
+                                    {badge.progressCurrent}/{badge.progressTarget} {badge.progressUnit} ({percent}%)
+                                  </span>
+                                </div>
+                                <div className="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden">
+                                  <div
+                                    className={`h-full rounded-full transition-all duration-500 ${
+                                      badge.isClaimed
+                                        ? "bg-emerald-400"
+                                        : badge.isUnlocked
+                                        ? "bg-gradient-to-r from-amber-400 to-yellow-400"
+                                        : "bg-gradient-to-r from-blue-500 to-cyan-400"
+                                    }`}
+                                    style={{ width: `${percent}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="pt-2 relative z-10">
+                              {badge.isClaimed ? (
+                                <div className="w-full py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5">
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                  <span>Claimed ✓ (+{badge.xpReward} XP Earned)</span>
+                                </div>
+                              ) : badge.isUnlocked ? (
+                                <button
+                                  onClick={() => setActiveClaimModalBadge(badge)}
+                                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02]"
+                                >
+                                  <Trophy className="w-3.5 h-3.5 fill-slate-950" />
+                                  <span>🎁 Claim Badge &amp; +{badge.xpReward} XP!</span>
+                                </button>
+                              ) : (
+                                <div className="w-full py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 text-xs font-semibold flex items-center justify-center gap-1.5">
+                                  <span>🔒 Locked • In Progress ({percent}%)</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
                 </div>
+              );
+            })()
+          ) : activeTab === "profile" ? (
+            /* ----------------------------------------------------------- */
+            /* TAB: EXECUTIVE LEARNER PASSPORT & PROFILE HUB               */
+            /* ----------------------------------------------------------- */
+            <div className="space-y-6">
+              {/* 1. Executive Profile Hero Passport */}
+              <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#121D3A] via-[#0D1528] to-[#080E1E] border border-cyan-500/35 shadow-2xl relative overflow-hidden">
+                <div className="absolute -top-16 -left-16 w-60 h-60 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-16 -right-16 w-60 h-60 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
 
-                {/* Top Action Buttons */}
-                <div className="flex flex-wrap items-center gap-2.5 relative z-10 self-start md:self-auto">
-                  <button
-                    onClick={() => setShowVipModal(true)}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 flex items-center gap-1.5 transition-all hover:scale-[1.02]"
-                  >
-                    <Crown className="w-3.5 h-3.5 fill-slate-950" />
-                    <span>Manage VIP Pass (Scan QR)</span>
-                  </button>
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+                  <div className="flex items-center gap-4 sm:gap-6">
+                    <div className="relative shrink-0">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl p-1 bg-gradient-to-tr from-cyan-400 via-blue-500 to-purple-500 shadow-xl shadow-cyan-500/25">
+                        <img
+                          src="/images/janitha-avatar.jpg"
+                          alt={profileDisplayName}
+                          className="w-full h-full object-cover rounded-[14px]"
+                          onError={(e) => {
+                            (e.currentTarget as any).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=3b82f6&color=fff`;
+                          }}
+                        />
+                      </div>
+                      <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
+                    </div>
 
-                  <button
-                    onClick={() => setActiveTab("dashboard")}
-                    className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
-                  >
-                    ← Back to Dashboard
-                  </button>
+                    <div className="space-y-1.5 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-xl sm:text-2xl font-black text-white truncate">{profileDisplayName}</h2>
+                        <button
+                          onClick={() => {
+                            setEditNameInput(profileDisplayName);
+                            setEditNativeInput(profileNativeLang);
+                            setEditTargetInput(profileTargetLang);
+                            setEditGoalInput(profileDailyGoalMins);
+                            setShowEditProfileModal(true);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-cyan-300 text-[11px] font-bold flex items-center gap-1 border border-slate-700 transition-colors"
+                        >
+                          <Edit3 className="w-3 h-3" />
+                          <span>Edit</span>
+                        </button>
+                      </div>
+
+                      <p className="text-xs text-slate-400 font-mono">
+                        @janiya2 • InnoXpert Technologies • {user?.email || "janithad2@gmail.com"}
+                      </p>
+
+                      <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
+                          <Crown className="w-3 h-3 text-amber-400 fill-amber-400" />
+                          <span>{isPremiumMember ? `${subscriptionConfig.yearlyName} Active` : "Free Explorer"}</span>
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-cyan-500/15 text-cyan-300 border border-cyan-500/35 font-mono">
+                          {realAnalytics.fluencyTierTitle} • {realAnalytics.cefrBadge}
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30">
+                          Google Play Auto-Synced
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Stats Pill + Actions */}
+                  <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-auto">
+                    <button
+                      onClick={() => setShowVipModal(true)}
+                      className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 flex items-center gap-1.5 transition-all hover:scale-[1.02]"
+                    >
+                      <QrCode className="w-3.5 h-3.5" />
+                      <span>Mobile Pass &amp; QR Sync</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("dashboard")}
+                      className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700"
+                    >
+                      ← Dashboard
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* 2. Top 4 Metric Highlights */}
+              {/* 2. Top 4 Real-Data Highlights */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-4 rounded-2xl bg-[#111827] border border-purple-500/30 space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">Total Practice</span>
-                  <div className="text-2xl font-black text-white">{realAnalytics.totalHours} <span className="text-xs text-purple-300">HRS</span></div>
-                  <span className="text-[10px] text-slate-400 block">{realAnalytics.totalMinsLogged} minutes recorded</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">Real Spoken Audio</span>
+                  <div className="text-2xl font-black text-white">{realAnalytics.totalFormattedCompact}</div>
+                  <span className="text-[10px] text-slate-400 block">{userSessions.length} recorded voice sessions</span>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-[#111827] border border-cyan-500/30 space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">Fluency Tier</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">Avg Fluency &amp; CEFR</span>
                   <div className="text-2xl font-black text-white">{realAnalytics.avgFluency}%</div>
                   <span className="text-[10px] text-cyan-300 font-bold block">{realAnalytics.fluencyTierTitle} ({realAnalytics.cefrBadge})</span>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-[#111827] border border-amber-500/30 space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Mastery XP</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Real Earned XP</span>
                   <div className="text-2xl font-black text-white">{realAnalytics.totalXp.toLocaleString()}</div>
-                  <span className="text-[10px] text-amber-300/80 block">Level 4 Fluent Speaker</span>
+                  <span className="text-[10px] text-amber-300/80 block">{masteredVocabIds.length} Words • {fixedGrammarIds.length} Grammar Fixes</span>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-[#111827] border border-emerald-500/30 space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Streak Record</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Active Practice Days</span>
                   <div className="text-2xl font-black text-white">{realAnalytics.streakDays} <span className="text-xs text-emerald-300">DAYS 🔥</span></div>
-                  <span className="text-[10px] text-emerald-300 font-bold block">2x XP Boost Active</span>
+                  <span className="text-[10px] text-emerald-300 font-bold block">{realAnalytics.onDeviceCount}/{userSessions.length} On-Device Edge Calls</span>
                 </div>
               </div>
 
-              {/* 3. Detailed Settings & Membership Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Language Preferences Card */}
-                <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
+              {/* 3. 3-Column Bento Grid: Learning Preferences, Google Play VIP Sync, Skill Radar */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                {/* Col 1: Language & Active Coach Profile */}
+                <div className="p-5 sm:p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4 flex flex-col justify-between">
                   <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                     <div className="flex items-center gap-2">
                       <Languages className="w-5 h-5 text-cyan-400" />
-                      <h3 className="font-bold text-sm text-white">Language Learning Profile</h3>
+                      <h3 className="font-black text-sm text-white">Learning &amp; Coach Setup</h3>
                     </div>
                     <button
                       onClick={() => setShowEditProfileModal(true)}
-                      className="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-semibold"
+                      className="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-bold"
                     >
                       <Edit3 className="w-3 h-3" />
-                      <span>Change</span>
+                      <span>Edit</span>
                     </button>
                   </div>
 
-                  <div className="space-y-3 text-xs">
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <span className="text-slate-400">Mother Tongue (Native):</span>
+                  <div className="space-y-2.5 text-xs">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800">
+                      <span className="text-slate-400">Mother Tongue:</span>
                       <span className="font-bold text-white">{profileNativeLang}</span>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <span className="text-slate-400">Target Learning Language:</span>
-                      <span className="font-bold text-cyan-300">{profileTargetLang}</span>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800">
+                      <span className="text-slate-400">Active Target Language:</span>
+                      <span className="font-bold text-cyan-300">{selectedLanguage}</span>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <span className="text-slate-400">Daily Practice Target:</span>
-                      <span className="font-bold text-amber-300">{profileDailyGoalMins} mins/day</span>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800">
+                      <span className="text-slate-400">Daily Goal:</span>
+                      <span className="font-bold text-amber-300">{profileDailyGoalMins} mins / day</span>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <span className="text-slate-400">Preferred Speech Coach:</span>
-                      <span className="font-bold text-white">Coach Sophia Miller (US Accent)</span>
-                    </div>
-
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <span className="text-slate-400">Speech Audio Inference:</span>
-                      <span className="font-bold text-emerald-400">SpeakFlow Neural Core v3.2 + Cloud Burst</span>
+                    <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <img
+                          src={selectedCoach.avatar}
+                          alt={selectedCoach.name}
+                          className="w-8 h-8 rounded-lg object-cover border border-cyan-400/50 shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <span className="text-[10px] text-slate-400 block">Preferred AI Coach</span>
+                          <span className="font-bold text-white truncate block">{selectedCoach.name}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setActiveTab("practice")}
+                        className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/25 shrink-0"
+                      >
+                        Practice →
+                      </button>
                     </div>
                   </div>
                 </div>
 
-                {/* Membership & Play Store Billing Card */}
-                <div className="p-6 rounded-3xl bg-[#111827] border border-amber-500/30 space-y-4">
+                {/* Col 2: Google Play Store VIP Sync & Accurate Mobile Pricing */}
+                <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-b from-[#161B33] via-[#111827] to-[#0B1020] border border-amber-500/35 space-y-4 flex flex-col justify-between">
                   <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                     <div className="flex items-center gap-2">
-                      <Crown className="w-5 h-5 text-amber-400" />
-                      <h3 className="font-bold text-sm text-white">VIP Membership &amp; Billing</h3>
+                      {/* Authentic Multi-Color Google Play Store Triangle Icon */}
+                      <svg viewBox="0 0 24 24" className="w-5 h-5 shrink-0" aria-hidden="true">
+                        <path fill="#4285F4" d="M3.61 1.814L13.793 12 3.61 22.186a1.77 1.77 0 0 1-.468-1.224V3.038c0-.478.177-.913.468-1.224z" />
+                        <path fill="#34A853" d="M17.209 8.584L13.793 12 3.61 1.814c.385-.316.925-.416 1.445-.131l12.154 6.901z" />
+                        <path fill="#FBBC04" d="M20.431 10.414c1.092.62 1.092 2.552 0 3.172l-3.222 1.83L13.793 12l3.416-3.416 3.222 1.83z" />
+                        <path fill="#EA4335" d="M17.209 15.416L5.055 22.317c-.52.285-1.06.185-1.445-.131L13.793 12l3.416 3.416z" />
+                      </svg>
+                      <h3 className="font-black text-sm text-white">Google Play VIP Sync</h3>
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      Active
+                    <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/35">
+                      Synced Live
                     </span>
                   </div>
 
-                  <div className="space-y-3 text-xs">
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <span className="text-slate-400">Current Plan:</span>
-                      <span className="font-black text-amber-300">Annual VIP Pro Pass ($59.99/yr)</span>
-                    </div>
-
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <span className="text-slate-400">Billing Provider:</span>
-                      <span className="font-bold text-white flex items-center gap-1.5">
-                        <Smartphone className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>Google Play Store In-App Purchases</span>
+                  <div className="space-y-2.5 text-xs">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800">
+                      <span className="text-slate-400">Active Mobile Plan:</span>
+                      <span className="font-black text-amber-300">
+                        {subscriptionConfig.yearlyName} ({subscriptionConfig.yearlyPrice}/yr)
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <span className="text-slate-400">Next Renewal Date:</span>
-                      <span className="font-bold text-white">January 15, 2027</span>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800">
+                      <span className="text-slate-400">Free Trial Tier:</span>
+                      <span className="font-bold text-emerald-300">
+                        {subscriptionConfig.trialDays}-Day Free ({subscriptionConfig.weeklyPrice}/wk after)
+                      </span>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <span className="text-slate-400">Streak Freeze Protection:</span>
-                      <span className="font-bold text-cyan-300">2 / 2 Shields Active 🛡️</span>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800">
+                      <span className="text-slate-400">Billing Provider:</span>
+                      <span className="font-bold text-white">Google Play Store In-App</span>
                     </div>
 
                     <button
                       onClick={() => setShowVipModal(true)}
-                      className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.01]"
+                      className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-600 hover:brightness-110 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
                     >
-                      <QrCode className="w-4 h-4 text-cyan-300" />
-                      <span>Scan QR to Manage or Upgrade in Mobile App</span>
+                      <QrCode className="w-4 h-4" />
+                      <span>Open Google Play QR &amp; All 3 Plans →</span>
                     </button>
                   </div>
                 </div>
-              </div>
 
-              {/* 4. Top Unlocked Badges Showcase */}
-              <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-amber-400" />
-                    <h3 className="font-bold text-sm text-white">Your Unlocked Badges &amp; Medals</h3>
-                  </div>
-                  <button
-                    onClick={() => setActiveTab("achievements")}
-                    className="text-xs text-amber-400 hover:underline font-semibold"
-                  >
-                    View All 20 Badges →
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                  {achievements.slice(0, 5).map((badge) => (
-                    <div
-                      key={badge.id}
-                      onClick={() => setActiveTab("achievements")}
-                      className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col items-center text-center space-y-1.5 cursor-pointer hover:border-amber-400/50 transition-all"
-                    >
-                      <div className={`w-11 h-11 rounded-xl bg-gradient-to-tr ${badge.gradient} flex items-center justify-center shadow`}>
-                        {renderBadgeIcon(badge.iconType, "w-5 h-5 text-white")}
-                      </div>
-                      <span className="text-xs font-bold text-white truncate max-w-[100px]">{badge.title}</span>
-                      <span className="text-[9px] font-bold text-amber-400">+{badge.xpReward} XP</span>
+                {/* Col 3: Skill Mastery Radar & Top Badges */}
+                <div className="p-5 sm:p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4 flex flex-col justify-between">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-amber-400" />
+                      <h3 className="font-black text-sm text-white">Skill &amp; Badge Summary</h3>
                     </div>
-                  ))}
+                    <button
+                      onClick={() => setActiveTab("achievements")}
+                      className="text-xs text-amber-400 hover:underline font-bold"
+                    >
+                      All 20 →
+                    </button>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {[
+                      { label: "Pronunciation Accuracy", val: `${realAnalytics.pronunciationAccuracy}%`, pct: realAnalytics.pronunciationAccuracy, bar: "from-emerald-400 to-cyan-400" },
+                      { label: "Spoken Cadence", val: `${realAnalytics.avgFluency}%`, pct: realAnalytics.avgFluency, bar: "from-cyan-400 to-blue-500" },
+                      { label: "Vocabulary Mastered", val: `${masteredVocabIds.length}/${FULL_VOCABULARY_CATALOG.length}`, pct: Math.max(8, Math.round((masteredVocabIds.length / FULL_VOCABULARY_CATALOG.length) * 100)), bar: "from-purple-400 to-pink-500" }
+                    ].map((skill, sIdx) => (
+                      <div key={sIdx} className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-slate-300 font-semibold">{skill.label}</span>
+                          <span className="font-mono font-bold text-white">{skill.val}</span>
+                        </div>
+                        <div className="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden">
+                          <div className={`h-full rounded-full bg-gradient-to-r ${skill.bar}`} style={{ width: `${skill.pct}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap pt-1">
+                    {achievements.slice(0, 4).map((badge) => (
+                      <button
+                        key={badge.id}
+                        type="button"
+                        onClick={() => setActiveTab("achievements")}
+                        className="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-amber-400/50 flex items-center gap-1.5 text-[10px] font-bold text-slate-200 transition-all"
+                        title={badge.title.replace(/Gemini Nano/gi, "SpeakFlow Edge")}
+                      >
+                        <span className={`w-4 h-4 rounded-md bg-gradient-to-tr ${badge.gradient} flex items-center justify-center shrink-0`}>
+                          {renderBadgeIcon(badge.iconType, "w-2.5 h-2.5 text-white")}
+                        </span>
+                        <span className="truncate max-w-[95px]">
+                          {badge.title.replace(/Gemini Nano/gi, "SpeakFlow Edge")}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* 5. Recent Speaking Activity List */}
+              {/* 4. Recent Real Practice Records */}
               <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <History className="w-5 h-5 text-cyan-400" />
-                    <h3 className="font-bold text-sm text-white">Recent Real Practice Records</h3>
+                    <h3 className="font-black text-sm text-white">Recent Real Practice Records</h3>
                   </div>
-                  <span className="text-xs text-slate-400">{userSessions.length} total sessions</span>
+                  <button
+                    onClick={() => setActiveTab("progress")}
+                    className="text-xs text-cyan-400 hover:underline font-bold"
+                  >
+                    View Full Telemetry ({userSessions.length}) →
+                  </button>
                 </div>
 
-                <div className="space-y-2.5">
-                  {userSessions.slice(0, 3).map((session) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {userSessions.slice(0, 4).map((session) => (
                     <div
                       key={session.id}
-                      className="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800 flex items-center justify-between gap-3"
+                      onClick={() => setSelectedReviewSession(session)}
+                      className="p-3.5 rounded-2xl bg-slate-950/75 border border-slate-800 hover:border-cyan-500/40 cursor-pointer flex items-center justify-between gap-3 transition-all"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <img
-                          src={session.coachAvatar}
+                          src={session.coachAvatar || "/images/coaches/sarah.jpg"}
                           alt={session.coachName}
-                          className="w-10 h-10 rounded-xl object-cover border border-slate-700"
+                          onError={(e) => {
+                            e.currentTarget.src = "/images/coaches/sarah.jpg";
+                          }}
+                          className="w-10 h-10 rounded-xl object-cover border border-slate-700 shrink-0"
                         />
                         <div className="min-w-0">
                           <h4 className="font-bold text-xs text-white truncate">{session.topicTitle}</h4>
-                          <span className="text-[10px] text-slate-400">{session.coachName} • {session.durationFormatted}</span>
+                          <span className="text-[10px] text-slate-400">
+                            {session.coachName} • {session.durationFormatted} • {session.timeAgo}
+                          </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 shrink-0">
+                      <div className="flex items-center gap-2 shrink-0">
                         <span className="text-xs font-black text-cyan-400 bg-cyan-500/15 border border-cyan-400/30 px-2 py-0.5 rounded-lg">
                           {session.fluencyScore}% ({session.grade})
                         </span>
@@ -10143,84 +10393,105 @@ export default function StudentWebApp() {
 
             {/* Header: Title & Badges */}
             <div className="text-center space-y-1.5 relative z-10 pt-1">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 via-orange-500 to-yellow-300 text-slate-950 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/30">
-                <Crown className="w-6 h-6 fill-slate-950" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/40 text-emerald-300 text-[10.5px] font-black mb-1">
+                <span>🎁 {subscriptionConfig.trialDays}-Day Free Trial Available • Auto-Renewable</span>
               </div>
-              <h3 className="text-xl sm:text-2xl font-black text-white">SpeakFlow VIP Membership</h3>
+              <h3 className="text-xl sm:text-2xl font-black text-white">SpeakFlow Pro &amp; VIP Plans</h3>
               <p className="text-xs text-slate-300 max-w-md mx-auto">
-                Unlimited real-time phone calls, SpeakFlow on-device AI, and all 8 master speech coaches
+                {subscriptionConfig.paywallSubtitle}
               </p>
             </div>
 
-            {/* 3 Tier Comparison Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10">
-              {/* Free Explorer */}
-              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between space-y-2">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-white">Free Explorer</span>
-                    <span className="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.2 rounded font-mono">Starter</span>
-                  </div>
-                  <div className="text-lg font-black text-slate-200 mt-1">$0 <span className="text-[10px] text-slate-400 font-normal">/ forever</span></div>
-                  <ul className="text-[10px] text-slate-400 space-y-1 mt-2">
-                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-slate-400" /> 10 mins daily voice</li>
-                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-slate-400" /> 2 AI coaches</li>
-                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-slate-400" /> Standard cloud AI</li>
-                  </ul>
+            {/* 3 Exact Mobile App Subscription Tiers (Weekly 3-Day Trial, Monthly Pro, Yearly VIP) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10 pt-1">
+              {/* Weekly Access with 3-Day Free Trial */}
+              <div className="p-4 rounded-2xl bg-gradient-to-b from-emerald-950/35 to-slate-900/90 border-2 border-emerald-400/60 flex flex-col justify-between space-y-2 relative shadow-lg shadow-emerald-500/10">
+                <div className="absolute -top-2.5 right-3 bg-emerald-400 text-slate-950 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow">
+                  {subscriptionConfig.trialDays}-Day Free Trial
                 </div>
-              </div>
-
-              {/* Monthly VIP */}
-              <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/40 flex flex-col justify-between space-y-2 relative">
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-cyan-300">Monthly VIP</span>
-                    <span className="text-[9px] bg-cyan-500/20 text-cyan-300 px-1.5 py-0.2 rounded font-bold">Popular</span>
+                    <span className="font-black text-xs text-emerald-300">{subscriptionConfig.weeklyName}</span>
                   </div>
-                  <div className="text-lg font-black text-cyan-400 mt-1">$9.99 <span className="text-[10px] text-slate-400 font-normal">/ month</span></div>
+                  <div className="text-xl font-black text-white mt-1">
+                    {subscriptionConfig.weeklyPrice} <span className="text-[10px] text-slate-400 font-normal">/ week</span>
+                  </div>
+                  <span className="text-[9.5px] font-bold text-emerald-300 block">No payment today • Cancel anytime</span>
                   <ul className="text-[10px] text-slate-300 space-y-1 mt-2">
-                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-cyan-400" /> Unlimited voice minutes</li>
-                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-cyan-400" /> All 8 master coaches</li>
-                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-cyan-400" /> SpeakFlow on-device Neural</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-emerald-400" /> Unlimited AI Voice Calls</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-emerald-400" /> Instant Grammar Repair</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-emerald-400" /> All 6 Native Coaches</li>
                   </ul>
                 </div>
               </div>
 
-              {/* Annual VIP Pro Pass */}
-              <div className="p-3.5 rounded-2xl bg-gradient-to-b from-amber-500/15 via-purple-950/40 to-slate-900 border-2 border-amber-400/60 flex flex-col justify-between space-y-2 relative shadow-lg shadow-amber-500/10">
-                <div className="absolute -top-2.5 right-3 bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 px-2 py-0.2 rounded-full text-[9px] font-black uppercase tracking-wider shadow">
-                  Save 50%
+              {/* Monthly Pro */}
+              <div className="p-4 rounded-2xl bg-slate-900/90 border border-indigo-400/50 flex flex-col justify-between space-y-2 relative">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-black text-xs text-indigo-300">{subscriptionConfig.monthlyName}</span>
+                    <span className="text-[9px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-bold">Popular</span>
+                  </div>
+                  <div className="text-xl font-black text-cyan-300 mt-1">
+                    {subscriptionConfig.monthlyPrice} <span className="text-[10px] text-slate-400 font-normal">/ month</span>
+                  </div>
+                  <span className="text-[9.5px] text-slate-400 block">Billed monthly via Google Play</span>
+                  <ul className="text-[10px] text-slate-300 space-y-1 mt-2">
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-cyan-400" /> Unlimited Voice Minutes</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-cyan-400" /> All 6 Languages Unlocked</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-cyan-400" /> On-Device SpeakFlow Edge</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Yearly VIP */}
+              <div className="p-4 rounded-2xl bg-gradient-to-b from-amber-500/15 via-purple-950/40 to-slate-900 border-2 border-amber-400/70 flex flex-col justify-between space-y-2 relative shadow-lg shadow-amber-500/15">
+                <div className="absolute -top-2.5 right-3 bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow">
+                  {subscriptionConfig.yearlySavings}
                 </div>
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="font-black text-xs text-amber-300">Annual VIP Pro</span>
+                    <span className="font-black text-xs text-amber-300">{subscriptionConfig.yearlyName}</span>
                   </div>
-                  <div className="text-lg font-black text-amber-400 mt-1">$59.99 <span className="text-[10px] text-slate-400 font-normal">/ year</span></div>
-                  <ul className="text-[10px] text-amber-200/90 space-y-1 mt-2">
-                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-amber-400" /> Everything in Monthly</li>
-                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-amber-400" /> 2x XP Multiplier Boost</li>
+                  <div className="text-xl font-black text-amber-400 mt-1">
+                    {subscriptionConfig.yearlyPrice} <span className="text-[10px] text-slate-400 font-normal">/ year</span>
+                  </div>
+                  <span className="text-[9.5px] text-amber-200/80 block">Best value • Full annual mastery</span>
+                  <ul className="text-[10px] text-amber-100/90 space-y-1 mt-2">
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-amber-400" /> Everything in Monthly Pro</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-amber-400" /> 2x XP Leaderboard Boost</li>
                     <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-amber-400" /> 2 Streak Freezes 🛡️</li>
                   </ul>
                 </div>
               </div>
             </div>
 
-            {/* Google Play In-App Purchase & Auto-Sync Explainer Banner */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-cyan-500/10 border border-amber-400/40 text-left space-y-1.5 relative z-10">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Smartphone className="w-4 h-4 text-amber-400" />
-                  <h4 className="font-bold text-xs text-white">
-                    In-App Purchase via Google Play Store
-                  </h4>
+            {/* Google Play Store Billing & Auto-Sync Card with Official Google Play Icon */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-[#0F243C]/90 via-[#11182E]/90 to-[#1A1335]/90 border border-cyan-500/35 text-left space-y-2 relative z-10">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-slate-950 border border-slate-700 flex items-center justify-center shrink-0">
+                    <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" aria-hidden="true">
+                      <path fill="#4285F4" d="M3.61 1.814L13.793 12 3.61 22.186a1.77 1.77 0 0 1-.468-1.224V3.038c0-.478.177-.913.468-1.224z" />
+                      <path fill="#34A853" d="M17.209 8.584L13.793 12 3.61 1.814c.385-.316.925-.416 1.445-.131l12.154 6.901z" />
+                      <path fill="#FBBC04" d="M20.431 10.414c1.092.62 1.092 2.552 0 3.172l-3.222 1.83L13.793 12l3.416-3.416 3.222 1.83z" />
+                      <path fill="#EA4335" d="M17.209 15.416L5.055 22.317c-.52.285-1.06.185-1.445-.131L13.793 12l3.416 3.416z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-black text-xs text-white">
+                      Google Play In-App Subscriptions &amp; {subscriptionConfig.trialDays}-Day Free Trial
+                    </h4>
+                    <span className="text-[10px] text-slate-400">Protected checkout via Google Play Billing</span>
+                  </div>
                 </div>
-                <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="text-[9.5px] font-black text-emerald-300 bg-emerald-500/20 border border-emerald-500/35 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Auto-Syncs with Web</span>
+                  <span>Auto-Syncs Web &amp; Mobile</span>
                 </span>
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                To purchase or change your VIP package, install the <b className="text-white">SpeakFlow Mobile App</b> on your Android phone. When you subscribe through Google Play In-App Billing on mobile, your VIP benefits <b className="text-cyan-300">instantly and automatically sync to this Web Dashboard</b> for your account!
+              <p className="text-[11.5px] text-slate-300 leading-relaxed">
+                Start your <b className="text-emerald-300">{subscriptionConfig.trialDays}-day free trial</b> or switch packages safely inside the <b className="text-white">SpeakFlow Android App</b>. Your subscription syncs through Firebase immediately so Web &amp; Mobile stay unlocked together.
               </p>
             </div>
 
@@ -10253,21 +10524,26 @@ export default function StudentWebApp() {
                   {/* Actions & Instructions */}
                   <div className="space-y-3 flex-1 text-center sm:text-left">
                     <div>
-                      <h5 className="font-bold text-xs text-white">Scan with Phone or Click to Install</h5>
+                      <h5 className="font-bold text-xs text-white">Get SpeakFlow AI on Google Play</h5>
                       <p className="text-[11px] text-slate-400 leading-relaxed mt-0.5">
-                        Open your phone camera to instantly scan and download SpeakFlow AI from Google Play or direct APK.
+                        Scan the QR code with your phone camera or tap below to install from Google Play Store.
                       </p>
                     </div>
 
                     <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                      {/* Play Store Link */}
+                      {/* Play Store Link with Multi-Color Google Play Triangle */}
                       <a
                         href={appTargetUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="py-2 px-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs shadow-md shadow-emerald-500/20 flex items-center gap-1.5 transition-all hover:scale-[1.02]"
+                        className="py-2 px-3.5 rounded-xl bg-white hover:bg-slate-100 text-slate-950 font-black text-xs shadow-md flex items-center gap-2 transition-all hover:scale-[1.02]"
                       >
-                        <Smartphone className="w-3.5 h-3.5" />
+                        <svg viewBox="0 0 24 24" className="w-4 h-4 shrink-0" aria-hidden="true">
+                          <path fill="#4285F4" d="M3.61 1.814L13.793 12 3.61 22.186a1.77 1.77 0 0 1-.468-1.224V3.038c0-.478.177-.913.468-1.224z" />
+                          <path fill="#34A853" d="M17.209 8.584L13.793 12 3.61 1.814c.385-.316.925-.416 1.445-.131l12.154 6.901z" />
+                          <path fill="#FBBC04" d="M20.431 10.414c1.092.62 1.092 2.552 0 3.172l-3.222 1.83L13.793 12l3.416-3.416 3.222 1.83z" />
+                          <path fill="#EA4335" d="M17.209 15.416L5.055 22.317c-.52.285-1.06.185-1.445-.131L13.793 12l3.416 3.416z" />
+                        </svg>
                         <span>Google Play Store</span>
                       </a>
 
@@ -10307,11 +10583,11 @@ export default function StudentWebApp() {
                       {isPremiumMember ? (
                         <span className="text-emerald-400 font-bold flex items-center justify-center sm:justify-start gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>Active for user {profileDisplayName} (Synced with Google Play)</span>
+                          <span>Active for {profileDisplayName} (Synced via Google Play Billing)</span>
                         </span>
                       ) : (
                         <span className="text-slate-400">
-                          Current status: Free Explorer • Upgrade via Android App to unlock full VIP.
+                          Current status: Free Explorer • Start your {subscriptionConfig.trialDays}-day free trial in Android App.
                         </span>
                       )}
                     </div>
