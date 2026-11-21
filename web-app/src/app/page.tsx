@@ -910,6 +910,7 @@ export default function StudentWebApp() {
   const [selectedGrammarSessionId, setSelectedGrammarSessionId] = useState<string>("All");
   const [fixedGrammarIds, setFixedGrammarIds] = useState<string[]>(["cm_session-rec-1_0"]);
   const [grammarFixStatusFilter, setGrammarFixStatusFilter] = useState<"All" | "Needs Practice" | "Fixed">("All");
+  const [selectedGrammarMistakeId, setSelectedGrammarMistakeId] = useState<string | null>(null);
 
   // Automatically sync Practice, Vocabulary & Grammar language filters whenever Main Header Language changes
   useEffect(() => {
@@ -7969,39 +7970,109 @@ export default function StudentWebApp() {
                 ]
               };
 
-              // Build unified list of call-linked grammar mistakes across all userSessions
+              // Build unified, deduplicated list of call-linked grammar mistakes across real recorded sessions
               const allCallMistakes: EnrichedCallMistake[] = [];
+              const seenMistakeSignatures = new Set<string>();
+
+              const inferTopicGrammarFallback = (sess: SavedSessionItem, cleanTitle: string) => {
+                const lowerTitle = cleanTitle.toLowerCase();
+                if (lowerTitle.includes("interview") || lowerTitle.includes("career") || lowerTitle.includes("salary")) {
+                  return {
+                    language: sess.language || "English",
+                    category: "Career & Business",
+                    level: "Intermediate" as const,
+                    ruleTitle: "Present Perfect vs. Past Simple for Experience",
+                    wrong: "I am working on AI projects since three years.",
+                    correct: "I have been working on AI projects for three years.",
+                    explanation: "For career experience that started in the past and continues today, pair 'have been + -ing' with 'for' (duration) instead of 'am + -ing' with 'since'.",
+                    similarExamples: [
+                      "I have led three full-stack mobile launches over the past two years.",
+                      "I have been specializing in real-time voice systems since 2024.",
+                      "We have improved response latency by seventy percent this quarter."
+                    ]
+                  };
+                }
+                if (lowerTitle.includes("cricket") || lowerTitle.includes("football") || lowerTitle.includes("sport")) {
+                  return {
+                    language: sess.language || "English",
+                    category: "Sports & Culture",
+                    level: "Intermediate" as const,
+                    ruleTitle: "Collective Nouns & Past Simple Questions",
+                    wrong: "Did you saw how the team played in the final over?",
+                    correct: "Did you see how the team played in the final over?",
+                    explanation: "After auxiliary 'Did', always keep the main verb in its base form ('see', never 'saw').",
+                    similarExamples: [
+                      "Did you catch the opening partnership during the powerplay?",
+                      "Which bowler did you think performed best under pressure?",
+                      "Our squad practiced fielding drills before the semifinal."
+                    ]
+                  };
+                }
+                if (lowerTitle.includes("airport") || lowerTitle.includes("travel") || lowerTitle.includes("hotel") || lowerTitle.includes("flight")) {
+                  return {
+                    language: sess.language || "English",
+                    category: "Travel & Transit",
+                    level: "Beginner" as const,
+                    ruleTitle: "Polite Indirect Questions at Check-In",
+                    wrong: "Could you tell me where is my boarding gate?",
+                    correct: "Could you tell me where my boarding gate is?",
+                    explanation: "Embedded questions after 'Could you tell me' keep subject-before-verb order ('where my gate is').",
+                    similarExamples: [
+                      "Do you know what time the connecting flight starts boarding?",
+                      "Could you show me where the baggage claim area is?",
+                      "Would you mind confirming which terminal we depart from?"
+                    ]
+                  };
+                }
+                return {
+                  language: sess.language || "English",
+                  category: sess.category || "Daily Conversation",
+                  level: "Intermediate" as const,
+                  ruleTitle: `Past Tense Action Verb Precision (${cleanTitle})`,
+                  wrong: "I was very enjoy talking about this topic yesterday.",
+                  correct: "I really enjoyed talking about this topic yesterday.",
+                  explanation: "'Enjoy' is a transitive action verb. Use past simple 'I really enjoyed' + '-ing' ('talking'), never 'I was enjoy'.",
+                  similarExamples: [
+                    `I thoroughly enjoyed practicing ${cleanTitle} with ${sess.coachName}.`,
+                    "We really enjoyed exploring real-world topics together today.",
+                    "Do you enjoy practicing live English conversations every day?"
+                  ]
+                };
+              };
+
               userSessions.forEach((sess, sIdx) => {
+                const isRecursiveRepairCall =
+                  (sess.topicTitle || "").includes("Grammar Repair") ||
+                  (sess.topicTitle || "").includes("Call Grammar Mastery") ||
+                  (sess.category || "").includes("Grammar Repair");
+                const hasLiveCorrections = sess.correctionsList && sess.correctionsList.length > 0;
+
+                // Skip empty-mistake repair calls or tiny <15s test calls with 0 live errors so they don't duplicate
+                if ((isRecursiveRepairCall || (sess.durationSeconds || 0) < 15) && !hasLiveCorrections) {
+                  return;
+                }
+
                 const cleanTopicLabel = (sess.topicTitle || "Voice Practice")
                   .replace(/^(?:🎯\s*)?(?:Grammar Repair:|Call Grammar Mastery:)\s*/gi, "")
                   .replace(/^Spoken Clause & Tense Precision\s*\(/i, "")
                   .replace(/\)+$/g, "")
                   .trim();
-                const rawCorrections =
-                  sess.correctionsList && sess.correctionsList.length > 0
-                    ? sess.correctionsList
-                    : SESSION_DEFAULT_MISTAKES_MAP[sess.id] || [
-                        {
-                          language: sess.language || "English",
-                          category: sess.category || "Conversational Practice",
-                          level: "Intermediate" as const,
-                          ruleTitle: `Past Tense Action Verb Precision (${cleanTopicLabel})`,
-                          wrong: "I was very enjoy talking about this topic yesterday.",
-                          correct: "I really enjoyed talking about this topic yesterday.",
-                          explanation: "'Enjoy' is a transitive action verb. Use the past simple 'I really enjoyed' followed by an '-ing' verb ('talking'), never 'I was enjoy'.",
-                          similarExamples: [
-                            `I thoroughly enjoyed practicing ${cleanTopicLabel} with ${sess.coachName}.`,
-                            "We really enjoyed exploring the local culture and speaking with native guides.",
-                            "Do you enjoy practicing real-time voice conversations every day?"
-                          ]
-                        }
-                      ];
+
+                const rawCorrections = hasLiveCorrections
+                  ? sess.correctionsList!
+                  : SESSION_DEFAULT_MISTAKES_MAP[sess.id] || [inferTopicGrammarFallback(sess, cleanTopicLabel)];
 
                 rawCorrections.forEach((c: any, cIdx: number) => {
+                  const wrongStr = (c.original || c.wrong || "").trim();
+                  const correctStr = (c.correction || c.correct || "").trim();
+                  const sig = `${wrongStr.toLowerCase()}__${correctStr.toLowerCase()}`;
+                  if (seenMistakeSignatures.has(sig)) return;
+                  seenMistakeSignatures.add(sig);
+
                   allCallMistakes.push({
                     id: c.id || `cm_${sess.id}_${cIdx}_${sIdx}`,
                     sessionId: sess.id,
-                    sessionTitle: sess.topicTitle,
+                    sessionTitle: cleanTopicLabel || sess.topicTitle,
                     sessionTimeAgo: sess.timeAgo || "Recently",
                     sessionScore: sess.score || 92,
                     coachName: sess.coachName || "Coach Sarah Jenkins",
@@ -8011,16 +8082,16 @@ export default function StudentWebApp() {
                     category: c.category || sess.category || "Daily Conversation",
                     level: (c.level as any) || "Intermediate",
                     ruleTitle: c.ruleTitle || "Spoken Grammar & Syntax Precision",
-                    wrong: c.original || c.wrong || "",
-                    correct: c.correction || c.correct || "",
+                    wrong: wrongStr,
+                    correct: correctStr,
                     explanation: c.explanation || "",
                     similarExamples:
                       c.similarExamples && c.similarExamples.length > 0
                         ? c.similarExamples
                         : [
-                            c.correction || c.correct,
+                            correctStr,
                             "Notice how native speakers keep the auxiliary verb and main clause smoothly connected.",
-                            "Try using this exact grammatical structure in three different sentences aloud."
+                            "Try using this exact grammatical structure in a new sentence aloud."
                           ]
                   });
                 });
@@ -8319,348 +8390,424 @@ export default function StudentWebApp() {
                   </div>
 
                   {grammarModeTab === "call_mistakes" ? (
-                    <>
-                      {/* 2. FILTER BY YOUR RECORDED CALLS (CALL SESSION FILTER BAR) */}
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between px-1">
-                          <div className="flex items-center gap-2">
-                            <PhoneCall className="w-4 h-4 text-cyan-400" />
-                            <h2 className="text-sm font-black text-white uppercase tracking-wider">
-                              Filter Grammar Mistakes by Calls You Took ({userSessions.length} Recorded Calls)
-                            </h2>
-                          </div>
-                          {selectedGrammarSessionId !== "All" && (
-                            <button
-                              onClick={() => setSelectedGrammarSessionId("All")}
-                              className="text-xs font-bold text-cyan-400 hover:text-cyan-300"
-                            >
-                              Show Mistakes From All {userSessions.length} Calls ({allCallMistakes.length})
-                            </button>
-                          )}
-                        </div>
+                    (() => {
+                      const activeMistake =
+                        filteredCallMistakes.find((m) => m.id === selectedGrammarMistakeId) ||
+                        filteredCallMistakes[0] ||
+                        null;
+                      const sessionsWithMistakes = userSessions.filter((sess) => getSessionMistakeCount(sess.id) > 0);
 
-                        {/* Horizontal Grid of Taken Call Filter Cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-2.5">
-                          {/* "All My Calls" Card */}
-                          <button
-                            onClick={() => setSelectedGrammarSessionId("All")}
-                            className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between gap-2.5 ${
-                              selectedGrammarSessionId === "All"
-                                ? "bg-gradient-to-br from-purple-600/30 via-indigo-900/40 to-slate-900 border-purple-400 ring-2 ring-purple-400/40 shadow-xl scale-[1.02]"
-                                : "bg-[#111827]/95 border-slate-800 hover:border-slate-700"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between w-full">
-                              <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-lg">
-                                📞
+                      return (
+                        <>
+                          {/* 2. SLEEK HORIZONTAL CALL FILTER STRIP */}
+                          <div className="space-y-2.5">
+                            <div className="flex items-center justify-between px-1">
+                              <div className="flex items-center gap-2">
+                                <PhoneCall className="w-4 h-4 text-cyan-400" />
+                                <h2 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider">
+                                  Filter Mistakes by Call Session ({sessionsWithMistakes.length} Calls With Insights)
+                                </h2>
                               </div>
-                              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                                {allCallMistakes.length} Slips
-                              </span>
+                              {selectedGrammarSessionId !== "All" && (
+                                <button
+                                  onClick={() => setSelectedGrammarSessionId("All")}
+                                  className="text-xs font-bold text-cyan-400 hover:text-cyan-300"
+                                >
+                                  Show All ({allCallMistakes.length})
+                                </button>
+                              )}
                             </div>
-                            <div>
-                              <div className="font-black text-xs text-white truncate">All My Calls</div>
-                              <div className="text-[10px] text-slate-400 truncate">
-                                {userSessions.length} Recorded Sessions
-                              </div>
-                            </div>
-                          </button>
 
-                          {/* Individual Taken Call Cards */}
-                          {userSessions.slice(0, 6).map((sess) => {
-                            const count = getSessionMistakeCount(sess.id);
-                            const isSelected = selectedGrammarSessionId === sess.id;
-                            return (
+                            <div className="flex items-stretch gap-2.5 overflow-x-auto pb-1.5 custom-scrollbar">
+                              {/* All Calls Pill Card */}
                               <button
-                                key={sess.id}
-                                onClick={() =>
-                                  setSelectedGrammarSessionId(isSelected ? "All" : sess.id)
-                                }
-                                className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between gap-2.5 ${
-                                  isSelected
-                                    ? "bg-gradient-to-br from-cyan-500/25 via-indigo-900/40 to-slate-900 border-cyan-400 ring-2 ring-cyan-400/40 shadow-xl scale-[1.02]"
+                                onClick={() => setSelectedGrammarSessionId("All")}
+                                className={`min-w-[175px] p-3 rounded-2xl border text-left transition-all flex items-center gap-3 shrink-0 ${
+                                  selectedGrammarSessionId === "All"
+                                    ? "bg-gradient-to-br from-purple-600/30 via-indigo-900/40 to-slate-900 border-purple-400 shadow-lg shadow-purple-500/20"
                                     : "bg-[#111827]/95 border-slate-800 hover:border-slate-700"
                                 }`}
                               >
-                                <div className="flex items-center justify-between w-full gap-1">
-                                  <div className="relative shrink-0">
-                                    <img
-                                      src={sess.coachAvatar}
-                                      alt={sess.coachName}
-                                      className="w-9 h-9 rounded-xl object-cover border border-slate-700"
-                                    />
-                                    <span className="absolute -bottom-1 -right-1 text-[10px]">
-                                      {sess.coachFlag}
-                                    </span>
-                                  </div>
-                                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
-                                    {count} {count === 1 ? "Slip" : "Slips"}
-                                  </span>
+                                <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-base shrink-0">
+                                  📞
                                 </div>
-                                <div>
-                                  <div className="font-black text-xs text-white truncate" title={sess.topicTitle}>
-                                    {sess.topicTitle}
-                                  </div>
-                                  <div className="text-[10px] text-slate-400 truncate">
-                                    {sess.coachName.replace("Coach ", "")} • {sess.timeAgo}
+                                <div className="min-w-0">
+                                  <div className="font-black text-xs text-white truncate">All Calls</div>
+                                  <div className="text-[10px] text-purple-300 font-bold">
+                                    {allCallMistakes.length} Unique Rules
                                   </div>
                                 </div>
                               </button>
-                            );
-                          })}
-                        </div>
-                      </div>
 
-                      {/* Selected Call Spotlight Banner (When a specific call is clicked) */}
-                      {selectedCallObj && (
-                        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/60 via-indigo-950/60 to-purple-950/60 border border-cyan-400/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
-                          <div className="flex items-center gap-3.5">
-                            <img
-                              src={selectedCallObj.coachAvatar}
-                              alt={selectedCallObj.coachName}
-                              className="w-12 h-12 rounded-2xl object-cover border-2 border-cyan-400/60"
-                            />
-                            <div>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
-                                  Selected Call Session
-                                </span>
-                                <span className="text-xs font-bold text-slate-300">
-                                  {selectedCallObj.coachName} • {selectedCallObj.durationFormatted} • Score {selectedCallObj.score}% ({selectedCallObj.grade})
-                                </span>
-                              </div>
-                              <h3 className="text-base font-black text-white mt-0.5">
-                                {selectedCallObj.topicTitle}
-                              </h3>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-                            <button
-                              onClick={() => handleLaunchCallMistakesBundleDrill(selectedCallObj)}
-                              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-lg"
-                            >
-                              <PhoneCall className="w-3.5 h-3.5 fill-slate-950" />
-                              <span>Practice All {getSessionMistakeCount(selectedCallObj.id)} Grammar Rules From This Call →</span>
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* 3. SEARCH & STATUS FILTER BAR */}
-                      <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-                        <div className="relative flex-1 max-w-xl">
-                          <Search className="w-4 h-4 text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                          <input
-                            type="text"
-                            value={grammarSearchQuery}
-                            onChange={(e) => setGrammarSearchQuery(e.target.value)}
-                            placeholder="Search your call mistakes, grammar rules, call titles, or similar sentences..."
-                            className="w-full pl-10 pr-9 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-400"
-                          />
-                          {grammarSearchQuery && (
-                            <button
-                              onClick={() => setGrammarSearchQuery("")}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
-                            {(["All", "Needs Practice", "Fixed"] as const).map((st) => (
-                              <button
-                                key={st}
-                                onClick={() => setGrammarFixStatusFilter(st)}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                  grammarFixStatusFilter === st
-                                    ? "bg-purple-600 text-white font-black"
-                                    : "text-slate-400 hover:text-white"
-                                }`}
-                              >
-                                {st === "All" ? `All Mistakes (${allCallMistakes.length})` : st}
-                              </button>
-                            ))}
-                          </div>
-
-                          {(selectedGrammarSessionId !== "All" ||
-                            grammarFixStatusFilter !== "All" ||
-                            grammarSearchQuery.trim() !== "") && (
-                            <button
-                              onClick={() => {
-                                setSelectedGrammarSessionId("All");
-                                setGrammarFixStatusFilter("All");
-                                setGrammarSearchQuery("");
-                              }}
-                              className="text-xs font-bold text-rose-400 hover:text-rose-300 px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center gap-1"
-                            >
-                              <RotateCcw className="w-3 h-3" />
-                              <span>Reset Filter</span>
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* 4. CALL-LINKED GRAMMAR MISTAKE & SIMILAR PATTERNS CARDS */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                        {filteredCallMistakes.map((mistake) => {
-                          const isFixed = fixedGrammarIds.includes(mistake.id);
-                          const isSpeakingMain = speakingVocabId === mistake.id;
-
-                          return (
-                            <div
-                              key={mistake.id}
-                              className={`p-5 sm:p-6 rounded-3xl bg-gradient-to-b from-[#141C32]/95 via-[#0E1526]/95 to-[#090E1A]/95 border transition-all duration-300 flex flex-col justify-between space-y-4 relative overflow-hidden group ${
-                                isFixed
-                                  ? "border-emerald-500/50 shadow-[0_12px_35px_rgba(16,185,129,0.12)]"
-                                  : "border-slate-800/90 hover:border-purple-400/60"
-                              }`}
-                            >
-                              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-purple-400 to-transparent opacity-80" />
-
-                              <div className="space-y-3.5 relative z-10">
-                                {/* Top Call Provenance Header */}
-                                <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-800/80">
-                                  <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className="relative shrink-0">
-                                      <img
-                                        src={mistake.coachAvatar}
-                                        alt={mistake.coachName}
-                                        className="w-9 h-9 rounded-xl object-cover border border-purple-400/40"
-                                      />
-                                      <span className="absolute -bottom-1 -right-1 text-[10px]">
-                                        {mistake.coachFlag}
-                                      </span>
-                                    </div>
-                                    <div className="min-w-0">
-                                      <div className="flex items-center gap-1.5">
-                                        <span className="text-[10px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/15 px-2 py-0.2 rounded border border-purple-500/30">
-                                          📞 Caught in Call
-                                        </span>
-                                        <span className="text-[10px] text-slate-400 font-mono">
-                                          {mistake.sessionTimeAgo}
-                                        </span>
-                                      </div>
-                                      <div className="text-xs font-bold text-white truncate mt-0.5" title={mistake.sessionTitle}>
-                                        {mistake.sessionTitle} ({mistake.coachName})
-                                      </div>
-                                    </div>
-                                  </div>
-
+                              {/* Individual Calls With Grammar Slips */}
+                              {sessionsWithMistakes.map((sess) => {
+                                const count = getSessionMistakeCount(sess.id);
+                                const isSelected = selectedGrammarSessionId === sess.id;
+                                return (
                                   <button
-                                    type="button"
-                                    onClick={() => speakGrammarSentence(mistake.id, mistake.correct, mistake.language)}
-                                    className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 shrink-0 transition-all ${
-                                      isSpeakingMain
-                                        ? "bg-emerald-400 text-slate-950 shadow-lg animate-pulse"
-                                        : "bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-300"
+                                    key={sess.id}
+                                    onClick={() => setSelectedGrammarSessionId(isSelected ? "All" : sess.id)}
+                                    className={`min-w-[215px] max-w-[240px] p-3 rounded-2xl border text-left transition-all flex items-center gap-2.5 shrink-0 ${
+                                      isSelected
+                                        ? "bg-gradient-to-br from-cyan-500/25 via-indigo-900/40 to-slate-900 border-cyan-400 shadow-lg shadow-cyan-500/20"
+                                        : "bg-[#111827]/95 border-slate-800 hover:border-slate-700"
                                     }`}
                                   >
-                                    <Volume2 className="w-3.5 h-3.5" />
-                                    <span>{isSpeakingMain ? "Playing..." : "Hear Fix"}</span>
+                                    <div className="relative shrink-0">
+                                      <img
+                                        src={sess.coachAvatar || "/images/coaches/sarah.jpg"}
+                                        alt={sess.coachName}
+                                        onError={(e) => {
+                                          e.currentTarget.src = "/images/coaches/sarah.jpg";
+                                        }}
+                                        className="w-9 h-9 rounded-xl object-cover border border-slate-700"
+                                      />
+                                      <span className="absolute -bottom-1 -right-1 text-[10px]">{sess.coachFlag}</span>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="font-bold text-xs text-white truncate" title={sess.topicTitle}>
+                                        {sess.topicTitle}
+                                      </div>
+                                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                                        <span className="truncate">{sess.coachName.replace("Coach ", "")}</span>
+                                        <span>•</span>
+                                        <span className="text-amber-300 font-bold shrink-0">
+                                          {count} {count === 1 ? "Rule" : "Rules"}
+                                        </span>
+                                      </div>
+                                    </div>
                                   </button>
-                                </div>
+                                );
+                              })}
+                            </div>
+                          </div>
 
-                                {/* Grammar Rule Title */}
-                                <div className="flex items-center justify-between gap-2">
-                                  <h3 className="text-base font-black text-white group-hover:text-cyan-300 transition-colors">
-                                    {mistake.ruleTitle}
-                                  </h3>
-                                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-700 shrink-0">
-                                    {mistake.level} • {mistake.language}
-                                  </span>
-                                </div>
-
-                                {/* What You Said vs Natural Native Form */}
-                                <div className="space-y-2.5 p-3.5 rounded-2xl bg-slate-950/85 border border-slate-800/90">
-                                  <div className="flex items-start gap-2.5 text-xs">
-                                    <span className="px-2 py-0.5 rounded-md bg-rose-500/20 border border-rose-500/30 text-rose-300 font-black text-[10px] shrink-0">
-                                      ❌ You Said
-                                    </span>
-                                    <span className="line-through text-rose-300/90 font-medium leading-relaxed">
-                                      &ldquo;{mistake.wrong}&rdquo;
-                                    </span>
+                          {/* Selected Call Spotlight Banner (When a specific call is clicked) */}
+                          {selectedCallObj && (
+                            <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-950/60 via-indigo-950/60 to-purple-950/60 border border-cyan-400/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={selectedCallObj.coachAvatar}
+                                  alt={selectedCallObj.coachName}
+                                  className="w-10 h-10 rounded-xl object-cover border border-cyan-400/60"
+                                />
+                                <div>
+                                  <div className="text-[10px] font-black uppercase tracking-wider text-cyan-300">
+                                    Selected Call • {selectedCallObj.coachName} • {selectedCallObj.durationFormatted}
                                   </div>
-                                  <div className="flex items-start gap-2.5 text-xs pt-2 border-t border-slate-800/80">
-                                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-black text-[10px] shrink-0">
-                                      ✅ Native Fix
-                                    </span>
-                                    <span className="font-black text-emerald-300 text-sm leading-relaxed">
-                                      &ldquo;{mistake.correct}&rdquo;
-                                    </span>
-                                  </div>
+                                  <h3 className="text-sm font-black text-white">{selectedCallObj.topicTitle}</h3>
                                 </div>
+                              </div>
+                              <button
+                                onClick={() => handleLaunchCallMistakesBundleDrill(selectedCallObj)}
+                                className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-lg self-start sm:self-auto shrink-0"
+                              >
+                                <PhoneCall className="w-3.5 h-3.5 fill-slate-950" />
+                                <span>Sprint All {getSessionMistakeCount(selectedCallObj.id)} Rules From This Call →</span>
+                              </button>
+                            </div>
+                          )}
 
-                                {/* Why / Grammar Rule Explanation */}
-                                <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800/80 text-xs text-slate-200 leading-relaxed">
-                                  💡 <strong className="text-white">Why &amp; Grammar Rule:</strong> {mistake.explanation}
-                                </div>
+                          {/* 3. SEARCH & STATUS FILTER BAR */}
+                          <div className="p-3.5 rounded-2xl bg-[#111827] border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                            <div className="relative flex-1 max-w-xl">
+                              <Search className="w-4 h-4 text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                              <input
+                                type="text"
+                                value={grammarSearchQuery}
+                                onChange={(e) => setGrammarSearchQuery(e.target.value)}
+                                placeholder="Search mistakes, grammar rules, or call titles..."
+                                className="w-full pl-10 pr-9 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-400"
+                              />
+                              {grammarSearchQuery && (
+                                <button
+                                  onClick={() => setGrammarSearchQuery("")}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
 
-                                {/* 3 Similar Pattern Variations to Practice ("e ha samana dewalui") */}
-                                <div className="p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-500/30 space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-[10.5px] font-black uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
-                                      <Repeat className="w-3.5 h-3.5 text-cyan-400" />
-                                      Similar Sentences Using This Exact Grammar Pattern:
-                                    </span>
-                                    <span className="text-[9.5px] text-cyan-400 font-mono">Click 🔊 to Hear</span>
-                                  </div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                                {(["All", "Needs Practice", "Fixed"] as const).map((st) => (
+                                  <button
+                                    key={st}
+                                    onClick={() => setGrammarFixStatusFilter(st)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                      grammarFixStatusFilter === st
+                                        ? "bg-purple-600 text-white font-black"
+                                        : "text-slate-400 hover:text-white"
+                                    }`}
+                                  >
+                                    {st === "All" ? `All (${allCallMistakes.length})` : st}
+                                  </button>
+                                ))}
+                              </div>
 
-                                  <div className="space-y-1.5">
-                                    {mistake.similarExamples.map((sim, sIdx) => {
-                                      const simAudioId = `${mistake.id}_sim_${sIdx}`;
-                                      const isPlayingSim = speakingVocabId === simAudioId;
-                                      return (
-                                        <div
-                                          key={sIdx}
-                                          onClick={() => speakGrammarSentence(simAudioId, sim, mistake.language)}
-                                          className="p-2 rounded-xl bg-slate-950/75 hover:bg-slate-900 border border-slate-800/80 hover:border-cyan-500/40 flex items-center justify-between gap-2 cursor-pointer transition-all"
-                                        >
-                                          <div className="flex items-start gap-2 text-xs text-slate-200">
-                                            <span className="text-cyan-400 font-black text-[11px]">{sIdx + 1}.</span>
-                                            <span className="font-medium">&ldquo;{sim}&rdquo;</span>
-                                          </div>
-                                          <span className={`p-1 rounded-lg shrink-0 ${isPlayingSim ? "bg-emerald-400 text-slate-950" : "text-cyan-400 hover:bg-slate-800"}`}>
-                                            <Volume2 className="w-3.5 h-3.5" />
+                              {(selectedGrammarSessionId !== "All" ||
+                                grammarFixStatusFilter !== "All" ||
+                                grammarSearchQuery.trim() !== "") && (
+                                <button
+                                  onClick={() => {
+                                    setSelectedGrammarSessionId("All");
+                                    setGrammarFixStatusFilter("All");
+                                    setGrammarSearchQuery("");
+                                  }}
+                                  className="text-xs font-bold text-rose-400 hover:text-rose-300 px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center gap-1"
+                                >
+                                  <RotateCcw className="w-3 h-3" />
+                                  <span>Reset</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 4. FLAGSHIP MASTER-DETAIL INTERACTIVE GRAMMAR STUDIO (Left Queue + Right Interactive Drill Panel) */}
+                          {filteredCallMistakes.length === 0 ? (
+                            <div className="p-12 rounded-3xl bg-[#111827] border border-slate-800 text-center space-y-3">
+                              <div className="text-3xl">✨</div>
+                              <h3 className="text-base font-black text-white">No Grammar Mistakes Match This Filter</h3>
+                              <button
+                                onClick={() => {
+                                  setSelectedGrammarSessionId("All");
+                                  setGrammarFixStatusFilter("All");
+                                  setGrammarSearchQuery("");
+                                }}
+                                className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-black"
+                              >
+                                Show All {allCallMistakes.length} Rules
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                              {/* LEFT (5 cols): Compact Interactive Mistake Queue */}
+                              <div className="lg:col-span-5 space-y-2.5 lg:max-h-[700px] lg:overflow-y-auto lg:pr-1 custom-scrollbar">
+                                {filteredCallMistakes.map((mistake) => {
+                                  const isFixed = fixedGrammarIds.includes(mistake.id);
+                                  const isActive = activeMistake?.id === mistake.id;
+
+                                  return (
+                                    <button
+                                      key={mistake.id}
+                                      type="button"
+                                      onClick={() => setSelectedGrammarMistakeId(mistake.id)}
+                                      className={`w-full text-left p-4 rounded-2xl border transition-all flex flex-col gap-2 relative overflow-hidden ${
+                                        isActive
+                                          ? "bg-gradient-to-br from-[#1b2547] via-[#131c36] to-[#0d1326] border-cyan-400 ring-2 ring-cyan-400/25 shadow-xl shadow-cyan-950/30"
+                                          : isFixed
+                                          ? "bg-[#0d1d1c]/70 border-emerald-500/35 hover:border-emerald-400/60"
+                                          : "bg-[#111827]/95 border-slate-800 hover:border-purple-400/50"
+                                      }`}
+                                    >
+                                      {isActive && (
+                                        <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-cyan-400 to-purple-500" />
+                                      )}
+
+                                      {/* Top Row: Call Source + Status */}
+                                      <div className="flex items-center justify-between gap-2 w-full">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                          <img
+                                            src={mistake.coachAvatar}
+                                            alt={mistake.coachName}
+                                            onError={(e) => {
+                                              e.currentTarget.src = "/images/coaches/sarah.jpg";
+                                            }}
+                                            className="w-6 h-6 rounded-lg object-cover border border-slate-700 shrink-0"
+                                          />
+                                          <span className="text-[10px] font-bold text-purple-300 truncate">
+                                            📞 {mistake.sessionTitle}
                                           </span>
                                         </div>
-                                      );
-                                    })}
+
+                                        {isFixed ? (
+                                          <span className="text-[9.5px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/35 shrink-0">
+                                            ✓ Mastered
+                                          </span>
+                                        ) : (
+                                          <span className="text-[9.5px] font-black px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0">
+                                            Needs Drill
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      {/* Rule Title */}
+                                      <h3 className={`text-sm font-black leading-snug line-clamp-2 ${isActive ? "text-cyan-300" : "text-white"}`}>
+                                        {mistake.ruleTitle}
+                                      </h3>
+
+                                      {/* Compact Before -> After Preview */}
+                                      <div className="space-y-1 pt-1.5 border-t border-slate-800/80 text-[11px]">
+                                        <div className="flex items-center gap-1.5 text-rose-300/90 truncate">
+                                          <span className="font-black text-[9px] shrink-0">❌</span>
+                                          <span className="line-through truncate">{mistake.wrong}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-emerald-300 font-bold truncate">
+                                          <span className="font-black text-[9px] shrink-0">✅</span>
+                                          <span className="truncate">{mistake.correct}</span>
+                                        </div>
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+
+                              {/* RIGHT (7 cols): Focused Grammar Repair & Guided Call Studio Inspector */}
+                              {activeMistake && (() => {
+                                const isActiveFixed = fixedGrammarIds.includes(activeMistake.id);
+                                const isSpeakingMain = speakingVocabId === activeMistake.id;
+                                const { contextualQuestion } = buildGrammarElicitationPrompt(activeMistake);
+
+                                return (
+                                  <div className="lg:col-span-7 lg:sticky lg:top-6 p-6 rounded-3xl bg-gradient-to-b from-[#131B32] via-[#0E1526] to-[#090D1A] border border-cyan-500/35 shadow-2xl space-y-5 relative overflow-hidden">
+                                    <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-cyan-400 via-purple-500 to-emerald-400" />
+
+                                    {/* Inspector Header */}
+                                    <div className="flex items-start justify-between gap-3 pb-4 border-b border-slate-800/90">
+                                      <div className="flex items-center gap-3 min-w-0">
+                                        <div className="relative shrink-0">
+                                          <img
+                                            src={activeMistake.coachAvatar}
+                                            alt={activeMistake.coachName}
+                                            onError={(e) => {
+                                              e.currentTarget.src = "/images/coaches/sarah.jpg";
+                                            }}
+                                            className="w-12 h-12 rounded-2xl object-cover border-2 border-purple-400/50 shadow-md"
+                                          />
+                                          <span className="absolute -bottom-1 -right-1 text-xs">{activeMistake.coachFlag}</span>
+                                        </div>
+                                        <div className="min-w-0">
+                                          <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/15 px-2.5 py-0.5 rounded-full border border-purple-500/30">
+                                              📞 {activeMistake.sessionTitle}
+                                            </span>
+                                            <span className="text-[10px] font-bold text-slate-400">
+                                              {activeMistake.level} • {activeMistake.language}
+                                            </span>
+                                          </div>
+                                          <h3 className="text-lg sm:text-xl font-black text-white mt-1 leading-snug">
+                                            {activeMistake.ruleTitle}
+                                          </h3>
+                                        </div>
+                                      </div>
+
+                                      <button
+                                        type="button"
+                                        onClick={() => speakGrammarSentence(activeMistake.id, activeMistake.correct, activeMistake.language)}
+                                        className={`px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 shrink-0 transition-all ${
+                                          isSpeakingMain
+                                            ? "bg-emerald-400 text-slate-950 shadow-lg animate-pulse"
+                                            : "bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/50 text-cyan-300"
+                                        }`}
+                                      >
+                                        <Volume2 className="w-4 h-4" />
+                                        <span>{isSpeakingMain ? "Playing..." : "Hear Fix"}</span>
+                                      </button>
+                                    </div>
+
+                                    {/* Side-by-Side Before vs After Comparison */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                      <div className="p-4 rounded-2xl bg-rose-950/25 border border-rose-500/35 space-y-1.5">
+                                        <span className="text-[10px] font-black uppercase tracking-wider text-rose-300 block">
+                                          ❌ Avoid Saying
+                                        </span>
+                                        <p className="text-sm font-medium line-through text-rose-200/90 leading-relaxed">
+                                          &ldquo;{activeMistake.wrong}&rdquo;
+                                        </p>
+                                      </div>
+                                      <div className="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-400/45 space-y-1.5 shadow-inner">
+                                        <span className="text-[10px] font-black uppercase tracking-wider text-emerald-300 block">
+                                          ✅ Native Upgrade
+                                        </span>
+                                        <p className="text-sm font-black text-emerald-200 leading-relaxed">
+                                          &ldquo;{activeMistake.correct}&rdquo;
+                                        </p>
+                                      </div>
+                                    </div>
+
+                                    {/* Why + AI Coach Guided Question Preview */}
+                                    <div className="grid grid-cols-1 gap-3">
+                                      <div className="p-3.5 rounded-2xl bg-slate-950/75 border border-slate-800 text-xs text-slate-200 leading-relaxed">
+                                        💡 <strong className="text-white">Core Grammar Rule:</strong> {activeMistake.explanation}
+                                      </div>
+
+                                      <div className="p-3.5 rounded-2xl bg-cyan-950/25 border border-cyan-500/30 text-xs text-cyan-100 leading-relaxed flex items-start gap-2.5">
+                                        <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                                        <div>
+                                          <strong className="text-cyan-300 block text-[11px] uppercase tracking-wider mb-0.5">
+                                            🎯 How Your AI Coach Drills This In Call:
+                                          </strong>
+                                          <span className="italic text-slate-200">&ldquo;{contextualQuestion}&rdquo;</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* 3 Similar Pattern Variations */}
+                                    <div className="p-4 rounded-2xl bg-indigo-950/25 border border-indigo-500/30 space-y-2.5">
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-[10.5px] font-black uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
+                                          <Repeat className="w-3.5 h-3.5 text-cyan-400" />
+                                          3 Similar Sentences With This Exact Pattern
+                                        </span>
+                                        <span className="text-[10px] text-cyan-400 font-mono">Click 🔊 to Hear</span>
+                                      </div>
+
+                                      <div className="space-y-1.5">
+                                        {activeMistake.similarExamples.map((sim, sIdx) => {
+                                          const simAudioId = `${activeMistake.id}_sim_${sIdx}`;
+                                          const isPlayingSim = speakingVocabId === simAudioId;
+                                          return (
+                                            <div
+                                              key={sIdx}
+                                              onClick={() => speakGrammarSentence(simAudioId, sim, activeMistake.language)}
+                                              className="p-2.5 rounded-xl bg-slate-950/80 hover:bg-slate-900 border border-slate-800 hover:border-cyan-400/50 flex items-center justify-between gap-2.5 cursor-pointer transition-all"
+                                            >
+                                              <div className="flex items-start gap-2 text-xs text-slate-200">
+                                                <span className="text-cyan-400 font-black text-[11px]">{sIdx + 1}.</span>
+                                                <span className="font-medium">&ldquo;{sim}&rdquo;</span>
+                                              </div>
+                                              <span className={`p-1.5 rounded-lg shrink-0 ${isPlayingSim ? "bg-emerald-400 text-slate-950" : "text-cyan-400 bg-slate-900"}`}>
+                                                <Volume2 className="w-3.5 h-3.5" />
+                                              </span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+
+                                    {/* Primary Action Dock */}
+                                    <div className="pt-3 border-t border-slate-800/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleToggleGrammarFixed(activeMistake)}
+                                        className={`px-4 py-3 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all ${
+                                          isActiveFixed
+                                            ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/50"
+                                            : "bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700"
+                                        }`}
+                                      >
+                                        <CheckCircle2 className="w-4 h-4" />
+                                        <span>{isActiveFixed ? "Rule Mastered ✓" : "Mark Fixed (+30 XP)"}</span>
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        onClick={() => handleLaunchTargetedGrammarCall(activeMistake)}
+                                        className="flex-1 sm:flex-initial px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 hover:from-purple-500 hover:to-cyan-400 text-white font-black text-xs flex items-center justify-center gap-2 shadow-xl shadow-purple-600/30 transition-all hover:scale-[1.02]"
+                                      >
+                                        <PhoneCall className="w-4 h-4" />
+                                        <span>Practice This Grammar Pattern in Live Call →</span>
+                                      </button>
+                                    </div>
                                   </div>
-                                </div>
-                              </div>
-
-                              {/* Bottom Action Bar: Mark Fixed + Launch Targeted Grammar Drill Call */}
-                              <div className="pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 relative z-10">
-                                <button
-                                  type="button"
-                                  onClick={() => handleToggleGrammarFixed(mistake)}
-                                  className={`px-3.5 py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all ${
-                                    isFixed
-                                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/50"
-                                      : "bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700"
-                                  }`}
-                                >
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                  <span>{isFixed ? "Rule Mastered ✓" : "Mark Fixed (+30 XP)"}</span>
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => handleLaunchTargetedGrammarCall(mistake)}
-                                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-purple-600/30 transition-all hover:scale-[1.02]"
-                                >
-                                  <PhoneCall className="w-3.5 h-3.5" />
-                                  <span>Practice ONLY This Grammar &amp; Similar Patterns in Call →</span>
-                                </button>
-                              </div>
+                                );
+                              })()}
                             </div>
-                          );
-                        })}
-                      </div>
-                    </>
+                          )}
+                        </>
+                      );
+                    })()
                   ) : (
                     /* SECONDARY TAB: FULL 34+ GRAMMAR RULES LIBRARY */
                     <>
