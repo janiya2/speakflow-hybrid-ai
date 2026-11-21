@@ -5934,19 +5934,19 @@ export default function StudentWebApp() {
 
               {/* RIGHT COLUMN (4 cols in 12-col grid): Your Streak, Upcoming Lesson & Sprint Targets */}
               <div className="lg:col-span-4 space-y-6">
-                {/* 1. YOUR STREAK CARD (Adaptive Tier Badge & Expiry System) */}
+                {/* 1. YOUR STREAK CARD (Ultra-Sleek Balanced Zero-Void Streak & VIP Hub) */}
                 <div
-                  className={`p-6 rounded-3xl border text-center relative overflow-hidden space-y-4 shadow-xl transition-all duration-300 ${
+                  className={`p-5 rounded-3xl border relative overflow-hidden space-y-3.5 shadow-xl transition-all duration-300 ${
                     isPremiumMember
-                      ? "bg-gradient-to-b from-[#121629] to-[#0D111E] border-amber-500/35 ring-1 ring-amber-400/20"
+                      ? "bg-gradient-to-br from-[#161933] via-[#101529] to-[#0B0F1E] border-amber-500/40 ring-1 ring-amber-400/20"
                       : "bg-[#111827] border-slate-800/80"
                   }`}
                 >
-                  {/* Ambient Aura: Violet/Gold for Premium, Amber for Free */}
+                  {/* Ambient Aura */}
                   <div
-                    className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full pointer-events-none animate-flame-glow ${
+                    className={`absolute -top-10 -right-10 w-44 h-44 rounded-full pointer-events-none blur-2xl ${
                       isPremiumMember
-                        ? "bg-gradient-to-tr from-amber-500/25 via-purple-600/25 to-pink-500/20"
+                        ? "bg-gradient-to-tr from-amber-500/20 via-purple-600/20 to-pink-500/15"
                         : "bg-orange-600/15"
                     }`}
                   />
@@ -5954,12 +5954,17 @@ export default function StudentWebApp() {
                   {/* Top Header with Interactive Tier Switcher Badge */}
                   <div className="flex items-center justify-between text-left relative z-10">
                     <div className="flex items-center gap-2">
-                      <Flame
-                        className={`w-4 h-4 animate-pulse ${
-                          isPremiumMember ? "text-amber-400 fill-amber-400" : "text-orange-500 fill-orange-500"
-                        }`}
-                      />
-                      <h3 className="font-bold text-xs text-white">Your Streak</h3>
+                      <div className="w-7 h-7 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center">
+                        <Flame
+                          className={`w-4 h-4 animate-pulse ${
+                            isPremiumMember ? "text-amber-400 fill-amber-400" : "text-orange-500 fill-orange-500"
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <h3 className="font-black text-xs text-white leading-tight">Speaking Streak &amp; VIP</h3>
+                        <span className="text-[9.5px] text-amber-300/80 font-medium">Daily Fluency Momentum</span>
+                      </div>
                     </div>
 
                     {/* Dynamic Membership Tier Pill (Clickable to demo toggle Free vs Pro!) */}
@@ -5975,7 +5980,7 @@ export default function StudentWebApp() {
                       {isPremiumMember ? (
                         <>
                           <Crown className="w-3 h-3 text-amber-400 fill-amber-400 animate-pulse" />
-                          <span>👑 VIP PRO</span>
+                          <span>VIP PRO</span>
                         </>
                       ) : (
                         <>
@@ -5986,28 +5991,24 @@ export default function StudentWebApp() {
                     </button>
                   </div>
 
-                  {/* LIVE ANIMATED BURNING FLAME BADGE */}
-                  <div className="relative py-2 flex flex-col items-center justify-center">
-                    <div className="relative w-36 h-36 flex items-center justify-center">
-                      {/* Floating Crown above flame when VIP PRO */}
+                  {/* BALANCED HORIZONTAL HERO: Animated Flame Orb (Left) + Momentum & Milestone Telemetry (Right) */}
+                  <div className="flex items-center gap-4 p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80 relative z-10">
+                    {/* Left: Animated SVG Flame Orb */}
+                    <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
                       {isPremiumMember && (
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 animate-bounce">
-                          <div className="p-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 shadow-[0_0_15px_#facc15] text-slate-950">
-                            <Crown className="w-3.5 h-3.5 fill-slate-950" />
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-20 animate-bounce">
+                          <div className="p-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 shadow-[0_0_12px_#facc15] text-slate-950">
+                            <Crown className="w-3 h-3 fill-slate-950" />
                           </div>
                         </div>
                       )}
-
-                      {/* Rising Fire Sparks / Embers */}
-                      <span className="absolute top-6 left-12 w-1.5 h-1.5 rounded-full bg-amber-300 shadow-[0_0_8px_#fde047] animate-ember-1 pointer-events-none" />
+                      <span className="absolute top-3 left-6 w-1.5 h-1.5 rounded-full bg-amber-300 shadow-[0_0_8px_#fde047] animate-ember-1 pointer-events-none" />
                       <span
-                        className={`absolute top-8 right-12 w-2 h-2 rounded-full shadow-[0_0_10px_#f97316] animate-ember-2 pointer-events-none ${
+                        className={`absolute top-4 right-6 w-1.5 h-1.5 rounded-full shadow-[0_0_10px_#f97316] animate-ember-2 pointer-events-none ${
                           isPremiumMember ? "bg-purple-300 shadow-[0_0_10px_#c084fc]" : "bg-orange-400"
                         }`}
                       />
-                      <span className="absolute top-4 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-yellow-200 shadow-[0_0_6px_#fef08a] animate-ember-3 pointer-events-none" />
 
-                      {/* Animated SVG Fire */}
                       <svg viewBox="0 0 200 200" className="w-full h-full select-none pointer-events-none overflow-visible">
                         <defs>
                           <radialGradient id="haloBurn" cx="50%" cy="58%" r="50%">
@@ -6041,101 +6042,92 @@ export default function StudentWebApp() {
                             </feMerge>
                           </filter>
                         </defs>
-
-                        {/* Ambient Halo */}
                         <circle cx="100" cy="115" r="75" fill="url(#haloBurn)" />
-
-                        {/* Left Dancing Flame */}
-                        <path
-                          d="M 72 32 C 55 58, 48 85, 58 116 C 62 92, 70 70, 72 32 Z"
-                          fill="url(#flameRingBurn)"
-                          opacity="0.95"
-                          className="animate-flame-left"
-                        />
-                        {/* Right Dancing Flame */}
-                        <path
-                          d="M 128 32 C 145 58, 152 85, 142 116 C 138 92, 130 70, 128 32 Z"
-                          fill="url(#flameRingBurn)"
-                          opacity="0.95"
-                          className="animate-flame-right"
-                        />
-                        {/* Center Dominant Flame Lick */}
-                        <path
-                          d="M 100 12 C 82 45, 68 75, 78 112 C 82 85, 94 55, 100 12 Z"
-                          fill="url(#mainFlameBurn)"
-                          filter="url(#fireGlowBurn)"
-                          className="animate-flame-center"
-                        />
-                        {/* Hot Inner Flame Spikes */}
-                        <path
-                          d="M 88 28 C 78 52, 74 76, 84 105 C 88 80, 96 60, 88 28 Z"
-                          fill="#fef08a"
-                          opacity="0.9"
-                          className="animate-flame-left"
-                        />
-                        <path
-                          d="M 112 28 C 122 52, 126 76, 116 105 C 112 80, 104 60, 112 28 Z"
-                          fill="#fef08a"
-                          opacity="0.9"
-                          className="animate-flame-right"
-                        />
-
-                        {/* Fiery Burning Ring */}
-                        <circle
-                          cx="100"
-                          cy="115"
-                          r="54"
-                          fill="url(#innerBallBurn)"
-                          stroke="url(#flameRingBurn)"
-                          strokeWidth="4.5"
-                          filter="url(#fireGlowBurn)"
-                        />
-                        <circle
-                          cx="100"
-                          cy="115"
-                          r="49"
-                          fill="none"
-                          stroke={isPremiumMember ? "#a855f7" : "#ea580c"}
-                          strokeWidth="1.5"
-                          strokeDasharray="4 2"
-                          opacity="0.5"
-                        />
+                        <path d="M 72 32 C 55 58, 48 85, 58 116 C 62 92, 70 70, 72 32 Z" fill="url(#flameRingBurn)" opacity="0.95" className="animate-flame-left" />
+                        <path d="M 128 32 C 145 58, 152 85, 142 116 C 138 92, 130 70, 128 32 Z" fill="url(#flameRingBurn)" opacity="0.95" className="animate-flame-right" />
+                        <path d="M 100 12 C 82 45, 68 75, 78 112 C 82 85, 94 55, 100 12 Z" fill="url(#mainFlameBurn)" filter="url(#fireGlowBurn)" className="animate-flame-center" />
+                        <path d="M 88 28 C 78 52, 74 76, 84 105 C 88 80, 96 60, 88 28 Z" fill="#fef08a" opacity="0.9" className="animate-flame-left" />
+                        <path d="M 112 28 C 122 52, 126 76, 116 105 C 112 80, 104 60, 112 28 Z" fill="#fef08a" opacity="0.9" className="animate-flame-right" />
+                        <circle cx="100" cy="115" r="54" fill="url(#innerBallBurn)" stroke="url(#flameRingBurn)" strokeWidth="4.5" filter="url(#fireGlowBurn)" />
+                        <circle cx="100" cy="115" r="49" fill="none" stroke={isPremiumMember ? "#a855f7" : "#ea580c"} strokeWidth="1.5" strokeDasharray="4 2" opacity="0.5" />
                       </svg>
 
-                      {/* 100% Vector Crisp Text Inside the Fiery Orb */}
-                      <div className="absolute inset-0 pt-7 flex flex-col items-center justify-center pointer-events-none z-10">
-                        <span className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)] animate-pulse">
+                      <div className="absolute inset-0 pt-5 flex flex-col items-center justify-center pointer-events-none z-10">
+                        <span className="text-2xl font-black text-white tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
                           {realAnalytics.streakDays}
                         </span>
-                        <span className="text-[10px] sm:text-[11px] font-black text-amber-300 uppercase tracking-widest -mt-1 drop-shadow">
+                        <span className="text-[8.5px] font-black text-amber-300 uppercase tracking-widest -mt-1">
                           Days
                         </span>
-                        {/* Dynamic Multiplier Badge */}
+                      </div>
+                    </div>
+
+                    {/* Right: Momentum Telemetry & Milestone Bar */}
+                    <div className="flex-1 min-w-0 text-left space-y-2">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-xs font-black text-white truncate">
+                          On Fire • {realAnalytics.streakDays}-Day Run
+                        </span>
                         <span
-                          className={`text-[8px] font-black px-1.5 py-0.2 rounded-full mt-0.5 shadow-sm ${
+                          className={`text-[8.5px] font-black px-1.5 py-0.5 rounded-md shrink-0 ${
                             isPremiumMember
-                              ? "bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 font-black"
-                              : "bg-slate-800 text-slate-400 border border-slate-700"
+                              ? "bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950"
+                              : "bg-slate-800 text-slate-300"
                           }`}
                         >
-                          {isPremiumMember ? "2x XP BOOST" : "1x XP"}
+                          {isPremiumMember ? "2x XP" : "1x XP"}
                         </span>
+                      </div>
+
+                      <p className="text-[10.5px] text-slate-300 leading-snug">
+                        <strong className="text-cyan-300">{realAnalytics.totalFormattedCompact}</strong> logged across{" "}
+                        <strong className="text-white">{userSessions.length} calls</strong>
+                      </p>
+
+                      {/* Next Badge Milestone Progress */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[9.5px]">
+                          <span className="text-slate-400">7-Day Milestone</span>
+                          <span className="font-mono font-bold text-amber-300">
+                            {Math.min(realAnalytics.streakDays, 7)} / 7 days
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                          <div
+                            className="h-full bg-gradient-to-r from-amber-500 via-orange-400 to-yellow-300 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(100, Math.round((realAnalytics.streakDays / 7) * 100))}%` }}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <p className="font-bold text-xs text-white relative z-10 flex items-center justify-center gap-1.5">
-                    <span>Keep going! You're on fire!</span>
-                    <span className="animate-bounce">🔥</span>
-                  </p>
+                  {/* COMPACT 7-DAY REAL ACTIVITY STRIP */}
+                  <div className="grid grid-cols-7 gap-1.5 relative z-10">
+                    {realAnalytics.last7DaysActivity.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className={`py-1.5 rounded-xl text-center border transition-all ${
+                          item.done
+                            ? "bg-gradient-to-b from-amber-500/20 to-orange-500/10 border-amber-400/50 text-amber-300 shadow-sm"
+                            : "bg-slate-950/60 border-slate-800/80 text-slate-500"
+                        }`}
+                      >
+                        <div className="text-[8px] font-bold leading-none mb-0.5">{item.day}</div>
+                        <div className="text-[10px] font-black leading-none">{item.done ? "🔥" : "·"}</div>
+                      </div>
+                    ))}
+                  </div>
 
                   {/* DYNAMIC MEMBERSHIP & PACKAGE EXPIRY DETAILS BOX */}
                   {isPremiumMember ? (
-                    <div className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-950/70 via-slate-900/90 to-purple-950/60 border border-amber-500/30 text-left space-y-2 relative z-10">
+                    <div className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-950/70 via-slate-900/90 to-purple-950/60 border border-amber-500/35 text-left space-y-2 relative z-10">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                           <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                          <span className="text-[11px] font-bold text-white">{premiumPlanName}</span>
+                          <span className="text-[11px] font-black text-white">
+                            {subscriptionConfig.yearlyName} ({subscriptionConfig.yearlyPrice}/yr)
+                          </span>
                         </div>
                         <span className="text-[9px] font-extrabold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 rounded-full flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
