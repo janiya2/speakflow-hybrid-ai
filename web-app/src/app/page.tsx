@@ -879,6 +879,9 @@ export default function StudentWebApp() {
   const [customTopicInput, setCustomTopicInput] = useState<string>("");
   const [customTopicLevel, setCustomTopicLevel] = useState<string>("Intermediate");
   const [expandedTopicPreviewId, setExpandedTopicPreviewId] = useState<string | null>(null);
+  const [vocabCategoryFilter, setVocabCategoryFilter] = useState<string>("All");
+  const [masteredVocabIds, setMasteredVocabIds] = useState<string[]>(["en_v1", "es_v1", "jp_v1"]);
+  const [speakingVocabId, setSpeakingVocabId] = useState<string | null>(null);
 
   // Automatically sync Practice Studio language filter whenever Main Header Language changes
   useEffect(() => {
@@ -6623,84 +6626,1078 @@ export default function StudentWebApp() {
             })()
           ) : activeTab === "vocabulary" ? (
             /* ----------------------------------------------------------- */
-            /* TAB: VOCABULARY DRILLS                                      */
+            /* TAB: INTERACTIVE AI VOICE VOCABULARY & PRONUNCIATION STUDIO */
             /* ----------------------------------------------------------- */
-            <div className="space-y-6">
-              <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800 flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-emerald-400" />
-                    Essential Fluency Vocabulary
-                  </h2>
-                  <p className="text-xs text-slate-400">Master essential idioms, phrasal verbs, and daily conversation words.</p>
-                </div>
-                <button
-                  onClick={() => setActiveTab("dashboard")}
-                  className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
-                >
-                  ← Back to Dashboard
-                </button>
-              </div>
+            (() => {
+              interface VocabDrillItem {
+                id: string;
+                word: string;
+                phonetic: string;
+                category: "Daily Conversation" | "Travel & Dining" | "Career & Business" | "Idioms & Expressions";
+                level: "Beginner" | "Intermediate" | "Advanced";
+                meaningEn: string;
+                meaningSi: string;
+                exampleTarget: string;
+                exampleTranslation: string;
+                relatedKeyword: string;
+              }
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[
-                  { word: "Under the weather", meaning: "Feeling slightly unwell or tired.", example: "I'm feeling a bit under the weather today." },
-                  { word: "Cut to the chase", meaning: "Get straight to the main point.", example: "Let's cut to the chase and discuss numbers." },
-                  { word: "Piece of cake", meaning: "Something very easy to accomplish.", example: "Passing this language test was a piece of cake!" },
-                  { word: "Break a leg", meaning: "Good luck in performance or exam.", example: "Break a leg on your job interview today!" },
-                  { word: "Hit the road", meaning: "Depart or begin a journey.", example: "It's getting late, let's hit the road." },
-                  { word: "Call it a day", meaning: "Stop working for the remainder of the day.", example: "Great progress everyone, let's call it a day." }
-                ].map((item, idx) => (
-                  <div key={idx} className="p-5 rounded-2xl bg-[#111827] border border-slate-800 space-y-2">
-                    <span className="text-sm font-bold text-cyan-400 block">{item.word}</span>
-                    <p className="text-xs text-white font-medium">{item.meaning}</p>
-                    <p className="text-[11px] text-slate-400 italic">"{item.example}"</p>
+              const MULTILINGUAL_VOCAB_BANK: Record<string, VocabDrillItem[]> = {
+                English: [
+                  {
+                    id: "en_v1",
+                    word: "Cut to the chase",
+                    phonetic: "KUHT too thuh CHAYS",
+                    category: "Career & Business",
+                    level: "Intermediate",
+                    meaningEn: "Get straight to the main point without wasting time.",
+                    meaningSi: "වටේ යන්නේ නැතුව කෙලින්ම ප්‍රධාන කාරණාවට එන්න.",
+                    exampleTarget: "Let's cut to the chase and discuss the project timeline.",
+                    exampleTranslation: "We don't have much time, so let's focus on the key goal.",
+                    relatedKeyword: "interview"
+                  },
+                  {
+                    id: "en_v2",
+                    word: "Break the ice",
+                    phonetic: "BRAYK thuh AYS",
+                    category: "Daily Conversation",
+                    level: "Beginner",
+                    meaningEn: "Start a friendly conversation with someone you just met.",
+                    meaningSi: "අලුත් කෙනෙක් එක්ක සුහදව කතාබහක් ආරම්භ කරන්න.",
+                    exampleTarget: "Asking about favorite travel spots is a great way to break the ice.",
+                    exampleTranslation: "Makes people feel comfortable in social or business meetings.",
+                    relatedKeyword: "meetup"
+                  },
+                  {
+                    id: "en_v3",
+                    word: "Grab a bite to eat",
+                    phonetic: "GRAB uh BAYT too EET",
+                    category: "Travel & Dining",
+                    level: "Beginner",
+                    meaningEn: "Go get a quick meal or snack at a cafe or restaurant.",
+                    meaningSi: "ඉක්මනින් කෑමක් හෝ තේ එකක් ගන්න යමු.",
+                    exampleTarget: "Let's grab a bite to eat at the Italian cafe before our flight.",
+                    exampleTranslation: "Casual and natural phrase used by native speakers daily.",
+                    relatedKeyword: "coffee"
+                  },
+                  {
+                    id: "en_v4",
+                    word: "Think outside the box",
+                    phonetic: "THINK owt-SAYD thuh BOKS",
+                    category: "Career & Business",
+                    level: "Intermediate",
+                    meaningEn: "Think creatively and find innovative solutions.",
+                    meaningSi: "සාමාන්‍ය විදිහට වඩා නිර්මාණශීලීව අලුත් විදිහකට හිතන්න.",
+                    exampleTarget: "In our startup pitch, we showed how we think outside the box.",
+                    exampleTranslation: "Great power phrase to impress in job interviews.",
+                    relatedKeyword: "pitch"
+                  },
+                  {
+                    id: "en_v5",
+                    word: "Under the weather",
+                    phonetic: "UHN-der thuh WEH-ther",
+                    category: "Daily Conversation",
+                    level: "Beginner",
+                    meaningEn: "Feeling slightly sick, tired, or unwell.",
+                    meaningSi: "පොඩි අසනීප ගතියක් හෝ මහන්සියක් දැනෙනවා.",
+                    exampleTarget: "I'm feeling a bit under the weather today, so I visited the doctor.",
+                    exampleTranslation: "Common idiom when explaining mild illness politely.",
+                    relatedKeyword: "doctor"
+                  },
+                  {
+                    id: "en_v6",
+                    word: "Up in the air",
+                    phonetic: "UHP in thuh AIR",
+                    category: "Idioms & Expressions",
+                    level: "Intermediate",
+                    meaningEn: "Uncertain or not yet finally decided.",
+                    meaningSi: "තවම හරියටම තීරණය කරලා නැති දෙයක්.",
+                    exampleTarget: "Our summer holiday travel plans are still up in the air.",
+                    exampleTranslation: "Used when plans or schedules are still flexible.",
+                    relatedKeyword: "hotel"
+                  },
+                  {
+                    id: "en_v7",
+                    word: "Go the extra mile",
+                    phonetic: "GOH thuh EKS-truh MAYL",
+                    category: "Career & Business",
+                    level: "Advanced",
+                    meaningEn: "Make more effort than is expected to achieve excellence.",
+                    meaningSi: "බලාපොරොත්තු වෙනවාටත් වඩා උපරිම කැපවීමෙන් වැඩක් කරනවා.",
+                    exampleTarget: "I always go the extra mile to ensure our customers are satisfied.",
+                    exampleTranslation: "Top-tier phrase for job interviews and salary negotiations.",
+                    relatedKeyword: "salary"
+                  },
+                  {
+                    id: "en_v8",
+                    word: "Window or aisle seat",
+                    phonetic: "WIN-doh or AYL seet",
+                    category: "Travel & Dining",
+                    level: "Beginner",
+                    meaningEn: "Choosing between sitting by the airplane window or walkway.",
+                    meaningSi: "ගුවන් යානයක ජනේලය ළඟ ආසනයද නැත්නම් මැද තීරුවේ ආසනයද.",
+                    exampleTarget: "Could I please have a window seat for my flight to London?",
+                    exampleTranslation: "Essential phrase at every airport check-in counter.",
+                    relatedKeyword: "airport"
+                  },
+                  {
+                    id: "en_v9",
+                    word: "Call it a day",
+                    phonetic: "KAWL it uh DAY",
+                    category: "Idioms & Expressions",
+                    level: "Beginner",
+                    meaningEn: "Stop working on something for the rest of the day.",
+                    meaningSi: "අද දවසට කරපු වැඩ ඉවර කරලා විවේක ගමු.",
+                    exampleTarget: "We completed all our sprint tasks, so let's call it a day!",
+                    exampleTranslation: "Friendly way to wrap up a team meeting or workout.",
+                    relatedKeyword: "standup"
+                  }
+                ],
+                Spanish: [
+                  {
+                    id: "es_v1",
+                    word: "¡Mucho gusto en conocerte!",
+                    phonetic: "MOO-choh GOOS-toh en koh-noh-SER-teh",
+                    category: "Daily Conversation",
+                    level: "Beginner",
+                    meaningEn: "Nice to meet you! (Warm & polite greeting)",
+                    meaningSi: "ඔබව හඳුනාගැනීමට ලැබීම ලොකු සතුටක්!",
+                    exampleTarget: "¡Hola! Me llamo Janitha, mucho gusto en conocerte.",
+                    exampleTranslation: "Hello! My name is Janitha, very nice to meet you.",
+                    relatedKeyword: "madrid"
+                  },
+                  {
+                    id: "es_v2",
+                    word: "La cuenta, por favor",
+                    phonetic: "lah KWEN-tah por fah-VOR",
+                    category: "Travel & Dining",
+                    level: "Beginner",
+                    meaningEn: "The bill / check, please (at a restaurant or cafe).",
+                    meaningSi: "කරුණාකරලා බිල ගේන්න (අවන්හලකදී).",
+                    exampleTarget: "Todo estuvo delicioso. ¿Nos trae la cuenta, por favor?",
+                    exampleTranslation: "Everything was delicious. Could you bring us the bill, please?",
+                    relatedKeyword: "tapas"
+                  },
+                  {
+                    id: "es_v3",
+                    word: "Tengo una reservación",
+                    phonetic: "TEN-goh OO-nah reh-ser-vah-SYON",
+                    category: "Travel & Dining",
+                    level: "Beginner",
+                    meaningEn: "I have a reservation (for hotel check-in or dining).",
+                    meaningSi: "මම කලින් කාමරයක් / මේසයක් වෙන් කරවාගෙන (Reserve කරලා) තියෙනවා.",
+                    exampleTarget: "Buenas tardes, tengo una reservación a nombre de Janitha.",
+                    exampleTranslation: "Good afternoon, I have a reservation under the name Janitha.",
+                    relatedKeyword: "hotel"
+                  },
+                  {
+                    id: "es_v4",
+                    word: "¿Cuánto cuesta esto?",
+                    phonetic: "KWAN-toh KWES-tah ES-toh",
+                    category: "Daily Conversation",
+                    level: "Beginner",
+                    meaningEn: "How much does this cost?",
+                    meaningSi: "මේකේ මිල කීයද?",
+                    exampleTarget: "Disculpe, ¿cuánto cuesta este billete de tren AVE a Barcelona?",
+                    exampleTranslation: "Excuse me, how much does this AVE train ticket to Barcelona cost?",
+                    relatedKeyword: "tren"
+                  },
+                  {
+                    id: "es_v5",
+                    word: "Experiencia profesional",
+                    phonetic: "eks-peh-RYEN-syah pro-feh-syo-NAL",
+                    category: "Career & Business",
+                    level: "Intermediate",
+                    meaningEn: "Professional work experience and career background.",
+                    meaningSi: "වෘත්තීය පළපුරුද්ද සහ රැකියා අත්දැකීම්.",
+                    exampleTarget: "Tengo cinco años de experiencia profesional en desarrollo de software.",
+                    exampleTranslation: "I have five years of professional experience in software development.",
+                    relatedKeyword: "entrevista"
+                  },
+                  {
+                    id: "es_v6",
+                    word: "¡Pan comido!",
+                    phonetic: "PAHN koh-MEE-doh",
+                    category: "Idioms & Expressions",
+                    level: "Intermediate",
+                    meaningEn: "Piece of cake! / Super easy to do.",
+                    meaningSi: "හරිම ලේසියි! (කේක් කෑල්ලක් වගේ පහසු දෙයක්).",
+                    exampleTarget: "Practicar español con SpeakFlow es pan comido.",
+                    exampleTranslation: "Practicing Spanish with SpeakFlow is a piece of cake.",
+                    relatedKeyword: "clásico"
+                  }
+                ],
+                Japanese: [
+                  {
+                    id: "jp_v1",
+                    word: "初めまして、よろしくお願いします",
+                    phonetic: "Hajimemashite, yoroshiku onegaishimasu",
+                    category: "Daily Conversation",
+                    level: "Beginner",
+                    meaningEn: "Nice to meet you, please treat me well!",
+                    meaningSi: "මුල්ම වතාවට හමුවීම සතුටක්, ඔබේ සහයෝගය බලාපොරොත්තු වෙනවා!",
+                    exampleTarget: "初めまして、ジャニタです。どうぞよろしくお願いします。",
+                    exampleTranslation: "Nice to meet you, I am Janitha. Pleased to make your acquaintance.",
+                    relatedKeyword: "tokyo"
+                  },
+                  {
+                    id: "jp_v2",
+                    word: "お会計をお願いします",
+                    phonetic: "O-kaikei o onegaishimasu",
+                    category: "Travel & Dining",
+                    level: "Beginner",
+                    meaningEn: "Could I have the bill/check, please?",
+                    meaningSi: "කරුණාකරලා බිල ගේන්න පුළුවන්ද?",
+                    exampleTarget: "とても美味しかったです。すみません、お会計をお願いします。",
+                    exampleTranslation: "It was very delicious. Excuse me, check please.",
+                    relatedKeyword: "ramen"
+                  },
+                  {
+                    id: "jp_v3",
+                    word: "おすすめの料理は何ですか？",
+                    phonetic: "Osusume no ryouri wa nan desu ka?",
+                    category: "Travel & Dining",
+                    level: "Beginner",
+                    meaningEn: "What dish do you recommend?",
+                    meaningSi: "ඔබ නිර්දේශ කරන හොඳම කෑම එක මොකක්ද?",
+                    exampleTarget: "今日の一番おすすめの寿司ネタは何ですか？",
+                    exampleTranslation: "What is today's most recommended sushi topping?",
+                    relatedKeyword: "sushi"
+                  },
+                  {
+                    id: "jp_v4",
+                    word: "名刺を交換させていただけますか",
+                    phonetic: "Meishi o koukan sasete itadakemasu ka",
+                    category: "Career & Business",
+                    level: "Intermediate",
+                    meaningEn: "May I exchange business cards with you?",
+                    meaningSi: "අපි Business Cards හුවමාරු කරගනිමුද?",
+                    exampleTarget: "本日はお時間をいただきありがとうございます。名刺を交換させていただけますか。",
+                    exampleTranslation: "Thank you for your time today. May we exchange business cards?",
+                    relatedKeyword: "business"
+                  },
+                  {
+                    id: "jp_v5",
+                    word: "一期一会 (いちごいちえ)",
+                    phonetic: "Ichigo Ichie",
+                    category: "Idioms & Expressions",
+                    level: "Advanced",
+                    meaningEn: "Once-in-a-lifetime encounter; treasure every meeting.",
+                    meaningSi: "ජීවිතයේ එක් වරක් පමණක් ලැබෙන වටිනා අවස්ථාවක්.",
+                    exampleTarget: "お茶会では「一期一会」の心を大切にしています。",
+                    exampleTranslation: "In the tea ceremony, we cherish the spirit of 'one time, one meeting'.",
+                    relatedKeyword: "matcha"
+                  },
+                  {
+                    id: "jp_v6",
+                    word: "駅までどうやって行きますか？",
+                    phonetic: "Eki made douyatte ikimasu ka?",
+                    category: "Travel & Dining",
+                    level: "Beginner",
+                    meaningEn: "How do I get to the train station?",
+                    meaningSi: "දුම්රිය ස්ථානයට යන්නේ කොහොමද?",
+                    exampleTarget: "すみません、渋谷駅までどうやって行きますか？",
+                    exampleTranslation: "Excuse me, how do I get to Shibuya Station?",
+                    relatedKeyword: "shinjuku"
+                  }
+                ],
+                Korean: [
+                  {
+                    id: "kr_v1",
+                    word: "만나서 반갑습니다",
+                    phonetic: "Mannaseo bangapseumnida",
+                    category: "Daily Conversation",
+                    level: "Beginner",
+                    meaningEn: "Very nice to meet you! (Polite greeting)",
+                    meaningSi: "ඔබව හමුවීම ලොකු සතුටක්!",
+                    exampleTarget: "안녕하세요! 저는 자니타입니다. 만나서 반갑습니다!",
+                    exampleTranslation: "Hello! I am Janitha. Nice to meet you!",
+                    relatedKeyword: "seoul"
+                  },
+                  {
+                    id: "kr_v2",
+                    word: "이거 얼마예요?",
+                    phonetic: "Igeo eolmayeyo?",
+                    category: "Travel & Dining",
+                    level: "Beginner",
+                    meaningEn: "How much is this?",
+                    meaningSi: "මේකේ ගාණ කීයද?",
+                    exampleTarget: "명동 화장품 가게에서: 저기요, 이 수분 크림은 얼마예요?",
+                    exampleTranslation: "Excuse me, how much is this moisturizing cream?",
+                    relatedKeyword: "myeongdong"
+                  },
+                  {
+                    id: "kr_v3",
+                    word: "잘 먹겠습니다!",
+                    phonetic: "Jal meokgetseumnida!",
+                    category: "Travel & Dining",
+                    level: "Beginner",
+                    meaningEn: "I will eat well! (Said thankfully before starting a meal)",
+                    meaningSi: "බොහොම ස්තූතියි, මම රසවත්ව ආහාර ගන්නම්! (කෑමට පෙර කියන වදනක්)",
+                    exampleTarget: "삼겹살이 정말 맛있어 보여요! 잘 먹겠습니다!",
+                    exampleTranslation: "The Korean BBQ pork belly looks delicious! Thank you for the meal!",
+                    relatedKeyword: "bbq"
+                  },
+                  {
+                    id: "kr_v4",
+                    word: "자기소개를 부탁드립니다",
+                    phonetic: "Jagisogaereul butakdeurimnida",
+                    category: "Career & Business",
+                    level: "Intermediate",
+                    meaningEn: "Please tell us about yourself / Give a self-introduction.",
+                    meaningSi: "කරුණාකරලා ඔබ ගැන කෙටි හැඳින්වීමක් කරන්න.",
+                    exampleTarget: "면접관: 먼저 간단하게 자기소개를 부탁드립니다.",
+                    exampleTranslation: "Interviewer: First, please give us a brief self-introduction.",
+                    relatedKeyword: "interview"
+                  },
+                  {
+                    id: "kr_v5",
+                    word: "포장해 주세요",
+                    phonetic: "Pojanghae juseyo",
+                    category: "Travel & Dining",
+                    level: "Beginner",
+                    meaningEn: "Please pack it to go (Takeaway order).",
+                    meaningSi: "කරුණාකරලා මේක අරන් යන්න පැක් කරලා දෙන්න (Takeaway).",
+                    exampleTarget: "떡볶이랑 김밥 일 인분 포장해 주세요.",
+                    exampleTranslation: "Please pack one serving of tteokbokki and kimbap to go.",
+                    relatedKeyword: "bingsu"
+                  },
+                  {
+                    id: "kr_v6",
+                    word: "화이팅! (파이팅!)",
+                    phonetic: "Hwaiting! (Paiting!)",
+                    category: "Idioms & Expressions",
+                    level: "Beginner",
+                    meaningEn: "You can do it! / Cheer up & good luck!",
+                    meaningSi: "ජය වේවා! ඔයාට මේක කරන්න පුළුවන්!",
+                    exampleTarget: "오늘 한국어 말하기 연습도 화이팅!",
+                    exampleTranslation: "Good luck with your Korean speaking practice today too!",
+                    relatedKeyword: "k-pop"
+                  }
+                ],
+                Arabic: [
+                  {
+                    id: "ar_v1",
+                    word: "السلام عليكم ورحمة الله",
+                    phonetic: "As-salamu alaykum wa rahmatullah",
+                    category: "Daily Conversation",
+                    level: "Beginner",
+                    meaningEn: "Peace be upon you (Warm traditional Arabic greeting).",
+                    meaningSi: "ඔබට සාමය සහ ආශිර්වාදය උදා වේවා!",
+                    exampleTarget: "السلام عليكم! تشرفت بلقائك اليوم في دبي.",
+                    exampleTranslation: "Peace be upon you! Honored to meet you today in Dubai.",
+                    relatedKeyword: "dubai"
+                  },
+                  {
+                    id: "ar_v2",
+                    word: "كم سعر هذا من فضلك؟",
+                    phonetic: "Kam si'r hadha min fadlik?",
+                    category: "Travel & Dining",
+                    level: "Beginner",
+                    meaningEn: "How much does this cost, please?",
+                    meaningSi: "කරුණාකරලා මේකේ මිල කීයද කියන්න පුළුවන්ද?",
+                    exampleTarget: "هذا العطر رائع جداً، كم سعر هذا من فضلك؟",
+                    exampleTranslation: "This perfume is wonderful, how much is it please?",
+                    relatedKeyword: "souq"
+                  },
+                  {
+                    id: "ar_v3",
+                    word: "الفاتورة من فضلك",
+                    phonetic: "Al-fatura min fadlik",
+                    category: "Travel & Dining",
+                    level: "Beginner",
+                    meaningEn: "The bill / check, please.",
+                    meaningSi: "කරුණාකරලා බිල ගේන්න.",
+                    exampleTarget: "الشاورما والقهوة العربية ممتازة. الفاتورة من فضلك.",
+                    exampleTranslation: "The shawarma and Arabic coffee were excellent. The bill, please.",
+                    relatedKeyword: "shawarma"
+                  },
+                  {
+                    id: "ar_v4",
+                    word: "تشرفت بمعرفتك",
+                    phonetic: "Tasharraftu bi-ma'rifatik",
+                    category: "Career & Business",
+                    level: "Intermediate",
+                    meaningEn: "I am honored to meet you.",
+                    meaningSi: "ඔබව හඳුනාගැනීමට ලැබීම ගෞරවයක්.",
+                    exampleTarget: "تشرفت بمعرفتك، وأتطلع للتعاون مع شركتكم.",
+                    exampleTranslation: "Honored to meet you, and I look forward to collaborating with your company.",
+                    relatedKeyword: "business"
+                  }
+                ],
+                Tamil: [
+                  {
+                    id: "ta_v1",
+                    word: "வணக்கம்! எப்படி இருக்கீங்க?",
+                    phonetic: "Vanakkam! Eppadi irukkeenga?",
+                    category: "Daily Conversation",
+                    level: "Beginner",
+                    meaningEn: "Hello! How are you doing?",
+                    meaningSi: "ආයුබෝවන්! ඔයාට කොහොමද?",
+                    exampleTarget: "வணக்கம் நண்பா! ரொம்ப நாள் ஆச்சு, எப்படி இருக்கீங்க?",
+                    exampleTranslation: "Hello my friend! It's been a long time, how are you?",
+                    relatedKeyword: "chennai"
+                  },
+                  {
+                    id: "ta_v2",
+                    word: "இதன் விலை எவ்வளவு?",
+                    phonetic: "Ithan vilai evvalavu?",
+                    category: "Travel & Dining",
+                    level: "Beginner",
+                    meaningEn: "How much is the price of this?",
+                    meaningSi: "මේකේ මිල කීයද?",
+                    exampleTarget: "அண்ணா, இந்த காஞ்சிபுரம் பட்டுப் புடவையின் விலை எவ்வளவு?",
+                    exampleTranslation: "Brother, how much is the price of this Kanchipuram silk saree?",
+                    relatedKeyword: "shopping"
+                  },
+                  {
+                    id: "ta_v3",
+                    word: "சூடான பில்டர் காப்பி கொண்டு வாங்க",
+                    phonetic: "Soodaana filter kaapi kondu vaanga",
+                    category: "Travel & Dining",
+                    level: "Beginner",
+                    meaningEn: "Please bring a hot filter coffee.",
+                    meaningSi: "කරුණාකරලා උණුසුම් ෆිල්ටර් කෝපි එකක් ගේන්න.",
+                    exampleTarget: "ஒரு நெய் தோசையும் சூடான பில்டர் காப்பியும் கொண்டு வாங்க.",
+                    exampleTranslation: "Please bring one ghee roast dosa and a hot filter coffee.",
+                    relatedKeyword: "dosa"
+                  },
+                  {
+                    id: "ta_v4",
+                    word: "மிக்க நன்றி, மீண்டும் சந்திப்போம்",
+                    phonetic: "Mikka nandri, meendum santhippom",
+                    category: "Career & Business",
+                    level: "Intermediate",
+                    meaningEn: "Thank you very much, let's meet again!",
+                    meaningSi: "බොහොම ස්තූතියි, අපි නැවත හමුවෙමු!",
+                    exampleTarget: "நேர்காணல் வாய்ப்பிற்கு மிக்க நன்றி, மீண்டும் சந்திப்போம்.",
+                    exampleTranslation: "Thank you very much for the interview opportunity, see you again.",
+                    relatedKeyword: "interview"
+                  }
+                ]
+              };
+
+              const activeLangVocab = MULTILINGUAL_VOCAB_BANK[selectedLanguage] || MULTILINGUAL_VOCAB_BANK["English"];
+              const filteredVocab = activeLangVocab.filter(
+                (v) => vocabCategoryFilter === "All" || v.category === vocabCategoryFilter
+              );
+              const currentLangMeta =
+                AVAILABLE_LANGUAGES.find((l) => l.name.toLowerCase() === selectedLanguage.toLowerCase()) ||
+                AVAILABLE_LANGUAGES[0];
+
+              const handleSpeakVocab = (id: string, textToSpeak: string) => {
+                if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+                window.speechSynthesis.cancel();
+                if (speakingVocabId === id) {
+                  setSpeakingVocabId(null);
+                  return;
+                }
+                const utter = new SpeechSynthesisUtterance(textToSpeak);
+                const langCodeMap: Record<string, string> = {
+                  English: "en-US",
+                  Spanish: "es-ES",
+                  Japanese: "ja-JP",
+                  Korean: "ko-KR",
+                  Arabic: "ar-SA",
+                  Tamil: "ta-IN"
+                };
+                utter.lang = langCodeMap[selectedLanguage] || "en-US";
+                utter.rate = 0.92;
+                utter.onend = () => setSpeakingVocabId(null);
+                utter.onerror = () => setSpeakingVocabId(null);
+                setSpeakingVocabId(id);
+                window.speechSynthesis.speak(utter);
+              };
+
+              const handleToggleMastered = (vocab: VocabDrillItem) => {
+                if (masteredVocabIds.includes(vocab.id)) {
+                  setMasteredVocabIds((prev) => prev.filter((i) => i !== vocab.id));
+                } else {
+                  setMasteredVocabIds((prev) => [...prev, vocab.id]);
+                  setTotalXp((prev) => prev + 25);
+                  setCelebrationToast(`🎉 +25 XP! Mastered "${vocab.word}" in ${selectedLanguage}!`);
+                  setTimeout(() => setCelebrationToast(null), 3500);
+                }
+              };
+
+              const masteredCountInLang = activeLangVocab.filter((v) => masteredVocabIds.includes(v.id)).length;
+
+              return (
+                <div className="space-y-6">
+                  {/* 1. HERO EXPLAINER BANNER: WHAT THIS PAGE DOES */}
+                  <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#0F292A] via-[#0F172A] to-[#0A1120] border border-emerald-500/35 shadow-2xl space-y-5 relative overflow-hidden">
+                    <div className="absolute -top-20 -right-20 w-64 h-64 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[11px] font-black uppercase tracking-wider">
+                            <img
+                              src={currentLangMeta.flagUrl}
+                              alt={selectedLanguage}
+                              className="w-4 h-3 rounded-[2px] object-cover"
+                            />
+                            {selectedLanguage} Voice Vocabulary Trainer
+                          </span>
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[11px] font-black">
+                            ✅ {masteredCountInLang} / {activeLangVocab.length} Words Mastered (+25 XP each)
+                          </span>
+                        </div>
+
+                        <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5">
+                          <BookOpen className="w-6 h-6 text-emerald-400" />
+                          <span>Essential Speaking Vocabulary &amp; Pronunciation Studio</span>
+                        </h2>
+                        <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
+                          මෙම පිටුවෙන් ඔබට <strong className="text-emerald-300">{selectedLanguage}</strong> කතා කරනකොට නිතරම ඕන වෙන වචන සහ වාක්‍ය ඛණ්ඩ (Phrases &amp; Idioms) නිවැරදිව උච්චාරණය කරන විදිහ <strong className="text-cyan-300">🔊 Audio වලින් අහලා</strong>, තේරුම බලලා, කෙලින්ම <strong className="text-amber-300">📞 Live AI Call එකකින් පුහුණු වෙන්න</strong> පුළුවන්!
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2.5 self-start lg:self-auto shrink-0">
+                        <button
+                          onClick={() => launchTopicByKeyword("random")}
+                          className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/25 flex items-center gap-1.5 transition-all"
+                        >
+                          <PhoneCall className="w-3.5 h-3.5 fill-slate-950" />
+                          <span>Practice in {selectedLanguage} Call →</span>
+                        </button>
+                        <button
+                          onClick={() => setActiveTab("dashboard")}
+                          className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700"
+                        >
+                          ← Back
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 3-Step Visual Guide Bar */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-slate-800/80 relative z-10">
+                      <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/90 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-black text-xs flex items-center justify-center shrink-0">
+                          1
+                        </div>
+                        <div className="text-xs">
+                          <span className="font-bold text-white block">🔊 Listen Native Audio</span>
+                          <span className="text-[11px] text-slate-400">Click the speaker button to hear native AI pronunciation</span>
+                        </div>
+                      </div>
+                      <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/90 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-400/40 text-purple-300 font-black text-xs flex items-center justify-center shrink-0">
+                          2
+                        </div>
+                        <div className="text-xs">
+                          <span className="font-bold text-white block">📖 Meaning &amp; Phonetics</span>
+                          <span className="text-[11px] text-slate-400">Read the Sinhala &amp; English meaning + phonetic guide</span>
+                        </div>
+                      </div>
+                      <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/90 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-xs flex items-center justify-center shrink-0">
+                          3
+                        </div>
+                        <div className="text-xs">
+                          <span className="font-bold text-white block">📞 Use in Live AI Call</span>
+                          <span className="text-[11px] text-slate-400">Launch a roleplay call &amp; mark words mastered for +25 XP</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
+
+                  {/* 2. CATEGORY & LANGUAGE SWITCHER BAR */}
+                  <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {["All", "Daily Conversation", "Travel & Dining", "Career & Business", "Idioms & Expressions"].map(
+                        (cat) => (
+                          <button
+                            key={cat}
+                            onClick={() => setVocabCategoryFilter(cat)}
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                              vocabCategoryFilter === cat
+                                ? "bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-500/20"
+                                : "bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700"
+                            }`}
+                          >
+                            {cat === "All" ? `🌟 All ${selectedLanguage} Words (${activeLangVocab.length})` : cat}
+                          </button>
+                        )
+                      )}
+                    </div>
+
+                    {/* Quick Language Switcher Pills */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {AVAILABLE_LANGUAGES.map((lang) => (
+                        <button
+                          key={lang.id}
+                          onClick={() => setSelectedLanguage(lang.name)}
+                          className={`px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border transition-all ${
+                            selectedLanguage.toLowerCase() === lang.name.toLowerCase()
+                              ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
+                              : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          <img src={lang.flagUrl} alt={lang.name} className="w-3.5 h-2.5 rounded-[2px] object-cover" />
+                          <span>{lang.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 3. INTERACTIVE VOCABULARY CARDS GRID */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredVocab.map((item) => {
+                      const isMastered = masteredVocabIds.includes(item.id);
+                      const isSpeakingWord = speakingVocabId === item.id;
+                      const isSpeakingEx = speakingVocabId === item.id + "_ex";
+
+                      return (
+                        <div
+                          key={item.id}
+                          className={`p-5 rounded-3xl bg-gradient-to-b from-[#131C31] via-[#0F172A] to-[#0A101F] border transition-all duration-300 flex flex-col justify-between space-y-4 relative overflow-hidden group ${
+                            isMastered
+                              ? "border-emerald-500/50 shadow-[0_10px_30px_rgba(16,185,129,0.12)]"
+                              : "border-slate-800 hover:border-cyan-500/50"
+                          }`}
+                        >
+                          <div className="space-y-3">
+                            {/* Category & Level Header */}
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                                {item.category}
+                              </span>
+                              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-700 text-slate-300">
+                                {item.level}
+                              </span>
+                            </div>
+
+                            {/* Word + Phonetic Pronunciation + Audio Button */}
+                            <div className="flex items-start justify-between gap-3 pt-1">
+                              <div>
+                                <h3 className="text-lg font-black text-white group-hover:text-cyan-300 transition-colors leading-snug">
+                                  {item.word}
+                                </h3>
+                                <span className="text-[11px] font-mono text-emerald-400 block mt-0.5">
+                                  🗣️ /{item.phonetic}/
+                                </span>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => handleSpeakVocab(item.id, item.word)}
+                                title="Listen to Native Pronunciation"
+                                className={`px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 shrink-0 transition-all ${
+                                  isSpeakingWord
+                                    ? "bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-400/40 animate-pulse"
+                                    : "bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/40"
+                                }`}
+                              >
+                                <Volume2 className="w-4 h-4" />
+                                <span>{isSpeakingWord ? "Speaking..." : "Listen"}</span>
+                              </button>
+                            </div>
+
+                            {/* Bilingual Meaning Box (English + Sinhala) */}
+                            <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800/90 space-y-1.5">
+                              <div className="text-xs font-bold text-white leading-relaxed">
+                                💡 {item.meaningEn}
+                              </div>
+                              <div className="text-[11.5px] font-medium text-amber-300/95 leading-relaxed">
+                                🇱🇰 {item.meaningSi}
+                              </div>
+                            </div>
+
+                            {/* Real Spoken Example Sentence with Audio Playback */}
+                            <div className="p-3 rounded-2xl bg-indigo-950/30 border border-indigo-500/25 space-y-1.5">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-black uppercase tracking-wider text-indigo-300">
+                                  Spoken Example in Call:
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSpeakVocab(item.id + "_ex", item.exampleTarget)}
+                                  className="text-[10px] font-bold text-cyan-300 hover:text-white flex items-center gap-1"
+                                >
+                                  <Volume2 className="w-3 h-3" />
+                                  <span>{isSpeakingEx ? "Playing..." : "Hear Sentence"}</span>
+                                </button>
+                              </div>
+                              <p className="text-xs text-white font-semibold italic leading-relaxed">
+                                &ldquo;{item.exampleTarget}&rdquo;
+                              </p>
+                              <p className="text-[11px] text-slate-400">
+                                {item.exampleTranslation}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Bottom Actions: Mark Mastered + Practice in Live Call */}
+                          <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleMastered(item)}
+                              className={`px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all ${
+                                isMastered
+                                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/50"
+                                  : "bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700"
+                              }`}
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>{isMastered ? "Mastered ✓" : "Mark Learned (+25 XP)"}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => launchTopicByKeyword(item.relatedKeyword)}
+                              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs flex items-center gap-1.5 shadow-md transition-all"
+                            >
+                              <PhoneCall className="w-3.5 h-3.5" />
+                              <span>Use in Call →</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()
           ) : activeTab === "grammar" ? (
             /* ----------------------------------------------------------- */
-            /* TAB: GRAMMAR EXERCISES                                      */
+            /* TAB: INTERACTIVE AI GRAMMAR & SPOKEN MISTAKE REPAIR STUDIO  */
+            /* ----------------------------------------------------------- */
+            (() => {
+              interface GrammarFixRule {
+                id: string;
+                category: string;
+                wrong: string;
+                correct: string;
+                ruleEn: string;
+                ruleSi: string;
+                keyword: string;
+              }
+
+              const MULTILINGUAL_GRAMMAR_FIXES: Record<string, GrammarFixRule[]> = {
+                English: [
+                  {
+                    id: "g_en_1",
+                    category: "Verb Agreement",
+                    wrong: "I am agree with your opinion.",
+                    correct: "I agree with your opinion.",
+                    ruleEn: "'Agree' is already an action verb, so never put 'am / is / are' before it.",
+                    ruleSi: "'Agree' කියන්නේ ක්‍රියා පදයක් (Verb). ඒ නිසා ඒකට කලින් 'am' දාන්න එපා.",
+                    keyword: "debate"
+                  },
+                  {
+                    id: "g_en_2",
+                    category: "Prepositions & Gerunds",
+                    wrong: "I look forward to meet you at the interview.",
+                    correct: "I look forward to meeting you at the interview.",
+                    ruleEn: "In 'look forward to', 'to' is a preposition, so the verb after it must end in '-ing'.",
+                    ruleSi: "'Look forward to' කියන යෙදුමට පස්සේ එන ක්‍රියා පදයට අනිවාර්යයෙන්ම '-ing' එකතු වෙන්න ඕනේ (meeting).",
+                    keyword: "interview"
+                  },
+                  {
+                    id: "g_en_3",
+                    category: "Indirect Objects",
+                    wrong: "Can you explain me this software architecture?",
+                    correct: "Can you explain this software architecture to me?",
+                    ruleEn: "After 'explain', always use 'explain [something] to me' — never 'explain me'.",
+                    ruleSi: "'Explain me' කියලා කියන්නේ නෑ. 'Explain [දෙයක්] to me' හෝ 'Explain to me' කියලා පාවිච්චි කරන්න.",
+                    keyword: "standup"
+                  },
+                  {
+                    id: "g_en_4",
+                    category: "Present Perfect Duration",
+                    wrong: "I am working in this company since three years.",
+                    correct: "I have been working at this company for three years.",
+                    ruleEn: "Use 'have been + -ing' with 'for' when describing a duration of time up to now.",
+                    ruleSi: "අතීතයේ පටන් අරන් තවමත් කරගෙන යන දෙයක් කාල සීමාවක් එක්ක කියද්දී 'have been working ... for' පාවිච්චි කරන්න.",
+                    keyword: "career"
+                  },
+                  {
+                    id: "g_en_5",
+                    category: "Polite Requests",
+                    wrong: "Give me one coffee with milk.",
+                    correct: "Could I please have a latte with oat milk?",
+                    ruleEn: "In native English cafes and hotels, 'Could I please have...' or 'I would like...' sounds much more polite.",
+                    ruleSi: "අවන්හලකදී හෝ හෝටලයකදී 'Give me' වෙනුවට 'Could I please have...' කියන එක ගොඩක් ආචාරශීලීයි.",
+                    keyword: "coffee"
+                  },
+                  {
+                    id: "g_en_6",
+                    category: "Past Tense Questions",
+                    wrong: "Where did you went yesterday evening?",
+                    correct: "Where did you go yesterday evening?",
+                    ruleEn: "When a question already has 'did', keep the main verb in its base form ('go', not 'went').",
+                    ruleSi: "ප්‍රශ්නයක 'did' තියෙනකොට ක්‍රියා පදයේ මූලික ස්වරූපය ('go') පාවිච්චි කරන්න ('went' දාන්න එපා).",
+                    keyword: "weekend"
+                  }
+                ],
+                Spanish: [
+                  {
+                    id: "g_es_1",
+                    category: "Polite Ordering",
+                    wrong: "Quiero un café ahora.",
+                    correct: "Me gustaría pedir un café con leche, por favor.",
+                    ruleEn: "Using 'Me gustaría...' (I would like) or 'Quisiera...' sounds much warmer and more polite than 'Quiero'.",
+                    ruleSi: "ආපනශාලාවකදී 'Quiero' වෙනුවට 'Me gustaría...' (මම කැමතියි...) කියලා ඉල්ලන එක වඩාත් ආචාරශීලීයි.",
+                    keyword: "tapas"
+                  },
+                  {
+                    id: "g_es_2",
+                    category: "Ser vs Estar",
+                    wrong: "Estoy un ingeniero de software.",
+                    correct: "Soy ingeniero de software.",
+                    ruleEn: "Always use 'Soy' (from Ser) for professions, identity, and nationality, not 'Estoy'.",
+                    ruleSi: "ඔබේ රැකියාව හෝ ජාතිකත්වය කියද්දී 'Estoy' වෙනුවට හැමවිටම 'Soy' පාවිච්චි කරන්න.",
+                    keyword: "entrevista"
+                  },
+                  {
+                    id: "g_es_3",
+                    category: "Age Expression",
+                    wrong: "Soy veinticinco años.",
+                    correct: "Tengo veinticinco años.",
+                    ruleEn: "In Spanish, age is expressed with 'Tener' (to have years), never 'Ser'.",
+                    ruleSi: "ස්පාඤ්ඤ භාෂාවෙන් වයස කියද්දී 'Soy' නෙවෙයි 'Tengo [වයස] años' කියලා පාවිච්චි කරන්න.",
+                    keyword: "madrid"
+                  },
+                  {
+                    id: "g_es_4",
+                    category: "Gender Agreement",
+                    wrong: "La problema es muy difícil.",
+                    correct: "El problema es muy difícil.",
+                    ruleEn: "Words ending in '-ma' of Greek origin (el problema, el sistema, el tema) are masculine!",
+                    ruleSi: "'Problema' කියන වචනය '-a' වලින් ඉවර උනාට පුරුෂ ලිංග පදයක් නිසා 'El problema' කියලා කියන්න ඕනේ.",
+                    keyword: "hotel"
+                  }
+                ],
+                Japanese: [
+                  {
+                    id: "g_jp_1",
+                    category: "Polite Requests",
+                    wrong: "水をくれ (Mizu o kure)",
+                    correct: "お水をお願いします (Omizu o onegaishimasu)",
+                    ruleEn: "Always use '...o onegaishimasu' or '...o kudasai' when ordering at restaurants or speaking to staff.",
+                    ruleSi: "ජපන් අවන්හලකදී හෝ ආයතනයකදී ආචාරශීලීව යමක් ඉල්ලද්දී '...o onegaishimasu' පාවිච්චි කරන්න.",
+                    keyword: "ramen"
+                  },
+                  {
+                    id: "g_jp_2",
+                    category: "Self Reference in Interviews",
+                    wrong: "俺はエンジニアです (Ore wa enjinia desu)",
+                    correct: "私はソフトウェアエンジニアです (Watashi wa sofutowea enjinia desu)",
+                    ruleEn: "In professional and polite conversations, always use 'Watashi' (or 'Watakushi'), never casual 'Ore' or 'Boku'.",
+                    ruleSi: "රැකියා සම්මුඛ පරීක්ෂණ සහ නිල කතාබහේදී 'මම' කියන්න හැමවිටම 'Watashi' පාවිච්චි කරන්න.",
+                    keyword: "tokyo"
+                  }
+                ],
+                Korean: [
+                  {
+                    id: "g_kr_1",
+                    category: "Polite Honorifics (존댓말)",
+                    wrong: "이거 줘 (Igeo jwo)",
+                    correct: "이거 주세요 (Igeo juseyo)",
+                    ruleEn: "Add '주세요 (juseyo)' when ordering food or shopping to speak politely to staff.",
+                    ruleSi: "කොරියානු වෙළඳසැලකදී හෝ අවන්හලකදී ආචාරශීලීව ඉල්ලීමට '주세요 (juseyo)' භාවිතා කරන්න.",
+                    keyword: "seoul"
+                  },
+                  {
+                    id: "g_kr_2",
+                    category: "Formal Self-Introduction",
+                    wrong: "내 이름은 자니타야 (Nae ireumeun Janita-ya)",
+                    correct: "제 이름은 자니타입니다 (Je ireumeun Janita-imnida)",
+                    ruleEn: "Use humble '제 (Je)' instead of '내 (Nae)' and formal '-입니다 (-imnida)' when meeting someone new.",
+                    ruleSi: "අලුත් කෙනෙක්ට හෝ සම්මුඛ පරීක්ෂණයකදී ඔබව හඳුන්වා දෙන විට '제 이름은 ...입니다' භාවිතා කරන්න.",
+                    keyword: "interview"
+                  }
+                ]
+              };
+
+              const activeGrammarList =
+                MULTILINGUAL_GRAMMAR_FIXES[selectedLanguage] || MULTILINGUAL_GRAMMAR_FIXES["English"];
+
+              const speakGrammarSentence = (id: string, text: string) => {
+                if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(text);
+                const langCodeMap: Record<string, string> = {
+                  English: "en-US",
+                  Spanish: "es-ES",
+                  Japanese: "ja-JP",
+                  Korean: "ko-KR",
+                  Arabic: "ar-SA",
+                  Tamil: "ta-IN"
+                };
+                utter.lang = langCodeMap[selectedLanguage] || "en-US";
+                utter.rate = 0.92;
+                utter.onend = () => setSpeakingVocabId(null);
+                setSpeakingVocabId(id);
+                window.speechSynthesis.speak(utter);
+              };
+
+              return (
+                <div className="space-y-6">
+                  {/* Hero Header */}
+                  <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#23153C] via-[#0F172A] to-[#0A0F1D] border border-purple-500/35 shadow-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div className="space-y-2">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-300 text-[11px] font-black uppercase tracking-wider">
+                        <GraduationCap className="w-3.5 h-3.5" />
+                        {selectedLanguage} Spoken Grammar &amp; Mistake Coach
+                      </span>
+                      <h2 className="text-xl sm:text-2xl font-black text-white">
+                        Common Spoken Mistakes vs. Natural Native Expressions
+                      </h2>
+                      <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
+                        Students ලා කතා කරද්දී නිතරම වරද්දන වාක්‍ය (<span className="text-rose-400 font-bold">❌ Wrong</span>) සහ ඒවා නිවැරදිව Native Speaker කෙනෙක් වගේ කියන විදිහ (<span className="text-emerald-400 font-bold">✅ Correct</span>) සිංහල පැහැදිලි කිරීම සහ <strong className="text-cyan-300">🔊 Audio Pronunciation</strong> එක්ක මෙතනින් පුහුණු වෙන්න පුළුවන්.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <button
+                        onClick={() => launchTopicByKeyword("random")}
+                        className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs shadow-lg flex items-center gap-1.5"
+                      >
+                        <PhoneCall className="w-3.5 h-3.5" />
+                        <span>Test Grammar in Live Call →</span>
+                      </button>
+                      <button
+                        onClick={() => setActiveTab("dashboard")}
+                        className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700"
+                      >
+                        ← Back
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Grammar Rules Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {activeGrammarList.map((item) => (
+                      <div
+                        key={item.id}
+                        className="p-5 rounded-3xl bg-[#111827] border border-slate-800 hover:border-purple-500/40 transition-all space-y-4 flex flex-col justify-between"
+                      >
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                              {item.category}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => speakGrammarSentence(item.id, item.correct)}
+                              className="px-2.5 py-1 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/30 text-cyan-300 text-xs font-bold flex items-center gap-1.5"
+                            >
+                              <Volume2 className="w-3.5 h-3.5" />
+                              <span>{speakingVocabId === item.id ? "Speaking..." : "Hear Correct Sentence"}</span>
+                            </button>
+                          </div>
+
+                          {/* Wrong vs Correct Comparison Box */}
+                          <div className="space-y-2 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/90">
+                            <div className="flex items-start gap-2 text-xs">
+                              <span className="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-black text-[10px] shrink-0">
+                                ❌ Don&apos;t Say
+                              </span>
+                              <span className="line-through text-rose-300/90 font-medium">{item.wrong}</span>
+                            </div>
+                            <div className="flex items-start gap-2 text-xs pt-1 border-t border-slate-800/80">
+                              <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-black text-[10px] shrink-0">
+                                ✅ Say This
+                              </span>
+                              <span className="font-black text-emerald-300 text-sm">{item.correct}</span>
+                            </div>
+                          </div>
+
+                          {/* Bilingual Rule Explanation */}
+                          <div className="space-y-1 text-xs px-1">
+                            <p className="text-slate-200 font-medium">💡 {item.ruleEn}</p>
+                            <p className="text-amber-300/95 text-[11.5px]">🇱🇰 {item.ruleSi}</p>
+                          </div>
+                        </div>
+
+                        <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                          <span className="text-[10px] font-mono text-purple-300">
+                            ⚡ SpeakFlow Live Grammar Detector Active
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => launchTopicByKeyword(item.keyword)}
+                            className="px-3.5 py-1.5 rounded-xl bg-purple-600/25 hover:bg-purple-600 border border-purple-500/40 text-purple-200 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-all"
+                          >
+                            <PhoneCall className="w-3.5 h-3.5" />
+                            <span>Practice Rule in Call →</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()
+          ) : activeTab === "progress" ? (
+            /* ----------------------------------------------------------- */
+            /* TAB: REAL-TIME FLUENCY PROGRESS & TELEMETRY ANALYTICS       */
             /* ----------------------------------------------------------- */
             <div className="space-y-6">
-              <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800 flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <GraduationCap className="w-5 h-5 text-purple-400" />
-                    Intelligent Grammar Fixes
+              <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#0F243C] via-[#0F172A] to-[#0A0F1D] border border-cyan-500/35 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1.5">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[11px] font-black uppercase tracking-wider">
+                    <BarChart3 className="w-3.5 h-3.5" />
+                    Real-Time Speaking Telemetry &amp; CEFR Analytics
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-black text-white">
+                    Your Speaking Fluency &amp; Skill Breakdown
                   </h2>
-                  <p className="text-xs text-slate-400">Common spoken slips caught and repaired by SpeakFlow Voice Engine.</p>
+                  <p className="text-xs sm:text-sm text-slate-300">
+                    Live analytics calculated directly from your {userSessions.length} recorded voice coaching sessions.
+                  </p>
                 </div>
                 <button
                   onClick={() => setActiveTab("dashboard")}
-                  className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                  className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 self-start sm:self-auto"
                 >
                   ← Back to Dashboard
                 </button>
               </div>
 
-              <div className="space-y-3">
+              {/* 4 Core Skill Breakdown Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { wrong: "I am agree with your point.", correct: "I agree with your point.", rule: "'Agree' is a verb, so you do not need 'am'." },
-                  { wrong: "She don't like spicy food.", correct: "She doesn't like spicy food.", rule: "Third-person singular takes 'doesn't' (does not)." },
-                  { wrong: "I look forward to meet you.", correct: "I look forward to meeting you.", rule: "The phrasal verb 'look forward to' requires a gerund (-ing)." },
-                  { wrong: "He explained me the route.", correct: "He explained the route to me.", rule: "'Explain' takes an indirect object introduced by 'to'." }
-                ].map((item, idx) => (
-                  <div key={idx} className="p-4 rounded-2xl bg-[#111827] border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs line-through text-rose-400">{item.wrong}</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-500" />
-                        <span className="text-xs font-bold text-emerald-400">{item.correct}</span>
-                      </div>
-                      <p className="text-[11px] text-slate-400">{item.rule}</p>
-                    </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20 self-start sm:self-auto">
-                      AI Verified
-                    </span>
+                  { label: "Peak Fluency Score", val: `${realAnalytics.peakFluency}%`, sub: `${realAnalytics.cefrBadge} Verified`, color: "text-cyan-400", border: "border-cyan-500/35" },
+                  { label: "Pronunciation Accuracy", val: `${realAnalytics.pronunciationAccuracy}%`, sub: "Phonetic Cadence", color: "text-emerald-400", border: "border-emerald-500/35" },
+                  { label: "Total Speaking Time", val: `${realAnalytics.totalHours} HRS`, sub: `${realAnalytics.totalMinsLogged} mins logged`, color: "text-purple-400", border: "border-purple-500/35" },
+                  { label: "Active Speaking Streak", val: `${realAnalytics.streakDays} DAYS 🔥`, sub: "2x XP Multiplier Active", color: "text-amber-400", border: "border-amber-500/35" }
+                ].map((stat, i) => (
+                  <div key={i} className={`p-5 rounded-3xl bg-[#111827] border ${stat.border} space-y-1.5`}>
+                    <span className="text-xs font-bold text-slate-400">{stat.label}</span>
+                    <div className={`text-3xl font-black ${stat.color}`}>{stat.val}</div>
+                    <span className="text-[11px] text-slate-300 block">{stat.sub}</span>
                   </div>
                 ))}
+              </div>
+
+              {/* Recent Recorded Sessions List */}
+              <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
+                <h3 className="text-base font-black text-white">Recorded Call Scorecards ({userSessions.length})</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {userSessions.map((s) => (
+                    <div
+                      key={s.id}
+                      onClick={() => setSelectedReviewSession(s)}
+                      className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-cyan-500/40 cursor-pointer flex items-center justify-between gap-3 transition-all"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <img src={s.coachAvatar} alt={s.coachName} className="w-10 h-10 rounded-xl object-cover border border-slate-700" />
+                        <div className="min-w-0">
+                          <div className="font-bold text-xs text-white truncate">{s.topicTitle}</div>
+                          <div className="text-[11px] text-slate-400">{s.coachName} • {s.durationFormatted} • {s.timeAgo}</div>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="px-2.5 py-1 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 font-black text-xs">
+                          {s.fluencyScore}% ({s.grade})
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           ) : activeTab === "achievements" ? (
