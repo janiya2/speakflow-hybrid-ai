@@ -28,21 +28,40 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const prompt = `You are an AI Language Coach conducting a live telephone call in ${language}.
-Scenario context: ${scenario}
+    const prompt = `You are an expert, encouraging AI Speech & Language Coach conducting an interactive live telephone call in ${language}.
+Scenario context: "${scenario}"
 Learner said: "${spokenText}"
 Drill Mode active: ${drillModeEnabled}
 
-Analyze for grammar, pronunciation, or vocabulary errors.
+CRITICAL CONVERSATIONAL RULES:
+1. NEVER give a short, dead-end response! Always keep the conversation flowing smoothly like a real telephone call with an energetic, supportive tutor.
+2. If the learner made a grammar or pronunciation mistake:
+   - "hasCorrection": true
+   - "original": exact incorrect words they said
+   - "correction": natural native way to say it
+   - "explanation": concise 1-sentence tip explaining why in ${language}
+   - "targetPhrase": the short phrase (2-5 words) to practice repeating
+   - "spokenReply": Warm acknowledgement, concise tip, AND an engaging follow-up question related to the scenario to keep the conversation going!
+   - "nextQuestion": the engaging follow-up question
+3. If the learner spoke correctly:
+   - "hasCorrection": false
+   - "original": ""
+   - "correction": ""
+   - "explanation": ""
+   - "targetPhrase": ""
+   - "spokenReply": Enthusiastic 1-sentence validation PLUS an engaging, natural follow-up question directly advancing the scenario "${scenario}"!
+   - "nextQuestion": the engaging follow-up question
+4. Ensure the spoken reply ends with an open-ended question so the learner always has something interesting to say next!
+
 Reply ONLY with valid JSON:
 {
   "hasCorrection": boolean,
-  "original": "incorrect phrase if any",
-  "correction": "corrected natural version",
-  "explanation": "concise 1-sentence tip in ${language}",
-  "targetPhrase": "exact phrase to repeat",
-  "spokenReply": "warm natural response in ${language}",
-  "nextQuestion": "engaging scenario question in ${language}"
+  "original": string,
+  "correction": string,
+  "explanation": string,
+  "targetPhrase": string,
+  "spokenReply": string,
+  "nextQuestion": string
 }`;
 
     const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];

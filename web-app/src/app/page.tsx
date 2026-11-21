@@ -198,7 +198,7 @@ const COACHES: CoachModel[] = [
     accent: "American English 🇺🇸 / Executive Tone",
     avatar: "/images/coaches/sophia.jpg",
     voice: "en-US-JennyNeural",
-    talkingVideo: "/videos/coaches/sophia.mp4",
+    talkingVideo: "/videos/coaches/sophia_widescreen.mp4",
     idleVideo: "/videos/coaches/sophia_idle.mp4"
   },
   {
@@ -209,7 +209,7 @@ const COACHES: CoachModel[] = [
     accent: "French 🇫🇷 / Elegant Tone",
     avatar: "/images/coaches/chloe.jpg",
     voice: "fr-FR-DeniseNeural",
-    talkingVideo: "/videos/coaches/chloe.mp4",
+    talkingVideo: "/videos/coaches/chloe_widescreen.mp4",
     idleVideo: "/videos/coaches/chloe_idle.mp4"
   }
 ];
@@ -1826,6 +1826,13 @@ export default function StudentWebApp() {
     setUserSpeechTurnsCount((prev) => prev + 1);
     if (proactiveNudgeTimerRef.current) clearTimeout(proactiveNudgeTimerRef.current);
 
+    // Record student turn into live messenger dialogue history
+    setConversationTurns((prev) => [
+      ...prev,
+      { sender: "user", text: spokenText, timestamp: new Date() }
+    ]);
+    setUserCaption(spokenText);
+
     const lang = (selectedLanguage !== "All" ? selectedLanguage : activeCallTopic?.language) || "English";
 
     // Active Drill Repetition Loop
@@ -1938,7 +1945,10 @@ export default function StudentWebApp() {
       if (hybridResult.targetPhrase) {
         setIsDrillMode(true);
         setTargetPhraseToRepeat(hybridResult.targetPhrase);
-        setNextScenarioQuestion(hybridResult.spokenReply);
+        const continuation = hybridResult.nextQuestion && !hybridResult.spokenReply.includes(hybridResult.nextQuestion)
+          ? `${hybridResult.spokenReply} ${hybridResult.nextQuestion}`
+          : hybridResult.spokenReply;
+        setNextScenarioQuestion(continuation);
         setDrillAttempts(0);
 
         let drillLeadIn = `Let's practice saying: '${hybridResult.targetPhrase}'. Try repeating it!`;
@@ -1950,7 +1960,12 @@ export default function StudentWebApp() {
       }
     }
 
-    speakText(hybridResult.spokenReply, lang);
+    // Normal turn: ALWAYS combine spokenReply + nextQuestion so the coach actively asks follow-up questions
+    const fullCoachUtterance = hybridResult.nextQuestion && !hybridResult.spokenReply.toLowerCase().includes(hybridResult.nextQuestion.toLowerCase())
+      ? `${hybridResult.spokenReply} ${hybridResult.nextQuestion}`
+      : hybridResult.spokenReply;
+
+    speakText(fullCoachUtterance, lang);
   };
 
   // 12. Calculate Score & End Call
@@ -2479,13 +2494,14 @@ export default function StudentWebApp() {
   return (
     <div className="min-h-screen bg-[#0A0F1D] text-slate-100 flex flex-col md:flex-row selection:bg-blue-500 selection:text-white relative">
       {/* ------------------------------------------------------------- */}
-      {/* 1. LEFT SIDEBAR (Luxury Cyber-Glass Theme) */}
+      {/* 1. LEFT SIDEBAR (Luxury Cyber-Glass Theme) - Hidden during active full-screen call */}
       {/* ------------------------------------------------------------- */}
-      <aside
-        className={`fixed md:sticky top-0 left-0 z-40 h-screen w-68 bg-gradient-to-b from-[#0D111E] via-[#0A0F1D] to-[#080C18] border-r border-slate-800/80 flex flex-col justify-between p-5 transition-transform duration-300 shadow-2xl ${
-          mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        }`}
-      >
+      {!activeCallTopic && (
+        <aside
+          className={`fixed md:sticky top-0 left-0 z-40 h-screen w-68 bg-gradient-to-b from-[#0D111E] via-[#0A0F1D] to-[#080C18] border-r border-slate-800/80 flex flex-col justify-between p-5 transition-transform duration-300 shadow-2xl ${
+            mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          }`}
+        >
         <div className="space-y-6">
           {/* Logo Header */}
           <div className="flex items-center justify-between">
@@ -2755,97 +2771,100 @@ export default function StudentWebApp() {
           </div>
         </div>
       </aside>
+      )}
 
       {/* ------------------------------------------------------------- */}
       {/* 2. MAIN DASHBOARD CONTENT AREA */}
       {/* ------------------------------------------------------------- */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* TOP BAR (1:1 with Screenshot) */}
-        <header className="h-16 border-b border-slate-800/80 bg-[#0A0F1D]/80 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-8 flex items-center justify-between">
-          <div className="flex items-center gap-4 flex-1 max-w-md">
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="md:hidden text-slate-400 hover:text-white"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-
-            {/* Search lessons, words... */}
-            <div className="relative w-full">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search lessons, words..."
-                className="w-full bg-[#111827] border border-slate-800 rounded-full pl-9 pr-4 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
-              />
-            </div>
-          </div>
-
-          {/* Right Header Controls */}
-          <div className="flex items-center gap-3">
-            {/* Notification Bell with Badge 3 */}
-            <div className="relative">
+        {/* TOP BAR - Hidden during active call for zero distraction */}
+        {!activeCallTopic && (
+          <header className="h-16 border-b border-slate-800/80 bg-[#0A0F1D]/80 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-8 flex items-center justify-between">
+            <div className="flex items-center gap-4 flex-1 max-w-md">
               <button
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="p-2 rounded-xl bg-[#111827] border border-slate-800 text-slate-300 hover:text-white relative transition-colors"
+                onClick={() => setMobileSidebarOpen(true)}
+                className="md:hidden text-slate-400 hover:text-white"
               >
-                <Bell className="w-4 h-4" />
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">
-                  3
-                </span>
+                <Menu className="w-5 h-5" />
               </button>
 
-              {/* Notification Dropdown */}
-              {showNotifications && (
-                <div className="absolute right-0 mt-2 w-72 bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-2xl z-50 space-y-3">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <span className="text-xs font-bold text-white">Notifications</span>
-                    <span className="text-[10px] text-blue-400 font-semibold cursor-pointer">Mark all read</span>
-                  </div>
-                  <div className="space-y-2 text-xs">
-                    <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                      <p className="font-semibold text-white">🔥 12-Day Streak Achieved!</p>
-                      <p className="text-[10px] text-slate-400">Keep up your daily speaking momentum.</p>
-                    </div>
-                    <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                      <p className="font-semibold text-white">🏆 #1 on Weekly Winners Podium!</p>
-                      <p className="text-[10px] text-slate-400">190 min practice logged this week.</p>
-                    </div>
-                    <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                      <p className="font-semibold text-white">✨ 40 New Food & Travel Topics</p>
-                      <p className="text-[10px] text-slate-400">Explore authentic restaurant and airport calls.</p>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* Search lessons, words... */}
+              <div className="relative w-full">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search lessons, words..."
+                  className="w-full bg-[#111827] border border-slate-800 rounded-full pl-9 pr-4 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                />
+              </div>
             </div>
 
-            {/* Language Selector Dropdown */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#111827] border border-slate-800 text-xs font-semibold text-slate-200">
-              <Globe className="w-3.5 h-3.5 text-blue-400" />
-              <select
-                value={selectedLanguage}
-                onChange={(e) => setSelectedLanguage(e.target.value)}
-                className="bg-transparent text-white focus:outline-none cursor-pointer"
-              >
-                <option value="English" className="bg-slate-900 text-white">English</option>
-                <option value="Spanish" className="bg-slate-900 text-white">Spanish</option>
-                <option value="Korean" className="bg-slate-900 text-white">Korean</option>
-                <option value="Japanese" className="bg-slate-900 text-white">Japanese</option>
-                <option value="Arabic" className="bg-slate-900 text-white">Arabic</option>
-                <option value="Tamil" className="bg-slate-900 text-white">Tamil</option>
-              </select>
+            {/* Right Header Controls */}
+            <div className="flex items-center gap-3">
+              {/* Notification Bell with Badge 3 */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="p-2 rounded-xl bg-[#111827] border border-slate-800 text-slate-300 hover:text-white relative transition-colors"
+                >
+                  <Bell className="w-4 h-4" />
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">
+                    3
+                  </span>
+                </button>
+
+                {/* Notification Dropdown */}
+                {showNotifications && (
+                  <div className="absolute right-0 mt-2 w-72 bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-2xl z-50 space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                      <span className="text-xs font-bold text-white">Notifications</span>
+                      <span className="text-[10px] text-blue-400 font-semibold cursor-pointer">Mark all read</span>
+                    </div>
+                    <div className="space-y-2 text-xs">
+                      <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                        <p className="font-semibold text-white">🔥 12-Day Streak Achieved!</p>
+                        <p className="text-[10px] text-slate-400">Keep up your daily speaking momentum.</p>
+                      </div>
+                      <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                        <p className="font-semibold text-white">🏆 #1 on Weekly Winners Podium!</p>
+                        <p className="text-[10px] text-slate-400">190 min practice logged this week.</p>
+                      </div>
+                      <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                        <p className="font-semibold text-white">✨ 40 New Food & Travel Topics</p>
+                        <p className="text-[10px] text-slate-400">Explore authentic restaurant and airport calls.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Language Selector Dropdown */}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#111827] border border-slate-800 text-xs font-semibold text-slate-200">
+                <Globe className="w-3.5 h-3.5 text-blue-400" />
+                <select
+                  value={selectedLanguage}
+                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                  className="bg-transparent text-white focus:outline-none cursor-pointer"
+                >
+                  <option value="English" className="bg-slate-900 text-white">English</option>
+                  <option value="Spanish" className="bg-slate-900 text-white">Spanish</option>
+                  <option value="Korean" className="bg-slate-900 text-white">Korean</option>
+                  <option value="Japanese" className="bg-slate-900 text-white">Japanese</option>
+                  <option value="Arabic" className="bg-slate-900 text-white">Arabic</option>
+                  <option value="Tamil" className="bg-slate-900 text-white">Tamil</option>
+                </select>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
+        )}
 
         {/* MAIN BODY CONTENT */}
-        <main className="p-4 sm:p-6 lg:p-8 space-y-6 w-full max-w-[1680px] mx-auto">
+        <main className={activeCallTopic ? "w-full min-h-screen p-2 sm:p-4 bg-[#030612] flex flex-col justify-center" : "p-4 sm:p-6 lg:p-8 space-y-6 w-full max-w-[1680px] mx-auto"}>
           {/* IF ACTIVE CALL IS RUNNING: FULL SCREEN LIVE AI VIDEO CALL STUDIO */}
           {activeCallTopic ? (
-            <div className="w-full max-w-6xl mx-auto bg-gradient-to-b from-[#0e1628] via-[#090d18] to-[#04060c] border border-cyan-500/40 rounded-3xl p-4 sm:p-6 shadow-[0_20px_70px_rgba(0,0,0,0.85)] relative overflow-hidden flex flex-col justify-between min-h-[740px] space-y-4">
+            <div className="w-full max-w-7xl mx-auto bg-gradient-to-b from-[#0e1628] via-[#090d18] to-[#04060c] border border-cyan-500/40 rounded-3xl p-3 sm:p-5 shadow-[0_20px_70px_rgba(0,0,0,0.85)] relative overflow-hidden flex flex-col justify-between min-h-[calc(100vh-2rem)] space-y-3">
               {/* Top ambient lights */}
               <div className="absolute -top-16 -left-16 w-60 h-60 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute -bottom-16 -right-16 w-60 h-60 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
@@ -3110,19 +3129,37 @@ export default function StudentWebApp() {
                     </div>
                   </div>
 
-                  {/* Closed Captions Subtitle Overlay (Bottom of Video) */}
+                  {/* Closed Captions Subtitle Overlay (Bottom of Video, Clear of PIP) */}
                   {showSubtitles && (botCaption || userCaption) && (
-                    <div className="relative z-20 space-y-2 max-w-xl mx-auto w-full">
+                    <div className="relative z-20 space-y-2 max-w-2xl mx-auto w-full px-2 pr-40 sm:pr-48">
                       {botCaption && (
-                        <div className="p-3 rounded-2xl bg-slate-950/85 border border-cyan-500/40 text-xs text-cyan-100 leading-relaxed backdrop-blur-md shadow-xl text-left">
-                          <strong className="text-cyan-400 block mb-0.5">{selectedCoach.name}:</strong>
-                          <span>"{botCaption}"</span>
+                        <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-950/90 border border-cyan-500/50 text-xs text-cyan-100 leading-relaxed backdrop-blur-md shadow-2xl flex items-start gap-2.5 text-left animate-in fade-in duration-200">
+                          <img
+                            src={selectedCoach.avatar}
+                            alt={selectedCoach.name}
+                            className="w-7 h-7 rounded-full object-cover border border-cyan-400 shrink-0 mt-0.5 shadow-sm"
+                          />
+                          <div className="min-w-0">
+                            <strong className="text-cyan-400 text-[11px] block font-black">
+                              {selectedCoach.name} (Coach):
+                            </strong>
+                            <span className="text-slate-100 font-medium">"{botCaption}"</span>
+                          </div>
                         </div>
                       )}
                       {userCaption && (
-                        <div className="p-2.5 rounded-2xl bg-emerald-950/70 border border-emerald-500/40 text-xs text-emerald-200 leading-relaxed backdrop-blur-md shadow-xl text-right">
-                          <strong className="text-emerald-400 block mb-0.5">You (Janitha):</strong>
-                          <span>"{userCaption}"</span>
+                        <div className="p-2.5 sm:p-3 rounded-2xl bg-[#051c14]/90 border border-emerald-500/50 text-xs text-emerald-100 leading-relaxed backdrop-blur-md shadow-2xl flex items-start gap-2.5 text-left animate-in fade-in duration-200">
+                          <img
+                            src="/images/janitha-avatar.jpg"
+                            alt="Janitha"
+                            className="w-7 h-7 rounded-full object-cover border border-emerald-400 shrink-0 mt-0.5 shadow-sm"
+                          />
+                          <div className="min-w-0">
+                            <strong className="text-emerald-400 text-[11px] block font-black">
+                              You (Janitha):
+                            </strong>
+                            <span className="text-emerald-100 font-medium">"{userCaption}"</span>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -3168,8 +3205,8 @@ export default function StudentWebApp() {
                 </div>
 
                 {/* Right: Live AI Fluency Radar & Dialogue Stream (4 cols) */}
-                <div className="lg:col-span-4 flex flex-col justify-between rounded-3xl bg-slate-900/80 border border-slate-800 p-4 space-y-4 relative overflow-hidden">
-                  <div>
+                <div className="lg:col-span-4 flex flex-col justify-between rounded-3xl bg-slate-900/85 border border-slate-800 p-4 space-y-3.5 relative overflow-hidden backdrop-blur-md shadow-2xl">
+                  <div className="space-y-3">
                     {/* Radar Header */}
                     <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                       <div className="flex items-center gap-2">
@@ -3178,14 +3215,70 @@ export default function StudentWebApp() {
                           Live Fluency Radar
                         </h4>
                       </div>
-                      <span className="text-[10px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/30">
+                      <span className="text-[10px] font-mono text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/30 font-bold">
                         Score: 94% (B2)
                       </span>
                     </div>
 
-                    {/* Active Repetition Drill (When in drill mode) */}
-                    {isDrillMode && targetPhraseToRepeat && (
-                      <div className="mt-3 p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-200 animate-pulse text-left space-y-1">
+                    {/* AI SPEECH CORRECTION & NATURAL PHRASING DIAGNOSIS CARD */}
+                    {activeCorrection && (
+                      <div className="p-3 rounded-2xl bg-gradient-to-br from-rose-950/40 via-slate-900/90 to-emerald-950/40 border border-amber-500/50 shadow-xl shadow-amber-950/30 text-left space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 text-xs font-black text-amber-300">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                            <span>Speech Diagnosis & Correction</span>
+                          </div>
+                          <span className="text-[8.5px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase tracking-wider">
+                            Instant AI Fix
+                          </span>
+                        </div>
+
+                        {/* ❌ What you said */}
+                        <div className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/30">
+                          <div className="text-[8.5px] font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1 mb-0.5">
+                            <span>❌ What you said:</span>
+                          </div>
+                          <p className="text-xs text-rose-200 line-through font-mono">
+                            "{activeCorrection.original}"
+                          </p>
+                        </div>
+
+                        {/* ✅ Say it naturally */}
+                        <div className="p-2 rounded-xl bg-emerald-500/15 border border-emerald-400/40 shadow-sm shadow-emerald-500/20">
+                          <div className="text-[8.5px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1 mb-0.5">
+                            <span>✅ Say it naturally:</span>
+                          </div>
+                          <p className="text-xs font-black text-emerald-100">
+                            "{activeCorrection.correction}"
+                          </p>
+                        </div>
+
+                        {/* 💡 Grammar Rule / Explanation */}
+                        {activeCorrection.explanation && (
+                          <div className="text-[9.5px] text-cyan-200/90 italic flex items-start gap-1 px-1">
+                            <span className="font-bold text-cyan-400 not-italic shrink-0">💡 Rule:</span>
+                            <span>{activeCorrection.explanation}</span>
+                          </div>
+                        )}
+
+                        {/* Practice repeating button */}
+                        <button
+                          onClick={() => {
+                            setIsDrillMode(true);
+                            setTargetPhraseToRepeat(activeCorrection.correction);
+                            speakText(`Let's practice saying: '${activeCorrection.correction}'. Try repeating it!`, activeCallTopic?.language || "English");
+                          }}
+                          className="w-full mt-1 py-1.5 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-black text-[11px] shadow-md shadow-emerald-500/30 flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01]"
+                        >
+                          <Volume2 className="w-3.5 h-3.5" />
+                          <span>Practice Pronouncing This →</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Active Repetition Drill Banner (When in drill mode) */}
+                    {isDrillMode && targetPhraseToRepeat && !activeCorrection && (
+                      <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-200 animate-pulse text-left space-y-1 shadow-lg">
                         <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300">
                           <Target className="w-3.5 h-3.5" />
                           <span>Pronunciation Drill:</span>
@@ -3199,28 +3292,67 @@ export default function StudentWebApp() {
                       </div>
                     )}
 
-                    {/* Live Conversation Turn History */}
-                    <div className="mt-3 space-y-2.5 max-h-[260px] overflow-y-auto pr-1 text-xs">
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        Conversation Turns ({conversationTurns.length})
+                    {/* LIVE DIALOGUE STREAM (Luxury Cyber Chat Messenger) */}
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-800/80">
+                        <span>Dialogue Transcript ({conversationTurns.length})</span>
+                        <span className="text-[9px] font-mono text-cyan-400 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                          Live Sync
+                        </span>
                       </div>
-                      {conversationTurns.slice(-4).map((turn, idx) => (
-                        <div
-                          key={idx}
-                          className={`p-2.5 rounded-xl border text-[11px] leading-relaxed ${
-                            turn.sender === "bot"
-                              ? "bg-blue-950/40 border-blue-500/30 text-blue-100"
-                              : "bg-emerald-950/40 border-emerald-500/30 text-emerald-100 ml-3"
-                          }`}
-                        >
-                          <span className={`font-bold block text-[10px] ${
-                            turn.sender === "bot" ? "text-cyan-400" : "text-emerald-400"
-                          }`}>
-                            {turn.sender === "bot" ? selectedCoach.name : "You"}:
-                          </span>
-                          {turn.text}
-                        </div>
-                      ))}
+
+                      <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1 text-xs">
+                        {conversationTurns.length === 0 ? (
+                          <div className="text-center py-6 text-slate-500 text-xs italic">
+                            Speak into your microphone to start the live conversation...
+                          </div>
+                        ) : (
+                          conversationTurns.slice(-8).map((turn, idx) => {
+                            const isBot = turn.sender === "bot";
+                            return (
+                              <div
+                                key={idx}
+                                className={`flex items-start gap-2 ${isBot ? "justify-start" : "justify-end"}`}
+                              >
+                                {isBot && (
+                                  <img
+                                    src={selectedCoach.avatar}
+                                    alt={selectedCoach.name}
+                                    className="w-6 h-6 rounded-full object-cover border border-cyan-400/50 mt-0.5 shrink-0 shadow-sm"
+                                  />
+                                )}
+
+                                <div
+                                  className={`max-w-[85%] p-2.5 rounded-2xl text-[11px] leading-relaxed shadow-md ${
+                                    isBot
+                                      ? "bg-gradient-to-br from-[#0e1c33] to-[#0a1424] border border-cyan-500/30 text-cyan-100 rounded-tl-sm"
+                                      : "bg-gradient-to-br from-[#06291c] to-[#041a12] border border-emerald-500/40 text-emerald-100 rounded-tr-sm ml-auto"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between gap-2 mb-0.5">
+                                    <span className={`font-black text-[10px] ${isBot ? "text-cyan-300" : "text-emerald-300"}`}>
+                                      {isBot ? selectedCoach.name : "You (Janitha)"}
+                                    </span>
+                                    <span className="text-[8.5px] font-mono text-slate-500">
+                                      {turn.timestamp ? new Date(turn.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Now"}
+                                    </span>
+                                  </div>
+                                  <p className="font-normal text-left">{turn.text}</p>
+                                </div>
+
+                                {!isBot && (
+                                  <img
+                                    src="/images/janitha-avatar.jpg"
+                                    alt="Janitha"
+                                    className="w-6 h-6 rounded-full object-cover border border-emerald-400/50 mt-0.5 shrink-0 shadow-sm"
+                                  />
+                                )}
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -3230,7 +3362,7 @@ export default function StudentWebApp() {
                       <Sparkles className="w-3 h-3" />
                       <span>{selectedCoach.name}'s Real-Time Tip:</span>
                     </div>
-                    <p className="text-slate-300">
+                    <p className="text-slate-300 text-left">
                       Focus on speaking in full sentences. Gemini Nano evaluates cadence & grammar automatically.
                     </p>
                   </div>
@@ -3380,19 +3512,19 @@ export default function StudentWebApp() {
                   {/* Card 1: Practice Time */}
                   <div 
                     onClick={() => setActiveTab("practice")}
-                    className="p-4 sm:p-5 rounded-3xl bg-gradient-to-b from-[#1b153b]/95 via-[#130f2d]/90 to-[#0a081a]/95 border border-purple-500/40 hover:border-purple-400 shadow-xl shadow-purple-950/30 hover:shadow-purple-600/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[142px] group"
+                    className="p-4 sm:p-5 rounded-3xl bg-gradient-to-b from-[#1c143d]/95 via-[#130d2d]/90 to-[#0b071a]/95 border-2 border-purple-500/40 hover:border-purple-400 shadow-xl shadow-purple-950/40 hover:shadow-purple-600/30 relative overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[148px] group backdrop-blur-xl"
                   >
                     {/* Top specular highlight line */}
-                    <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-purple-400/60 to-transparent" />
+                    <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-purple-400/80 to-transparent" />
                     {/* Ambient Purple Glow */}
-                    <div className="absolute -top-10 -right-10 w-28 h-28 bg-purple-600/20 rounded-full blur-2xl pointer-events-none group-hover:bg-purple-500/35 transition-all" />
+                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-600/25 rounded-full blur-3xl pointer-events-none group-hover:bg-purple-500/40 transition-all" />
 
                     {/* Top Row: 3D Squircle Icon + Trend Badge */}
                     <div className="flex items-center justify-between relative z-10">
-                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500/30 via-purple-600/20 to-indigo-600/25 border border-purple-400/40 text-purple-300 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.35)] group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                        <Mic className="w-5 h-5 text-purple-300 drop-shadow-[0_0_8px_rgba(192,132,252,0.8)]" />
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500/35 via-purple-600/25 to-indigo-600/30 border border-purple-400/50 text-purple-300 flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.45)] group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                        <Mic className="w-5 h-5 text-purple-200 drop-shadow-[0_0_10px_rgba(192,132,252,0.9)]" />
                       </div>
-                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[10px] font-bold shadow-sm shadow-emerald-950/50">
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-black shadow-sm shadow-emerald-950/50">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                         <span>↑ +25%</span>
                       </div>
@@ -3400,33 +3532,33 @@ export default function StudentWebApp() {
 
                     {/* Middle: Big Stat Number */}
                     <div className="relative z-10 my-2">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)] font-sans">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-[0_2px_12px_rgba(255,255,255,0.2)] font-sans">
                           2.5
                         </span>
-                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-purple-300 bg-purple-500/20 px-1.5 py-0.5 rounded-md border border-purple-400/30">
+                        <span className="text-[11px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/25 px-2 py-0.5 rounded-lg border border-purple-400/40 shadow-sm">
                           HRS
                         </span>
                       </div>
                     </div>
 
                     {/* Bottom Row: Label + Glowing Waveform Bars */}
-                    <div className="flex items-end justify-between relative z-10 pt-1 border-t border-purple-500/15">
+                    <div className="flex items-end justify-between relative z-10 pt-2 border-t border-purple-500/20">
                       <div className="flex flex-col">
-                        <span className="text-[11px] text-slate-300 font-semibold group-hover:text-purple-200 transition-colors">
+                        <span className="text-xs text-slate-200 font-bold group-hover:text-purple-200 transition-colors">
                           Practice Time
                         </span>
-                        <span className="text-[9px] text-purple-400/70 font-mono">
+                        <span className="text-[9.5px] text-purple-400/80 font-mono">
                           150 mins logged
                         </span>
                       </div>
                       {/* Animated Soundwave Equalizer */}
-                      <div className="flex items-end gap-1 h-5 px-1 py-0.5 rounded-lg bg-purple-950/40 border border-purple-500/20">
-                        <span className="w-1 bg-purple-400 rounded-full animate-[pulse_1.2s_ease-in-out_infinite] h-3" />
-                        <span className="w-1 bg-purple-300 rounded-full animate-[pulse_0.8s_ease-in-out_infinite] h-4.5" />
-                        <span className="w-1 bg-indigo-400 rounded-full animate-[pulse_1.5s_ease-in-out_infinite] h-2.5" />
-                        <span className="w-1 bg-purple-400 rounded-full animate-[pulse_1.0s_ease-in-out_infinite] h-4" />
-                        <span className="w-1 bg-purple-300 rounded-full animate-[pulse_0.9s_ease-in-out_infinite] h-3.5" />
+                      <div className="flex items-end gap-1 h-5 px-1.5 py-0.5 rounded-lg bg-purple-950/60 border border-purple-500/30">
+                        <span className="w-1 bg-purple-400 rounded-full animate-[pulse_1.2s_ease-in-out_infinite] h-3 shadow-[0_0_6px_#c084fc]" />
+                        <span className="w-1 bg-purple-300 rounded-full animate-[pulse_0.8s_ease-in-out_infinite] h-5 shadow-[0_0_6px_#d8b4fe]" />
+                        <span className="w-1 bg-indigo-400 rounded-full animate-[pulse_1.5s_ease-in-out_infinite] h-2.5 shadow-[0_0_6px_#818cf8]" />
+                        <span className="w-1 bg-purple-400 rounded-full animate-[pulse_1.0s_ease-in-out_infinite] h-4.5 shadow-[0_0_6px_#c084fc]" />
+                        <span className="w-1 bg-purple-300 rounded-full animate-[pulse_0.9s_ease-in-out_infinite] h-3.5 shadow-[0_0_6px_#d8b4fe]" />
                       </div>
                     </div>
                   </div>
@@ -3434,17 +3566,17 @@ export default function StudentWebApp() {
                   {/* Card 2: Lessons Completed */}
                   <div 
                     onClick={() => setActiveTab("practice")}
-                    className="p-4 sm:p-5 rounded-3xl bg-gradient-to-b from-[#0e2c22]/95 via-[#092018]/90 to-[#05140f]/95 border border-emerald-500/40 hover:border-emerald-400 shadow-xl shadow-emerald-950/30 hover:shadow-emerald-600/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[142px] group"
+                    className="p-4 sm:p-5 rounded-3xl bg-gradient-to-b from-[#0e3025]/95 via-[#08221a]/90 to-[#04140f]/95 border-2 border-emerald-500/40 hover:border-emerald-400 shadow-xl shadow-emerald-950/40 hover:shadow-emerald-600/30 relative overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[148px] group backdrop-blur-xl"
                   >
-                    <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent" />
-                    <div className="absolute -top-10 -right-10 w-28 h-28 bg-emerald-600/20 rounded-full blur-2xl pointer-events-none group-hover:bg-emerald-500/35 transition-all" />
+                    <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-400/80 to-transparent" />
+                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-600/25 rounded-full blur-3xl pointer-events-none group-hover:bg-emerald-500/40 transition-all" />
 
                     {/* Top Row: 3D Squircle Icon + Trend Badge */}
                     <div className="flex items-center justify-between relative z-10">
-                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500/30 via-emerald-600/20 to-teal-600/25 border border-emerald-400/40 text-emerald-300 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.35)] group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                        <Target className="w-5 h-5 text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] stroke-[2.5]" />
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500/35 via-emerald-600/25 to-teal-600/30 border border-emerald-400/50 text-emerald-300 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.45)] group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                        <Target className="w-5 h-5 text-emerald-200 drop-shadow-[0_0_10px_rgba(52,211,153,0.9)] stroke-[2.5]" />
                       </div>
-                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[10px] font-bold shadow-sm shadow-emerald-950/50">
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-black shadow-sm shadow-emerald-950/50">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                         <span>↑ +12%</span>
                       </div>
@@ -3452,34 +3584,34 @@ export default function StudentWebApp() {
 
                     {/* Middle: Big Stat Number */}
                     <div className="relative z-10 my-2">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)] font-sans">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-[0_2px_12px_rgba(255,255,255,0.2)] font-sans">
                           48
                         </span>
-                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-300 bg-emerald-500/20 px-1.5 py-0.5 rounded-md border border-emerald-400/30">
+                        <span className="text-[11px] font-black uppercase tracking-wider text-emerald-300 bg-emerald-500/25 px-2 py-0.5 rounded-lg border border-emerald-400/40 shadow-sm">
                           / 60 UNITS
                         </span>
                       </div>
                     </div>
 
                     {/* Bottom Row: Label + 6-Segment Cyber Bar */}
-                    <div className="flex flex-col relative z-10 pt-1 border-t border-emerald-500/15 space-y-1">
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-slate-300 font-semibold group-hover:text-emerald-200 transition-colors">
+                    <div className="flex flex-col relative z-10 pt-2 border-t border-emerald-500/20 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-200 font-bold group-hover:text-emerald-200 transition-colors">
                           Lessons Done
                         </span>
-                        <span className="text-[9px] text-emerald-300 font-bold font-mono">
+                        <span className="text-[10px] text-emerald-300 font-black font-mono">
                           80% Complete
                         </span>
                       </div>
                       {/* Segmented Cyber Progress Bar */}
                       <div className="flex items-center gap-1 w-full">
-                        <div className="flex-1 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
-                        <div className="flex-1 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
-                        <div className="flex-1 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
-                        <div className="flex-1 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
-                        <div className="flex-1 h-1.5 rounded-full bg-emerald-500/40" />
-                        <div className="flex-1 h-1.5 rounded-full bg-emerald-950/60" />
+                        <div className="flex-1 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                        <div className="flex-1 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                        <div className="flex-1 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                        <div className="flex-1 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                        <div className="flex-1 h-2 rounded-full bg-emerald-500/40" />
+                        <div className="flex-1 h-2 rounded-full bg-emerald-950/70" />
                       </div>
                     </div>
                   </div>
@@ -3487,45 +3619,45 @@ export default function StudentWebApp() {
                   {/* Card 3: Current Streak */}
                   <div 
                     onClick={() => setActiveTab("achievements")}
-                    className="p-4 sm:p-5 rounded-3xl bg-gradient-to-b from-[#331c0c]/95 via-[#231307]/90 to-[#120803]/95 border border-amber-500/40 hover:border-amber-400 shadow-xl shadow-amber-950/30 hover:shadow-amber-600/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[142px] group"
+                    className="p-4 sm:p-5 rounded-3xl bg-gradient-to-b from-[#381e0c]/95 via-[#261307]/90 to-[#140903]/95 border-2 border-amber-500/40 hover:border-amber-400 shadow-xl shadow-amber-950/40 hover:shadow-amber-600/30 relative overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[148px] group backdrop-blur-xl"
                   >
-                    <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
-                    <div className="absolute -top-10 -right-10 w-28 h-28 bg-amber-600/20 rounded-full blur-2xl pointer-events-none group-hover:bg-amber-500/35 transition-all" />
+                    <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/80 to-transparent" />
+                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-600/25 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-500/40 transition-all" />
 
                     {/* Top Row: 3D Squircle Icon + Rank Badge */}
                     <div className="flex items-center justify-between relative z-10">
-                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500/30 via-orange-600/20 to-yellow-600/25 border border-amber-400/40 text-amber-300 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.35)] group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                        <Flame className="w-5 h-5 text-amber-400 fill-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] animate-pulse" />
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-500/35 via-orange-600/25 to-yellow-600/30 border border-amber-400/50 text-amber-300 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.45)] group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                        <Flame className="w-5 h-5 text-amber-300 fill-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.95)] animate-pulse" />
                       </div>
-                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/35 text-amber-300 text-[10px] font-black tracking-wide shadow-sm">
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/25 to-orange-500/25 border border-amber-400/40 text-amber-300 text-[10px] font-black tracking-wide shadow-sm">
                         <span>👑 Top 5%</span>
                       </div>
                     </div>
 
                     {/* Middle: Big Stat Number */}
                     <div className="relative z-10 my-2">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)] font-sans">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-[0_2px_12px_rgba(255,255,255,0.2)] font-sans">
                           12
                         </span>
-                        <span className="text-[11px] font-black uppercase tracking-wider text-amber-400 bg-amber-500/20 px-1.5 py-0.5 rounded-md border border-amber-400/30 flex items-center gap-1">
+                        <span className="text-[11px] font-black uppercase tracking-wider text-amber-400 bg-amber-500/25 px-2 py-0.5 rounded-lg border border-amber-400/40 flex items-center gap-1 shadow-sm">
                           DAYS <span className="text-xs">🔥</span>
                         </span>
                       </div>
                     </div>
 
                     {/* Bottom Row: Label + Multiplier Pill */}
-                    <div className="flex items-end justify-between relative z-10 pt-1 border-t border-amber-500/15">
+                    <div className="flex items-end justify-between relative z-10 pt-2 border-t border-amber-500/20">
                       <div className="flex flex-col">
-                        <span className="text-[11px] text-slate-300 font-semibold group-hover:text-amber-200 transition-colors">
+                        <span className="text-xs text-slate-200 font-bold group-hover:text-amber-200 transition-colors">
                           Daily Streak
                         </span>
-                        <span className="text-[9px] text-amber-400/80 font-mono">
+                        <span className="text-[9.5px] text-amber-400/80 font-mono">
                           Personal Best!
                         </span>
                       </div>
-                      <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-400/30 text-amber-300 text-[9px] font-black uppercase tracking-wider">
-                        <Zap className="w-2.5 h-2.5 text-amber-400 fill-amber-400 animate-bounce" />
+                      <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[9.5px] font-black uppercase tracking-wider shadow-sm">
+                        <Zap className="w-3 h-3 text-amber-400 fill-amber-400 animate-bounce" />
                         <span>2x XP Boost</span>
                       </div>
                     </div>
@@ -3534,46 +3666,46 @@ export default function StudentWebApp() {
                   {/* Card 4: Overall Level */}
                   <div 
                     onClick={() => setActiveTab("progress")}
-                    className="p-4 sm:p-5 rounded-3xl bg-gradient-to-b from-[#10253d]/95 via-[#0b1b2d]/90 to-[#06101c]/95 border border-cyan-500/40 hover:border-cyan-400 shadow-xl shadow-cyan-950/30 hover:shadow-cyan-600/20 relative overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[142px] group"
+                    className="p-4 sm:p-5 rounded-3xl bg-gradient-to-b from-[#102a45]/95 via-[#0b1d30]/90 to-[#05111c]/95 border-2 border-cyan-500/40 hover:border-cyan-400 shadow-xl shadow-cyan-950/40 hover:shadow-cyan-600/30 relative overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 cursor-pointer flex flex-col justify-between min-h-[148px] group backdrop-blur-xl"
                   >
-                    <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
-                    <div className="absolute -top-10 -right-10 w-28 h-28 bg-cyan-600/20 rounded-full blur-2xl pointer-events-none group-hover:bg-cyan-500/35 transition-all" />
+                    <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/80 to-transparent" />
+                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-cyan-600/25 rounded-full blur-3xl pointer-events-none group-hover:bg-cyan-500/40 transition-all" />
 
                     {/* Top Row: 3D Squircle Icon + CEFR Badge */}
                     <div className="flex items-center justify-between relative z-10">
-                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500/30 via-blue-600/20 to-indigo-600/25 border border-cyan-400/40 text-cyan-300 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.35)] group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                        <Award className="w-5 h-5 text-cyan-300 drop-shadow-[0_0_8px_rgba(103,232,249,0.8)] stroke-[2.5]" />
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-500/35 via-blue-600/25 to-indigo-600/30 border border-cyan-400/50 text-cyan-300 flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.45)] group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                        <Award className="w-5 h-5 text-cyan-200 drop-shadow-[0_0_10px_rgba(103,232,249,0.9)] stroke-[2.5]" />
                       </div>
-                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 text-[10px] font-black font-mono shadow-sm">
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[10px] font-black font-mono shadow-sm">
                         <span>CEFR B2</span>
                       </div>
                     </div>
 
                     {/* Middle: Big Stat Text */}
                     <div className="relative z-10 my-2">
-                      <div className="flex items-baseline gap-1.5 truncate">
-                        <span className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)] font-sans truncate">
+                      <div className="flex items-baseline gap-2 truncate">
+                        <span className="text-2xl sm:text-3xl font-black text-white tracking-tight drop-shadow-[0_2px_12px_rgba(255,255,255,0.2)] font-sans truncate">
                           Intermediate
                         </span>
-                        <span className="text-[10px] font-bold text-cyan-300 bg-cyan-500/20 px-1.5 py-0.5 rounded border border-cyan-400/30">
+                        <span className="text-[10px] font-black text-cyan-300 bg-cyan-500/25 px-2 py-0.5 rounded-lg border border-cyan-400/40 shadow-sm">
                           68%
                         </span>
                       </div>
                     </div>
 
                     {/* Bottom Row: Label + Glowing XP Progress Bar */}
-                    <div className="flex flex-col relative z-10 pt-1 border-t border-cyan-500/15 space-y-1">
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-slate-300 font-semibold group-hover:text-cyan-200 transition-colors">
+                    <div className="flex flex-col relative z-10 pt-2 border-t border-cyan-500/20 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-200 font-bold group-hover:text-cyan-200 transition-colors">
                           Fluency Tier
                         </span>
-                        <span className="text-[9px] text-cyan-300 font-bold font-mono">
+                        <span className="text-[10px] text-cyan-300 font-black font-mono">
                           2.4k / 3k XP
                         </span>
                       </div>
-                      <div className="w-full h-1.5 rounded-full bg-slate-900/80 p-0.5 border border-cyan-500/20 overflow-hidden">
+                      <div className="w-full h-2 rounded-full bg-slate-900/80 p-0.5 border border-cyan-500/30 overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 rounded-full shadow-[0_0_8px_#38bdf8] transition-all duration-500"
+                          className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 rounded-full shadow-[0_0_10px_#38bdf8] transition-all duration-500"
                           style={{ width: "68%" }}
                         />
                       </div>
