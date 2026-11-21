@@ -2088,16 +2088,55 @@ export default function StudentWebApp() {
     };
   }, []);
 
-  // 2. Auth State Observer
+  // 2. Auth State Observer with Guaranteed Browser Local Persistence
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      setAuthLoading(false);
-      if (currentUser) {
-        loadUserSessions(currentUser.uid);
+    let unsubscribe: (() => void) | null = null;
+    let isMounted = true;
+
+    const initAuthPersistenceAndObserver = async () => {
+      try {
+        await setPersistence(auth, browserLocalPersistence);
+      } catch (e) {
+        console.warn("Could not enforce browserLocalPersistence:", e);
       }
-    });
-    return () => unsubscribe();
+
+      if (!isMounted) return;
+      unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+        if (!isMounted) return;
+        if (currentUser) {
+          setUser(currentUser);
+          setAuthLoading(false);
+          loadUserSessions(currentUser.uid);
+          return;
+        }
+
+        // Preserve 1-Click Demo Jury session across page reloads until explicit Sign Out
+        if (typeof window !== "undefined") {
+          try {
+            const savedDemo = localStorage.getItem("speakflow_demo_user");
+            if (savedDemo) {
+              const parsedDemo = JSON.parse(savedDemo);
+              if (parsedDemo?.uid) {
+                setUser(parsedDemo as any);
+                setAuthLoading(false);
+                loadUserSessions(parsedDemo.uid);
+                return;
+              }
+            }
+          } catch (_) {}
+        }
+
+        setUser(null);
+        setAuthLoading(false);
+      });
+    };
+
+    initAuthPersistenceAndObserver();
+
+    return () => {
+      isMounted = false;
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   // 3. Load Remote Topics from Firestore
@@ -3136,6 +3175,7 @@ export default function StudentWebApp() {
     setAuthError("");
     setAuthSubmitting(true);
     try {
+      await setPersistence(auth, browserLocalPersistence);
       if (authMode === "login") {
         await signInWithEmailAndPassword(auth, authEmail, authPassword);
       } else {
@@ -3143,6 +3183,11 @@ export default function StudentWebApp() {
         if (authName && cred.user) {
           await updateProfile(cred.user, { displayName: authName });
         }
+      }
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.removeItem("speakflow_demo_user");
+        } catch (_) {}
       }
       setShowAuthModal(false);
     } catch (err: any) {
@@ -3155,8 +3200,14 @@ export default function StudentWebApp() {
   const handleGoogleSignIn = async () => {
     setAuthError("");
     try {
+      await setPersistence(auth, browserLocalPersistence);
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.removeItem("speakflow_demo_user");
+        } catch (_) {}
+      }
       setShowAuthModal(false);
     } catch (err: any) {
       setAuthError(err.message || "Google sign-in was interrupted.");
@@ -3165,7 +3216,15 @@ export default function StudentWebApp() {
 
   const handleSignOut = async () => {
     if (activeCallTopic) handleEndCall();
-    await signOut(auth);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("speakflow_demo_user");
+      } catch (_) {}
+    }
+    try {
+      await signOut(auth);
+    } catch (_) {}
+    setUser(null);
     setActiveTab("dashboard");
   };
 
@@ -3208,6 +3267,25 @@ export default function StudentWebApp() {
     return (
       <div className="min-h-screen bg-[#0A0F1D] flex items-center justify-center text-white">
         <div className="w-8 h-8 border-3 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // VIEW 0: AUTH SESSION RESTORE GUARD (Prevents flash/logout on page refresh)
+  // =========================================================================
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#0A0F1D] text-slate-100 flex flex-col items-center justify-center gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-400 via-blue-600 to-indigo-600 p-[2px] shadow-[0_0_25px_rgba(34,211,238,0.4)] animate-pulse">
+          <div className="w-full h-full rounded-[14px] bg-[#0A0F1D] flex items-center justify-center p-1.5">
+            <img src="/images/app_logo.png" alt="SpeakFlow AI" className="w-full h-full object-contain" />
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-xs font-bold text-cyan-300">
+          <span className="w-3.5 h-3.5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+          <span>Restoring your SpeakFlow session...</span>
+        </div>
       </div>
     );
   }
@@ -3556,11 +3634,21 @@ export default function StudentWebApp() {
                     setAuthPassword("hackathon2026");
                     try {
                       setAuthSubmitting(true);
+                      await setPersistence(auth, browserLocalPersistence);
                       await signInWithEmailAndPassword(auth, "student@speakflow.ai", "hackathon2026");
                       setShowAuthModal(false);
                     } catch (e) {
-                      // fallback guest state
-                      setUser({ displayName: "Janitha Dilshan", email: "janithad2@gmail.com", uid: "demo-jury" } as any);
+                      const demoProfile = {
+                        displayName: "Janitha Dilshan",
+                        email: "janithad2@gmail.com",
+                        uid: "demo-jury"
+                      };
+                      if (typeof window !== "undefined") {
+                        try {
+                          localStorage.setItem("speakflow_demo_user", JSON.stringify(demoProfile));
+                        } catch (_) {}
+                      }
+                      setUser(demoProfile as any);
                       setShowAuthModal(false);
                     } finally {
                       setAuthSubmitting(false);
