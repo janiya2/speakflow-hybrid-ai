@@ -3662,8 +3662,8 @@ export default function StudentWebApp() {
                   <button
                     onClick={() => {
                       setActiveTab("conversation");
+                      setActiveCallTopic(null);
                       setMobileSidebarOpen(false);
-                      launchTopicByKeyword("random");
                     }}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all relative ${
                       activeTab === "conversation"
@@ -6712,9 +6712,510 @@ export default function StudentWebApp() {
               );
             })()}
             </div>
-          ) : activeTab === "practice" || activeTab === "conversation" ? (
+          ) : activeTab === "conversation" ? (
             /* ----------------------------------------------------------- */
-            /* TAB: DELUXE PRACTICE & LIVE VOICE CALLS STUDIO HUB (164+ CALLS) */
+            /* TAB: DEDICATED CONVERSATION AI STUDIO (PRACTICE + VOCAB + GRAMMAR SUMMARY) */
+            /* ----------------------------------------------------------- */
+            (() => {
+              const langTopics = topics.filter(
+                (t) => selectedLanguage === "All" || t.language.toLowerCase() === selectedLanguage.toLowerCase()
+              );
+              const studioTopics = (langTopics.length >= 3 ? langTopics : topics).slice(0, 3);
+              const langVocab = FULL_VOCABULARY_CATALOG.filter(
+                (v) => v.language.toLowerCase() === selectedLanguage.toLowerCase()
+              );
+              const dueVocab = (langVocab.filter((v) => !masteredVocabIds.includes(v.id)).length > 0
+                ? langVocab.filter((v) => !masteredVocabIds.includes(v.id))
+                : langVocab.length > 0
+                ? langVocab
+                : FULL_VOCABULARY_CATALOG
+              ).slice(0, 3);
+              const langGrammar = FULL_GRAMMAR_CATALOG.filter(
+                (g) => g.language.toLowerCase() === selectedLanguage.toLowerCase()
+              );
+              const focusGrammar = (langGrammar.length >= 3 ? langGrammar : FULL_GRAMMAR_CATALOG).slice(0, 3);
+
+              const vocabPercent = Math.round(
+                (masteredVocabIds.length / Math.max(1, FULL_VOCABULARY_CATALOG.length)) * 100
+              );
+
+              const speakStudioAudio = (id: string, text: string, langName: string) => {
+                if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+                window.speechSynthesis.cancel();
+                if (speakingVocabId === id) {
+                  setSpeakingVocabId(null);
+                  return;
+                }
+                const utter = new SpeechSynthesisUtterance(text);
+                const langCodeMap: Record<string, string> = {
+                  English: "en-US",
+                  Spanish: "es-ES",
+                  Japanese: "ja-JP",
+                  Korean: "ko-KR",
+                  Arabic: "ar-SA",
+                  Tamil: "ta-IN"
+                };
+                utter.lang = langCodeMap[langName] || "en-US";
+                utter.rate = 0.92;
+                utter.onend = () => setSpeakingVocabId(null);
+                utter.onerror = () => setSpeakingVocabId(null);
+                setSpeakingVocabId(id);
+                window.speechSynthesis.speak(utter);
+              };
+
+              const handleLaunchCombinedCall = () => {
+                const topTopic = studioTopics[0] || topics[0];
+                const targetWordsText = dueVocab.map((v) => `"${v.word}"`).join(", ");
+                const focusRule = focusGrammar[0];
+                if (focusRule) {
+                  setActiveGrammarDrillMeta({
+                    ruleTitle: focusRule.title,
+                    wrong: focusRule.wrong,
+                    correct: focusRule.correct,
+                    explanation: focusRule.rule,
+                    similarExamples: [focusRule.correct, focusRule.tip]
+                  });
+                }
+                handleInitiateCallPrompt({
+                  id: `studio_3in1_${Date.now()}`,
+                  title: `⚡ 3-in-1 Fluency Studio (${selectedLanguage})`,
+                  language: selectedLanguage,
+                  level: topTopic?.level || "Intermediate",
+                  category: "Targeted Grammar Drill",
+                  subCategory: "Practice + Vocab + Grammar",
+                  icon: "🎙️",
+                  scenario: `3-IN-1 CONVERSATION STUDIO (${selectedLanguage}): Combine Scenario "${topTopic?.title || "Real-World Chat"}", Vocabulary Targets (${targetWordsText}), and Grammar Rule "${focusRule?.title || "Syntax Precision"}" (Fix: "${focusRule?.wrong}" -> "${focusRule?.correct}"). Naturally test all 3 through engaging questions!`,
+                  starterPrompt: `Welcome to your 3-in-1 ${selectedLanguage} Studio! Today let's blend "${topTopic?.title || "real conversation"}", practice using ${dueVocab[0]?.word || "natural phrases"}, and remember to say "${focusRule?.correct || "natural phrasing"}". Ready? Tell me what you're excited to talk about today!`,
+                  starterQuestions: [
+                    dueVocab[0]?.exampleTarget || "Let's begin speaking!",
+                    focusRule?.correct || "I'm ready to practice!",
+                    topTopic?.starterQuestions?.[0] || "Ask me a scenario question!"
+                  ]
+                });
+              };
+
+              return (
+                <div className="space-y-6">
+                  {/* 1. CONVERSATION AI STUDIO HERO + CUSTOM AI TOPIC LAUNCHER */}
+                  <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#0F2440] via-[#101830] to-[#0A0F1D] border border-cyan-500/40 shadow-2xl relative overflow-hidden">
+                    <div className="absolute -top-24 -right-24 w-72 h-72 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
+                    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-center relative z-10">
+                      <div className="xl:col-span-7 space-y-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[10.5px] font-black uppercase tracking-wider">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                            <span>Live AI Conversation Studio • {selectedLanguage}</span>
+                          </span>
+                          <span className="px-2.5 py-1 rounded-full bg-purple-500/15 border border-purple-400/35 text-purple-300 text-[10px] font-bold">
+                            Practice + Vocabulary + Grammar Unified
+                          </span>
+                        </div>
+
+                        <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                          Open AI Voice Studio &amp; Training Summary
+                        </h2>
+                        <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+                          Pick your AI Coach, speak freely about any topic, or launch a combined <strong className="text-cyan-300">3-in-1 Conversation</strong> fusing your Practice scenarios, Vocabulary targets, and Grammar repairs.
+                        </p>
+
+                        <div className="flex flex-wrap items-center gap-3 pt-1">
+                          <button
+                            type="button"
+                            onClick={handleLaunchCombinedCall}
+                            className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 hover:brightness-110 text-slate-950 font-black text-xs shadow-xl shadow-cyan-500/25 flex items-center gap-2 transition-all hover:scale-[1.02]"
+                          >
+                            <PhoneCall className="w-4 h-4 fill-slate-950" />
+                            <span>Start 3-in-1 Combined AI Call ({selectedLanguage}) →</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab("practice")}
+                            className="px-4 py-3 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-bold"
+                          >
+                            Browse All 164+ Catalog →
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Right: Custom AI Freeform Topic Card */}
+                      <div className="xl:col-span-5 p-4 sm:p-5 rounded-2xl bg-slate-950/85 border border-cyan-500/35 space-y-3 shadow-inner">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-black text-cyan-300 flex items-center gap-1.5">
+                            <Sparkles className="w-4 h-4 text-cyan-400" />
+                            <span>FREEFORM AI VOICE CALL</span>
+                          </span>
+                          <span className="text-[10px] font-mono text-emerald-300 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30">
+                            {selectedCoach.name} Ready
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          value={customTopicInput}
+                          onChange={(e) => setCustomTopicInput(e.target.value)}
+                          placeholder={`Speak about anything in ${selectedLanguage} (e.g. Investor Pitch, Hotel)...`}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                        />
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5">
+                            {(["Beginner", "Intermediate", "Advanced"] as const).map((lvl) => (
+                              <button
+                                key={lvl}
+                                type="button"
+                                onClick={() => setCustomTopicLevel(lvl)}
+                                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                                  customTopicLevel === lvl
+                                    ? "bg-indigo-600 text-white"
+                                    : "bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
+                                }`}
+                              >
+                                {lvl}
+                              </button>
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const trimmed = customTopicInput.trim() || `Open Freeform ${selectedLanguage} Conversation`;
+                              setCustomTopicInput("");
+                              handleInitiateCallPrompt({
+                                id: `studio_free_${Date.now()}`,
+                                title: trimmed,
+                                language: selectedLanguage,
+                                level: customTopicLevel,
+                                category: "Conversation AI Studio",
+                                subCategory: "Freeform Live Chat",
+                                icon: "✨",
+                                scenario: `Open freeform AI conversation in ${selectedLanguage} about "${trimmed}". Adapt dynamically to the learner's answers and coach their fluency naturally.`,
+                                starterPrompt: `Hey! Let's talk about ${trimmed} in ${selectedLanguage}. How would you like to kick off our conversation?`,
+                                starterQuestions: [
+                                  `Tell me your main thoughts about ${trimmed}.`,
+                                  `What experience or goals do you have related to ${trimmed}?`
+                                ]
+                              });
+                            }}
+                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-black text-xs flex items-center gap-1.5 shadow-lg"
+                          >
+                            <Mic className="w-3.5 h-3.5" />
+                            <span>Dial Now →</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. CONVERGENCE TRAINING SUMMARY: PRACTICE + VOCABULARY + GRAMMAR (3-COLUMN STUDIO) */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
+                    {/* Pillar 1: Practice Scenarios Summary */}
+                    <div className="p-5 rounded-3xl bg-[#111827] border border-cyan-500/30 flex flex-col justify-between space-y-4 shadow-xl">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-400/35 text-cyan-300 flex items-center justify-center">
+                              <PhoneCall className="w-4.5 h-4.5" />
+                            </div>
+                            <div>
+                              <h3 className="text-sm font-black text-white">Practice Summary</h3>
+                              <span className="text-[10px] text-cyan-300 font-bold">
+                                {langTopics.length} {selectedLanguage} Calls Available
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab("practice")}
+                            className="text-[11px] font-bold text-cyan-400 hover:underline"
+                          >
+                            All →
+                          </button>
+                        </div>
+
+                        <div className="space-y-2">
+                          {studioTopics.map((topic) => (
+                            <div
+                              key={topic.id}
+                              onClick={() => handleInitiateCallPrompt(topic)}
+                              className="p-3 rounded-2xl bg-slate-950/75 border border-slate-800 hover:border-cyan-400/50 cursor-pointer flex items-center justify-between gap-2.5 transition-all group"
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <span className="text-lg shrink-0">{topic.icon}</span>
+                                <div className="min-w-0">
+                                  <div className="text-xs font-bold text-white truncate group-hover:text-cyan-300">
+                                    {topic.title}
+                                  </div>
+                                  <div className="text-[10px] text-slate-400">
+                                    {topic.category} • {topic.level}
+                                  </div>
+                                </div>
+                              </div>
+                              <span className="px-2 py-1 rounded-lg bg-cyan-500/15 text-cyan-300 text-[10px] font-black shrink-0">
+                                Call →
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between text-[11px]">
+                        <span className="text-slate-400">Completed Real Calls:</span>
+                        <span className="font-black text-white font-mono">
+                          {userSessions.length} Calls ({realAnalytics.avgFluency}% Avg)
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Pillar 2: Vocabulary Summary */}
+                    <div className="p-5 rounded-3xl bg-[#111827] border border-emerald-500/30 flex flex-col justify-between space-y-4 shadow-xl">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-400/35 text-emerald-300 flex items-center justify-center">
+                              <BookOpen className="w-4.5 h-4.5" />
+                            </div>
+                            <div>
+                              <h3 className="text-sm font-black text-white">Vocabulary Summary</h3>
+                              <span className="text-[10px] text-emerald-300 font-bold">
+                                {masteredVocabIds.length} / {FULL_VOCABULARY_CATALOG.length} Mastered ({vocabPercent}%)
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab("vocabulary")}
+                            className="text-[11px] font-bold text-emerald-400 hover:underline"
+                          >
+                            Studio →
+                          </button>
+                        </div>
+
+                        <div className="space-y-2">
+                          {dueVocab.map((word) => {
+                            const isPlaying = speakingVocabId === `conv_v_${word.id}`;
+                            return (
+                              <div
+                                key={word.id}
+                                className="p-3 rounded-2xl bg-slate-950/75 border border-slate-800 hover:border-emerald-400/50 flex items-center justify-between gap-2 transition-all"
+                              >
+                                <div className="min-w-0">
+                                  <div className="text-xs font-black text-white truncate">{word.word}</div>
+                                  <div className="text-[10px] text-slate-400 truncate">{word.meaning}</div>
+                                </div>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => speakStudioAudio(`conv_v_${word.id}`, word.exampleTarget, word.language)}
+                                    className={`p-1.5 rounded-lg border ${
+                                      isPlaying
+                                        ? "bg-emerald-400 text-slate-950 border-emerald-300"
+                                        : "bg-slate-900 text-cyan-300 border-slate-700"
+                                    }`}
+                                    title="Listen"
+                                  >
+                                    <Volume2 className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleInitiateCallPrompt({
+                                        id: `conv_vocab_${word.id}`,
+                                        title: `📖 Vocab Practice: "${word.word}"`,
+                                        language: word.language,
+                                        level: word.level,
+                                        category: word.category,
+                                        icon: "📖",
+                                        scenario: `Guide the learner to use "${word.word}" (${word.meaning}) naturally in speech. Example: "${word.exampleTarget}".`,
+                                        starterPrompt: `Let's practice "${word.word}"! Hear how it sounds: "${word.exampleTarget}". Try using "${word.word}" in your own reply!`,
+                                        starterQuestions: [word.exampleTarget]
+                                      })
+                                    }
+                                    className="px-2 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-[10px] font-black"
+                                  >
+                                    Use →
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[10px] text-slate-400">
+                          <span>Catalog Mastery</span>
+                          <span className="font-mono font-bold text-emerald-300">{vocabPercent}%</span>
+                        </div>
+                        <div className="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 rounded-full"
+                            style={{ width: `${Math.max(4, vocabPercent)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Pillar 3: Grammar Repair Summary */}
+                    <div className="p-5 rounded-3xl bg-[#111827] border border-purple-500/30 flex flex-col justify-between space-y-4 shadow-xl">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-400/35 text-purple-300 flex items-center justify-center">
+                              <GraduationCap className="w-4.5 h-4.5" />
+                            </div>
+                            <div>
+                              <h3 className="text-sm font-black text-white">Grammar Summary</h3>
+                              <span className="text-[10px] text-purple-300 font-bold">
+                                {fixedGrammarIds.length} Call Rules Repaired
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab("grammar")}
+                            className="text-[11px] font-bold text-purple-300 hover:underline"
+                          >
+                            Vault →
+                          </button>
+                        </div>
+
+                        <div className="space-y-2">
+                          {focusGrammar.map((rule) => (
+                            <div
+                              key={rule.id}
+                              onClick={() => {
+                                setActiveGrammarDrillMeta({
+                                  ruleTitle: rule.title,
+                                  wrong: rule.wrong,
+                                  correct: rule.correct,
+                                  explanation: rule.rule,
+                                  similarExamples: [rule.correct, rule.tip]
+                                });
+                                handleInitiateCallPrompt({
+                                  id: `conv_gram_${rule.id}`,
+                                  title: `🎯 Grammar Fix: ${rule.title}`,
+                                  language: rule.language,
+                                  level: rule.level,
+                                  category: "Targeted Grammar Drill",
+                                  icon: "🎯",
+                                  scenario: `TARGETED GRAMMAR DRILL MODE: Focus on "${rule.title}". Wrong: "${rule.wrong}". Correct: "${rule.correct}". Rule: ${rule.rule}.`,
+                                  starterPrompt: `Let's practice ${rule.title}! Remember to say "${rule.correct}" instead of "${rule.wrong}". Ready to try your own example?`,
+                                  starterQuestions: [rule.correct]
+                                });
+                              }}
+                              className="p-3 rounded-2xl bg-slate-950/75 border border-slate-800 hover:border-purple-400/50 cursor-pointer space-y-1 transition-all group"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-xs font-black text-white truncate group-hover:text-purple-300">
+                                  {rule.title}
+                                </span>
+                                <span className="px-2 py-0.5 rounded-lg bg-purple-500/20 text-purple-300 text-[9.5px] font-black shrink-0">
+                                  Drill →
+                                </span>
+                              </div>
+                              <div className="text-[10px] text-emerald-300 font-semibold truncate">
+                                ✅ {rule.correct}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between text-[11px]">
+                        <span className="text-slate-400">Grammar Accuracy Tier:</span>
+                        <span className="font-black text-purple-300">{realAnalytics.cefrBadge}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. INTERACTIVE 6 AI VOICE COACHES STUDIO ROSTER */}
+                  <div className="p-5 sm:p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div>
+                        <h3 className="text-base font-black text-white flex items-center gap-2">
+                          <Bot className="w-5 h-5 text-cyan-400" />
+                          <span>Choose Your Live AI Speech Coach (6 Coaches Online)</span>
+                        </h3>
+                        <p className="text-[11px] text-slate-400">
+                          Listen to each coach&apos;s accent or launch an instant studio call with your preferred mentor.
+                        </p>
+                      </div>
+                      <span className="text-xs font-bold text-cyan-300">
+                        Active Coach: {selectedCoach.name}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {COACHES.map((coach) => {
+                        const isSelected = selectedCoach.id === coach.id;
+                        const isPreviewing = previewingCoachVoiceId === coach.id;
+                        return (
+                          <div
+                            key={coach.id}
+                            onClick={() => setSelectedCoach(coach)}
+                            className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                              isSelected
+                                ? "bg-gradient-to-br from-cyan-950/60 via-indigo-950/50 to-slate-950 border-cyan-400 shadow-lg shadow-cyan-500/15"
+                                : "bg-slate-950/70 border-slate-800 hover:border-slate-700"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="relative shrink-0">
+                                <img
+                                  src={coach.avatar}
+                                  alt={coach.name}
+                                  className="w-12 h-12 rounded-2xl object-cover border border-cyan-400/40"
+                                />
+                                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-slate-950" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-1">
+                                  <span className="font-black text-sm text-white truncate">{coach.name}</span>
+                                  {isSelected && (
+                                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-cyan-400 text-slate-950">
+                                      Selected
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-[10px] text-cyan-300 block truncate">{coach.accent}</span>
+                                <span className="text-[10px] text-slate-400 block truncate">{coach.tagline}</span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-2 border-t border-slate-800/80">
+                              <button
+                                type="button"
+                                onClick={(e) => handlePreviewCoachVoice(e, coach)}
+                                className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1 border transition-all ${
+                                  isPreviewing
+                                    ? "bg-emerald-400 text-slate-950 border-emerald-300"
+                                    : "bg-slate-900 text-slate-300 border-slate-700 hover:text-white"
+                                }`}
+                              >
+                                <Volume2 className="w-3.5 h-3.5" />
+                                <span>{isPreviewing ? "Playing..." : "Voice"}</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedCoach(coach);
+                                  handleLaunchCombinedCall();
+                                }}
+                                className="flex-1 py-1.5 px-3 rounded-xl bg-cyan-500/20 hover:bg-cyan-500 text-cyan-300 hover:text-slate-950 border border-cyan-400/40 font-black text-[11px] flex items-center justify-center gap-1.5 transition-all"
+                              >
+                                <PhoneCall className="w-3.5 h-3.5" />
+                                <span>Call {coach.name.split(" ")[0]} →</span>
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()
+          ) : activeTab === "practice" ? (
+            /* ----------------------------------------------------------- */
+            /* TAB: DELUXE PRACTICE & LIVE VOICE CALLS CATALOG (164+ CALLS) */
             /* ----------------------------------------------------------- */
             (() => {
               const CATEGORY_META: Record<
