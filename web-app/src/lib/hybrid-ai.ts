@@ -132,15 +132,68 @@ async function executeOnDeviceInference(
       nextQuestion = "한국 음식을 좋아하세요?";
     }
   } else {
-    // English Grammar Nuance Evaluation
-    if (lower.includes("i go yesterday") || lower.includes("i go to yesterday")) {
+    // English Grammar Nuance Evaluation (including Call-Linked Grammar Vault patterns)
+    const isGrammarDrill =
+      scenario.includes("TARGETED GRAMMAR DRILL") || scenario.includes("TARGETED CALL GRAMMAR REPAIR");
+
+    if (lower.includes("i was enjoy") || lower.includes("i was very enjoy") || lower.includes("was enjoy")) {
+      hasCorrection = true;
+      original = lower.includes("was very enjoy") ? "I was very enjoy" : "I was enjoy";
+      correction = "I really enjoyed";
+      explanation = "'Enjoy' is an action verb. Use past simple 'I really enjoyed + -ing', never 'I was enjoy'.";
+      targetPhrase = "I really enjoyed talking";
+      spokenReply = "Great try! Remember to drop 'was' and say 'I really enjoyed' plus an '-ing' verb.";
+      nextQuestion = "Now try telling me one thing you really enjoyed doing last weekend!";
+    } else if (/\b(i am|i'm|we are|he is|she is|they are)\s+agree\b/.test(lower)) {
+      hasCorrection = true;
+      original = lower.match(/\b(i am|i'm|we are|he is|she is|they are)\s+agree\b/)?.[0] || "am agree";
+      correction = "I completely agree";
+      explanation = "'Agree' is an active verb in English, so never put 'am', 'is', or 'are' before it.";
+      targetPhrase = "I completely agree with you";
+      spokenReply = "Good catch to practice! Drop 'am' and simply use 'agree' as the main verb.";
+      nextQuestion = "So in a team meeting, how would you naturally agree with a coworker's timeline?";
+    } else if (lower.includes("explain me") || lower.includes("explain us") || lower.includes("explain him")) {
+      hasCorrection = true;
+      original = "explain me";
+      correction = "explain it to me";
+      explanation = "Always use 'explain [something] to [person]', never 'explain me' directly.";
+      targetPhrase = "explain the plan to me";
+      spokenReply = "Almost native! Always add 'to' before the person: 'explain it to me'.";
+      nextQuestion = "How would you ask a manager to clarify a project roadmap in a meeting?";
+    } else if (lower.includes("look forward to meet") || lower.includes("looking forward to meet") || lower.includes("look forward to see")) {
+      hasCorrection = true;
+      original = "look forward to meet";
+      correction = "look forward to meeting";
+      explanation = "In 'look forward to', 'to' is a preposition, so the following verb must end in '-ing'.";
+      targetPhrase = "I look forward to meeting you";
+      spokenReply = "So close! Since 'to' is a preposition here, add '-ing' to the verb: 'looking forward to meeting'.";
+      nextQuestion = "What is an upcoming event or call that you are looking forward to attending?";
+    } else if (/\b(am|are|is)\s+\w+ing\b.*\bsince\b/.test(lower)) {
+      hasCorrection = true;
+      original = "am working ... since";
+      correction = "have been working ... for";
+      explanation = "Use Present Perfect Continuous ('have been + -ing') with 'for' (duration) or 'since' (start point).";
+      targetPhrase = "I have been working here for";
+      spokenReply = "Nice sentence! For actions continuing up to now, use 'have been + -ing' instead of 'am + -ing'.";
+      nextQuestion = "How long have you been learning or building your current projects?";
+    } else if (/\b(luggages|baggages|informations|advices)\b/.test(lower)) {
+      const matchedBad = lower.match(/\b(luggages|baggages|informations|advices)\b/)?.[0] || "luggages";
+      const singular = matchedBad.slice(0, -1);
+      hasCorrection = true;
+      original = matchedBad;
+      correction = `pieces of ${singular}`;
+      explanation = `'${singular}' is uncountable in English and never takes '-s'.`;
+      targetPhrase = `two pieces of ${singular}`;
+      spokenReply = `Careful there! '${singular}' is uncountable, so say 'pieces of ${singular}' without the '-s'.`;
+      nextQuestion = `How would you tell an airline agent how many ${singular} items you have?`;
+    } else if (lower.includes("i go yesterday") || lower.includes("i go to yesterday")) {
       hasCorrection = true;
       original = "i go yesterday";
       correction = "I went yesterday";
       explanation = "Use past tense 'went' instead of present 'go' when speaking about yesterday.";
       targetPhrase = "I went yesterday";
-      spokenReply = "Good effort! In English, we say: 'I went yesterday'. Can you repeat that for me?";
-      nextQuestion = "Where did you go yesterday?";
+      spokenReply = "Good effort! In English, we say: 'I went yesterday'.";
+      nextQuestion = "Where did you go yesterday, and what did you enjoy doing there?";
     } else if (lower.includes("he don't") || lower.includes("she don't") || lower.includes("it don't")) {
       hasCorrection = true;
       const sub = lower.includes("he") ? "He" : lower.includes("she") ? "She" : "It";
@@ -148,8 +201,8 @@ async function executeOnDeviceInference(
       correction = `${sub} doesn't`;
       explanation = `Third-person singular subjects take 'doesn't' instead of 'don't'.`;
       targetPhrase = `${sub} doesn't like that`;
-      spokenReply = `Almost! We say: '${sub} doesn't'. Repeat after me: '${targetPhrase}'!`;
-      nextQuestion = "What does your friend like to do?";
+      spokenReply = `Almost! We say: '${sub} doesn't'.`;
+      nextQuestion = "What does your friend or teammate usually prefer doing on weekends?";
     } else if (lower.includes("more better") || lower.includes("more easier")) {
       hasCorrection = true;
       const word = lower.includes("better") ? "better" : "easier";
@@ -157,8 +210,18 @@ async function executeOnDeviceInference(
       correction = word;
       explanation = `Double comparatives: '${word}' is already comparative, avoid using 'more' before it.`;
       targetPhrase = `It is much ${word}`;
-      spokenReply = `Good try! Just say: '${word}'. Repeat: '${targetPhrase}'!`;
-      nextQuestion = "How has your week been?";
+      spokenReply = `Good try! Just say '${word}' or 'much ${word}' without 'more'.`;
+      nextQuestion = "How has your speaking confidence become stronger this week?";
+    } else if (isGrammarDrill) {
+      hasCorrection = false;
+      const drillFollowUps = [
+        "Spot-on grammar! Your sentence structure sounded completely natural. Now try creating a new example using that same pattern about your work or studies — what would you say?",
+        "Nailed it! That phrasing had smooth native cadence. Let's apply that exact structure to a different situation: how would you answer if a client asked you the same question?",
+        "Clean accuracy! You avoided the common slip completely. Give me one more personal example using that same grammar structure!"
+      ];
+      const pick = drillFollowUps[Math.floor(Math.random() * drillFollowUps.length)];
+      spokenReply = pick;
+      nextQuestion = "";
     } else {
       hasCorrection = false;
       const followUps = [

@@ -969,6 +969,13 @@ export default function StudentWebApp() {
 
   // Active Call View State
   const [activeCallTopic, setActiveCallTopic] = useState<TopicModel | null>(null);
+  const [activeGrammarDrillMeta, setActiveGrammarDrillMeta] = useState<{
+    ruleTitle: string;
+    wrong: string;
+    correct: string;
+    explanation: string;
+    similarExamples: string[];
+  } | null>(null);
   const [callDuration, setCallDuration] = useState(0);
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const [isMuted, setIsMuted] = useState(false);
@@ -2510,6 +2517,11 @@ export default function StudentWebApp() {
 
   // 9. Start Call Flow with Duration Selection
   const handleInitiateCallPrompt = (topic: TopicModel) => {
+    const isGrammarCall =
+      topic.category === "Targeted Grammar Drill" || topic.category === "Call Grammar Repair";
+    if (!isGrammarCall) {
+      setActiveGrammarDrillMeta(null);
+    }
     setPendingTopic(topic);
     setShowDurationModal(true);
   };
@@ -4152,7 +4164,7 @@ export default function StudentWebApp() {
                     )}
 
                     {/* Widescreen Cinematic Coach Video Feed + Dynamic Interactive Flanks */}
-                    <div className="w-full relative h-full max-h-[44vh] sm:max-h-[48vh] xl:max-h-[52vh] aspect-video rounded-2xl p-0.5 sm:p-1 transition-all duration-500 shadow-2xl mx-auto group z-10 flex items-center justify-center">
+                    <div className="w-full relative h-full max-h-[38vh] sm:max-h-[42vh] xl:max-h-[45vh] aspect-video rounded-2xl p-0.5 sm:p-1 transition-all duration-500 shadow-2xl mx-auto group z-10 flex items-center justify-center">
                       <div className={`w-full h-full rounded-[18px] sm:rounded-[22px] overflow-hidden relative bg-slate-950 transition-all duration-500 border-2 ${
                         isBotSpeaking
                           ? "border-cyan-400 shadow-[0_0_50px_rgba(56,189,248,0.6)]"
@@ -4263,42 +4275,72 @@ export default function StudentWebApp() {
                           <span className="text-[10px] text-cyan-300 font-normal hidden sm:inline">• {selectedCoach.accent}</span>
                         </div>
 
-                        {/* Left Flank HUD: Interactive Mission Target Vocabulary */}
-                        <div className="absolute top-14 left-3 z-30 hidden md:flex flex-col gap-1.5 max-w-[170px] pointer-events-auto animate-in fade-in duration-300">
-                          <div className="px-2.5 py-1 rounded-xl bg-slate-950/85 border border-cyan-500/40 backdrop-blur-md shadow-lg text-[10px] font-black uppercase tracking-wider text-cyan-300 flex items-center justify-between">
-                            <span className="flex items-center gap-1">
-                              <Sparkles className="w-3 h-3 text-cyan-400" />
-                              Power Words
-                            </span>
-                            <span className="text-[9px] font-mono text-emerald-400 font-bold">
-                              {completedWordsCount}/{currentPowerWords.length}
-                            </span>
+                        {/* Left Flank HUD: Grammar Target Radar (when in Grammar Call) OR Power Words */}
+                        {activeGrammarDrillMeta ? (
+                          <div className="absolute top-14 left-3 z-30 hidden md:flex flex-col gap-1.5 max-w-[195px] pointer-events-auto animate-in fade-in duration-300">
+                            <div className="px-2.5 py-1 rounded-xl bg-purple-950/90 border border-purple-400/50 backdrop-blur-md shadow-lg text-[10px] font-black uppercase tracking-wider text-purple-200 flex items-center justify-between gap-2">
+                              <span className="flex items-center gap-1 truncate">
+                                <Target className="w-3 h-3 text-purple-300 shrink-0" />
+                                Grammar Goal
+                              </span>
+                              <span className="text-[9px] font-mono text-emerald-300 font-bold shrink-0">Active</span>
+                            </div>
+                            <div className="p-2 rounded-xl bg-slate-950/90 border border-rose-500/35 text-[9.5px] text-left backdrop-blur-md">
+                              <span className="text-rose-400 font-black uppercase block text-[8.5px]">❌ Avoid Slip</span>
+                              <span className="line-through text-rose-200/80 line-clamp-1">{activeGrammarDrillMeta.wrong}</span>
+                            </div>
+                            <button
+                              type="button"
+                              disabled={isBotSpeaking || isProcessing}
+                              onClick={() => handleUserSpeech(activeGrammarDrillMeta.correct)}
+                              className="p-2 rounded-xl bg-emerald-950/85 hover:bg-emerald-900/90 border border-emerald-400/50 text-[9.5px] text-left backdrop-blur-md transition-all group/gt disabled:opacity-50"
+                              title="Click to test speaking this native fix aloud"
+                            >
+                              <span className="text-emerald-300 font-black uppercase flex items-center justify-between text-[8.5px]">
+                                <span>✅ Target Pattern</span>
+                                <span className="text-[8px] font-mono text-cyan-300 group-hover/gt:underline">Try</span>
+                              </span>
+                              <span className="text-white font-bold line-clamp-2 mt-0.5">{activeGrammarDrillMeta.correct}</span>
+                            </button>
                           </div>
-                          {currentPowerWords.map((pw, pwIdx) => {
-                            const isUsed = spokenTranscriptAll.includes(pw.word.toLowerCase());
-                            return (
-                              <button
-                                key={pwIdx}
-                                onClick={() => handleUserSpeech(pw.prompt)}
-                                className={`px-2.5 py-1 rounded-xl text-[10px] font-bold text-left transition-all border backdrop-blur-md flex items-center justify-between group/pw ${
-                                  isUsed
-                                    ? "bg-emerald-500/25 border-emerald-400/60 text-emerald-300 shadow-md shadow-emerald-500/20"
-                                    : "bg-slate-950/80 border-slate-800 text-slate-300 hover:border-cyan-400/50 hover:text-white"
-                                }`}
-                                title={`Click to say: "${pw.prompt}"`}
-                              >
-                                <span className="truncate">{pw.word}</span>
-                                {isUsed ? (
-                                  <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                                ) : (
-                                  <span className="text-[8px] text-slate-500 font-mono group-hover/pw:text-cyan-300">
-                                    +{pw.xp}XP
-                                  </span>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
+                        ) : (
+                          <div className="absolute top-14 left-3 z-30 hidden md:flex flex-col gap-1.5 max-w-[170px] pointer-events-auto animate-in fade-in duration-300">
+                            <div className="px-2.5 py-1 rounded-xl bg-slate-950/85 border border-cyan-500/40 backdrop-blur-md shadow-lg text-[10px] font-black uppercase tracking-wider text-cyan-300 flex items-center justify-between">
+                              <span className="flex items-center gap-1">
+                                <Sparkles className="w-3 h-3 text-cyan-400" />
+                                Power Words
+                              </span>
+                              <span className="text-[9px] font-mono text-emerald-400 font-bold">
+                                {completedWordsCount}/{currentPowerWords.length}
+                              </span>
+                            </div>
+                            {currentPowerWords.map((pw, pwIdx) => {
+                              const isUsed = spokenTranscriptAll.includes(pw.word.toLowerCase());
+                              return (
+                                <button
+                                  key={pwIdx}
+                                  disabled={isBotSpeaking || isProcessing}
+                                  onClick={() => handleUserSpeech(pw.prompt)}
+                                  className={`px-2.5 py-1 rounded-xl text-[10px] font-bold text-left transition-all border backdrop-blur-md flex items-center justify-between group/pw disabled:opacity-50 ${
+                                    isUsed
+                                      ? "bg-emerald-500/25 border-emerald-400/60 text-emerald-300 shadow-md shadow-emerald-500/20"
+                                      : "bg-slate-950/80 border-slate-800 text-slate-300 hover:border-cyan-400/50 hover:text-white"
+                                  }`}
+                                  title={`Click to say: "${pw.prompt}"`}
+                                >
+                                  <span className="truncate">{pw.word}</span>
+                                  {isUsed ? (
+                                    <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                                  ) : (
+                                    <span className="text-[8px] text-slate-500 font-mono group-hover/pw:text-cyan-300">
+                                      +{pw.xp}XP
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
 
                         {/* Right Flank HUD: Real-Time Acoustic & Cadence Telemetry */}
                         <div className="absolute top-14 right-3 z-30 hidden md:flex flex-col gap-1.5 max-w-[160px] pointer-events-auto animate-in fade-in duration-300">
@@ -4438,13 +4480,13 @@ export default function StudentWebApp() {
                       )}
 
                       {/* Dynamic Context-Aware Quick Response Chips */}
-                      <div className="flex items-center gap-1.5 flex-wrap justify-center mt-0.5">
+                      <div className="flex items-center gap-1.5 flex-wrap justify-center mt-0.5 px-2 max-w-2xl">
                         {(activeCallTopic?.starterQuestions && activeCallTopic.starterQuestions.length > 0
                           ? activeCallTopic.starterQuestions.slice(0, 3).map((q, idx) => {
                               const cleaned = q.replace(/^(Repeat after me:|Try saying or answering with this pattern:|Practice [^:]+:)\s*/i, "").replace(/^"|"$/g, "").trim();
                               return {
                                 text: cleaned,
-                                label: `💬 ${cleaned.length > 36 ? cleaned.slice(0, 34) + "…" : cleaned}`
+                                label: `${activeGrammarDrillMeta ? "✅ " : "💬 "}${cleaned.length > 34 ? cleaned.slice(0, 32) + "…" : cleaned}`
                               };
                             })
                           : [
@@ -4457,7 +4499,7 @@ export default function StudentWebApp() {
                             key={cIdx}
                             disabled={isBotSpeaking || isProcessing}
                             onClick={() => handleUserSpeech(chip.text)}
-                            className="px-2.5 py-0.5 rounded-lg bg-slate-900/90 hover:bg-cyan-600/30 disabled:opacity-40 text-slate-300 hover:text-cyan-200 border border-slate-700/80 text-[10px] font-semibold transition-all hover:scale-105 active:scale-95"
+                            className="px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-cyan-600/30 disabled:opacity-45 text-slate-300 hover:text-cyan-200 border border-slate-700/80 text-[10px] font-semibold transition-all hover:scale-105 active:scale-95"
                           >
                             {chip.label}
                           </button>
@@ -4466,44 +4508,57 @@ export default function StudentWebApp() {
                     </div>
                   </div>
 
-                  {/* Closed Captions Subtitle Overlay (Bottom of Video, Clear of PIP) */}
-                  {showSubtitles && (botCaption || userCaption) && (
-                    <div className="relative z-20 space-y-1.5 max-w-2xl mx-auto w-full px-2 pr-40 sm:pr-48 shrink-0 max-h-20 overflow-y-auto">
-                      {botCaption && (
-                        <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-950/90 border border-cyan-500/50 text-xs text-cyan-100 leading-relaxed backdrop-blur-md shadow-2xl flex items-start gap-2.5 text-left animate-in fade-in duration-200">
-                          <img
-                            src={selectedCoach.avatar}
-                            alt={selectedCoach.name}
-                            className="w-6 h-6 rounded-full object-cover border border-cyan-400 shrink-0 mt-0.5 shadow-sm"
-                          />
-                          <div className="min-w-0">
-                            <strong className="text-cyan-400 text-[11px] block font-black">
-                              {selectedCoach.name} (Coach):
-                            </strong>
-                            <span className="text-slate-100 font-medium">"{botCaption}"</span>
-                          </div>
+                  {/* Clean Aligned Bottom Dock: Live Subtitles (Left/Center) + User PIP Cam (Right) */}
+                  <div className="relative z-20 w-full flex flex-col sm:flex-row sm:items-end justify-between gap-3 pt-2 mt-1 border-t border-slate-800/70 shrink-0">
+                    {/* Closed Captions Subtitle Box */}
+                    <div className="flex-1 min-w-0">
+                      {showSubtitles && (botCaption || userCaption) ? (
+                        <div className="space-y-1.5 max-h-24 overflow-y-auto pr-1 custom-scrollbar">
+                          {botCaption && (
+                            <div className="p-2.5 rounded-2xl bg-slate-950/90 border border-cyan-500/45 text-xs text-cyan-100 leading-relaxed backdrop-blur-md shadow-xl flex items-start gap-2.5 text-left animate-in fade-in duration-200">
+                              <img
+                                src={selectedCoach.avatar}
+                                alt={selectedCoach.name}
+                                className="w-6 h-6 rounded-full object-cover border border-cyan-400 shrink-0 mt-0.5 shadow-sm"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <strong className="text-cyan-400 text-[11px] block font-black">
+                                  {selectedCoach.name} (Coach):
+                                </strong>
+                                <span className="text-slate-100 font-medium break-words">&ldquo;{botCaption}&rdquo;</span>
+                              </div>
+                            </div>
+                          )}
+                          {userCaption && (
+                            <div className="p-2.5 rounded-2xl bg-[#051c14]/90 border border-emerald-500/45 text-xs text-emerald-100 leading-relaxed backdrop-blur-md shadow-xl flex items-start gap-2.5 text-left animate-in fade-in duration-200">
+                              <img
+                                src="/images/janitha-avatar.jpg"
+                                alt="Janitha"
+                                className="w-6 h-6 rounded-full object-cover border border-emerald-400 shrink-0 mt-0.5 shadow-sm"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <strong className="text-emerald-400 text-[11px] block font-black">
+                                  You (Janitha):
+                                </strong>
+                                <span className="text-emerald-100 font-medium break-words">&ldquo;{userCaption}&rdquo;</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
-                      {userCaption && (
-                        <div className="p-2 sm:p-2.5 rounded-2xl bg-[#051c14]/90 border border-emerald-500/50 text-xs text-emerald-100 leading-relaxed backdrop-blur-md shadow-2xl flex items-start gap-2.5 text-left animate-in fade-in duration-200">
-                          <img
-                            src="/images/janitha-avatar.jpg"
-                            alt="Janitha"
-                            className="w-6 h-6 rounded-full object-cover border border-emerald-400 shrink-0 mt-0.5 shadow-sm"
-                          />
-                          <div className="min-w-0">
-                            <strong className="text-emerald-400 text-[11px] block font-black">
-                              You (Janitha):
-                            </strong>
-                            <span className="text-emerald-100 font-medium">"{userCaption}"</span>
-                          </div>
+                      ) : (
+                        <div className="p-2.5 rounded-2xl bg-slate-950/50 border border-slate-800/70 text-[11px] text-slate-400 flex items-center gap-2">
+                          <Sparkles className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                          <span>
+                            {showSubtitles
+                              ? "Live captions will synchronize automatically as you and your AI Coach speak."
+                              : "Closed Captions (CC) paused — click CC ON in the top-right video corner to display."}
+                          </span>
                         </div>
                       )}
                     </div>
-                  )}
 
-                  {/* Floating Picture-In-Picture (PIP) Webcam Preview (Bottom-Right) */}
-                  <div className="absolute bottom-3 right-3 z-30 w-32 sm:w-40 aspect-video rounded-2xl bg-slate-950/90 border-2 border-cyan-500/50 shadow-2xl overflow-hidden group/pip">
+                    {/* Docked Picture-In-Picture (PIP) Webcam Preview (Right-Aligned, Zero Overlap!) */}
+                    <div className="w-36 sm:w-40 aspect-video rounded-2xl bg-slate-950/95 border-2 border-cyan-500/50 shadow-2xl overflow-hidden group/pip relative shrink-0 self-end">
                     {/* Live User Webcam Video */}
                     <video
                       ref={userVideoRef}
@@ -4542,6 +4597,7 @@ export default function StudentWebApp() {
                     >
                       {isCameraActive ? <CameraOff className="w-3 h-3" /> : <Camera className="w-3 h-3" />}
                     </button>
+                  </div>
                   </div>
                 </div>
 
@@ -7965,7 +8021,45 @@ export default function StudentWebApp() {
                 }
               };
 
-              // Launch a SPECIALIZED LIVE CALL that drills ONLY this specific grammar rule and its similar variations!
+              // Generate an authentic, real-life Question that prompts the student to speak using the exact target grammar pattern
+              const buildGrammarElicitationPrompt = (mistake: EnrichedCallMistake) => {
+                const lowerRule = mistake.ruleTitle.toLowerCase();
+                const shortRuleName = mistake.ruleTitle.split("(")[0].trim();
+                let contextualQuestion = `Can you tell me about a recent situation where you'd naturally use "${mistake.correct}"?`;
+
+                if (lowerRule.includes("agree")) {
+                  contextualQuestion =
+                    "When a teammate pitches a great idea in a meeting, how do you naturally tell them you agree with their proposal?";
+                } else if (lowerRule.includes("explain")) {
+                  contextualQuestion =
+                    "If a colleague rushes through a complex plan, how do you politely ask them to explain the architecture to you?";
+                } else if (lowerRule.includes("present perfect") || lowerRule.includes("since") || lowerRule.includes("duration")) {
+                  contextualQuestion =
+                    "Using 'have been' and 'for', how long have you been working on your current projects or learning English?";
+                } else if (lowerRule.includes("luggage") || lowerRule.includes("baggage") || lowerRule.includes("uncountable")) {
+                  contextualQuestion =
+                    "Imagine you're at airport check-in — how do you tell the agent how many bags or pieces of luggage you have?";
+                } else if (lowerRule.includes("recommend")) {
+                  contextualQuestion =
+                    "Imagine we're at an Italian restaurant — how would you ask the waiter what dish they recommend trying tonight?";
+                } else if (lowerRule.includes("conditional") || lowerRule.includes("polite") || lowerRule.includes("ordering")) {
+                  contextualQuestion =
+                    "Using 'Could we please have...', how would you politely ask the host for a table for two near the window?";
+                } else if (lowerRule.includes("look forward")) {
+                  contextualQuestion =
+                    "When wrapping up an interview or client call, how do you naturally say you look forward to meeting them again?";
+                } else if (lowerRule.includes("enjoy") || lowerRule.includes("past tense")) {
+                  contextualQuestion =
+                    "Tell me about a topic or conversation you really enjoyed yesterday — start with 'I really enjoyed...'!";
+                } else if (lowerRule.includes("tense") || lowerRule.includes("past")) {
+                  contextualQuestion =
+                    `Using the exact same grammar pattern as "${mistake.correct}", how would you share your own real-life example aloud?`;
+                }
+
+                return { shortRuleName, contextualQuestion };
+              };
+
+              // Launch a SPECIALIZED LIVE CALL that drills ONLY this specific grammar rule via Guided Questioning + Target Pattern Practice
               const handleLaunchTargetedGrammarCall = (mistake: EnrichedCallMistake) => {
                 if (mistake.language && mistake.language !== selectedLanguage) {
                   setSelectedLanguage(mistake.language);
@@ -7975,7 +8069,15 @@ export default function StudentWebApp() {
                   selectedCoach;
                 setSelectedCoach(matchingCoach);
 
-                const shortRuleName = mistake.ruleTitle.split("(")[0].trim();
+                setActiveGrammarDrillMeta({
+                  ruleTitle: mistake.ruleTitle,
+                  wrong: mistake.wrong,
+                  correct: mistake.correct,
+                  explanation: mistake.explanation,
+                  similarExamples: mistake.similarExamples
+                });
+
+                const { shortRuleName, contextualQuestion } = buildGrammarElicitationPrompt(mistake);
                 const targetedGrammarTopic: TopicModel = {
                   id: `grammar_drill_${mistake.id}_${Date.now()}`,
                   title: mistake.ruleTitle.includes("Grammar Repair")
@@ -7986,8 +8088,8 @@ export default function StudentWebApp() {
                   category: "Targeted Grammar Drill",
                   subCategory: mistake.sessionTitle,
                   icon: "🎯",
-                  scenario: `TARGETED GRAMMAR DRILL MODE (From Call: "${mistake.sessionTitle}"): You are drilling the student EXCLUSIVELY on the grammar rule "${shortRuleName}". In their previous call, the student said: "${mistake.wrong}" instead of the natural native form: "${mistake.correct}". Rule: ${mistake.explanation} Similar target patterns to practice: ${mistake.similarExamples.join(" | ")}. In every turn, ask the student a question that requires them to use this exact grammar structure, check if they used it accurately, and coach them until they master it!`,
-                  starterPrompt: `Let's practice ${shortRuleName}! Instead of "${mistake.wrong}", native speakers say: "${mistake.correct}". Try repeating "${mistake.correct}" aloud now!`,
+                  scenario: `TARGETED GRAMMAR DRILL MODE (From Call: "${mistake.sessionTitle}"): You are drilling the student EXCLUSIVELY on the grammar rule "${shortRuleName}". Incorrect slip to avoid: "${mistake.wrong}". Natural native target: "${mistake.correct}". Rule: ${mistake.explanation} Similar target variations: ${mistake.similarExamples.join(" | ")}. Pedagogical style: Ask real-life scenario questions that naturally require the student to use this grammar pattern, praise accurate use, gently correct if they slip, and guide them through similar pattern variations!`,
+                  starterPrompt: `Let's master ${shortRuleName}! Remember to say "${mistake.correct}" instead of "${mistake.wrong}". Quick question for you: ${contextualQuestion}`,
                   starterQuestions: [
                     mistake.correct,
                     ...mistake.similarExamples
@@ -8007,6 +8109,14 @@ export default function StudentWebApp() {
                   return;
                 }
                 const first = mistakesToDrill[0];
+                setActiveGrammarDrillMeta({
+                  ruleTitle: first.ruleTitle,
+                  wrong: first.wrong,
+                  correct: first.correct,
+                  explanation: first.explanation,
+                  similarExamples: first.similarExamples
+                });
+                const { shortRuleName, contextualQuestion } = buildGrammarElicitationPrompt(first);
                 const titleLabel = targetSession
                   ? `🎯 Call Grammar Mastery: ${targetSession.topicTitle}`
                   : `🎯 Personal Grammar Repair Sprint (${mistakesToDrill.length} Rules)`;
@@ -8022,8 +8132,8 @@ export default function StudentWebApp() {
                   category: "Call Grammar Repair",
                   subCategory: `${mistakesToDrill.length} Rules Drill`,
                   icon: "🎓",
-                  scenario: `TARGETED CALL GRAMMAR REPAIR SESSION: Drill the student exclusively on the ${mistakesToDrill.length} grammar mistakes caught in their previous voice call(s): ${rulesSummary}. Walk through each rule one by one, have the student repeat the corrected native sentence and similar pattern variations, and test them with interactive questions using those exact grammar structures!`,
-                  starterPrompt: `Let's master your ${mistakesToDrill.length} grammar fixes! First, instead of "${first.wrong}", say: "${first.correct}". Try repeating that sentence now!`,
+                  scenario: `TARGETED CALL GRAMMAR REPAIR SESSION: Drill the student exclusively on the ${mistakesToDrill.length} grammar mistakes caught in their previous voice call(s): ${rulesSummary}. Walk through each rule one by one using engaging scenario questions that require the target grammar pattern, verify accuracy, and test similar pattern variations!`,
+                  starterPrompt: `Let's upgrade your ${mistakesToDrill.length} call grammar patterns! First is ${shortRuleName} — say "${first.correct}", never "${first.wrong}". ${contextualQuestion}`,
                   starterQuestions: mistakesToDrill.map((m) => m.correct)
                 };
 

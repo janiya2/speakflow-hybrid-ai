@@ -28,10 +28,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const isTargetedGrammarCall =
+      scenario.includes("TARGETED GRAMMAR DRILL") || scenario.includes("TARGETED CALL GRAMMAR REPAIR");
+
+    const grammarFocusGuidance = isTargetedGrammarCall
+      ? `
+TARGETED GRAMMAR DRILL PEDAGOGY (CRITICAL):
+- This is a focused Grammar Mastery Call, NOT a random chat.
+- Teach by GUIDED QUESTIONING (elicitation): Validate their answer first, explicitly check whether they used the target grammar structure accurately, and ask an engaging real-life scenario question that naturally forces them to use the SAME target grammar rule (or one of the similar target patterns) in their very next sentence.
+- Keep your reply concise (2-3 crisp natural spoken sentences max) so it feels fast and conversational like a real human tutor.`
+      : "";
+
     const prompt = `You are an expert, encouraging AI Speech & Language Coach conducting an interactive live telephone call in ${language}.
 Scenario context: "${scenario}"
 Learner said: "${spokenText}"
 Drill Mode active: ${drillModeEnabled}
+${grammarFocusGuidance}
 
 CRITICAL CONVERSATIONAL RULES:
 1. NEVER give a short, dead-end response! Always keep the conversation flowing smoothly like a real telephone call with an energetic, supportive tutor.
