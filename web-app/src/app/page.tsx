@@ -988,6 +988,7 @@ export default function StudentWebApp() {
   const idleVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const startCoachTalkingVideo = () => {
+    isBotSpeakingRef.current = true;
     setIsBotSpeaking(true);
     if (idleVideoRef.current) {
       try {
@@ -1709,6 +1710,10 @@ export default function StudentWebApp() {
   const recognitionRef = useRef<any>(null);
   const proactiveNudgeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const speechDebounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const postSpeechListenTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const ttsSessionIdRef = useRef<number>(0);
+  const lastBotSpokenTextRef = useRef<string>("");
+  const lastBotFinishTimeRef = useRef<number>(0);
   const isCallActiveRef = useRef(false);
   const isBotSpeakingRef = useRef(false);
   const isProcessingRef = useRef(false);
@@ -1725,7 +1730,7 @@ export default function StudentWebApp() {
 
   useEffect(() => {
     isCallActiveRef.current = !!activeCallTopic;
-    if (activeCallTopic) {
+    if (!activeCallTopic) {
       stopCoachTalkingVideo();
     }
   }, [activeCallTopic, selectedCoach]);
@@ -1747,7 +1752,13 @@ export default function StudentWebApp() {
       if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia) return;
       if (micStreamRef.current) return;
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
       micStreamRef.current = stream;
       setMicPermissionError(false);
 
@@ -1766,6 +1777,11 @@ export default function StudentWebApp() {
 
       const checkVolume = () => {
         if (!analyserRef.current) return;
+        if (isBotSpeakingRef.current || isProcessingRef.current || isMutedRef.current) {
+          setMicVolumeLevel(0);
+          animFrameRef.current = requestAnimationFrame(checkVolume);
+          return;
+        }
         analyserRef.current.getByteFrequencyData(dataArray);
         let sum = 0;
         for (let i = 0; i < dataArray.length; i++) {
@@ -1775,7 +1791,7 @@ export default function StudentWebApp() {
         const level = Math.min(100, Math.round((avg / 128) * 100));
         setMicVolumeLevel(level);
 
-        if (level > 10) {
+        if (level > 14 && !isBotSpeakingRef.current && !isProcessingRef.current) {
           setIsUserSpeaking(true);
         }
 
@@ -1966,16 +1982,44 @@ export default function StudentWebApp() {
     };
   }, []);
 
-  // 7. Text-To-Speech (TTS) Engine — Synchronized Audio & Lip Movement (Ultra-Low Latency)
+  // 7. Text-To-Speech (TTS) Engine — Strict Single-Voice Mutex & Acoustic Echo Guard
   const speakText = async (text: string, langName: string) => {
-    stopListening();
-    stopCoachTalkingVideo();
+    const requestId = ++ttsSessionIdRef.current;
 
+    // Immediately lock out microphone & cancel any pending listen/debounce timers
+    if (postSpeechListenTimerRef.current) {
+      clearTimeout(postSpeechListenTimerRef.current);
+      postSpeechListenTimerRef.current = null;
+    }
+    if (speechDebounceTimerRef.current) {
+      clearTimeout(speechDebounceTimerRef.current);
+      speechDebounceTimerRef.current = null;
+    }
+    if (proactiveNudgeTimerRef.current) {
+      clearTimeout(proactiveNudgeTimerRef.current);
+      proactiveNudgeTimerRef.current = null;
+    }
+
+    isBotSpeakingRef.current = true;
+    setIsBotSpeaking(true);
+    stopListening();
+    setUserCaption("");
+    setIsUserSpeaking(false);
+    lastBotSpokenTextRef.current = text;
+
+    // Reset any coach preview state if active
+    setPreviewingCoachVoiceId(null);
+
+    // Completely detach & tear down any previous HTMLAudioElement so it can never play in parallel
     if (activeAudioRef.current) {
       try {
+        activeAudioRef.current.onplaying = null;
+        activeAudioRef.current.onended = null;
+        activeAudioRef.current.onerror = null;
+        activeAudioRef.current.onpause = null;
         activeAudioRef.current.pause();
-        activeAudioRef.current.currentTime = 0;
-      } catch (_) { }
+        activeAudioRef.current.src = "";
+      } catch (_) {}
       activeAudioRef.current = null;
     }
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -1983,10 +2027,16 @@ export default function StudentWebApp() {
     }
 
     let hasStartedSpeaking = false;
+    let hasEndedSpeaking = false;
+    let fallbackTriggered = false;
+
     const onVoiceStart = () => {
-      if (hasStartedSpeaking) return;
+      if (requestId !== ttsSessionIdRef.current || hasStartedSpeaking) return;
       hasStartedSpeaking = true;
-      // Synchronize text and audio: Only display dialogue and subtitle when sound plays!
+      isBotSpeakingRef.current = true;
+      setIsBotSpeaking(true);
+      stopListening();
+      setUserCaption("");
       setBotCaption(text);
       setConversationTurns((prev) => [
         ...prev,
@@ -1996,26 +2046,55 @@ export default function StudentWebApp() {
     };
 
     const onVoiceEnd = () => {
+      if (requestId !== ttsSessionIdRef.current || hasEndedSpeaking) return;
+      hasEndedSpeaking = true;
       stopCoachTalkingVideo();
       activeAudioRef.current = null;
-      startListening();
-      scheduleProactiveNudge();
+      lastBotFinishTimeRef.current = Date.now();
+
+      // Keep isBotSpeakingRef locked during a 650ms acoustic decay window so speaker reverb cannot enter the mic
+      isBotSpeakingRef.current = true;
+      if (postSpeechListenTimerRef.current) clearTimeout(postSpeechListenTimerRef.current);
+      postSpeechListenTimerRef.current = setTimeout(() => {
+        if (requestId !== ttsSessionIdRef.current) return;
+        isBotSpeakingRef.current = false;
+        setIsBotSpeaking(false);
+        lastBotFinishTimeRef.current = Date.now();
+        setUserCaption("");
+        if (isCallActiveRef.current && !isMutedRef.current && !isProcessingRef.current) {
+          startListening();
+          scheduleProactiveNudge();
+        }
+      }, 650);
     };
 
-    // Fast-Race Threshold: If server Edge-TTS takes >650ms, start instant on-device SpeechSynthesis
-    const fallbackTimer: NodeJS.Timeout | null = setTimeout(() => {
-      if (!hasStartedSpeaking) {
-        if (activeAudioRef.current) {
-          try {
-            activeAudioRef.current.pause();
-            activeAudioRef.current.src = "";
-          } catch (_) {}
-          activeAudioRef.current = null;
-        }
-        console.info("⚡ Edge-TTS took >650ms, activating zero-latency On-Device SpeechSynthesis!");
-        fallbackBrowserTts(text, langName, onVoiceStart, onVoiceEnd);
+    let fallbackTimer: NodeJS.Timeout | null = null;
+
+    const triggerFallbackOnce = () => {
+      if (requestId !== ttsSessionIdRef.current || hasStartedSpeaking || fallbackTriggered) return;
+      fallbackTriggered = true;
+      if (fallbackTimer) {
+        clearTimeout(fallbackTimer);
+        fallbackTimer = null;
       }
-    }, 650);
+      if (activeAudioRef.current) {
+        try {
+          activeAudioRef.current.onplaying = null;
+          activeAudioRef.current.onended = null;
+          activeAudioRef.current.onerror = null;
+          activeAudioRef.current.onpause = null;
+          activeAudioRef.current.pause();
+          activeAudioRef.current.src = "";
+        } catch (_) {}
+        activeAudioRef.current = null;
+      }
+      fallbackBrowserTts(text, langName, onVoiceStart, onVoiceEnd, requestId);
+    };
+
+    // Allow 2200ms for Edge-TTS neural stream before falling back to on-device SpeechSynthesis (prevents dual-voice overlap)
+    fallbackTimer = setTimeout(() => {
+      triggerFallbackOnce();
+    }, 2200);
 
     try {
       const ttsUrl = `/api/tts?text=${encodeURIComponent(text)}&coach=${selectedCoach.id}&gender=${selectedCoach.gender}&language=${encodeURIComponent(langName)}`;
@@ -2024,40 +2103,47 @@ export default function StudentWebApp() {
       activeAudioRef.current = audio;
 
       audio.onplaying = () => {
-        if (fallbackTimer) clearTimeout(fallbackTimer);
+        if (requestId !== ttsSessionIdRef.current || fallbackTriggered) {
+          try {
+            audio.pause();
+            audio.src = "";
+          } catch (_) {}
+          return;
+        }
+        if (fallbackTimer) {
+          clearTimeout(fallbackTimer);
+          fallbackTimer = null;
+        }
+        if (typeof window !== "undefined" && "speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+        }
         onVoiceStart();
       };
 
       audio.onended = () => {
+        if (requestId !== ttsSessionIdRef.current) return;
         onVoiceEnd();
       };
 
       audio.onpause = () => {
+        if (requestId !== ttsSessionIdRef.current) return;
+        if (audio.ended) return;
         stopCoachTalkingVideo();
       };
 
       audio.onerror = () => {
-        if (fallbackTimer) clearTimeout(fallbackTimer);
-        if (!hasStartedSpeaking) {
-          fallbackBrowserTts(text, langName, onVoiceStart, onVoiceEnd);
-        }
+        triggerFallbackOnce();
       };
 
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {
-          if (fallbackTimer) clearTimeout(fallbackTimer);
-          if (!hasStartedSpeaking) {
-            fallbackBrowserTts(text, langName, onVoiceStart, onVoiceEnd);
-          }
+          triggerFallbackOnce();
         });
       }
       return;
     } catch (e) {
-      if (fallbackTimer) clearTimeout(fallbackTimer);
-      if (!hasStartedSpeaking) {
-        fallbackBrowserTts(text, langName, onVoiceStart, onVoiceEnd);
-      }
+      triggerFallbackOnce();
     }
   };
 
@@ -2065,11 +2151,12 @@ export default function StudentWebApp() {
     text: string,
     langName: string,
     onStartCallback?: () => void,
-    onEndCallback?: () => void
+    onEndCallback?: () => void,
+    requestId?: number
   ) => {
+    if (requestId !== undefined && requestId !== ttsSessionIdRef.current) return;
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      stopCoachTalkingVideo();
-      startListening();
+      if (onEndCallback) onEndCallback();
       return;
     }
     window.speechSynthesis.cancel();
@@ -2101,24 +2188,34 @@ export default function StudentWebApp() {
     if (langName === "Japanese") targetLang = "ja-JP";
     else if (langName === "Korean") targetLang = "ko-KR";
     else if (langName === "Spanish") targetLang = "es-ES";
+    else if (langName === "Arabic") targetLang = "ar-SA";
+    else if (langName === "Tamil") targetLang = "ta-IN";
     utterance.lang = targetLang;
 
     utterance.onstart = () => {
+      if (requestId !== undefined && requestId !== ttsSessionIdRef.current) {
+        window.speechSynthesis.cancel();
+        return;
+      }
       if (onStartCallback) onStartCallback();
       else startCoachTalkingVideo();
     };
     utterance.onend = () => {
+      if (requestId !== undefined && requestId !== ttsSessionIdRef.current) return;
       if (onEndCallback) onEndCallback();
       else {
         stopCoachTalkingVideo();
+        isBotSpeakingRef.current = false;
         startListening();
         scheduleProactiveNudge();
       }
     };
     utterance.onerror = () => {
+      if (requestId !== undefined && requestId !== ttsSessionIdRef.current) return;
       if (onEndCallback) onEndCallback();
       else {
         stopCoachTalkingVideo();
+        isBotSpeakingRef.current = false;
         startListening();
       }
     };
@@ -2128,22 +2225,74 @@ export default function StudentWebApp() {
   const scheduleProactiveNudge = () => {
     if (proactiveNudgeTimerRef.current) clearTimeout(proactiveNudgeTimerRef.current);
     proactiveNudgeTimerRef.current = setTimeout(() => {
-      if (!isBotSpeaking && !isUserSpeaking && activeCallTopic) {
+      if (!isBotSpeakingRef.current && !isProcessingRef.current && !isUserSpeaking && isCallActiveRef.current && activeCallTopic) {
         const lang = (selectedLanguage !== "All" ? selectedLanguage : activeCallTopic.language) || "English";
-        let nudge = "I'm listening! What do you think about that?";
+        let nudge = "I'm listening! Take your time and share your thoughts whenever you're ready.";
         if (lang === "Japanese") nudge = "聞いていますよ！どう思いますか？";
         else if (lang === "Korean") nudge = "듣고 있어요! 어떻게 생각하세요?";
         else if (lang === "Spanish") nudge = "¡Te estoy escuchando! ¿Qué opinas?";
         else if (lang === "French") nudge = "Je vous écoute ! Qu'en pensez-vous ?";
         speakText(nudge, lang);
       }
-    }, 12000);
+    }, 18000);
   };
 
-  // 8. Speech Recognition (STT) - Unbreakable Continuous Recognition Loop
+  // Helper: Detect if recognized microphone audio is actually an acoustic echo of the Coach's own voice
+  const isAcousticEchoOfBot = (spoken: string): boolean => {
+    if (isBotSpeakingRef.current) return true;
+    const cleanSpoken = spoken.toLowerCase().replace(/[^\w\s]/g, "").replace(/\s+/g, " ").trim();
+    const cleanBot = (lastBotSpokenTextRef.current || "").toLowerCase().replace(/[^\w\s]/g, "").replace(/\s+/g, " ").trim();
+    if (!cleanSpoken || !cleanBot) return false;
+
+    const msSinceBotFinished = Date.now() - lastBotFinishTimeRef.current;
+
+    // If very soon (<900ms) after bot finished and words are inside bot speech, it's speaker tail echo
+    if (msSinceBotFinished < 900 && cleanBot.includes(cleanSpoken)) {
+      return true;
+    }
+
+    // If the recognized phrase matches the opening greeting/prefix of what the Coach just said (e.g. "welcome back in our job interview"), always block it!
+    if (cleanSpoken.length >= 10 && cleanBot.startsWith(cleanSpoken.slice(0, Math.min(cleanSpoken.length, 28)))) {
+      return true;
+    }
+
+    // Check if the student is intentionally repeating a target drill phrase after the coach finished speaking
+    const cleanTarget = (targetPhraseToRepeat || "").toLowerCase().replace(/[^\w\s]/g, "").replace(/\s+/g, " ").trim();
+    if (cleanTarget && msSinceBotFinished >= 900 && (cleanSpoken.includes(cleanTarget) || cleanTarget.includes(cleanSpoken))) {
+      return false;
+    }
+
+    // If within 5 seconds of coach speaking, check if the transcript is a direct substring of the coach's non-target prompt
+    if (msSinceBotFinished < 5000 && cleanSpoken.length >= 12) {
+      // Strip any quoted target sentence after "say:" or "repeat:" so the student CAN repeat the target sentence
+      const coachLeadInOnly = (lastBotSpokenTextRef.current || "")
+        .split(/say:|repeat:|repeating/i)[0]
+        .toLowerCase()
+        .replace(/[^\w\s]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (coachLeadInOnly && coachLeadInOnly.includes(cleanSpoken)) {
+        return true;
+      }
+      const spokenWords = cleanSpoken.split(" ").filter((w) => w.length > 2);
+      const leadInWords = new Set((coachLeadInOnly || cleanBot).split(" ").filter((w) => w.length > 2));
+      if (spokenWords.length >= 3) {
+        const matched = spokenWords.filter((w) => leadInWords.has(w)).length;
+        if (matched / spokenWords.length >= 0.8) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
+
+  // 8. Speech Recognition (STT) - Unbreakable Continuous Recognition Loop with Echo Cancellation
   const startListening = () => {
-    if (isMutedRef.current || !isCallActiveRef.current) return;
+    if (isMutedRef.current || !isCallActiveRef.current || isBotSpeakingRef.current || isProcessingRef.current) return;
     if (typeof window === "undefined") return;
+    if (activeAudioRef.current && !activeAudioRef.current.paused) return;
+    if ("speechSynthesis" in window && window.speechSynthesis.speaking) return;
 
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -2159,8 +2308,12 @@ export default function StudentWebApp() {
     try {
       if (recognitionRef.current) {
         try {
+          recognitionRef.current.onresult = null;
+          recognitionRef.current.onend = null;
+          recognitionRef.current.onerror = null;
           recognitionRef.current.abort();
         } catch (_) {}
+        recognitionRef.current = null;
       }
 
       const recognition = new SpeechRecognition();
@@ -2173,6 +2326,8 @@ export default function StudentWebApp() {
       if (langName === "Japanese") targetLang = "ja-JP";
       else if (langName === "Korean") targetLang = "ko-KR";
       else if (langName === "Spanish") targetLang = "es-ES";
+      else if (langName === "Arabic") targetLang = "ar-SA";
+      else if (langName === "Tamil") targetLang = "ta-IN";
       recognition.lang = targetLang;
 
       recognition.onstart = () => {
@@ -2181,6 +2336,19 @@ export default function StudentWebApp() {
       };
 
       recognition.onresult = (event: any) => {
+        // Hard guard: ignore all mic events while Coach is speaking or AI is processing
+        if (
+          !isCallActiveRef.current ||
+          !isListeningIntentRef.current ||
+          isBotSpeakingRef.current ||
+          isProcessingRef.current ||
+          isMutedRef.current ||
+          (activeAudioRef.current && !activeAudioRef.current.paused) ||
+          (typeof window !== "undefined" && "speechSynthesis" in window && window.speechSynthesis.speaking)
+        ) {
+          return;
+        }
+
         let interimText = "";
         let finalText = "";
 
@@ -2194,20 +2362,38 @@ export default function StudentWebApp() {
         }
 
         const liveWords = (finalText + interimText).trim();
-        if (liveWords) {
-          setUserCaption(liveWords);
-          setIsUserSpeaking(true);
-          stopCoachTalkingVideo();
+        if (!liveWords) return;
+
+        // Acoustic Echo Filter: Discard any transcript that is the Coach's own voice coming from the speakers
+        if (isAcousticEchoOfBot(liveWords)) {
+          if (speechDebounceTimerRef.current) {
+            clearTimeout(speechDebounceTimerRef.current);
+            speechDebounceTimerRef.current = null;
+          }
+          setUserCaption("");
+          setIsUserSpeaking(false);
+          return;
         }
 
-        // When user finishes a phrase, debounce before sending to AI
+        setUserCaption(liveWords);
+        setIsUserSpeaking(true);
+
+        // When user finishes a phrase, debounce comfortably before sending to AI
         const hasFinalPhrase = Boolean(finalText.trim());
-        const phraseToSubmit = finalText.trim() || (interimText.length > 8 ? interimText.trim() : "");
+        const phraseToSubmit = finalText.trim() || (interimText.trim().length > 14 ? interimText.trim() : "");
         if (phraseToSubmit) {
           if (speechDebounceTimerRef.current) clearTimeout(speechDebounceTimerRef.current);
-          const debounceMs = hasFinalPhrase ? 400 : 750;
+          const debounceMs = hasFinalPhrase ? 1150 : 1750;
           speechDebounceTimerRef.current = setTimeout(() => {
-            if (isListeningIntentRef.current && phraseToSubmit.length >= 2) {
+            if (
+              isListeningIntentRef.current &&
+              isCallActiveRef.current &&
+              !isBotSpeakingRef.current &&
+              !isProcessingRef.current &&
+              !isMutedRef.current &&
+              phraseToSubmit.length >= 2 &&
+              !isAcousticEchoOfBot(phraseToSubmit)
+            ) {
               handleUserSpeech(phraseToSubmit);
             }
           }, debounceMs);
@@ -2215,14 +2401,20 @@ export default function StudentWebApp() {
       };
 
       recognition.onerror = (event: any) => {
-        console.warn("Speech Recognition Status:", event.error);
         if (event.error === "not-allowed" || event.error === "service-not-allowed") {
           setMicPermissionError(true);
         }
         setIsUserSpeaking(false);
 
-        // Auto-resurrect on no-speech
-        if (event.error === "no-speech" && isCallActiveRef.current && !isBotSpeakingRef.current && !isMutedRef.current) {
+        // Auto-resurrect on no-speech only when Coach is NOT speaking
+        if (
+          event.error === "no-speech" &&
+          isListeningIntentRef.current &&
+          isCallActiveRef.current &&
+          !isBotSpeakingRef.current &&
+          !isProcessingRef.current &&
+          !isMutedRef.current
+        ) {
           try {
             recognition.start();
           } catch (_) {}
@@ -2231,8 +2423,14 @@ export default function StudentWebApp() {
 
       recognition.onend = () => {
         setIsUserSpeaking(false);
-        // Automatic resurrection loop: Keep listening continuously while call is active!
-        if (isListeningIntentRef.current && isCallActiveRef.current && !isBotSpeakingRef.current && !isMutedRef.current && !isProcessingRef.current) {
+        // Automatic resurrection loop only when Coach is silent and we intend to listen
+        if (
+          isListeningIntentRef.current &&
+          isCallActiveRef.current &&
+          !isBotSpeakingRef.current &&
+          !isMutedRef.current &&
+          !isProcessingRef.current
+        ) {
           try {
             recognition.start();
           } catch (_) {}
@@ -2248,11 +2446,17 @@ export default function StudentWebApp() {
 
   const stopListening = () => {
     isListeningIntentRef.current = false;
-    if (speechDebounceTimerRef.current) clearTimeout(speechDebounceTimerRef.current);
+    if (speechDebounceTimerRef.current) {
+      clearTimeout(speechDebounceTimerRef.current);
+      speechDebounceTimerRef.current = null;
+    }
     if (recognitionRef.current) {
       try {
-        recognitionRef.current.stop();
-      } catch (e) { }
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.abort();
+      } catch (e) {}
       recognitionRef.current = null;
     }
     setIsUserSpeaking(false);
@@ -2269,7 +2473,12 @@ export default function StudentWebApp() {
     const topic = pendingTopic;
     setShowDurationModal(false);
 
+    // Synchronously mark call active and clear any previous transcript/audio state
+    isCallActiveRef.current = true;
     setActiveCallTopic(topic);
+    setConversationTurns([]);
+    setBotCaption("");
+    setUserCaption("");
     setActiveCorrection(null);
     setSessionCorrections([]);
     setSuccessfulDrillsCount(0);
@@ -2278,7 +2487,6 @@ export default function StudentWebApp() {
     setTargetPhraseToRepeat("");
     setNextScenarioQuestion("");
     setDrillAttempts(0);
-    setUserCaption("");
     setShowScoreModal(false);
 
     if (selectedDurationMinutes !== null) {
@@ -2467,8 +2675,16 @@ export default function StudentWebApp() {
 
   // 12. Calculate Score & End Call
   const handleEndCall = async () => {
+    ttsSessionIdRef.current++;
+    isCallActiveRef.current = false;
+    isBotSpeakingRef.current = false;
+    setIsBotSpeaking(false);
     stopListening();
     stopMicVolumeMonitor();
+    if (postSpeechListenTimerRef.current) {
+      clearTimeout(postSpeechListenTimerRef.current);
+      postSpeechListenTimerRef.current = null;
+    }
     if (userVideoRef.current && userVideoRef.current.srcObject) {
       const stream = userVideoRef.current.srcObject as MediaStream;
       stream.getTracks().forEach((track) => track.stop());
@@ -2478,8 +2694,12 @@ export default function StudentWebApp() {
     if (proactiveNudgeTimerRef.current) clearTimeout(proactiveNudgeTimerRef.current);
     if (activeAudioRef.current) {
       try {
+        activeAudioRef.current.onplaying = null;
+        activeAudioRef.current.onended = null;
+        activeAudioRef.current.onerror = null;
+        activeAudioRef.current.onpause = null;
         activeAudioRef.current.pause();
-        activeAudioRef.current.currentTime = 0;
+        activeAudioRef.current.src = "";
       } catch (_) { }
       activeAudioRef.current = null;
     }
@@ -4091,22 +4311,34 @@ export default function StudentWebApp() {
                     {/* LIVE MICROPHONE INPUT & DECIBEL LEVEL HUD */}
                     <div className="flex flex-col items-center gap-1.5 mt-2 z-20 shrink-0">
                       <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-950/90 border border-emerald-500/40 backdrop-blur-md shadow-lg">
-                        <span className={`w-2 h-2 rounded-full ${micVolumeLevel > 10 ? 'bg-emerald-400 animate-ping' : 'bg-emerald-500'}`} />
-                        <Mic className="w-3.5 h-3.5 text-emerald-400" />
+                        <span
+                          className={`w-2 h-2 rounded-full ${
+                            isBotSpeaking
+                              ? "bg-cyan-400 animate-pulse"
+                              : micVolumeLevel > 14
+                              ? "bg-emerald-400 animate-ping"
+                              : "bg-emerald-500"
+                          }`}
+                        />
+                        <Mic className={`w-3.5 h-3.5 ${isBotSpeaking ? "text-cyan-400" : "text-emerald-400"}`} />
                         {/* Live Decibel Bar */}
                         <div className="w-24 sm:w-32 h-2 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
                           <div
                             className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full transition-all duration-75"
-                            style={{ width: `${Math.max(6, micVolumeLevel)}%` }}
+                            style={{ width: `${isBotSpeaking ? 6 : Math.max(6, micVolumeLevel)}%` }}
                           />
                         </div>
                         <span className="text-[10px] font-mono text-emerald-300 font-bold">
-                          {micVolumeLevel > 10 ? `Hearing Voice: ${micVolumeLevel}%` : 'Mic Live • Speak Now'}
+                          {isBotSpeaking
+                            ? "Coach Speaking • Echo Guard ON"
+                            : micVolumeLevel > 14
+                            ? `Hearing Voice: ${micVolumeLevel}%`
+                            : "Mic Live • Speak Now"}
                         </span>
                       </div>
 
                       {/* Manual Submit Button if user spoke something */}
-                      {userCaption && (
+                      {userCaption && !isBotSpeaking && !isProcessing && (
                         <button
                           onClick={() => handleUserSpeech(userCaption)}
                           className="mt-0.5 px-4 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/50 flex items-center gap-1.5 transition-all animate-bounce"
@@ -4124,17 +4356,27 @@ export default function StudentWebApp() {
                         </div>
                       )}
 
-                      {/* Quick Instant Response Chips */}
+                      {/* Dynamic Context-Aware Quick Response Chips */}
                       <div className="flex items-center gap-1.5 flex-wrap justify-center mt-0.5">
-                        {[
-                          { text: "I love cricket and Virat Kohli!", label: "🏏 Cricket & Kohli" },
-                          { text: "Who is your all-time favorite player?", label: "❓ Favorite Player" },
-                          { text: "Tell me how T20 matches are played!", label: "⚡ T20 Rules" }
-                        ].map((chip, cIdx) => (
+                        {(activeCallTopic?.starterQuestions && activeCallTopic.starterQuestions.length > 0
+                          ? activeCallTopic.starterQuestions.slice(0, 3).map((q, idx) => {
+                              const cleaned = q.replace(/^(Repeat after me:|Try saying or answering with this pattern:|Practice [^:]+:)\s*/i, "").replace(/^"|"$/g, "").trim();
+                              return {
+                                text: cleaned,
+                                label: `💬 ${cleaned.length > 36 ? cleaned.slice(0, 34) + "…" : cleaned}`
+                              };
+                            })
+                          : [
+                              { text: `Let's practice ${activeCallTopic?.title || "this topic"}!`, label: `🎙️ Start ${activeCallTopic?.subCategory || "Dialogue"}` },
+                              { text: "Could you ask me a question about this scenario?", label: "❓ Ask Me a Question" },
+                              { text: "Can you give me an example sentence I can repeat?", label: "✨ Example Sentence" }
+                            ]
+                        ).map((chip, cIdx) => (
                           <button
                             key={cIdx}
+                            disabled={isBotSpeaking || isProcessing}
                             onClick={() => handleUserSpeech(chip.text)}
-                            className="px-2.5 py-0.5 rounded-lg bg-slate-900/90 hover:bg-cyan-600/30 text-slate-300 hover:text-cyan-200 border border-slate-700/80 text-[10px] font-semibold transition-all hover:scale-105 active:scale-95"
+                            className="px-2.5 py-0.5 rounded-lg bg-slate-900/90 hover:bg-cyan-600/30 disabled:opacity-40 text-slate-300 hover:text-cyan-200 border border-slate-700/80 text-[10px] font-semibold transition-all hover:scale-105 active:scale-95"
                           >
                             {chip.label}
                           </button>
@@ -7656,10 +7898,10 @@ export default function StudentWebApp() {
                   subCategory: mistake.sessionTitle,
                   icon: "🎯",
                   scenario: `TARGETED GRAMMAR DRILL MODE (From Call: "${mistake.sessionTitle}"): You are drilling the student EXCLUSIVELY on the grammar rule "${mistake.ruleTitle}". In their previous call, the student said: "${mistake.wrong}" instead of the natural native form: "${mistake.correct}". Rule: ${mistake.explanation} Similar target patterns to practice: ${mistake.similarExamples.join(" | ")}. In every turn, ask the student a question that requires them to use this exact grammar structure, check if they used it accurately, and coach them until they master it!`,
-                  starterPrompt: `Welcome back! In our "${mistake.sessionTitle}" call, we caught a quick grammar slip on ${mistake.ruleTitle}. Instead of saying "${mistake.wrong}", native speakers say: "${mistake.correct}". First, try repeating "${mistake.correct}" aloud, and then we'll practice three similar sentences together!`,
+                  starterPrompt: `Let's practice ${mistake.ruleTitle}! Instead of "${mistake.wrong}", native speakers say: "${mistake.correct}". Try repeating "${mistake.correct}" aloud now!`,
                   starterQuestions: [
-                    `Repeat after me: "${mistake.correct}"`,
-                    ...mistake.similarExamples.map((ex) => `Try saying or answering with this pattern: "${ex}"`)
+                    mistake.correct,
+                    ...mistake.similarExamples
                   ]
                 };
 
@@ -7692,10 +7934,8 @@ export default function StudentWebApp() {
                   subCategory: `${mistakesToDrill.length} Rules Drill`,
                   icon: "🎓",
                   scenario: `TARGETED CALL GRAMMAR REPAIR SESSION: Drill the student exclusively on the ${mistakesToDrill.length} grammar mistakes caught in their previous voice call(s): ${rulesSummary}. Walk through each rule one by one, have the student repeat the corrected native sentence and similar pattern variations, and test them with interactive questions using those exact grammar structures!`,
-                  starterPrompt: `Let's master all ${mistakesToDrill.length} grammar patterns caught in your recent call! First up is ${first.ruleTitle}: instead of "${first.wrong}", say "${first.correct}". Try repeating that sentence now, and then I'll test you on a similar example!`,
-                  starterQuestions: mistakesToDrill.map(
-                    (m) => `Practice ${m.ruleTitle}: "${m.correct}" (Similar: "${m.similarExamples[0]}")`
-                  )
+                  starterPrompt: `Let's master your ${mistakesToDrill.length} grammar fixes! First, instead of "${first.wrong}", say: "${first.correct}". Try repeating that sentence now!`,
+                  starterQuestions: mistakesToDrill.map((m) => m.correct)
                 };
 
                 handleInitiateCallPrompt(bundleTopic);
