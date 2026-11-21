@@ -3867,22 +3867,81 @@ export default function StudentWebApp() {
 
           {/* Bottom Section: VIP Card & User Profile */}
           <div className="space-y-3 pt-3 border-t border-slate-800/80">
-            {/* Go Premium VIP Card */}
-            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-[#1E1B4B] via-[#141838] to-[#0B0F20] border border-amber-500/35 text-center relative overflow-hidden space-y-2 shadow-xl group">
+            {/* Go Premium / Active VIP Membership Telemetry Card */}
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-[#1E1B4B] via-[#141838] to-[#0B0F20] border border-amber-500/40 relative overflow-hidden space-y-2.5 shadow-xl group">
               <div className="absolute -top-8 -right-8 w-24 h-24 bg-amber-500/20 rounded-full blur-xl pointer-events-none" />
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/25">
-                <Crown className="w-4 h-4 fill-slate-950" />
-              </div>
-              <div>
-                <span className="font-black text-xs text-white block">SpeakFlow VIP Pro</span>
-                <p className="text-[9.5px] text-amber-200/80 font-medium">Unlimited Voice AI &amp; All 8 Coaches</p>
-              </div>
+
+              {isPremiumMember ? (
+                <>
+                  {/* Active VIP Header */}
+                  <div className="flex items-center justify-between gap-2 relative z-10">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-amber-500 to-yellow-300 text-slate-950 flex items-center justify-center shadow-md shadow-amber-500/30 shrink-0">
+                        <Crown className="w-3.5 h-3.5 fill-slate-950" />
+                      </div>
+                      <div className="min-w-0 text-left">
+                        <span className="font-black text-[11px] text-white block truncate leading-tight">
+                          {subscriptionConfig.yearlyName}
+                        </span>
+                        <span className="text-[9.5px] font-bold text-amber-300 block leading-tight">
+                          {subscriptionConfig.yearlyPrice}/yr • All 6 Coaches
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[8.5px] font-black text-emerald-300 bg-emerald-500/20 border border-emerald-500/35 px-1.5 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Active
+                    </span>
+                  </div>
+
+                  {/* Expiry Date & Google Play Sync Micro-Panel */}
+                  <div className="p-2 rounded-xl bg-slate-950/75 border border-slate-800/90 space-y-1 text-[9.5px] relative z-10">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400 flex items-center gap-1">
+                        <Calendar className="w-3 h-3 text-cyan-400" />
+                        Expires:
+                      </span>
+                      <span className="font-bold text-white">
+                        {new Date(premiumExpiryDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric"
+                        })}{" "}
+                        <span className="text-amber-300 font-mono">({getDaysUntilExpiry(premiumExpiryDate)}d left)</span>
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">Billing Sync:</span>
+                      <span className="text-emerald-300 font-bold flex items-center gap-1">
+                        <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 shrink-0" aria-hidden="true">
+                          <path fill="#4285F4" d="M3.61 1.814L13.793 12 3.61 22.186a1.77 1.77 0 0 1-.468-1.224V3.038c0-.478.177-.913.468-1.224z" />
+                          <path fill="#34A853" d="M17.209 8.584L13.793 12 3.61 1.814c.385-.316.925-.416 1.445-.131l12.154 6.901z" />
+                          <path fill="#FBBC04" d="M20.431 10.414c1.092.62 1.092 2.552 0 3.172l-3.222 1.83L13.793 12l3.416-3.416 3.222 1.83z" />
+                          <path fill="#EA4335" d="M17.209 15.416L5.055 22.317c-.52.285-1.06.185-1.445-.131L13.793 12l3.416 3.416z" />
+                        </svg>
+                        <span>Google Play Synced</span>
+                      </span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center space-y-1 relative z-10">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/25">
+                    <Crown className="w-4 h-4 fill-slate-950" />
+                  </div>
+                  <span className="font-black text-xs text-white block">Free Explorer Plan</span>
+                  <p className="text-[9.5px] text-emerald-300 font-bold">
+                    🎁 {subscriptionConfig.trialDays}-Day Free Trial • {subscriptionConfig.weeklyPrice}/wk
+                  </p>
+                </div>
+              )}
+
               <button
                 onClick={() => setShowVipModal(true)}
-                className="w-full py-1.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02]"
+                className="w-full py-1.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02] relative z-10"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>{isPremiumMember ? "Manage VIP Pass" : "Upgrade to Pro"}</span>
+                <span>{isPremiumMember ? "Manage VIP Pass" : "Start 3-Day Free Trial"}</span>
               </button>
             </div>
 
