@@ -218,6 +218,11 @@ interface CallSessionRecord {
     correction: string;
     explanation: string;
   }>;
+  conversationTurns?: Array<{
+    sender: "user" | "bot";
+    text: string;
+    timestamp: Date | string;
+  }>;
   coachFeedback: string;
   createdAt: string;
 }
@@ -1043,6 +1048,8 @@ export default function StudentWebApp() {
   >([]);
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [completedSession, setCompletedSession] = useState<CallSessionRecord | null>(null);
+  const [scorecardTab, setScorecardTab] = useState<"summary" | "dialogue" | "corrections">("summary");
+  const [textSpeechInput, setTextSpeechInput] = useState("");
 
   // Call History State
   const [callHistory, setCallHistory] = useState<CallSessionRecord[]>([]);
@@ -1276,6 +1283,7 @@ export default function StudentWebApp() {
   const isProcessingRef = useRef(false);
   const isMutedRef = useRef(false);
   const isListeningIntentRef = useRef(false);
+  const latestUserCaptionRef = useRef("");
 
   // AudioContext Decibel Monitor Refs
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -1635,7 +1643,7 @@ export default function StudentWebApp() {
     }, 12000);
   };
 
-  // 8. Speech Recognition (STT) - Unbreakable Continuous Recognition Loop
+  // 8. Speech Recognition (STT) - High-Sensitivity Continuous Loop
   const startListening = () => {
     if (isMutedRef.current || !isCallActiveRef.current) return;
     if (typeof window === "undefined") return;
@@ -1662,12 +1670,14 @@ export default function StudentWebApp() {
       recognitionRef.current = recognition;
       recognition.continuous = true;
       recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
 
       const langName = (selectedLanguage !== "All" ? selectedLanguage : activeCallTopic?.language) || "English";
       let targetLang = "en-US";
       if (langName === "Japanese") targetLang = "ja-JP";
       else if (langName === "Korean") targetLang = "ko-KR";
       else if (langName === "Spanish") targetLang = "es-ES";
+      else if (langName === "French") targetLang = "fr-FR";
       recognition.lang = targetLang;
 
       recognition.onstart = () => {
@@ -1691,19 +1701,36 @@ export default function StudentWebApp() {
         const liveWords = (finalText + interimText).trim();
         if (liveWords) {
           setUserCaption(liveWords);
+          latestUserCaptionRef.current = liveWords;
           setIsUserSpeaking(true);
           stopCoachTalkingVideo();
         }
 
-        // When user finishes a phrase, debounce before sending to AI
-        const phraseToSubmit = finalText.trim() || (interimText.length > 8 ? interimText.trim() : "");
-        if (phraseToSubmit) {
+        // Automatic smart-submit:
+        // Case A: Browser finalized an utterance (length >= 2) -> submit with short 650ms debounce
+        if (finalText.trim().length >= 2) {
+          const finalCandidate = finalText.trim();
           if (speechDebounceTimerRef.current) clearTimeout(speechDebounceTimerRef.current);
           speechDebounceTimerRef.current = setTimeout(() => {
-            if (isListeningIntentRef.current && phraseToSubmit.length >= 2) {
-              handleUserSpeech(phraseToSubmit);
+            if (isListeningIntentRef.current && !isProcessingRef.current && !isBotSpeakingRef.current) {
+              latestUserCaptionRef.current = "";
+              setUserCaption("");
+              handleUserSpeech(finalCandidate);
             }
-          }, 1100);
+          }, 650);
+        } else if (liveWords.length >= 2) {
+          // Case B: Interim speech in progress -> submit 900ms after user pauses speaking
+          if (speechDebounceTimerRef.current) clearTimeout(speechDebounceTimerRef.current);
+          speechDebounceTimerRef.current = setTimeout(() => {
+            if (isListeningIntentRef.current && !isProcessingRef.current && !isBotSpeakingRef.current) {
+              const pending = latestUserCaptionRef.current.trim();
+              if (pending.length >= 2) {
+                latestUserCaptionRef.current = "";
+                setUserCaption("");
+                handleUserSpeech(pending);
+              }
+            }
+          }, 900);
         }
       };
 
@@ -1714,21 +1741,35 @@ export default function StudentWebApp() {
         }
         setIsUserSpeaking(false);
 
-        // Auto-resurrect on no-speech
-        if (event.error === "no-speech" && isCallActiveRef.current && !isBotSpeakingRef.current && !isMutedRef.current) {
-          try {
-            recognition.start();
-          } catch (_) {}
+        // Safe resurrection on no-speech or network hiccups
+        if ((event.error === "no-speech" || event.error === "network") && isCallActiveRef.current && !isBotSpeakingRef.current && !isMutedRef.current && !isProcessingRef.current) {
+          setTimeout(() => {
+            if (isListeningIntentRef.current && isCallActiveRef.current && !isBotSpeakingRef.current && !isProcessingRef.current) {
+              startListening();
+            }
+          }, 200);
         }
       };
 
       recognition.onend = () => {
         setIsUserSpeaking(false);
-        // Automatic resurrection loop: Keep listening continuously while call is active!
+        // CRITICAL FIX: If user stopped talking and silence caused onend before debounce finished, flush pending words immediately!
+        const pending = latestUserCaptionRef.current.trim();
+        if (pending.length >= 2 && !isProcessingRef.current && !isBotSpeakingRef.current && isListeningIntentRef.current) {
+          latestUserCaptionRef.current = "";
+          setUserCaption("");
+          if (speechDebounceTimerRef.current) clearTimeout(speechDebounceTimerRef.current);
+          handleUserSpeech(pending);
+          return;
+        }
+
+        // Automatic resurrection loop: Always keep listening while call is live
         if (isListeningIntentRef.current && isCallActiveRef.current && !isBotSpeakingRef.current && !isMutedRef.current && !isProcessingRef.current) {
-          try {
-            recognition.start();
-          } catch (_) {}
+          setTimeout(() => {
+            if (isListeningIntentRef.current && isCallActiveRef.current && !isBotSpeakingRef.current && !isProcessingRef.current) {
+              startListening();
+            }
+          }, 150);
         }
       };
 
@@ -1741,6 +1782,7 @@ export default function StudentWebApp() {
 
   const stopListening = () => {
     isListeningIntentRef.current = false;
+    latestUserCaptionRef.current = "";
     if (speechDebounceTimerRef.current) clearTimeout(speechDebounceTimerRef.current);
     if (recognitionRef.current) {
       try {
@@ -2065,6 +2107,7 @@ export default function StudentWebApp() {
       coachAvatar: selectedCoach.avatar,
       totalCorrections: errors,
       correctionsList: sessionCorrections,
+      conversationTurns: [...conversationTurns],
       coachFeedback: feedback,
       createdAt: new Date().toISOString()
     };
@@ -3268,11 +3311,16 @@ export default function StudentWebApp() {
                       {/* Manual Submit Button if user spoke something */}
                       {userCaption && (
                         <button
-                          onClick={() => handleUserSpeech(userCaption)}
-                          className="mt-1 px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/50 flex items-center gap-1.5 transition-all animate-bounce"
+                          onClick={() => {
+                            const val = userCaption;
+                            setUserCaption("");
+                            latestUserCaptionRef.current = "";
+                            handleUserSpeech(val);
+                          }}
+                          className="mt-1 px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/50 flex items-center gap-1.5 transition-all animate-bounce"
                         >
                           <Send className="w-3.5 h-3.5" />
-                          <span>Send Speech: "{userCaption.slice(0, 32)}..." →</span>
+                          <span>Send Spoken Words: "{userCaption.slice(0, 36)}" →</span>
                         </button>
                       )}
 
@@ -3300,6 +3348,35 @@ export default function StudentWebApp() {
                           </button>
                         ))}
                       </div>
+
+                      {/* Keyboard Quick-Type Input (Instant speech fallback) */}
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          if (textSpeechInput.trim().length >= 2) {
+                            const val = textSpeechInput.trim();
+                            setTextSpeechInput("");
+                            handleUserSpeech(val);
+                          }
+                        }}
+                        className="flex items-center gap-1.5 w-full max-w-sm mt-1"
+                      >
+                        <input
+                          type="text"
+                          value={textSpeechInput}
+                          onChange={(e) => setTextSpeechInput(e.target.value)}
+                          placeholder="Or type what you said (e.g. 'Yes I love it')..."
+                          className="flex-1 px-3 py-1 rounded-xl bg-slate-950/80 border border-slate-700/80 focus:border-cyan-400 text-xs text-white placeholder-slate-500 outline-none transition-all shadow-inner"
+                        />
+                        <button
+                          type="submit"
+                          disabled={!textSpeechInput.trim()}
+                          className="px-2.5 py-1 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 text-slate-950 font-bold text-xs flex items-center gap-1 transition-all shrink-0"
+                        >
+                          <Send className="w-3 h-3" />
+                          <span>Send</span>
+                        </button>
+                      </form>
                     </div>
                   </div>
 
@@ -5814,80 +5891,6 @@ export default function StudentWebApp() {
                   </span>
                 </div>
               </div>
-
-              {/* Coach Qualitative Speech Feedback Quote */}
-              <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 text-left text-xs leading-relaxed text-slate-200 flex items-start gap-2.5">
-                <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5 animate-pulse" />
-                <div>
-                  <strong className="text-cyan-300 block mb-0.5 font-bold">
-                    {completedSession.coachName || selectedCoach.name}'s Feedback:
-                  </strong>
-                  <span>&ldquo;{completedSession.coachFeedback}&rdquo;</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 4-Metric In-Depth Telemetry Radar (Fluency, Accuracy, Pronunciation, Vocabulary) */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 relative z-10">
-              {/* Metric 1: Fluency */}
-              <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-emerald-500/30 flex flex-col justify-between space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-300">
-                  <span>🗣️ Fluency</span>
-                  <span className="text-emerald-400 font-mono">{completedSession.fluencyScore}%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-700"
-                    style={{ width: `${completedSession.fluencyScore}%` }}
-                  />
-                </div>
-                <span className="text-[9px] text-emerald-300/80 font-mono">Pace & Cadence</span>
-              </div>
-
-              {/* Metric 2: Accuracy */}
-              <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/30 flex flex-col justify-between space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-300">
-                  <span>🎯 Accuracy</span>
-                  <span className="text-cyan-400 font-mono">{completedSession.accuracyScore}%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full transition-all duration-700"
-                    style={{ width: `${completedSession.accuracyScore}%` }}
-                  />
-                </div>
-                <span className="text-[9px] text-cyan-300/80 font-mono">Grammar Syntax</span>
-              </div>
-
-              {/* Metric 3: Pronunciation */}
-              <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-purple-500/30 flex flex-col justify-between space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-300">
-                  <span>⚡ Phonemes</span>
-                  <span className="text-purple-400 font-mono">{completedSession.pronunciationScore || 90}%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-purple-400 to-indigo-500 rounded-full transition-all duration-700"
-                    style={{ width: `${completedSession.pronunciationScore || 90}%` }}
-                  />
-                </div>
-                <span className="text-[9px] text-purple-300/80 font-mono">Speech Clarity</span>
-              </div>
-
-              {/* Metric 4: Vocabulary */}
-              <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-amber-500/30 flex flex-col justify-between space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-300">
-                  <span>📚 Lexicon</span>
-                  <span className="text-amber-400 font-mono">{completedSession.vocabularyScore || 85}%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full transition-all duration-700"
-                    style={{ width: `${completedSession.vocabularyScore || 85}%` }}
-                  />
-                </div>
-                <span className="text-[9px] text-amber-300/80 font-mono">Word Range</span>
-              </div>
             </div>
 
             {/* Session Stats Pill Bar */}
@@ -5910,33 +5913,217 @@ export default function StudentWebApp() {
               </div>
             </div>
 
-            {/* Mistakes & Learning Review Accordion (if any) */}
-            {completedSession.correctionsList && completedSession.correctionsList.length > 0 && (
-              <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-rose-500/30 text-left space-y-2 relative z-10 max-h-44 overflow-y-auto">
-                <div className="flex items-center justify-between text-xs font-bold text-rose-300">
-                  <span className="flex items-center gap-1">
-                    <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
-                    Review Key Corrections ({completedSession.correctionsList.length})
-                  </span>
-                  <span className="text-[9px] text-slate-400 uppercase">Mastery Review</span>
-                </div>
-                {completedSession.correctionsList.map((c, cIdx) => (
-                  <div key={cIdx} className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] space-y-1">
-                    <div className="flex items-center gap-1 text-rose-300">
-                      <span className="font-bold">❌ You said:</span>
-                      <span className="line-through font-mono">"{c.original}"</span>
+            {/* Interactive Tab Switcher */}
+            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-950/90 border border-slate-800 relative z-10">
+              <button
+                onClick={() => setScorecardTab("summary")}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  scorecardTab === "summary"
+                    ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md font-black"
+                    : "text-slate-400 hover:text-white hover:bg-slate-900"
+                }`}
+              >
+                <Activity className="w-3.5 h-3.5" />
+                <span>Radar &amp; Feedback</span>
+              </button>
+
+              <button
+                onClick={() => setScorecardTab("dialogue")}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  scorecardTab === "dialogue"
+                    ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md font-black"
+                    : "text-slate-400 hover:text-white hover:bg-slate-900"
+                }`}
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Full Dialogue ({(completedSession.conversationTurns || conversationTurns).length})</span>
+              </button>
+
+              <button
+                onClick={() => setScorecardTab("corrections")}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  scorecardTab === "corrections"
+                    ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md font-black"
+                    : "text-slate-400 hover:text-white hover:bg-slate-900"
+                }`}
+              >
+                <AlertCircle className="w-3.5 h-3.5" />
+                <span>Corrections ({completedSession.correctionsList?.length || 0})</span>
+              </button>
+            </div>
+
+            {/* TAB 1: RADAR & FEEDBACK */}
+            {scorecardTab === "summary" && (
+              <div className="space-y-4 relative z-10 animate-in fade-in duration-200">
+                {/* 4-Metric In-Depth Telemetry Radar (Fluency, Accuracy, Pronunciation, Vocabulary) */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {/* Metric 1: Fluency */}
+                  <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-emerald-500/30 flex flex-col justify-between space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                      <span>🗣️ Fluency</span>
+                      <span className="text-emerald-400 font-mono">{completedSession.fluencyScore}%</span>
                     </div>
-                    <div className="flex items-center gap-1 text-emerald-300">
-                      <span className="font-bold">✅ Say instead:</span>
-                      <span className="font-bold">"{c.correction}"</span>
+                    <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-700"
+                        style={{ width: `${completedSession.fluencyScore}%` }}
+                      />
                     </div>
-                    {c.explanation && (
-                      <p className="text-[9.5px] text-cyan-200/80 italic pl-1">
-                        💡 {c.explanation}
-                      </p>
-                    )}
+                    <span className="text-[9px] text-emerald-300/80 font-mono">Pace &amp; Cadence</span>
                   </div>
-                ))}
+
+                  {/* Metric 2: Accuracy */}
+                  <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-cyan-500/30 flex flex-col justify-between space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                      <span>🎯 Accuracy</span>
+                      <span className="text-cyan-400 font-mono">{completedSession.accuracyScore}%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full transition-all duration-700"
+                        style={{ width: `${completedSession.accuracyScore}%` }}
+                      />
+                    </div>
+                    <span className="text-[9px] text-cyan-300/80 font-mono">Grammar Syntax</span>
+                  </div>
+
+                  {/* Metric 3: Pronunciation */}
+                  <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-purple-500/30 flex flex-col justify-between space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                      <span>⚡ Phonemes</span>
+                      <span className="text-purple-400 font-mono">{completedSession.pronunciationScore || 90}%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-purple-400 to-indigo-500 rounded-full transition-all duration-700"
+                        style={{ width: `${completedSession.pronunciationScore || 90}%` }}
+                      />
+                    </div>
+                    <span className="text-[9px] text-purple-300/80 font-mono">Speech Clarity</span>
+                  </div>
+
+                  {/* Metric 4: Vocabulary */}
+                  <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-amber-500/30 flex flex-col justify-between space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                      <span>📚 Lexicon</span>
+                      <span className="text-amber-400 font-mono">{completedSession.vocabularyScore || 85}%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full transition-all duration-700"
+                        style={{ width: `${completedSession.vocabularyScore || 85}%` }}
+                      />
+                    </div>
+                    <span className="text-[9px] text-amber-300/80 font-mono">Word Range</span>
+                  </div>
+                </div>
+
+                {/* Coach Qualitative Speech Feedback Quote */}
+                <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 text-left text-xs leading-relaxed text-slate-200 flex items-start gap-2.5">
+                  <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5 animate-pulse" />
+                  <div>
+                    <strong className="text-cyan-300 block mb-0.5 font-bold">
+                      {completedSession.coachName || selectedCoach.name}'s Feedback:
+                    </strong>
+                    <span>&ldquo;{completedSession.coachFeedback}&rdquo;</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: 💬 FULL DIALOGUE TRANSCRIPT */}
+            {scorecardTab === "dialogue" && (
+              <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 text-left space-y-3 relative z-10 max-h-72 overflow-y-auto animate-in fade-in duration-200">
+                {(completedSession.conversationTurns || conversationTurns).length === 0 ? (
+                  <div className="py-8 text-center text-slate-500 text-xs">
+                    No dialogue recorded for this session. Speak into the microphone during your next call!
+                  </div>
+                ) : (
+                  (completedSession.conversationTurns || conversationTurns).map((turn, tIdx) => {
+                    const isBot = turn.sender === "bot";
+                    return (
+                      <div
+                        key={tIdx}
+                        className={`flex items-start gap-2.5 ${isBot ? "justify-start" : "justify-end"}`}
+                      >
+                        {isBot && (
+                          <img
+                            src={completedSession.coachAvatar || selectedCoach.avatar}
+                            alt=""
+                            className="w-7 h-7 rounded-full object-cover border border-cyan-400 shrink-0 mt-0.5"
+                          />
+                        )}
+                        <div
+                          className={`max-w-[80%] p-2.5 rounded-2xl text-xs leading-relaxed space-y-1 ${
+                            isBot
+                              ? "bg-slate-900 border border-slate-700/80 text-cyan-100 rounded-tl-sm shadow-md"
+                              : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-tr-sm shadow-md shadow-emerald-500/20"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-3 text-[10px] opacity-75">
+                            <span className="font-bold">
+                              {isBot ? completedSession.coachName || selectedCoach.name : "You (Janitha)"}
+                            </span>
+                            {isBot && (
+                              <button
+                                onClick={() => speakText(turn.text, completedSession.language)}
+                                className="hover:text-cyan-300 transition-colors"
+                                title="Listen to this phrase"
+                              >
+                                <Volume2 className="w-3 h-3 text-cyan-300" />
+                              </button>
+                            )}
+                          </div>
+                          <p className="font-medium">{turn.text}</p>
+                        </div>
+                        {!isBot && (
+                          <div className="w-7 h-7 rounded-full overflow-hidden border border-emerald-400 shrink-0 mt-0.5 bg-slate-800">
+                            <img
+                              src="/images/janitha-avatar.jpg"
+                              alt="You"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+
+            {/* TAB 3: 🎯 CORRECTIONS & FORENSICS */}
+            {scorecardTab === "corrections" && (
+              <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 text-left space-y-2.5 relative z-10 max-h-72 overflow-y-auto animate-in fade-in duration-200">
+                {completedSession.correctionsList && completedSession.correctionsList.length > 0 ? (
+                  completedSession.correctionsList.map((c, cIdx) => (
+                    <div key={cIdx} className="p-3 rounded-2xl bg-slate-900 border border-slate-800 text-xs space-y-1.5 shadow-md">
+                      <div className="flex items-center gap-1.5 text-rose-300">
+                        <span className="font-bold">❌ You said:</span>
+                        <span className="line-through font-mono">"{c.original}"</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-emerald-300">
+                        <span className="font-bold">✅ Say instead:</span>
+                        <span className="font-bold">"{c.correction}"</span>
+                      </div>
+                      {c.explanation && (
+                        <p className="text-[11px] text-cyan-200/90 italic pl-1 border-l-2 border-cyan-500/50 py-0.5 mt-1">
+                          💡 {c.explanation}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-8 px-4 rounded-2xl bg-gradient-to-br from-emerald-950/50 via-slate-900 to-[#07131e] border border-emerald-500/40 text-center space-y-2">
+                    <Trophy className="w-8 h-8 text-amber-400 mx-auto fill-amber-400 drop-shadow-md animate-bounce" />
+                    <h4 className="text-sm font-black text-emerald-300">
+                      🏆 Flawless Spoken Delivery!
+                    </h4>
+                    <p className="text-xs text-slate-300 max-w-md mx-auto">
+                      Zero grammatical slips or pronunciation errors detected during this session. You spoke with clean syntax and natural native cadence!
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
