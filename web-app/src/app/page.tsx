@@ -5017,11 +5017,12 @@ export default function StudentWebApp() {
           </div>
           ) : activeTab === "dashboard" ? (
             /* ----------------------------------------------------------- */
-            /* TAB: 1:1 DASHBOARD VIEW (MATCHING THE SCREENSHOT EXACTLY)    */
+            /* TAB: 1:1 EXECUTIVE DASHBOARD + PRACTICE/VOCAB/GRAMMAR HUB   */
             /* ----------------------------------------------------------- */
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
+            <div className="space-y-6 w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch">
               {/* LEFT & CENTER MAIN COLUMN (8 cols of 12) */}
-              <div className="lg:col-span-8 space-y-6">
+              <div className="lg:col-span-8 flex flex-col justify-between gap-6">
                 {/* 1. HERO BANNER: Welcome Back Janitha! (Fully Visible Artwork & Centered Typography) */}
                 <div className="relative rounded-3xl overflow-hidden border border-blue-500/30 bg-[#0B132B] shadow-[0_20px_50px_rgba(30,58,138,0.3)] min-h-[250px] sm:min-h-[275px] lg:min-h-[290px] flex items-center justify-center p-6 sm:p-8">
                   {/* High Resolution Background Artwork (Full Robot on Left, Full Globe on Right, Clean Center) */}
@@ -5790,9 +5791,9 @@ export default function StudentWebApp() {
                     {/* Footer Stats Bar */}
                     <div className="pt-1.5 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-800/60 relative z-10">
                       <div className="flex items-center gap-2">
-                        <span>Total: <b className="text-white font-mono">48 Calls</b></span>
+                        <span>Total: <b className="text-white font-mono">{userSessions.length} Calls</b></span>
                         <span>•</span>
-                        <span className="text-amber-300 font-bold">+1,250 XP Today</span>
+                        <span className="text-amber-300 font-bold">{realAnalytics.totalXp.toLocaleString()} XP</span>
                       </div>
                       <div className="flex items-center gap-1 text-emerald-400 font-bold text-[9.5px]">
                         <Check className="w-3 h-3" />
@@ -5820,7 +5821,7 @@ export default function StudentWebApp() {
                             </span>
                           </div>
                           <span className="text-[10px] text-amber-300/90 font-medium">
-                            {totalXp.toLocaleString()} Total XP Earned
+                            {realAnalytics.totalXp.toLocaleString()} Real XP Earned
                           </span>
                         </div>
                       </div>
@@ -5900,7 +5901,7 @@ export default function StudentWebApp() {
 
                             {/* Badge Title */}
                             <span className="text-[10px] font-bold text-slate-200 mt-1.5 truncate max-w-[65px] group-hover:text-amber-300 transition-colors">
-                              {badge.title.split(" ")[0]}
+                              {badge.title.replace(/Gemini/gi, "Edge").split(" ")[0]}
                             </span>
 
                             {/* XP Pill */}
@@ -5933,7 +5934,7 @@ export default function StudentWebApp() {
               </div>
 
               {/* RIGHT COLUMN (4 cols in 12-col grid): Your Streak, Upcoming Lesson & Sprint Targets */}
-              <div className="lg:col-span-4 space-y-6">
+              <div className="lg:col-span-4 flex flex-col justify-between gap-6">
                 {/* 1. YOUR STREAK CARD (Ultra-Sleek Balanced Zero-Void Streak & VIP Hub) */}
                 <div
                   className={`p-5 rounded-3xl border relative overflow-hidden space-y-3.5 shadow-xl transition-all duration-300 ${
@@ -6204,54 +6205,69 @@ export default function StudentWebApp() {
                     </span>
                   </div>
 
-                  {/* Featured Coach on Duty Banner */}
-                  <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between gap-3 relative z-10">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="relative shrink-0">
-                        <img
-                          src="/images/coaches/sarah.jpg"
-                          alt="Coach Sarah Jenkins"
-                          className="w-10 h-10 rounded-xl object-cover border border-indigo-400/50 shadow-md"
-                        />
-                        <span className="absolute -bottom-1 -right-1 text-[11px] leading-none drop-shadow">
-                          🇺🇸
-                        </span>
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-xs text-white truncate">
-                            Coach Sarah Jenkins
-                          </span>
-                        </div>
-                        <span className="text-[9.5px] text-slate-400 block truncate font-medium">
-                          Warm & Patient • Master English Tutor
-                        </span>
-                      </div>
-                    </div>
+                  {/* Featured Coach on Duty Banner (Synced with Active Language) */}
+                  {(() => {
+                    const langCoach =
+                      selectedLanguage === "Japanese"
+                        ? COACHES.find((c) => c.id === "aoi") || COACHES[0]
+                        : selectedLanguage === "Korean"
+                        ? COACHES.find((c) => c.id === "kenji") || COACHES[0]
+                        : selectedLanguage === "Spanish"
+                        ? COACHES.find((c) => c.id === "alex") || COACHES[0]
+                        : COACHES[0];
+                    const flagEmoji =
+                      AVAILABLE_LANGUAGES.find((l) => l.name === selectedLanguage)?.emoji || "🇺🇸";
 
-                    {/* Live Audio Challenge Preview Button */}
-                    <button
-                      onClick={handleToggleChallengeAudio}
-                      title={isPlayingChallengeAudio ? "Stop Audio Briefing" : "Listen to Coach Sarah's Briefing"}
-                      className={`px-2 py-1 rounded-xl text-[9px] font-bold flex items-center gap-1 transition-all shrink-0 ${
-                        isPlayingChallengeAudio
-                          ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/40 animate-pulse"
-                          : "bg-slate-800 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30"
-                      }`}
-                    >
-                      {isPlayingChallengeAudio ? (
-                        <>
-                          <Pause className="w-3 h-3" />
-                          <span>Playing</span>
-                        </>
-                      ) : (
-                        <>
-                          <Volume2 className="w-3 h-3" />
-                          <span>Briefing 🔊</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
+                    return (
+                      <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between gap-3 relative z-10">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="relative shrink-0">
+                            <img
+                              src={langCoach.avatar}
+                              alt={`Coach ${langCoach.name}`}
+                              className="w-10 h-10 rounded-xl object-cover border border-indigo-400/50 shadow-md"
+                            />
+                            <span className="absolute -bottom-1 -right-1 text-[11px] leading-none drop-shadow">
+                              {flagEmoji}
+                            </span>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-xs text-white truncate">
+                                Coach {langCoach.name}
+                              </span>
+                            </div>
+                            <span className="text-[9.5px] text-slate-400 block truncate font-medium">
+                              {langCoach.tagline}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Live Audio Challenge Preview Button */}
+                        <button
+                          onClick={handleToggleChallengeAudio}
+                          title={isPlayingChallengeAudio ? "Stop Audio Briefing" : `Listen to Coach ${langCoach.name}'s Briefing`}
+                          className={`px-2 py-1 rounded-xl text-[9px] font-bold flex items-center gap-1 transition-all shrink-0 ${
+                            isPlayingChallengeAudio
+                              ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/40 animate-pulse"
+                              : "bg-slate-800 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30"
+                          }`}
+                        >
+                          {isPlayingChallengeAudio ? (
+                            <>
+                              <Pause className="w-3 h-3" />
+                              <span>Playing</span>
+                            </>
+                          ) : (
+                            <>
+                              <Volume2 className="w-3 h-3" />
+                              <span>Briefing 🔊</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })()}
 
                   {/* Challenge Mission Details (Synced with Main Selected Language) */}
                   <div className="space-y-2 p-3 rounded-2xl bg-indigo-950/30 border border-indigo-500/20 relative z-10">
@@ -6301,7 +6317,7 @@ export default function StudentWebApp() {
                 </div>
 
                 {/* 3. WEEKLY TARGETS & SPRINT TRACKER */}
-                <div className="p-5 rounded-3xl bg-[#111827] border border-slate-800/80 space-y-4">
+                <div className="p-5 rounded-3xl bg-[#111827] border border-slate-800/80 space-y-4 flex-1 flex flex-col justify-between">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Trophy className="w-4 h-4 text-amber-400" />
@@ -6383,6 +6399,318 @@ export default function StudentWebApp() {
                   </button>
                 </div>
               </div>
+            </div>
+
+            {/* FULL-WIDTH BOTTOM SHOWCASE: PRACTICE CALLS + VOCABULARY + GRAMMAR CALLING HUB */}
+            {(() => {
+              const langCallPool = topics.filter(
+                (t) => selectedLanguage === "All" || t.language.toLowerCase() === selectedLanguage.toLowerCase()
+              );
+              const featuredDashCalls = (langCallPool.length >= 3 ? langCallPool : topics).slice(0, 3);
+
+              const langVocabPool = FULL_VOCABULARY_CATALOG.filter(
+                (v) => v.language.toLowerCase() === selectedLanguage.toLowerCase()
+              );
+              const featuredDashVocab = (langVocabPool.length >= 3 ? langVocabPool : FULL_VOCABULARY_CATALOG).slice(0, 3);
+
+              const langGrammarPoolDash = FULL_GRAMMAR_CATALOG.filter(
+                (g) => g.language.toLowerCase() === selectedLanguage.toLowerCase()
+              );
+              const featuredDashGrammar = (langGrammarPoolDash.length >= 3 ? langGrammarPoolDash : FULL_GRAMMAR_CATALOG).slice(0, 3);
+
+              const speakDashPhrase = (id: string, text: string, langName: string) => {
+                if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+                window.speechSynthesis.cancel();
+                if (speakingVocabId === id) {
+                  setSpeakingVocabId(null);
+                  return;
+                }
+                const utter = new SpeechSynthesisUtterance(text);
+                const langCodeMap: Record<string, string> = {
+                  English: "en-US",
+                  Spanish: "es-ES",
+                  Japanese: "ja-JP",
+                  Korean: "ko-KR",
+                  Arabic: "ar-SA",
+                  Tamil: "ta-IN"
+                };
+                utter.lang = langCodeMap[langName] || "en-US";
+                utter.rate = 0.92;
+                utter.onend = () => setSpeakingVocabId(null);
+                utter.onerror = () => setSpeakingVocabId(null);
+                setSpeakingVocabId(id);
+                window.speechSynthesis.speak(utter);
+              };
+
+              return (
+                <div className="space-y-6 pt-2">
+                  {/* SECTION A: FEATURED LIVE VOICE CALLS DECK (3 LUXURY CALL CARDS) */}
+                  <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-[#0F1830] via-[#0C1324] to-[#080C18] border border-cyan-500/30 shadow-2xl space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-slate-950 flex items-center justify-center shadow-lg shadow-cyan-500/25 shrink-0">
+                          <PhoneCall className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="text-base font-black text-white">
+                              Featured {selectedLanguage} Practice Calls
+                            </h3>
+                            <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-400/35">
+                              {langCallPool.length} Scenarios Live
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-400">
+                            Jump directly into real-time {selectedLanguage} phone conversations powered by SpeakFlow Neural AI.
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("practice")}
+                        className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-cyan-400/50 text-cyan-300 font-bold text-xs flex items-center gap-1.5 self-start sm:self-auto transition-all"
+                      >
+                        <span>Explore All {langCallPool.length} {selectedLanguage} Calls</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {featuredDashCalls.map((topic) => (
+                        <div
+                          key={topic.id}
+                          className="p-4 sm:p-5 rounded-2xl bg-slate-950/75 border border-slate-800 hover:border-cyan-400/60 transition-all flex flex-col justify-between gap-3.5 group hover:-translate-y-0.5 shadow-lg"
+                        >
+                          <div className="space-y-2.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-lg shrink-0">
+                                  {topic.icon}
+                                </span>
+                                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-900 text-cyan-300 border border-slate-700 truncate">
+                                  {topic.category || "Roleplay"}
+                                </span>
+                              </div>
+                              <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0">
+                                +150 XP
+                              </span>
+                            </div>
+
+                            <h4 className="font-black text-sm text-white group-hover:text-cyan-300 transition-colors line-clamp-1">
+                              {topic.title}
+                            </h4>
+                            <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-2">
+                              {topic.scenario}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-800/80">
+                            <span className="text-[10px] font-mono text-slate-400">
+                              {topic.language} • {topic.level}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleInitiateCallPrompt(topic)}
+                              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-[11px] flex items-center gap-1.5 shadow-md shadow-cyan-500/20 transition-all hover:scale-[1.03]"
+                            >
+                              <PhoneCall className="w-3.5 h-3.5 fill-slate-950" />
+                              <span>Start Call →</span>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* SECTION B: DUAL-ENGINE VOCABULARY & GRAMMAR CALLING DECK */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                    {/* Left Card: Essential Vocabulary Speaking Cards -> Call Launch */}
+                    <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-[#0F2422] via-[#0E1826] to-[#0A101D] border border-emerald-500/35 shadow-xl flex flex-col justify-between space-y-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center">
+                            <BookOpen className="w-4.5 h-4.5" />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-black text-white">
+                              Essential {selectedLanguage} Vocabulary Drills
+                            </h3>
+                            <span className="text-[10px] text-emerald-300/85">
+                              Hear native audio &amp; use each phrase inside a live AI call
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("vocabulary")}
+                          className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 shrink-0"
+                        >
+                          All {FULL_VOCABULARY_CATALOG.length}+ Words →
+                        </button>
+                      </div>
+
+                      <div className="space-y-3">
+                        {featuredDashVocab.map((word) => {
+                          const isPlaying = speakingVocabId === `dash_v_${word.id}`;
+                          return (
+                            <div
+                              key={word.id}
+                              className="p-3.5 rounded-2xl bg-slate-950/75 border border-slate-800 hover:border-emerald-400/50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                            >
+                              <div className="min-w-0 space-y-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-black text-sm text-white">{word.word}</span>
+                                  <span className="text-[10px] font-mono text-cyan-300 bg-cyan-500/10 px-2 py-0.2 rounded">
+                                    {word.phonetic}
+                                  </span>
+                                  <span className="text-[9.5px] font-bold text-slate-400">{word.level}</span>
+                                </div>
+                                <p className="text-[11px] text-slate-300 line-clamp-1">{word.meaning}</p>
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => speakDashPhrase(`dash_v_${word.id}`, word.exampleTarget, word.language)}
+                                  className={`p-2 rounded-xl border transition-all ${
+                                    isPlaying
+                                      ? "bg-emerald-400 text-slate-950 border-emerald-300 animate-pulse"
+                                      : "bg-slate-900 hover:bg-slate-800 text-cyan-300 border-slate-700"
+                                  }`}
+                                  title="Listen to native pronunciation"
+                                >
+                                  <Volume2 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleInitiateCallPrompt({
+                                      id: `dash_vocab_call_${word.id}`,
+                                      title: `📖 Vocab Call: "${word.word}"`,
+                                      language: word.language,
+                                      level: word.level,
+                                      category: word.category,
+                                      subCategory: "Vocabulary Call",
+                                      icon: "📖",
+                                      scenario: `PRACTICE VOCABULARY PHRASE IN CONTEXT: Help the student naturally use "${word.word}" (${word.meaning}) during conversation. Example: "${word.exampleTarget}". Ask engaging questions prompting them to use it!`,
+                                      starterPrompt: `Let's practice using "${word.word}" in natural conversation! For example: "${word.exampleTarget}". Can you try using "${word.word}" in your own sentence now?`,
+                                      starterQuestions: [word.exampleTarget]
+                                    })
+                                  }
+                                  className="px-3 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-slate-950 border border-emerald-400/40 font-black text-[11px] flex items-center gap-1 transition-all"
+                                >
+                                  <PhoneCall className="w-3 h-3" />
+                                  <span>Use in Call</span>
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Right Card: Quick Grammar Pattern Repairs -> Live Guided Call */}
+                    <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-[#201436] via-[#111829] to-[#0A0F1D] border border-purple-500/35 shadow-xl flex flex-col justify-between space-y-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-400/40 text-purple-300 flex items-center justify-center">
+                            <GraduationCap className="w-4.5 h-4.5" />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-black text-white">
+                              Quick Grammar Repairs &amp; Call Drills
+                            </h3>
+                            <span className="text-[10px] text-purple-300/85">
+                              Fix high-frequency speaking slips in a guided live call
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("grammar")}
+                          className="text-[11px] font-bold text-purple-300 hover:text-purple-200 shrink-0"
+                        >
+                          Grammar Studio →
+                        </button>
+                      </div>
+
+                      <div className="space-y-3">
+                        {featuredDashGrammar.map((rule) => {
+                          const isPlaying = speakingVocabId === `dash_g_${rule.id}`;
+                          return (
+                            <div
+                              key={rule.id}
+                              className="p-3.5 rounded-2xl bg-slate-950/75 border border-slate-800 hover:border-purple-400/50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                            >
+                              <div className="min-w-0 space-y-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-black text-xs text-white truncate">{rule.title}</span>
+                                  <span className="text-[9.5px] font-bold px-2 py-0.2 rounded bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                                    {rule.language}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-[10.5px] flex-wrap">
+                                  <span className="line-through text-rose-300/85 truncate max-w-[190px]">
+                                    ❌ {rule.wrong}
+                                  </span>
+                                  <span className="text-emerald-300 font-bold truncate max-w-[220px]">
+                                    ✅ {rule.correct}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => speakDashPhrase(`dash_g_${rule.id}`, rule.correct, rule.language)}
+                                  className={`p-2 rounded-xl border transition-all ${
+                                    isPlaying
+                                      ? "bg-emerald-400 text-slate-950 border-emerald-300 animate-pulse"
+                                      : "bg-slate-900 hover:bg-slate-800 text-cyan-300 border-slate-700"
+                                  }`}
+                                  title="Listen to native form"
+                                >
+                                  <Volume2 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveGrammarDrillMeta({
+                                      ruleTitle: rule.title,
+                                      wrong: rule.wrong,
+                                      correct: rule.correct,
+                                      explanation: rule.rule,
+                                      similarExamples: [rule.correct, rule.tip]
+                                    });
+                                    handleInitiateCallPrompt({
+                                      id: `dash_grammar_call_${rule.id}`,
+                                      title: `🎯 Grammar Repair: ${rule.title}`,
+                                      language: rule.language,
+                                      level: rule.level,
+                                      category: "Targeted Grammar Drill",
+                                      subCategory: rule.category,
+                                      icon: "🎯",
+                                      scenario: `TARGETED GRAMMAR DRILL MODE: Focus exclusively on "${rule.title}". Avoid "${rule.wrong}"; use native form "${rule.correct}". Rule: ${rule.rule}. Ask engaging scenario questions requiring this exact structure!`,
+                                      starterPrompt: `Let's master ${rule.title}! Say "${rule.correct}" instead of "${rule.wrong}". Can you try using that natural phrasing in a quick sentence for me?`,
+                                      starterQuestions: [rule.correct]
+                                    });
+                                  }}
+                                  className="px-3 py-2 rounded-xl bg-purple-600/25 hover:bg-purple-600 text-purple-200 hover:text-white border border-purple-400/40 font-black text-[11px] flex items-center gap-1 transition-all"
+                                >
+                                  <PhoneCall className="w-3 h-3" />
+                                  <span>Drill in Call</span>
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
             </div>
           ) : activeTab === "practice" || activeTab === "conversation" ? (
             /* ----------------------------------------------------------- */
