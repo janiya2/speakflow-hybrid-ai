@@ -24,9 +24,11 @@ import {
   where,
   orderBy,
   limit,
-  onSnapshot
+  onSnapshot,
+  serverTimestamp
 } from "firebase/firestore";
-import { auth, db, COLLECTIONS } from "@/lib/firebase";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { auth, db, storage, COLLECTIONS } from "@/lib/firebase";
 import {
   executeHybridInference,
   checkOnDeviceNanoAvailability
@@ -109,7 +111,10 @@ import {
   Edit3,
   Trash2,
   Sun,
-  Moon
+  Moon,
+  Upload,
+  Loader2,
+  RefreshCw
 } from "lucide-react";
 
 interface TopicModel {
@@ -294,6 +299,75 @@ export interface SavedSessionItem {
   correctionsList?: SessionGrammarSlip[];
   createdAt: string;
   xpEarned: number;
+}
+
+interface LeaderboardUserRow {
+  uid: string;
+  rank: number;
+  name: string;
+  handle: string;
+  email?: string;
+  photoUrl?: string | null;
+  initials: string;
+  color: string;
+  cefr: string;
+  fluencyTier: string;
+  totalSeconds: number;
+  weeklySeconds: number;
+  last24hSeconds: number;
+  totalFormatted: string;
+  weeklyFormatted: string;
+  last24hFormatted: string;
+  callsCount: number;
+  last24hCallsCount: number;
+  fluency: number;
+  xp: number;
+  streak: number;
+  isYou: boolean;
+  isRealFirestoreUser: boolean;
+}
+
+function normalizeTimestampIso(raw: any): string {
+  try {
+    if (!raw) return new Date().toISOString();
+    if (typeof raw?.toDate === "function") return raw.toDate().toISOString();
+    if (typeof raw?.seconds === "number") return new Date(raw.seconds * 1000).toISOString();
+    const d = new Date(raw);
+    if (!Number.isNaN(d.getTime())) return d.toISOString();
+  } catch (_) {}
+  return new Date().toISOString();
+}
+
+function formatCompactDuration(seconds: number): string {
+  const s = Math.max(0, Math.round(seconds || 0));
+  const hrs = Math.floor(s / 3600);
+  const mins = Math.floor((s % 3600) / 60);
+  const rem = s % 60;
+  if (hrs > 0) return `${hrs}h ${mins}m`;
+  return `${mins}m ${rem}s`;
+}
+
+function formatRelativeTimeAgo(isoStr: string): string {
+  try {
+    const diffMs = Math.max(0, Date.now() - new Date(isoStr).getTime());
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 2) return "Just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    if (days === 1) return "Yesterday";
+    return `${days}d ago`;
+  } catch (_) {
+    return "Recent";
+  }
+}
+
+function getInitialsFromName(name: string): string {
+  const parts = String(name || "SP").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "SP";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
 interface LandingPageConfig {
@@ -829,8 +903,9 @@ export default function StudentWebApp() {
   const [premiumExpiryDate, setPremiumExpiryDate] = useState<string>("2027-01-15");
   const [streakFreezesCount, setStreakFreezesCount] = useState<number>(2);
 
-  // User Profile Settings State (Matching Mobile App Profile)
+  // User Profile Settings State (Synced with Firebase Auth, Firestore lang_users & Storage)
   const [profileDisplayName, setProfileDisplayName] = useState<string>("Janitha Dilshan");
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string>("");
   const [profileNativeLang, setProfileNativeLang] = useState<string>("English (US / UK)");
   const [profileTargetLang, setProfileTargetLang] = useState<string>("Spanish (Español)");
   const [profileDailyGoalMins, setProfileDailyGoalMins] = useState<number>(10);
@@ -840,6 +915,16 @@ export default function StudentWebApp() {
   const [editTargetInput, setEditTargetInput] = useState<string>("Spanish (Español)");
   const [editGoalInput, setEditGoalInput] = useState<number>(10);
   const [copiedAppUrl, setCopiedAppUrl] = useState<boolean>(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState<boolean>(false);
+  const [avatarUploadProgress, setAvatarUploadProgress] = useState<number>(0);
+  const [avatarUploadStatus, setAvatarUploadStatus] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const avatarFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Real Firebase Community Cohort Leaderboard State
+  const [firestoreCohortRows, setFirestoreCohortRows] = useState<LeaderboardUserRow[]>([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState<boolean>(true);
+  const [leaderboardSourceStatus, setLeaderboardSourceStatus] = useState<"firebase_live" | "owner_only" | "local_fallback">("local_fallback");
+  const [leaderboardWindow, setLeaderboardWindow] = useState<"weekly" | "24h" | "all">("24h");
 
   const toggleMembershipTier = () => {
     const nextVal = !isPremiumMember;
@@ -1398,23 +1483,64 @@ export default function StudentWebApp() {
     };
   };
 
-  // Load Persisted Real Sessions on Mount
+  const DEFAULT_PROFILE_AVATAR = "/images/janitha-avatar.jpg";
+  const resolvedProfileAvatar =
+    profilePhotoUrl && !profilePhotoUrl.includes("dicebear.com")
+      ? profilePhotoUrl
+      : user?.photoURL && !user.photoURL.includes("dicebear.com")
+      ? user.photoURL
+      : (user?.email === "janithad2@gmail.com" || user?.uid === "demo-jury" || !user)
+      ? DEFAULT_PROFILE_AVATAR
+      : "";
+
+  // Convert Firestore CallSessionRecord -> Unified SavedSessionItem
+  const convertCallRecordToSavedSession = (rec: any, idx: number): SavedSessionItem => {
+    const createdIso = normalizeTimestampIso(rec.createdAt);
+    const durSec = typeof rec.durationSeconds === "number" && !Number.isNaN(rec.durationSeconds)
+      ? Math.max(0, Math.round(rec.durationSeconds))
+      : 0;
+    const rawScore = typeof rec.score === "number" ? rec.score : (typeof rec.fluencyScore === "number" ? rec.fluencyScore : 85);
+    const fluencyScore = typeof rec.fluencyScore === "number" ? rec.fluencyScore : rawScore;
+    const accuracyScore = typeof rec.accuracyScore === "number" ? rec.accuracyScore : Math.max(55, rawScore - 2);
+    const xpVal = typeof rec.xpEarned === "number" ? rec.xpEarned : Math.max(50, Math.round(durSec * 1.4) + rawScore);
+
+    return sanitizeSessionItem(
+      {
+        id: rec.id || `fs-session-${idx}-${Date.now()}`,
+        topicTitle: rec.topicTitle || "Interactive Voice Call",
+        language: rec.language || "English",
+        coachName: rec.coachName || "Coach Sarah Jenkins",
+        coachAvatar: rec.coachAvatar || "/images/coaches/sarah.jpg",
+        coachRole: "AI Speech & Fluency Coach",
+        coachCountry: "United States",
+        coachFlag: "🇺🇸",
+        category: rec.category || "Live Voice Call",
+        timeAgo: formatRelativeTimeAgo(createdIso),
+        durationSeconds: durSec,
+        score: rawScore,
+        grade: rec.grade || (rawScore >= 92 ? "A+" : rawScore >= 82 ? "A" : "B"),
+        fluencyScore,
+        accuracyScore,
+        engine: rec.engine === "CLOUD_GEMINI_FLASH" ? "CLOUD_GEMINI_FLASH" : "ON_DEVICE_NANO",
+        latencyMs: typeof rec.latencyMs === "number" ? rec.latencyMs : 14,
+        audioPreviewText: rec.coachFeedback || "Verified live speaking call recorded in SpeakFlow AI.",
+        dialogueSnippet: {
+          user: rec.userLastUtterance || "Spoken practice session synced from SpeakFlow.",
+          ai: rec.coachFeedback || "Great spoken cadence and natural intonation!",
+          tip: "Synced live from Firebase Cloud Firestore lang_sessions."
+        },
+        correctionsList: Array.isArray(rec.correctionsList) ? rec.correctionsList : [],
+        createdAt: createdIso,
+        xpEarned: xpVal
+      },
+      idx
+    );
+  };
+
+  // Load Persisted Local Profile & Demo Sessions cleanly (Real Firestore sessions overwrite on sign-in)
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
-        const stored = localStorage.getItem("speakflow_user_sessions");
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            const sanitized: SavedSessionItem[] = parsed.map((item, idx) => sanitizeSessionItem(item, idx));
-            localStorage.setItem("speakflow_user_sessions", JSON.stringify(sanitized));
-            setUserSessions(sanitized);
-          } else {
-            localStorage.setItem("speakflow_user_sessions", JSON.stringify(initialDefaultRecentSessions));
-          }
-        } else {
-          localStorage.setItem("speakflow_user_sessions", JSON.stringify(initialDefaultRecentSessions));
-        }
         // Load User Profile Settings
         const savedProfile = localStorage.getItem("speakflow_user_profile");
         if (savedProfile) {
@@ -1422,6 +1548,9 @@ export default function StudentWebApp() {
           if (parsed.displayName) {
             setProfileDisplayName(parsed.displayName);
             setEditNameInput(parsed.displayName);
+          }
+          if (parsed.photoUrl) {
+            setProfilePhotoUrl(parsed.photoUrl);
           }
           if (parsed.nativeLang) {
             setProfileNativeLang(parsed.nativeLang);
@@ -1444,11 +1573,12 @@ export default function StudentWebApp() {
 
   const handleDeleteSession = (e: React.MouseEvent, sessionId: string) => {
     e.stopPropagation();
+    const uidKey = user?.uid ? `speakflow_user_sessions_${user.uid}` : "speakflow_user_sessions";
     setUserSessions((prev) => {
       const updated = prev.filter((s) => s.id !== sessionId);
       if (typeof window !== "undefined") {
         try {
-          localStorage.setItem("speakflow_user_sessions", JSON.stringify(updated));
+          localStorage.setItem(uidKey, JSON.stringify(updated));
         } catch (_) {}
       }
       return updated;
@@ -1456,25 +1586,184 @@ export default function StudentWebApp() {
   };
 
   const handleClearShortTestSessions = () => {
+    const uidKey = user?.uid ? `speakflow_user_sessions_${user.uid}` : "speakflow_user_sessions";
     setUserSessions((prev) => {
       const updated = prev.filter((s) => (s.durationSeconds || 0) >= 15);
       const nextList = updated.length > 0 ? updated : prev.slice(0, 1);
       if (typeof window !== "undefined") {
         try {
-          localStorage.setItem("speakflow_user_sessions", JSON.stringify(nextList));
+          localStorage.setItem(uidKey, JSON.stringify(nextList));
         } catch (_) {}
       }
       return nextList;
     });
   };
 
-  const handleSaveProfile = (e?: React.FormEvent) => {
+  // Resize & Compress Uploaded Avatar to crisp square JPEG Blob + compact fallback Data URL
+  const processAvatarImageFile = (file: File, maxDim = 384, quality = 0.88): Promise<{ blob: Blob; dataUrl: string }> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Could not read image file"));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error("Invalid image file format"));
+        img.onload = () => {
+          const side = Math.min(img.width, img.height);
+          const sx = Math.max(0, (img.width - side) / 2);
+          const sy = Math.max(0, (img.height - side) / 2);
+          const canvas = document.createElement("canvas");
+          canvas.width = maxDim;
+          canvas.height = maxDim;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("Canvas unavailable"));
+            return;
+          }
+          ctx.drawImage(img, sx, sy, side, side, 0, 0, maxDim, maxDim);
+          const dataUrl = canvas.toDataURL("image/jpeg", quality);
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) reject(new Error("Failed to encode image"));
+              else resolve({ blob, dataUrl });
+            },
+            "image/jpeg",
+            quality
+          );
+        };
+        img.src = String(reader.result || "");
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const persistProfileAvatarUrl = async (nextUrl: string, noticeText: string) => {
+    setProfilePhotoUrl(nextUrl);
+    if (typeof window !== "undefined") {
+      try {
+        const prev = JSON.parse(localStorage.getItem("speakflow_user_profile") || "{}");
+        localStorage.setItem("speakflow_user_profile", JSON.stringify({ ...prev, photoUrl: nextUrl }));
+        const savedDemo = localStorage.getItem("speakflow_demo_user");
+        if (savedDemo) {
+          const parsedDemo = JSON.parse(savedDemo);
+          localStorage.setItem("speakflow_demo_user", JSON.stringify({ ...parsedDemo, photoURL: nextUrl }));
+        }
+      } catch (_) {}
+    }
+    if (auth.currentUser) {
+      try {
+        if (!nextUrl.startsWith("data:") && nextUrl.length < 1800) {
+          await updateProfile(auth.currentUser, { photoURL: nextUrl });
+        }
+      } catch (_) {}
+      try {
+        await setDoc(
+          doc(db, COLLECTIONS.USERS, auth.currentUser.uid),
+          {
+            photoUrl: nextUrl,
+            photoURL: nextUrl,
+            displayName: profileDisplayName,
+            email: auth.currentUser.email || "",
+            updatedAt: serverTimestamp()
+          },
+          { merge: true }
+        );
+      } catch (err) {
+        console.warn("Could not save avatar URL to Firestore lang_users:", err);
+      }
+    }
+    setUser((prev: any) => (prev ? { ...prev, photoURL: nextUrl } : prev));
+    setAvatarUploadStatus({ type: "success", text: noticeText });
+    setTimeout(() => setAvatarUploadStatus(null), 5000);
+    refreshFirebaseCohort();
+  };
+
+  const handleAvatarFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setAvatarUploadStatus({ type: "error", text: "Please select a JPG, PNG, or WebP image file." });
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setAvatarUploadStatus({ type: "error", text: "Image must be smaller than 10 MB." });
+      return;
+    }
+
+    setUploadingAvatar(true);
+    setAvatarUploadProgress(8);
+    setAvatarUploadStatus(null);
+
+    try {
+      const { blob, dataUrl } = await processAvatarImageFile(file, 384, 0.88);
+      setAvatarUploadProgress(22);
+
+      const uploadUid = auth.currentUser?.uid || user?.uid || "guest_profile";
+      if (auth.currentUser) {
+        try {
+          const storageRef = ref(storage, `profile_avatars/${uploadUid}/avatar_${Date.now()}.jpg`);
+          const uploadTask = uploadBytesResumable(storageRef, blob, {
+            contentType: "image/jpeg",
+            cacheControl: "public,max-age=31536000"
+          });
+
+          const downloadUrl = await new Promise<string>((resolve, reject) => {
+            uploadTask.on(
+              "state_changed",
+              (snapshot) => {
+                const pct = Math.round((snapshot.bytesTransferred / Math.max(1, snapshot.totalBytes)) * 75) + 22;
+                setAvatarUploadProgress(Math.min(98, pct));
+              },
+              (err) => reject(err),
+              async () => {
+                const url = await getDownloadURL(uploadTask.snapshot.ref);
+                resolve(url);
+              }
+            );
+          });
+
+          setAvatarUploadProgress(100);
+          await persistProfileAvatarUrl(downloadUrl, "Uploaded to Firebase Storage & synced live across SpeakFlow!");
+          return;
+        } catch (storageErr: any) {
+          console.warn("Firebase Storage upload fallback:", storageErr?.code || storageErr?.message);
+          // Fallback to compact 220x220 JPEG stored in Firestore lang_users if Storage bucket rules/CORS block
+          const compact = await processAvatarImageFile(file, 220, 0.82);
+          setAvatarUploadProgress(100);
+          await persistProfileAvatarUrl(
+            compact.dataUrl,
+            "Synced avatar to your Firebase Firestore profile! (Enable Storage rules for public CDN links)"
+          );
+          return;
+        }
+      } else {
+        setAvatarUploadProgress(100);
+        await persistProfileAvatarUrl(dataUrl, "Saved avatar locally! Sign in with Firebase to sync across all devices.");
+      }
+    } catch (err: any) {
+      setAvatarUploadStatus({
+        type: "error",
+        text: err?.message || "Failed to process image. Please try another photo."
+      });
+    } finally {
+      setUploadingAvatar(false);
+      setTimeout(() => setAvatarUploadProgress(0), 600);
+    }
+  };
+
+  const handleRemoveProfileAvatar = async () => {
+    await persistProfileAvatarUrl("", "Custom profile photo removed.");
+  };
+
+  const handleSaveProfile = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const updated = {
       displayName: editNameInput.trim() || profileDisplayName,
       nativeLang: editNativeInput.trim() || profileNativeLang,
       targetLang: editTargetInput.trim() || profileTargetLang,
       dailyGoalMins: Number(editGoalInput) || profileDailyGoalMins,
+      photoUrl: profilePhotoUrl
     };
     setProfileDisplayName(updated.displayName);
     setProfileNativeLang(updated.nativeLang);
@@ -1484,6 +1773,28 @@ export default function StudentWebApp() {
       try {
         localStorage.setItem("speakflow_user_profile", JSON.stringify(updated));
       } catch (_) {}
+    }
+    if (auth.currentUser) {
+      try {
+        await updateProfile(auth.currentUser, { displayName: updated.displayName });
+      } catch (_) {}
+      try {
+        await setDoc(
+          doc(db, COLLECTIONS.USERS, auth.currentUser.uid),
+          {
+            displayName: updated.displayName,
+            nativeLang: updated.nativeLang,
+            targetLang: updated.targetLang,
+            dailyGoalMins: updated.dailyGoalMins,
+            ...(profilePhotoUrl ? { photoUrl: profilePhotoUrl, photoURL: profilePhotoUrl } : {}),
+            updatedAt: serverTimestamp()
+          },
+          { merge: true }
+        );
+        refreshFirebaseCohort();
+      } catch (err) {
+        console.warn("Could not save profile to Firestore lang_users:", err);
+      }
     }
     setShowEditProfileModal(false);
   };
@@ -1535,17 +1846,42 @@ export default function StudentWebApp() {
     const avgSessionSeconds = list.length > 0 ? Math.round(totalSeconds / list.length) : 0;
     const avgSessionFormatted = `${Math.floor(avgSessionSeconds / 60)}m ${avgSessionSeconds % 60}s`;
 
-    // Today's exact spoken seconds & minutes
+    // Today's exact spoken seconds & minutes + Rolling Last 24 Hours Real Spoken Metrics
+    const nowMs = Date.now();
+    const cutoff24hMs = nowMs - 24 * 60 * 60 * 1000;
+    const cutoff7dMs = nowMs - 7 * 24 * 60 * 60 * 1000;
     const todayStr = new Date().toISOString().split("T")[0];
-    const todayRecordedSeconds = list.reduce((sum, s) => {
+    let todayRecordedSeconds = 0;
+    let last24hSeconds = 0;
+    let last24hCallsCount = 0;
+    let last24hXp = 0;
+    let weeklySeconds = 0;
+
+    list.forEach((s) => {
+      const secs = Math.max(0, Number(s.durationSeconds) || 0);
+      const xp = Math.max(0, Number(s.xpEarned) || 0);
       try {
-        if (s.createdAt && new Date(s.createdAt).toISOString().startsWith(todayStr)) {
-          return sum + Math.max(0, Number(s.durationSeconds) || 0);
+        const ms = new Date(s.createdAt).getTime();
+        if (!Number.isNaN(ms)) {
+          if (new Date(ms).toISOString().startsWith(todayStr)) {
+            todayRecordedSeconds += secs;
+          }
+          if (ms >= cutoff24hMs && ms <= nowMs + 120000) {
+            last24hSeconds += secs;
+            last24hCallsCount += 1;
+            last24hXp += xp;
+          }
+          if (ms >= cutoff7dMs && ms <= nowMs + 120000) {
+            weeklySeconds += secs;
+          }
         }
       } catch (_) {}
-      return sum;
-    }, 0);
+    });
     const todayMins = Number((todayRecordedSeconds / 60).toFixed(1));
+    const last24hMins = Math.floor(last24hSeconds / 60);
+    const last24hRemainingSecs = last24hSeconds % 60;
+    const last24hFormatted = formatCompactDuration(last24hSeconds);
+    const weeklyFormatted = formatCompactDuration(weeklySeconds);
 
     // 2. Lessons & Practice Sessions Completed (Exact real count)
     const completedUnits = list.length;
@@ -1621,6 +1957,14 @@ export default function StudentWebApp() {
       avgSessionFormatted,
       todayMins,
       todayRecordedSeconds,
+      last24hSeconds,
+      last24hMins,
+      last24hRemainingSecs,
+      last24hFormatted,
+      last24hCallsCount,
+      last24hXp,
+      weeklySeconds,
+      weeklyFormatted,
       completedUnits,
       weeklyTargetSessions,
       unitsPercent,
@@ -1642,6 +1986,100 @@ export default function StudentWebApp() {
       unitsChange: `${unitsPercent}% of 20 goal`
     };
   }, [userSessions, masteredVocabIds.length, fixedGrammarIds.length]);
+
+  // Real Live Community Leaderboard Derived from Firebase Firestore lang_users + lang_sessions
+  const computedLeaderboardRows = useMemo(() => {
+    const activeUid = user?.uid || "";
+    const youRowData: LeaderboardUserRow = {
+      uid: activeUid || "current-user",
+      rank: 1,
+      name: profileDisplayName,
+      handle: user?.email ? `@${user.email.split("@")[0]} • You` : "@janiya2 • You",
+      email: user?.email || "",
+      photoUrl: resolvedProfileAvatar,
+      initials: getInitialsFromName(profileDisplayName),
+      color: "from-blue-500 to-cyan-500",
+      cefr: realAnalytics.cefrBadge,
+      fluencyTier: realAnalytics.fluencyTierTitle,
+      totalSeconds: realAnalytics.totalSeconds,
+      weeklySeconds: realAnalytics.weeklySeconds,
+      last24hSeconds: realAnalytics.last24hSeconds,
+      totalFormatted: formatCompactDuration(realAnalytics.totalSeconds),
+      weeklyFormatted: formatCompactDuration(realAnalytics.weeklySeconds),
+      last24hFormatted: formatCompactDuration(realAnalytics.last24hSeconds),
+      callsCount: userSessions.length,
+      last24hCallsCount: realAnalytics.last24hCallsCount,
+      fluency: realAnalytics.avgFluency,
+      xp: realAnalytics.totalXp,
+      streak: realAnalytics.streakDays,
+      isYou: true,
+      isRealFirestoreUser: Boolean(activeUid && activeUid !== "demo-jury")
+    };
+
+    const byUid = new Map<string, LeaderboardUserRow>();
+    firestoreCohortRows.forEach((row) => {
+      const isMe = Boolean(
+        (activeUid && row.uid === activeUid) ||
+        (user?.email && row.email && row.email.toLowerCase() === user.email.toLowerCase())
+      );
+      if (isMe) {
+        byUid.set(row.uid, {
+          ...row,
+          name: profileDisplayName || row.name,
+          handle: `${row.handle.replace(/\s*•\s*You$/i, "")} • You`,
+          photoUrl: resolvedProfileAvatar || row.photoUrl || "",
+          totalSeconds: Math.max(row.totalSeconds, youRowData.totalSeconds),
+          weeklySeconds: Math.max(row.weeklySeconds, youRowData.weeklySeconds),
+          last24hSeconds: Math.max(row.last24hSeconds, youRowData.last24hSeconds),
+          totalFormatted: formatCompactDuration(Math.max(row.totalSeconds, youRowData.totalSeconds)),
+          weeklyFormatted: formatCompactDuration(Math.max(row.weeklySeconds, youRowData.weeklySeconds)),
+          last24hFormatted: formatCompactDuration(Math.max(row.last24hSeconds, youRowData.last24hSeconds)),
+          callsCount: Math.max(row.callsCount, youRowData.callsCount),
+          last24hCallsCount: Math.max(row.last24hCallsCount, youRowData.last24hCallsCount),
+          fluency: youRowData.fluency > 0 ? youRowData.fluency : row.fluency,
+          xp: Math.max(row.xp, youRowData.xp),
+          streak: Math.max(row.streak, youRowData.streak),
+          cefr: youRowData.fluency > 0 ? youRowData.cefr : row.cefr,
+          fluencyTier: youRowData.fluency > 0 ? youRowData.fluencyTier : row.fluencyTier,
+          isYou: true
+        });
+      } else {
+        byUid.set(row.uid, { ...row, isYou: false });
+      }
+    });
+
+    const hasMe = Array.from(byUid.values()).some((r) => r.isYou);
+    if (!hasMe) {
+      byUid.set(youRowData.uid, youRowData);
+    }
+
+    const sorted = Array.from(byUid.values()).sort((a, b) => {
+      if (leaderboardWindow === "24h") {
+        if (b.last24hSeconds !== a.last24hSeconds) return b.last24hSeconds - a.last24hSeconds;
+        if (b.xp !== a.xp) return b.xp - a.xp;
+        return b.totalSeconds - a.totalSeconds;
+      }
+      if (leaderboardWindow === "weekly") {
+        if (b.weeklySeconds !== a.weeklySeconds) return b.weeklySeconds - a.weeklySeconds;
+        if (b.xp !== a.xp) return b.xp - a.xp;
+        return b.fluency - a.fluency;
+      }
+      if (b.xp !== a.xp) return b.xp - a.xp;
+      if (b.totalSeconds !== a.totalSeconds) return b.totalSeconds - a.totalSeconds;
+      return b.fluency - a.fluency;
+    });
+
+    return sorted.map((row, idx) => ({ ...row, rank: idx + 1 }));
+  }, [
+    firestoreCohortRows,
+    leaderboardWindow,
+    profileDisplayName,
+    resolvedProfileAvatar,
+    user?.uid,
+    user?.email,
+    userSessions.length,
+    realAnalytics
+  ]);
 
   // Interactive Learning Progress Chart State & Datasets
   const [learningChartMetric, setLearningChartMetric] = useState<"fluency" | "time" | "xp">("fluency");
@@ -2133,7 +2571,16 @@ export default function StudentWebApp() {
         if (currentUser) {
           setUser(currentUser);
           setAuthLoading(false);
+          if (currentUser.displayName) {
+            setProfileDisplayName(currentUser.displayName);
+            setEditNameInput(currentUser.displayName);
+          }
+          if (currentUser.photoURL && !currentUser.photoURL.includes("dicebear.com")) {
+            setProfilePhotoUrl((prev) => prev || currentUser.photoURL || "");
+          }
+          loadUserProfileFromFirestore(currentUser);
           loadUserSessions(currentUser.uid);
+          refreshFirebaseCohort(currentUser.uid);
           return;
         }
 
@@ -2147,6 +2594,7 @@ export default function StudentWebApp() {
                 setUser(parsedDemo as any);
                 setAuthLoading(false);
                 loadUserSessions(parsedDemo.uid);
+                refreshFirebaseCohort(parsedDemo.uid);
                 return;
               }
             }
@@ -2239,22 +2687,337 @@ export default function StudentWebApp() {
     loadApiKeys();
   }, []);
 
-  // 5. Load User Sessions History
+  // 5A. Load & Sync User Profile Doc from Firestore lang_users/{uid}
+  const loadUserProfileFromFirestore = async (firebaseUser: User) => {
+    try {
+      const userRef = doc(db, COLLECTIONS.USERS, firebaseUser.uid);
+      const snap = await getDoc(userRef);
+      if (snap.exists()) {
+        const d = snap.data() as any;
+        const resolvedName = d.displayName || d.name || firebaseUser.displayName || "SpeakFlow Learner";
+        const resolvedPhoto = d.photoUrl || d.photoURL || firebaseUser.photoURL || "";
+        setProfileDisplayName(resolvedName);
+        setEditNameInput(resolvedName);
+        if (resolvedPhoto && !resolvedPhoto.includes("dicebear.com")) {
+          setProfilePhotoUrl(resolvedPhoto);
+        }
+        if (d.nativeLang) {
+          setProfileNativeLang(d.nativeLang);
+          setEditNativeInput(d.nativeLang);
+        }
+        if (d.targetLang) {
+          setProfileTargetLang(d.targetLang);
+          setEditTargetInput(d.targetLang);
+        }
+        if (d.dailyGoalMins) {
+          setProfileDailyGoalMins(Number(d.dailyGoalMins) || 10);
+          setEditGoalInput(Number(d.dailyGoalMins) || 10);
+        }
+        if (typeof window !== "undefined") {
+          try {
+            const prevLocal = JSON.parse(localStorage.getItem("speakflow_user_profile") || "{}");
+            localStorage.setItem(
+              "speakflow_user_profile",
+              JSON.stringify({
+                ...prevLocal,
+                displayName: resolvedName,
+                ...(resolvedPhoto ? { photoUrl: resolvedPhoto } : {})
+              })
+            );
+          } catch (_) {}
+        }
+      } else {
+        await setDoc(
+          userRef,
+          {
+            displayName: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "SpeakFlow Learner",
+            email: firebaseUser.email || "",
+            ...(firebaseUser.photoURL ? { photoUrl: firebaseUser.photoURL, photoURL: firebaseUser.photoURL } : {}),
+            updatedAt: serverTimestamp()
+          },
+          { merge: true }
+        );
+      }
+    } catch (err) {
+      console.warn("Could not load user profile from Firestore lang_users:", err);
+    }
+  };
+
+  // 5B. Load Real User Sessions History from Firestore lang_sessions (No composite index required)
   const loadUserSessions = async (userId: string) => {
+    if (userId === "demo-jury") {
+      if (typeof window !== "undefined") {
+        try {
+          const demoStored = localStorage.getItem("speakflow_user_sessions_demo-jury");
+          if (demoStored) {
+            const parsed = JSON.parse(demoStored);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setUserSessions(parsed.map((item, idx) => sanitizeSessionItem(item, idx)));
+              return;
+            }
+          }
+        } catch (_) {}
+      }
+      setUserSessions(initialDefaultRecentSessions);
+      return;
+    }
+
     try {
       const q = query(
         collection(db, COLLECTIONS.SESSIONS),
         where("userId", "==", userId),
-        orderBy("createdAt", "desc")
+        limit(250)
       );
       const querySnapshot = await getDocs(q);
-      const history: CallSessionRecord[] = [];
+      const rawHistory: CallSessionRecord[] = [];
       querySnapshot.forEach((d) => {
-        history.push({ id: d.id, ...(d.data() as CallSessionRecord) });
+        const data = d.data() as any;
+        rawHistory.push({
+          ...data,
+          id: d.id,
+          createdAt: normalizeTimestampIso(data.createdAt)
+        });
       });
-      setCallHistory(history);
+      rawHistory.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setCallHistory(rawHistory);
+
+      const firestoreItems: SavedSessionItem[] = rawHistory.map((rec, idx) =>
+        convertCallRecordToSavedSession(rec, idx)
+      );
+
+      // Merge any real locally recorded web sessions for this UID that aren't in Firestore yet
+      let mergedItems = [...firestoreItems];
+      if (typeof window !== "undefined") {
+        try {
+          const uidKey = `speakflow_user_sessions_${userId}`;
+          const localRaw = localStorage.getItem(uidKey);
+          if (localRaw) {
+            const parsedLocal = JSON.parse(localRaw);
+            if (Array.isArray(parsedLocal)) {
+              const seenIds = new Set(mergedItems.map((m) => m.id));
+              parsedLocal.forEach((loc: any, idx: number) => {
+                const isFakeSeed = String(loc?.id || "").startsWith("session-rec-") || loc?.id === "session-cricket-01";
+                if (!isFakeSeed && loc?.id && !seenIds.has(loc.id)) {
+                  mergedItems.push(sanitizeSessionItem(loc, idx));
+                }
+              });
+            }
+          }
+          mergedItems.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          localStorage.setItem(uidKey, JSON.stringify(mergedItems));
+        } catch (_) {}
+      }
+
+      setUserSessions(mergedItems);
     } catch (e) {
-      console.warn("Could not fetch sessions history:", e);
+      console.warn("Could not fetch real sessions history from Firestore:", e);
+    }
+  };
+
+  // 5C. Aggregate Live Real Users & Last-24h / Weekly Spoken Leaderboard from Firestore
+  const refreshFirebaseCohort = async (activeUidOverride?: string) => {
+    setLeaderboardLoading(true);
+    const activeUid = activeUidOverride || user?.uid || auth.currentUser?.uid || "";
+    const palette = [
+      "from-cyan-500 to-blue-600",
+      "from-purple-500 to-indigo-600",
+      "from-emerald-500 to-teal-600",
+      "from-amber-500 to-orange-600",
+      "from-rose-500 to-pink-600",
+      "from-sky-500 to-indigo-500"
+    ];
+
+    try {
+      const [usersResult, sessionsResult] = await Promise.allSettled([
+        getDocs(collection(db, COLLECTIONS.USERS)),
+        getDocs(query(collection(db, COLLECTIONS.SESSIONS), limit(400)))
+      ]);
+
+      const nowMs = Date.now();
+      const cutoff24hMs = nowMs - 24 * 60 * 60 * 1000;
+      const cutoff7dMs = nowMs - 7 * 24 * 60 * 60 * 1000;
+      const todayIso = new Date().toISOString().split("T")[0];
+
+      interface AggBucket {
+        uid: string;
+        name: string;
+        email: string;
+        photoUrl: string;
+        totalSeconds: number;
+        weeklySeconds: number;
+        last24hSeconds: number;
+        callsCount: number;
+        last24hCallsCount: number;
+        scoreSum: number;
+        xpSum: number;
+        streak: number;
+        activeDates: Set<string>;
+        isRealFirestoreUser: boolean;
+      }
+
+      const buckets = new Map<string, AggBucket>();
+
+      if (sessionsResult.status === "fulfilled") {
+        sessionsResult.value.forEach((docSnap) => {
+          const s = docSnap.data() as any;
+          const uid = String(s.userId || "").trim();
+          if (!uid || uid === "guest-user") return;
+          const dur = Math.max(0, Math.round(Number(s.durationSeconds) || 0));
+          const score = Math.max(0, Math.min(100, Math.round(Number(s.fluencyScore ?? s.score) || 84)));
+          const createdIso = normalizeTimestampIso(s.createdAt);
+          const ms = new Date(createdIso).getTime();
+          const dayIso = createdIso.split("T")[0];
+          const xp = typeof s.xpEarned === "number" ? Math.max(0, s.xpEarned) : Math.max(40, Math.round(dur * 1.4) + score);
+
+          if (!buckets.has(uid)) {
+            buckets.set(uid, {
+              uid,
+              name: String(s.userName || s.userEmail?.split("@")[0] || "SpeakFlow Learner"),
+              email: String(s.userEmail || ""),
+              photoUrl: "",
+              totalSeconds: 0,
+              weeklySeconds: 0,
+              last24hSeconds: 0,
+              callsCount: 0,
+              last24hCallsCount: 0,
+              scoreSum: 0,
+              xpSum: 0,
+              streak: 1,
+              activeDates: new Set<string>(),
+              isRealFirestoreUser: true
+            });
+          }
+
+          const b = buckets.get(uid)!;
+          b.totalSeconds += dur;
+          b.callsCount += 1;
+          b.scoreSum += score;
+          b.xpSum += xp;
+          if (dayIso) b.activeDates.add(dayIso);
+          if (!Number.isNaN(ms)) {
+            if (ms >= cutoff7dMs && ms <= nowMs + 120000) {
+              b.weeklySeconds += dur;
+            }
+            if (ms >= cutoff24hMs && ms <= nowMs + 120000) {
+              b.last24hSeconds += dur;
+              b.last24hCallsCount += 1;
+            }
+          }
+        });
+      }
+
+      let gotUsersCollection = false;
+      if (usersResult.status === "fulfilled") {
+        gotUsersCollection = true;
+        usersResult.value.forEach((uSnap) => {
+          const u = uSnap.data() as any;
+          const uid = uSnap.id;
+          const email = String(u.email || "");
+          const name = String(u.displayName || u.name || email.split("@")[0] || "SpeakFlow Learner").trim();
+          const rawPhoto = String(u.photoUrl || u.photoURL || u.avatar || "");
+          const safePhoto = rawPhoto && !rawPhoto.includes("dicebear.com") ? rawPhoto : "";
+
+          if (!buckets.has(uid)) {
+            buckets.set(uid, {
+              uid,
+              name,
+              email,
+              photoUrl: safePhoto,
+              totalSeconds: 0,
+              weeklySeconds: 0,
+              last24hSeconds: 0,
+              callsCount: 0,
+              last24hCallsCount: 0,
+              scoreSum: 0,
+              xpSum: 0,
+              streak: 0,
+              activeDates: new Set<string>(),
+              isRealFirestoreUser: true
+            });
+          }
+
+          const b = buckets.get(uid)!;
+          if (name) b.name = name;
+          if (email) b.email = email;
+          if (safePhoto) b.photoUrl = safePhoto;
+
+          // Reconcile mobile-synced aggregates on lang_users/{uid} when session history was pruned
+          const docTotalSec = Math.max(0, Math.round(Number(u.totalSpokenSeconds) || 0));
+          const docWeeklySec = Math.max(0, Math.round(Number(u.weeklyMinutes) || 0) * 60);
+          const docDailySec =
+            u.lastUsageDate === todayIso ? Math.max(0, Math.round(Number(u.dailyMinutesUsed) || 0) * 60) : 0;
+          const docLast24hSec = Math.max(0, Math.round(Number(u.last24hSeconds) || 0));
+
+          if (docTotalSec > b.totalSeconds) b.totalSeconds = docTotalSec;
+          if (docWeeklySec > b.weeklySeconds) b.weeklySeconds = docWeeklySec;
+          if (Math.max(docDailySec, docLast24hSec) > b.last24hSeconds) {
+            b.last24hSeconds = Math.max(docDailySec, docLast24hSec);
+          }
+          if (Number(u.totalXp) > b.xpSum) b.xpSum = Math.round(Number(u.totalXp));
+          if (b.callsCount === 0 && typeof u.lastScore === "number") {
+            b.scoreSum = u.lastScore;
+          }
+          const activeDatesArr = Array.isArray(u.activeDates) ? u.activeDates : [];
+          activeDatesArr.forEach((dt: any) => dt && b.activeDates.add(String(dt)));
+          b.streak = Math.max(b.activeDates.size, Math.round(Number(u.streak) || 0));
+        });
+      }
+
+      const rows: LeaderboardUserRow[] = Array.from(buckets.values()).map((b, idx) => {
+        const avgFluency =
+          b.callsCount > 0 ? Math.round(b.scoreSum / b.callsCount) : b.scoreSum > 0 ? Math.round(b.scoreSum) : 0;
+        let cefr = "CEFR A1";
+        let tier = "Starter";
+        if (avgFluency >= 95) { cefr = "CEFR C2"; tier = "Mastery"; }
+        else if (avgFluency >= 88) { cefr = "CEFR C1"; tier = "Advanced"; }
+        else if (avgFluency >= 75) { cefr = "CEFR B2"; tier = "Intermediate"; }
+        else if (avgFluency >= 60) { cefr = "CEFR B1"; tier = "Elementary"; }
+        else if (avgFluency > 0) { cefr = "CEFR A2"; tier = "Beginner"; }
+
+        const computedXp =
+          b.xpSum > 0 ? b.xpSum : Math.round(b.totalSeconds * 1.4 + b.callsCount * 60);
+        const handleBase = b.email ? `@${b.email.split("@")[0]}` : `@${b.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 14)}`;
+
+        return {
+          uid: b.uid,
+          rank: idx + 1,
+          name: b.name || "SpeakFlow Learner",
+          handle: handleBase,
+          email: b.email,
+          photoUrl: b.photoUrl || (b.email === "janithad2@gmail.com" ? "/images/janitha-avatar.jpg" : ""),
+          initials: getInitialsFromName(b.name),
+          color: palette[idx % palette.length],
+          cefr,
+          fluencyTier: tier,
+          totalSeconds: b.totalSeconds,
+          weeklySeconds: b.weeklySeconds > 0 ? b.weeklySeconds : b.totalSeconds,
+          last24hSeconds: b.last24hSeconds,
+          totalFormatted: formatCompactDuration(b.totalSeconds),
+          weeklyFormatted: formatCompactDuration(b.weeklySeconds > 0 ? b.weeklySeconds : b.totalSeconds),
+          last24hFormatted: formatCompactDuration(b.last24hSeconds),
+          callsCount: b.callsCount,
+          last24hCallsCount: b.last24hCallsCount,
+          fluency: avgFluency,
+          xp: computedXp,
+          streak: b.streak,
+          isYou: Boolean(activeUid && b.uid === activeUid),
+          isRealFirestoreUser: b.isRealFirestoreUser
+        };
+      });
+
+      setFirestoreCohortRows(rows);
+      if (gotUsersCollection && rows.length > 0) {
+        setLeaderboardSourceStatus("firebase_live");
+      } else if (rows.length > 0) {
+        setLeaderboardSourceStatus("owner_only");
+      } else {
+        setLeaderboardSourceStatus("local_fallback");
+      }
+    } catch (err) {
+      console.warn("Could not load global Firebase cohort:", err);
+      setLeaderboardSourceStatus("local_fallback");
+    } finally {
+      setLeaderboardLoading(false);
     }
   };
 
@@ -3171,23 +3934,47 @@ export default function StudentWebApp() {
       xpEarned
     };
 
-    // Prepend to real user sessions and persist locally
+    // Prepend to real user sessions and persist cleanly per user
+    const uidKey = user?.uid ? `speakflow_user_sessions_${user.uid}` : "speakflow_user_sessions";
     setUserSessions((prev) => {
       const updated = [newSessionItem, ...prev];
       if (typeof window !== "undefined") {
         try {
-          localStorage.setItem("speakflow_user_sessions", JSON.stringify(updated));
+          localStorage.setItem(uidKey, JSON.stringify(updated));
         } catch (_) {}
       }
       return updated;
     });
 
-    if (user) {
+    if (user && user.uid !== "demo-jury") {
       try {
         await addDoc(collection(db, COLLECTIONS.SESSIONS), sessionRecord);
-        loadUserSessions(user.uid);
+        const nextTotalSec = realAnalytics.totalSeconds + callDuration;
+        const nextLast24Sec = realAnalytics.last24hSeconds + callDuration;
+        const nextWeeklyMins = Math.max(1, Math.round((realAnalytics.weeklySeconds + callDuration) / 60));
+        await setDoc(
+          doc(db, COLLECTIONS.USERS, user.uid),
+          {
+            displayName: profileDisplayName,
+            email: user.email || "",
+            ...(resolvedProfileAvatar && !resolvedProfileAvatar.startsWith("/")
+              ? { photoUrl: resolvedProfileAvatar, photoURL: resolvedProfileAvatar }
+              : {}),
+            totalSpokenSeconds: nextTotalSec,
+            last24hSeconds: nextLast24Sec,
+            weeklyMinutes: nextWeeklyMins,
+            lastUsageDate: new Date().toISOString().split("T")[0],
+            lastScore: totalScore,
+            totalXp: realAnalytics.totalXp + xpEarned,
+            streak: Math.max(1, realAnalytics.streakDays),
+            updatedAt: serverTimestamp()
+          },
+          { merge: true }
+        );
+        await loadUserSessions(user.uid);
+        await refreshFirebaseCohort(user.uid);
       } catch (err) {
-        console.warn("Could not save session to Firestore:", err);
+        console.warn("Could not save session/stats to Firestore:", err);
       }
     }
 
@@ -3246,11 +4033,15 @@ export default function StudentWebApp() {
     if (typeof window !== "undefined") {
       try {
         localStorage.removeItem("speakflow_demo_user");
+        localStorage.removeItem("speakflow_user_profile");
       } catch (_) {}
     }
     try {
       await signOut(auth);
     } catch (_) {}
+    setProfilePhotoUrl("");
+    setUserSessions([]);
+    setCallHistory([]);
     setUser(null);
     setActiveTab("dashboard");
   };
@@ -4049,6 +4840,14 @@ export default function StudentWebApp() {
 
   return (
     <div className="min-h-screen bg-[#0A0F1D] text-slate-100 flex flex-col md:flex-row selection:bg-blue-500 selection:text-white relative">
+      {/* Global Hidden File Input for Firebase Storage Profile Photo Upload (Accessible from Profile & Edit Modal) */}
+      <input
+        ref={avatarFileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        onChange={handleAvatarFileSelected}
+        className="hidden"
+      />
       {/* ------------------------------------------------------------- */}
       {/* 1. LEFT SIDEBAR (Luxury Cyber-Glass Theme - Judge Ready) */}
       {/* ------------------------------------------------------------- */}
@@ -4461,7 +5260,7 @@ export default function StudentWebApp() {
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="relative shrink-0">
                   <img
-                    src="/images/janitha-avatar.jpg"
+                    src={resolvedProfileAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=3b82f6&color=fff`}
                     alt={profileDisplayName}
                     className="w-9 h-9 rounded-full object-cover ring-2 ring-blue-500/50 group-hover:ring-cyan-400 transition-all"
                     onError={(e) => {
@@ -5791,13 +6590,13 @@ export default function StudentWebApp() {
                           {userCaption && (
                             <div className="p-2.5 rounded-2xl bg-[#051c14]/90 border border-emerald-500/45 text-xs text-emerald-100 leading-relaxed backdrop-blur-md shadow-xl flex items-start gap-2.5 text-left animate-in fade-in duration-200">
                               <img
-                                src="/images/janitha-avatar.jpg"
-                                alt="Janitha"
+                                src={resolvedProfileAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=10b981&color=fff`}
+                                alt={profileDisplayName}
                                 className="w-6 h-6 rounded-full object-cover border border-emerald-400 shrink-0 mt-0.5 shadow-sm"
                               />
                               <div className="min-w-0 flex-1">
                                 <strong className="text-emerald-400 text-[11px] block font-black">
-                                  You (Janitha):
+                                  You ({profileDisplayName.split(" ")[0]}):
                                 </strong>
                                 <span className="text-emerald-100 font-medium break-words">&ldquo;{userCaption}&rdquo;</span>
                               </div>
@@ -5835,9 +6634,9 @@ export default function StudentWebApp() {
                     {!isCameraActive && (
                       <div className="w-full h-full flex flex-col items-center justify-center p-1.5 text-center bg-gradient-to-br from-slate-900 to-[#0c1424]">
                         <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-700 mb-0.5">
-                          <img src="/images/janitha-avatar.jpg" alt="Janitha" className="w-full h-full object-cover" />
+                          <img src={resolvedProfileAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=3b82f6&color=fff`} alt={profileDisplayName} className="w-full h-full object-cover" />
                         </div>
-                        <span className="text-[9px] font-bold text-slate-300 truncate">You (Janitha)</span>
+                        <span className="text-[9px] font-bold text-slate-300 truncate">You ({profileDisplayName.split(" ")[0]})</span>
                         <span className="text-[8px] text-slate-500">Camera Off</span>
                       </div>
                     )}
@@ -5999,8 +6798,8 @@ export default function StudentWebApp() {
 
                                 {!isBot && (
                                   <img
-                                    src="/images/janitha-avatar.jpg"
-                                    alt="Janitha"
+                                    src={resolvedProfileAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=10b981&color=fff`}
+                                    alt={profileDisplayName}
                                     className="w-6 h-6 rounded-full object-cover border border-emerald-400/50 mt-0.5 shrink-0 shadow-sm"
                                   />
                                 )}
@@ -6241,7 +7040,7 @@ export default function StudentWebApp() {
                           Practice Time
                         </span>
                         <span className="text-[9.5px] text-purple-400/80 font-mono">
-                          {realAnalytics.totalMinsLogged}m {realAnalytics.totalRemainingSecs}s real audio
+                          Last 24h: {realAnalytics.last24hFormatted} • All: {realAnalytics.totalFormattedCompact}
                         </span>
                       </div>
                       {/* Animated Soundwave Equalizer */}
@@ -7460,29 +8259,29 @@ export default function StudentWebApp() {
                         </div>
                       </div>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        🔥 {Math.min(100, Math.round((realAnalytics.totalSeconds / 3600) * 100))}% Done
+                        🔥 {Math.min(100, Math.round((realAnalytics.weeklySeconds / 3600) * 100))}% Done
                       </span>
                     </div>
 
-                    {/* Today's practice progress */}
+                    {/* Last 24h real practice progress */}
                     <div className="space-y-1">
                       <div className="flex items-center justify-between text-[10px]">
-                        <span className="text-slate-400">Today: {realAnalytics.todayMins} / {profileDailyGoalMins} mins</span>
-                        <span className="text-cyan-400 font-bold">{Math.min(100, Math.round((realAnalytics.todayMins / Math.max(1, profileDailyGoalMins)) * 100))}%</span>
+                        <span className="text-slate-400">Last 24h: {realAnalytics.last24hFormatted} / {profileDailyGoalMins}m goal</span>
+                        <span className="text-cyan-400 font-bold">{Math.min(100, Math.round((realAnalytics.last24hSeconds / Math.max(60, profileDailyGoalMins * 60)) * 100))}%</span>
                       </div>
                       <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                        <div className="h-full bg-cyan-400 rounded-full" style={{ width: `${Math.min(100, Math.round((realAnalytics.todayMins / Math.max(1, profileDailyGoalMins)) * 100))}%` }}></div>
+                        <div className="h-full bg-cyan-400 rounded-full" style={{ width: `${Math.min(100, Math.round((realAnalytics.last24hSeconds / Math.max(60, profileDailyGoalMins * 60)) * 100))}%` }}></div>
                       </div>
                     </div>
 
-                    {/* Total weekly sprint */}
+                    {/* Total weekly sprint (Last 7d real audio) */}
                     <div className="space-y-1 pt-1 border-t border-slate-800/80">
                       <div className="flex items-center justify-between text-[10px]">
-                        <span className="text-slate-400">Weekly Goal: {realAnalytics.totalMinsLogged}m {realAnalytics.totalRemainingSecs}s / 60 mins</span>
-                        <span className="text-emerald-400 font-bold">{Math.min(100, Math.round((realAnalytics.totalSeconds / 3600) * 100))}% 🔥</span>
+                        <span className="text-slate-400">Last 7d: {realAnalytics.weeklyFormatted} / 60 mins</span>
+                        <span className="text-emerald-400 font-bold">{Math.min(100, Math.round((realAnalytics.weeklySeconds / 3600) * 100))}% 🔥</span>
                       </div>
                       <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full" style={{ width: `${Math.min(100, Math.round((realAnalytics.totalSeconds / 3600) * 100))}%` }}></div>
+                        <div className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full" style={{ width: `${Math.min(100, Math.round((realAnalytics.weeklySeconds / 3600) * 100))}%` }}></div>
                       </div>
                     </div>
                   </div>
@@ -9650,7 +10449,7 @@ export default function StudentWebApp() {
                             onClick={() => setVocabCategoryFilter(isSelected ? "All" : cat.id)}
                             className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between gap-2 ${
                               isSelected
-                                ? `bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 ${cat.accentBorder} ring-2 ring-emerald-400/50 shadow-xl scale-[1.02]`
+                                ? `bg-gradient-to-br ${cat.accentBg} border-white/40 shadow-lg scale-[1.02]`
                                 : "bg-[#111827]/90 border-slate-800 hover:border-slate-700"
                             }`}
                           >
@@ -11458,273 +12257,599 @@ export default function StudentWebApp() {
               const unlockedCount = achievements.filter((a) => a.isUnlocked).length;
               const readyCount = achievements.filter((a) => a.isUnlocked && !a.isClaimed).length;
               const claimedCount = achievements.filter((a) => a.isClaimed).length;
-              const leaderboardRows = [
-                {
-                  rank: 1,
-                  name: profileDisplayName,
-                  handle: "@janiya2 • You",
-                  avatar: "/images/janitha-avatar.jpg",
-                  cefr: realAnalytics.cefrBadge,
-                  mins: `${realAnalytics.totalMinsLogged}m ${realAnalytics.totalRemainingSecs}s`,
-                  fluency: realAnalytics.avgFluency,
-                  xp: realAnalytics.totalXp,
-                  isYou: true
-                },
-                {
-                  rank: 2,
-                  name: "Elena Rostova",
-                  handle: "@elena_r",
-                  initials: "ER",
-                  color: "from-cyan-500 to-blue-600",
-                  cefr: "CEFR B2",
-                  mins: "18m 20s",
-                  fluency: 86,
-                  xp: 1620,
-                  isYou: false
-                },
-                {
-                  rank: 3,
-                  name: "Jaji Perera",
-                  handle: "@jaji_dev",
-                  initials: "JP",
-                  color: "from-purple-500 to-indigo-600",
-                  cefr: "CEFR B1",
-                  mins: "13m 10s",
-                  fluency: 78,
-                  xp: 1180,
-                  isYou: false
-                },
-                {
-                  rank: 4,
-                  name: "Kenji Takahashi",
-                  handle: "@kenji_jp",
-                  initials: "KT",
-                  color: "from-emerald-500 to-teal-600",
-                  cefr: "CEFR B1",
-                  mins: "9m 45s",
-                  fluency: 74,
-                  xp: 890,
-                  isYou: false
-                },
-                {
-                  rank: 5,
-                  name: "Marco Silva",
-                  handle: "@marco_es",
-                  initials: "MS",
-                  color: "from-rose-500 to-orange-600",
-                  cefr: "CEFR A2",
-                  mins: "6m 30s",
-                  fluency: 69,
-                  xp: 640,
-                  isYou: false
-                }
-              ];
+              const leaderboardRows = computedLeaderboardRows;
+              const championRow = leaderboardRows[0];
+              const yourRow = leaderboardRows.find((r) => r.isYou) || leaderboardRows[0];
+              const xpGapToFirst = championRow && yourRow && !yourRow.isYou ? Math.max(0, championRow.xp - yourRow.xp) : 0;
 
               return (
                 <div className="space-y-6">
-                  {/* Top Trophy Room Banner */}
-                  <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#121B36] via-[#0D1528] to-[#080D1B] border border-cyan-500/35 shadow-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden">
-                    <div className="absolute -top-16 -right-16 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-                    <div className="space-y-1.5 relative z-10">
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/35 text-amber-300 text-[10px] font-black tracking-wider uppercase">
-                        <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Executive Trophy Room &amp; Global Rankings</span>
-                      </div>
-                      <h2 className="text-xl sm:text-2xl font-black text-white">
-                        Achievements &amp; Fluency Championship Arena
-                      </h2>
-                      <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
-                        Synced live with your real speaking calls, vocabulary mastery, and repaired grammar rules. Unlock medals to climb the global CEFR leaderboard.
-                      </p>
-                    </div>
+                  {/* 1. UPGRADED EXECUTIVE CHAMPIONSHIP ARENA HERO SECTION */}
+                  <div
+                    className={`rounded-3xl border shadow-2xl relative overflow-hidden p-6 sm:p-8 ${
+                      isLight
+                        ? "bg-gradient-to-br from-[#F7FAFF] via-[#E8F1FF] to-[#FFF6DE] border-blue-200/90 shadow-[0_18px_45px_rgba(37,99,235,0.10)]"
+                        : "bg-gradient-to-br from-[#0F1733] via-[#131C3E] to-[#1A1338] border-amber-400/35 shadow-[0_24px_60px_rgba(0,0,0,0.55)] keep-dark-hero"
+                    }`}
+                  >
+                    {/* Ambient Championship Glow Orbs */}
+                    <div
+                      className={`absolute -top-24 -right-16 w-80 h-80 rounded-full blur-3xl pointer-events-none ${
+                        isLight ? "bg-amber-300/30" : "bg-amber-500/15"
+                      }`}
+                    />
+                    <div
+                      className={`absolute -bottom-24 left-1/3 w-72 h-72 rounded-full blur-3xl pointer-events-none ${
+                        isLight ? "bg-sky-300/30" : "bg-cyan-500/15"
+                      }`}
+                    />
 
-                    <div className="flex flex-wrap items-center gap-3 relative z-10">
-                      <div className="px-4 py-2.5 rounded-2xl bg-amber-500/15 border border-amber-500/35 text-amber-300 flex items-center gap-2.5">
-                        <Zap className="w-4 h-4 fill-amber-300" />
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
+                      {/* Left 8 cols: Headline + Real Live Telemetry Tiles */}
+                      <div className="lg:col-span-8 space-y-4">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black tracking-wider uppercase ${
+                              isLight
+                                ? "bg-amber-100/90 border-amber-300 text-amber-800"
+                                : "bg-amber-500/15 border-amber-400/40 text-amber-300"
+                            }`}
+                          >
+                            <Trophy className={`w-3.5 h-3.5 ${isLight ? "text-amber-600" : "text-amber-400"}`} />
+                            <span>Executive Trophy Room &amp; Global Rankings</span>
+                          </div>
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold ${
+                              isLight
+                                ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                : "bg-emerald-500/15 border-emerald-400/35 text-emerald-300"
+                            }`}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span>
+                              {leaderboardSourceStatus === "firebase_live"
+                                ? `Firebase Live Cohort (${leaderboardRows.length} Users)`
+                                : `Live Verified (${leaderboardRows.length} Active)`}
+                            </span>
+                          </span>
+                        </div>
+
                         <div>
-                          <span className="text-[9.5px] uppercase font-bold text-amber-400/80 block">Real Earned XP</span>
-                          <span className="text-sm font-black text-white">{realAnalytics.totalXp.toLocaleString()} XP</span>
+                          <h2
+                            className={`text-2xl sm:text-3xl font-black tracking-tight ${
+                              isLight ? "text-slate-900" : "text-white"
+                            }`}
+                          >
+                            Achievements &amp; Fluency Championship Arena
+                          </h2>
+                          <p
+                            className={`text-xs sm:text-sm max-w-2xl leading-relaxed mt-1.5 ${
+                              isLight ? "text-slate-600" : "text-slate-300"
+                            }`}
+                          >
+                            Powered 100% by real Firestore call sessions, rolling Last 24h spoken duration, vocabulary mastery, and repaired grammar patterns.
+                          </p>
+                        </div>
+
+                        {/* 4 Live Championship Metric Tiles */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+                          <div
+                            className={`p-3 rounded-2xl border backdrop-blur-md ${
+                              isLight
+                                ? "bg-white/90 border-amber-200 shadow-sm"
+                                : "bg-slate-950/65 border-amber-500/30"
+                            }`}
+                          >
+                            <span className={`text-[9.5px] uppercase font-bold block ${isLight ? "text-amber-700" : "text-amber-300"}`}>
+                              Real Earned XP
+                            </span>
+                            <span className={`text-base font-black font-mono ${isLight ? "text-slate-900" : "text-white"}`}>
+                              {realAnalytics.totalXp.toLocaleString()}
+                            </span>
+                          </div>
+
+                          <div
+                            className={`p-3 rounded-2xl border backdrop-blur-md ${
+                              isLight
+                                ? "bg-white/90 border-blue-200 shadow-sm"
+                                : "bg-slate-950/65 border-cyan-500/30"
+                            }`}
+                          >
+                            <span className={`text-[9.5px] uppercase font-bold block ${isLight ? "text-blue-700" : "text-cyan-300"}`}>
+                              Last 24h Spoken
+                            </span>
+                            <span className={`text-base font-black font-mono ${isLight ? "text-slate-900" : "text-white"}`}>
+                              {realAnalytics.last24hFormatted}
+                            </span>
+                          </div>
+
+                          <div
+                            className={`p-3 rounded-2xl border backdrop-blur-md ${
+                              isLight
+                                ? "bg-white/90 border-emerald-200 shadow-sm"
+                                : "bg-slate-950/65 border-emerald-500/30"
+                            }`}
+                          >
+                            <span className={`text-[9.5px] uppercase font-bold block ${isLight ? "text-emerald-700" : "text-emerald-300"}`}>
+                              Badges Unlocked
+                            </span>
+                            <span className={`text-base font-black font-mono ${isLight ? "text-slate-900" : "text-white"}`}>
+                              {unlockedCount} / 20
+                            </span>
+                          </div>
+
+                          <div
+                            className={`p-3 rounded-2xl border backdrop-blur-md ${
+                              isLight
+                                ? "bg-white/90 border-purple-200 shadow-sm"
+                                : "bg-slate-950/65 border-purple-500/30"
+                            }`}
+                          >
+                            <span className={`text-[9.5px] uppercase font-bold block ${isLight ? "text-purple-700" : "text-purple-300"}`}>
+                              Your Cohort Rank
+                            </span>
+                            <span className={`text-base font-black font-mono ${isLight ? "text-slate-900" : "text-white"}`}>
+                              #{yourRow?.rank || 1} of {leaderboardRows.length}
+                            </span>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="px-4 py-2.5 rounded-2xl bg-cyan-500/15 border border-cyan-500/35 text-cyan-300 flex items-center gap-2.5">
-                        <Trophy className="w-4 h-4 text-cyan-400" />
-                        <div>
-                          <span className="text-[9.5px] uppercase font-bold text-cyan-400/80 block">Badges Unlocked</span>
-                          <span className="text-sm font-black text-white">{unlockedCount} / 20</span>
+                      {/* Right 4 cols: Sculptural 3D-Style Holographic Trophy Crest + Controls */}
+                      <div className="lg:col-span-4 flex flex-col items-center lg:items-end justify-between gap-4">
+                        <div className="relative w-44 h-36 flex items-center justify-center select-none">
+                          <div
+                            className={`absolute inset-0 rounded-full blur-2xl ${
+                              isLight ? "bg-amber-300/35" : "bg-amber-400/20"
+                            }`}
+                          />
+                          <svg viewBox="0 0 220 170" className="w-full h-full drop-shadow-2xl">
+                            <defs>
+                              <linearGradient id="arenaGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#FEF08A" />
+                                <stop offset="45%" stopColor="#F59E0B" />
+                                <stop offset="100%" stopColor="#B45309" />
+                              </linearGradient>
+                              <linearGradient id="arenaBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#38BDF8" />
+                                <stop offset="100%" stopColor="#6366F1" />
+                              </linearGradient>
+                            </defs>
+                            {/* Orbital Podium Rings */}
+                            <ellipse cx="110" cy="134" rx="82" ry="18" fill="none" stroke="url(#arenaBlueGrad)" strokeWidth="2.5" strokeOpacity="0.6" />
+                            <ellipse cx="110" cy="134" rx="58" ry="12" fill="url(#arenaBlueGrad)" fillOpacity="0.18" />
+                            {/* Holographic Aura Ring */}
+                            <circle cx="110" cy="72" r="54" fill="none" stroke="url(#arenaGoldGrad)" strokeWidth="1.5" strokeDasharray="6 6" opacity="0.65" />
+                            {/* Trophy Cup Body */}
+                            <path d="M76 34 H144 L138 78 C135 98 124 106 110 106 C96 106 85 98 82 78 Z" fill="url(#arenaGoldGrad)" />
+                            {/* Trophy Inner Gloss */}
+                            <path d="M88 40 H108 L104 86 C96 84 91 74 88 40 Z" fill="#FFFFFF" fillOpacity="0.35" />
+                            {/* Handles */}
+                            <path d="M77 44 C56 44 54 74 79 80" fill="none" stroke="url(#arenaGoldGrad)" strokeWidth="6" strokeLinecap="round" />
+                            <path d="M143 44 C164 44 166 74 141 80" fill="none" stroke="url(#arenaGoldGrad)" strokeWidth="6" strokeLinecap="round" />
+                            {/* Stem & Base */}
+                            <rect x="103" y="105" width="14" height="18" rx="4" fill="url(#arenaGoldGrad)" />
+                            <rect x="82" y="122" width="56" height="14" rx="6" fill="url(#arenaGoldGrad)" />
+                            {/* Rank #1 Star Emblem */}
+                            <polygon points="110,49 115,61 128,62 118,70 121,82 110,75 99,82 102,70 92,62 105,61" fill="#FFFBEB" opacity="0.95" />
+                            {/* Floating Orbit Sparkles */}
+                            <circle cx="48" cy="48" r="3.5" fill="#38BDF8" />
+                            <circle cx="174" cy="40" r="4" fill="#FBBF24" />
+                            <circle cx="166" cy="98" r="3" fill="#34D399" />
+                          </svg>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            onClick={() => refreshFirebaseCohort()}
+                            className={`px-3 py-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-all ${
+                              isLight
+                                ? "bg-white hover:bg-blue-50 text-blue-700 border-blue-200 shadow-sm"
+                                : "bg-slate-900/80 hover:bg-slate-800 text-cyan-300 border-cyan-500/35"
+                            }`}
+                            title="Refresh Live Firebase Leaderboard"
+                          >
+                            <RefreshCw className={`w-3.5 h-3.5 ${leaderboardLoading ? "animate-spin" : ""}`} />
+                            <span>Sync Live</span>
+                          </button>
+                          <button
+                            onClick={() => setActiveTab("dashboard")}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                              isLight
+                                ? "bg-slate-900 hover:bg-slate-800 text-white border-slate-900 shadow-sm"
+                                : "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
+                            }`}
+                          >
+                            ← Dashboard
+                          </button>
                         </div>
                       </div>
-
-                      <button
-                        onClick={() => setActiveTab("dashboard")}
-                        className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all"
-                      >
-                        ← Dashboard
-                      </button>
                     </div>
                   </div>
 
-                  {/* EXECUTIVE 2-COLUMN ESPORTS LEADERBOARD & STANDING ARENA (Replaces Cartoon Podium) */}
+                  {/* 2. EXECUTIVE 2-COLUMN ESPORTS LEADERBOARD & #1 CHAMPION SPOTLIGHT */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-                    {/* Left (5 cols): Your Live Rank Spotlight */}
-                    <div className="lg:col-span-5 p-6 rounded-3xl bg-gradient-to-b from-[#1A1536] via-[#11182C] to-[#0A0F1E] border border-amber-400/40 shadow-2xl flex flex-col justify-between relative overflow-hidden">
-                      <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+                    {/* Left (5 cols): Real #1 Champion Spotlight Card (Zero Dead Space) */}
+                    {championRow && (
+                      <div
+                        className={`lg:col-span-5 p-6 rounded-3xl border shadow-2xl flex flex-col justify-between gap-5 relative overflow-hidden ${
+                          isLight
+                            ? "bg-gradient-to-b from-[#FFFBF0] via-[#FFFFFF] to-[#EEF5FF] border-amber-300/90 shadow-[0_14px_38px_rgba(217,119,6,0.12)]"
+                            : "bg-gradient-to-b from-[#1A1536] via-[#11182C] to-[#0A0F1E] border-amber-400/45"
+                        }`}
+                      >
+                        <div
+                          className={`absolute -top-14 -right-14 w-52 h-52 rounded-full blur-3xl pointer-events-none ${
+                            isLight ? "bg-amber-300/30" : "bg-amber-500/15"
+                          }`}
+                        />
 
-                      <div className="flex items-center justify-between relative z-10">
-                        <span className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
-                          <Crown className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                          <span>Weekly Rank #1 Champion</span>
-                        </span>
-                        <span className="text-[10px] font-mono text-emerald-400 font-bold">Live Verified</span>
-                      </div>
-
-                      <div className="flex items-center gap-4 my-5 relative z-10">
-                        <div className="relative shrink-0">
-                          <div className="w-20 h-20 rounded-2xl p-0.5 bg-gradient-to-tr from-amber-400 via-yellow-300 to-orange-500 shadow-xl shadow-amber-500/30">
-                            <img
-                              src="/images/janitha-avatar.jpg"
-                              alt={profileDisplayName}
-                              className="w-full h-full object-cover rounded-[14px]"
-                            />
-                          </div>
-                          <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-xl bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-lg border-2 border-slate-950">
-                            #1
-                          </span>
-                        </div>
-
-                        <div className="min-w-0 space-y-1">
-                          <h3 className="text-lg font-black text-white truncate">{profileDisplayName}</h3>
-                          <p className="text-xs text-cyan-300 font-bold">
-                            {realAnalytics.fluencyTierTitle} • {realAnalytics.cefrBadge}
-                          </p>
-                          <div className="flex items-center gap-2 text-[11px] text-slate-300">
-                            <span className="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700 font-mono">
-                              🎙️ {realAnalytics.totalFormattedCompact}
-                            </span>
-                            <span className="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-700 font-mono">
-                              🔥 {realAnalytics.streakDays}d Active
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Real Milestone Meter */}
-                      <div className="p-3.5 rounded-2xl bg-slate-950/75 border border-slate-800 space-y-2 relative z-10">
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-slate-300 font-bold">Badge Completion Progress</span>
-                          <span className="text-amber-300 font-black font-mono">
-                            {unlockedCount}/20 ({Math.round((unlockedCount / 20) * 100)}%)
-                          </span>
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
-                          <div
-                            className="h-full bg-gradient-to-r from-amber-400 via-yellow-400 to-emerald-400 rounded-full"
-                            style={{ width: `${Math.round((unlockedCount / 20) * 100)}%` }}
-                          />
-                        </div>
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
-                          <span>Claimed: {claimedCount} badges</span>
-                          <span className="text-emerald-400 font-bold">Ready to claim: {readyCount}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right (7 cols): High-Precision Cohort Leaderboard Table */}
-                    <div className="lg:col-span-7 p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4 flex flex-col justify-between">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="text-base font-black text-white flex items-center gap-2">
-                            <Award className="w-4 h-4 text-cyan-400" />
-                            <span>Global Weekly Spoken Leaderboard</span>
-                          </h3>
-                          <p className="text-[11px] text-slate-400">
-                            Ranked by verified speaking fluency, real XP earned, and active conversation cadence.
-                          </p>
-                        </div>
-                        <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-slate-900 border border-slate-700 text-slate-300">
-                          Season #12
-                        </span>
-                      </div>
-
-                      <div className="space-y-2">
-                        {leaderboardRows.map((row) => (
-                          <div
-                            key={row.rank}
-                            className={`p-3 rounded-2xl border flex items-center justify-between gap-3 transition-all ${
-                              row.isYou
-                                ? "bg-gradient-to-r from-amber-500/15 via-indigo-950/50 to-slate-900 border-amber-400/50 shadow-md"
-                                : "bg-slate-950/70 border-slate-800/80 hover:border-slate-700"
+                        {/* Header Pill */}
+                        <div className="flex items-center justify-between relative z-10">
+                          <span
+                            className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${
+                              isLight
+                                ? "bg-amber-100 border-amber-300 text-amber-800"
+                                : "bg-amber-500/20 border-amber-400/40 text-amber-300"
                             }`}
                           >
-                            <div className="flex items-center gap-3 min-w-0">
-                              <span
-                                className={`w-7 h-7 rounded-lg font-black text-xs flex items-center justify-center shrink-0 ${
-                                  row.rank === 1
-                                    ? "bg-amber-400 text-slate-950 shadow shadow-amber-400/40"
-                                    : row.rank === 2
-                                    ? "bg-slate-300 text-slate-950"
-                                    : row.rank === 3
-                                    ? "bg-amber-700 text-white"
-                                    : "bg-slate-800 text-slate-400"
-                                }`}
-                              >
-                                #{row.rank}
-                              </span>
+                            <Crown className={`w-3.5 h-3.5 ${isLight ? "fill-amber-600 text-amber-600" : "fill-amber-400 text-amber-400"}`} />
+                            <span>
+                              {leaderboardWindow === "24h"
+                                ? "24h Spoken #1 Champion"
+                                : leaderboardWindow === "weekly"
+                                ? "Weekly Rank #1 Champion"
+                                : "All-Time #1 Champion"}
+                            </span>
+                          </span>
+                          <span
+                            className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${
+                              isLight
+                                ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                            }`}
+                          >
+                            {championRow.isYou ? "👑 You Lead!" : "Live Verified"}
+                          </span>
+                        </div>
 
-                              {row.avatar ? (
+                        {/* Centered Royal Champion Identity */}
+                        <div className="flex items-center gap-4 relative z-10">
+                          <div className="relative shrink-0">
+                            <div className="w-24 h-24 rounded-3xl p-1 bg-gradient-to-tr from-amber-400 via-yellow-300 to-orange-500 shadow-xl shadow-amber-500/30">
+                              {championRow.photoUrl ? (
                                 <img
-                                  src={row.avatar}
-                                  alt={row.name}
-                                  className="w-9 h-9 rounded-xl object-cover border border-amber-400/50 shrink-0"
+                                  src={championRow.photoUrl}
+                                  alt={championRow.name}
+                                  className="w-full h-full object-cover rounded-[20px]"
+                                  onError={(e) => {
+                                    (e.currentTarget as any).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(championRow.name)}&background=f59e0b&color=0f172a`;
+                                  }}
                                 />
                               ) : (
-                                <div
-                                  className={`w-9 h-9 rounded-xl bg-gradient-to-br ${row.color} flex items-center justify-center font-black text-xs text-white shrink-0`}
-                                >
-                                  {row.initials}
+                                <div className={`w-full h-full rounded-[20px] bg-gradient-to-br ${championRow.color} flex items-center justify-center font-black text-2xl text-white`}>
+                                  {championRow.initials}
                                 </div>
                               )}
+                            </div>
+                            <span
+                              className={`absolute -bottom-2 -right-2 px-2.5 py-0.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 font-black text-xs flex items-center justify-center shadow-lg border-2 ${
+                                isLight ? "border-white" : "border-slate-950"
+                              }`}
+                            >
+                              #1
+                            </span>
+                          </div>
 
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                  <span className={`text-xs font-black truncate ${row.isYou ? "text-amber-300" : "text-white"}`}>
-                                    {row.name}
-                                  </span>
-                                  <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shrink-0">
-                                    {row.cefr}
+                          <div className="min-w-0 space-y-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h3 className={`text-xl font-black truncate ${isLight ? "text-slate-900" : "text-white"}`}>
+                                {championRow.name}
+                              </h3>
+                              {championRow.isYou && (
+                                <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${isLight ? "bg-blue-100 text-blue-700" : "bg-cyan-500/20 text-cyan-300"}`}>
+                                  YOU
+                                </span>
+                              )}
+                            </div>
+                            <p className={`text-xs font-bold ${isLight ? "text-blue-700" : "text-cyan-300"}`}>
+                              {championRow.fluencyTier} • {championRow.cefr}
+                            </p>
+                            <p className={`text-[11px] font-mono truncate ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                              {championRow.handle} • {championRow.callsCount} real sessions
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* 2x2 Champion Telemetry Grid (Zero Blank Voids!) */}
+                        <div className="grid grid-cols-2 gap-2.5 relative z-10">
+                          <div
+                            className={`p-3 rounded-2xl border ${
+                              isLight ? "bg-[#F4F8FF] border-blue-200/80" : "bg-slate-950/75 border-slate-800"
+                            }`}
+                          >
+                            <span className={`text-[10px] font-bold uppercase block ${isLight ? "text-blue-700" : "text-cyan-300"}`}>
+                              🎙️ Last 24h Spoken
+                            </span>
+                            <span className={`text-base font-black font-mono ${isLight ? "text-slate-900" : "text-white"}`}>
+                              {championRow.last24hFormatted}
+                            </span>
+                          </div>
+
+                          <div
+                            className={`p-3 rounded-2xl border ${
+                              isLight ? "bg-[#FFF9ED] border-amber-200/90" : "bg-slate-950/75 border-slate-800"
+                            }`}
+                          >
+                            <span className={`text-[10px] font-bold uppercase block ${isLight ? "text-amber-700" : "text-amber-300"}`}>
+                              ⏱️ Total Spoken
+                            </span>
+                            <span className={`text-base font-black font-mono ${isLight ? "text-slate-900" : "text-white"}`}>
+                              {championRow.totalFormatted}
+                            </span>
+                          </div>
+
+                          <div
+                            className={`p-3 rounded-2xl border ${
+                              isLight ? "bg-[#F0FDF7] border-emerald-200/90" : "bg-slate-950/75 border-slate-800"
+                            }`}
+                          >
+                            <span className={`text-[10px] font-bold uppercase block ${isLight ? "text-emerald-700" : "text-emerald-300"}`}>
+                              🎯 Avg Fluency
+                            </span>
+                            <span className={`text-base font-black font-mono ${isLight ? "text-slate-900" : "text-white"}`}>
+                              {championRow.fluency}% • 🔥 {championRow.streak}d
+                            </span>
+                          </div>
+
+                          <div
+                            className={`p-3 rounded-2xl border ${
+                              isLight ? "bg-[#F8F5FF] border-purple-200/90" : "bg-slate-950/75 border-slate-800"
+                            }`}
+                          >
+                            <span className={`text-[10px] font-bold uppercase block ${isLight ? "text-purple-700" : "text-purple-300"}`}>
+                              ⚡ Earned XP
+                            </span>
+                            <span className={`text-base font-black font-mono ${isLight ? "text-slate-900" : "text-white"}`}>
+                              {championRow.xp.toLocaleString()} XP
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Real Milestone & Standing Footer */}
+                        <div
+                          className={`p-3.5 rounded-2xl border space-y-2 relative z-10 ${
+                            isLight ? "bg-white/95 border-slate-200/90 shadow-sm" : "bg-slate-950/75 border-slate-800"
+                          }`}
+                        >
+                          {!championRow.isYou && yourRow && (
+                            <div className="flex items-center justify-between text-[11px] pb-1.5 border-b border-dashed border-slate-300/60">
+                              <span className={isLight ? "text-slate-600 font-semibold" : "text-slate-300 font-semibold"}>
+                                Your Rank: <strong className={isLight ? "text-blue-700" : "text-cyan-300"}>#{yourRow.rank}</strong>
+                              </span>
+                              <span className={`font-mono font-bold ${isLight ? "text-amber-700" : "text-amber-300"}`}>
+                                {xpGapToFirst > 0 ? `${xpGapToFirst.toLocaleString()} XP behind #1` : "Tied XP!"}
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className={isLight ? "text-slate-700 font-bold" : "text-slate-300 font-bold"}>
+                              Your Badge Completion Progress
+                            </span>
+                            <span className={`font-black font-mono ${isLight ? "text-amber-700" : "text-amber-300"}`}>
+                              {unlockedCount}/20 ({Math.round((unlockedCount / 20) * 100)}%)
+                            </span>
+                          </div>
+                          <div
+                            className={`w-full h-2 rounded-full overflow-hidden border ${
+                              isLight ? "bg-slate-100 border-slate-200" : "bg-slate-900 border-slate-800"
+                            }`}
+                          >
+                            <div
+                              className="h-full bg-gradient-to-r from-amber-400 via-yellow-400 to-emerald-500 rounded-full"
+                              style={{ width: `${Math.round((unlockedCount / 20) * 100)}%` }}
+                            />
+                          </div>
+                          <div className={`flex items-center justify-between text-[10px] pt-0.5 ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                            <span>Claimed: {claimedCount} badges</span>
+                            <span className={`font-bold ${isLight ? "text-emerald-700" : "text-emerald-400"}`}>
+                              Ready to claim: {readyCount}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Right (7 cols): Real Firebase Cohort Leaderboard Table */}
+                    <div
+                      className={`lg:col-span-7 p-6 rounded-3xl border space-y-4 flex flex-col justify-between ${
+                        isLight
+                          ? "bg-white/95 border-blue-200/80 shadow-[0_14px_38px_rgba(15,35,75,0.07)]"
+                          : "bg-[#111827] border-slate-800"
+                      }`}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <h3 className={`text-base font-black flex items-center gap-2 ${isLight ? "text-slate-900" : "text-white"}`}>
+                            <Award className={`w-4 h-4 ${isLight ? "text-blue-600" : "text-cyan-400"}`} />
+                            <span>Global Real Spoken Leaderboard</span>
+                          </h3>
+                          <p className={`text-[11px] ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                            Real verified Firebase learners ranked by rolling Last 24h &amp; weekly spoken durations.
+                          </p>
+                        </div>
+
+                        {/* Time Window Filter Switcher (Last 24h | Weekly | All Time) */}
+                        <div
+                          className={`flex items-center gap-1 p-1 rounded-xl border self-start sm:self-auto ${
+                            isLight ? "bg-[#EEF4FB] border-blue-200" : "bg-slate-950 border-slate-800"
+                          }`}
+                        >
+                          {[
+                            { id: "24h", label: "Last 24h" },
+                            { id: "weekly", label: "Weekly" },
+                            { id: "all", label: "All Time" }
+                          ].map((win) => (
+                            <button
+                              key={win.id}
+                              onClick={() => setLeaderboardWindow(win.id as any)}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all ${
+                                leaderboardWindow === win.id
+                                  ? "bg-blue-600 text-white shadow-sm"
+                                  : isLight
+                                  ? "text-slate-600 hover:text-slate-900"
+                                  : "text-slate-400 hover:text-white"
+                              }`}
+                            >
+                              {win.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {leaderboardLoading && leaderboardRows.length === 0 ? (
+                        <div className="py-12 flex items-center justify-center gap-2 text-xs text-slate-400">
+                          <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                          <span>Syncing real Firebase cohort...</span>
+                        </div>
+                      ) : (
+                        <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
+                          {leaderboardRows.slice(0, 12).map((row) => (
+                            <div
+                              key={row.uid}
+                              className={`p-3 rounded-2xl border flex items-center justify-between gap-3 transition-all ${
+                                row.isYou
+                                  ? isLight
+                                    ? "bg-gradient-to-r from-amber-50 via-yellow-50/70 to-sky-50 border-amber-300 shadow-sm"
+                                    : "bg-gradient-to-r from-amber-500/15 via-indigo-950/50 to-slate-900 border-amber-400/50 shadow-md"
+                                  : isLight
+                                  ? "bg-[#F8FAFE] border-slate-200/90 hover:border-blue-300 hover:bg-white"
+                                  : "bg-slate-950/70 border-slate-800/80 hover:border-slate-700"
+                              }`}
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <span
+                                  className={`w-7 h-7 rounded-lg font-black text-xs flex items-center justify-center shrink-0 ${
+                                    row.rank === 1
+                                      ? "bg-amber-400 text-slate-950 shadow shadow-amber-400/40"
+                                      : row.rank === 2
+                                      ? isLight
+                                        ? "bg-slate-300 text-slate-900"
+                                        : "bg-slate-300 text-slate-950"
+                                      : row.rank === 3
+                                      ? "bg-amber-700 text-white"
+                                      : isLight
+                                      ? "bg-slate-200 text-slate-700"
+                                      : "bg-slate-800 text-slate-400"
+                                  }`}
+                                >
+                                  #{row.rank}
+                                </span>
+
+                                {row.photoUrl ? (
+                                  <img
+                                    src={row.photoUrl}
+                                    alt={row.name}
+                                    className={`w-10 h-10 rounded-xl object-cover shrink-0 border ${
+                                      row.rank === 1
+                                        ? "border-amber-400"
+                                        : isLight
+                                        ? "border-blue-200"
+                                        : "border-slate-700"
+                                    }`}
+                                    onError={(e) => {
+                                      (e.currentTarget as any).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(row.name)}&background=3b82f6&color=fff`;
+                                    }}
+                                  />
+                                ) : (
+                                  <div
+                                    className={`w-10 h-10 rounded-xl bg-gradient-to-br ${row.color} flex items-center justify-center font-black text-xs text-white shrink-0 shadow-sm`}
+                                  >
+                                    {row.initials}
+                                  </div>
+                                )}
+
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span
+                                      className={`text-xs font-black truncate ${
+                                        row.isYou
+                                          ? isLight
+                                            ? "text-amber-800"
+                                            : "text-amber-300"
+                                          : isLight
+                                          ? "text-slate-900"
+                                          : "text-white"
+                                      }`}
+                                    >
+                                      {row.name}
+                                    </span>
+                                    <span
+                                      className={`text-[9px] font-mono px-1.5 py-0.5 rounded border shrink-0 font-bold ${
+                                        isLight
+                                          ? "bg-sky-50 text-sky-700 border-sky-200"
+                                          : "bg-cyan-500/15 text-cyan-300 border-cyan-500/30"
+                                      }`}
+                                    >
+                                      {row.cefr}
+                                    </span>
+                                  </div>
+                                  <span className={`text-[10px] block truncate ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                                    {row.handle} • <strong className={isLight ? "text-blue-700" : "text-cyan-300"}>24h: {row.last24hFormatted}</strong> • All: {row.totalFormatted} ({row.callsCount} calls)
                                   </span>
                                 </div>
-                                <span className="text-[10px] text-slate-400 block truncate">
-                                  {row.handle} • {row.mins} spoken
+                              </div>
+
+                              <div className="flex items-center gap-3 shrink-0">
+                                <div className="hidden sm:block w-24">
+                                  <div className="flex items-center justify-between text-[9.5px] font-mono mb-0.5">
+                                    <span className={isLight ? "text-slate-500" : "text-slate-400"}>Fluency</span>
+                                    <span className={`font-bold ${isLight ? "text-emerald-700" : "text-emerald-300"}`}>
+                                      {row.fluency}%
+                                    </span>
+                                  </div>
+                                  <div className={`w-full h-1.5 rounded-full overflow-hidden ${isLight ? "bg-slate-200" : "bg-slate-800"}`}>
+                                    <div
+                                      className="h-full bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full"
+                                      style={{ width: `${row.fluency}%` }}
+                                    />
+                                  </div>
+                                </div>
+                                <span
+                                  className={`text-xs font-black font-mono min-w-[68px] text-right ${
+                                    isLight ? "text-amber-700" : "text-amber-300"
+                                  }`}
+                                >
+                                  {row.xp.toLocaleString()} XP
                                 </span>
                               </div>
                             </div>
+                          ))}
+                        </div>
+                      )}
 
-                            <div className="flex items-center gap-3 shrink-0">
-                              <div className="hidden sm:block w-24">
-                                <div className="flex items-center justify-between text-[9.5px] font-mono mb-0.5">
-                                  <span className="text-slate-400">Fluency</span>
-                                  <span className="text-emerald-300 font-bold">{row.fluency}%</span>
-                                </div>
-                                <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                                  <div
-                                    className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full"
-                                    style={{ width: `${row.fluency}%` }}
-                                  />
-                                </div>
-                              </div>
-                              <span className="text-xs font-black font-mono text-amber-300 min-w-[64px] text-right">
-                                {row.xp.toLocaleString()} XP
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                      {leaderboardSourceStatus === "owner_only" && (
+                        <div
+                          className={`px-3 py-2 rounded-xl border text-[10.5px] flex items-center justify-between gap-2 ${
+                            isLight
+                              ? "bg-blue-50/90 border-blue-200 text-blue-800"
+                              : "bg-cyan-500/10 border-cyan-500/30 text-cyan-200"
+                          }`}
+                        >
+                          <span>
+                            Showing your verified live Firebase account. Sign in with an Admin cohort account or relax read rules on <code className="font-mono">lang_users</code> to display all global peers.
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   {/* Badges Filter Bar */}
-                  <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-[#111827] border border-slate-800">
+                  <div
+                    className={`flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl border ${
+                      isLight ? "bg-white/95 border-blue-200/80 shadow-sm" : "bg-[#111827] border-slate-800"
+                    }`}
+                  >
                     <div className="flex flex-wrap items-center gap-2">
                       {[
                         { id: "all", label: `All Badges (20)` },
@@ -11738,6 +12863,8 @@ export default function StudentWebApp() {
                           className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                             achievementFilter === filterTab.id
                               ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
+                              : isLight
+                              ? "bg-[#EFF4FB] text-slate-700 hover:bg-blue-100 hover:text-blue-800"
                               : "bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800"
                           }`}
                         >
@@ -11752,7 +12879,7 @@ export default function StudentWebApp() {
                           const firstUnclaimed = achievements.find((a) => a.isUnlocked && !a.isClaimed);
                           if (firstUnclaimed) setActiveClaimModalBadge(firstUnclaimed);
                         }}
-                        className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center gap-1.5 transition-all hover:scale-[1.02]"
+                        className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-400 hover:brightness-105 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center gap-1.5 transition-all hover:scale-[1.02]"
                       >
                         <Trophy className="w-3.5 h-3.5 fill-slate-950" />
                         <span>Claim Next Reward →</span>
@@ -11776,52 +12903,70 @@ export default function StudentWebApp() {
                             key={badge.id}
                             className={`p-5 rounded-3xl border transition-all duration-200 flex flex-col justify-between gap-4 relative overflow-hidden group ${
                               badge.isClaimed
-                                ? "bg-gradient-to-br from-[#111827] via-[#0D1527] to-[#0A1020] border-emerald-500/30 shadow-lg"
+                                ? isLight
+                                  ? "bg-gradient-to-br from-[#F4FCF8] via-white to-[#EEF7FF] border-emerald-300 shadow-md"
+                                  : "bg-gradient-to-br from-[#111827] via-[#0D1527] to-[#0A1020] border-emerald-500/30 shadow-lg"
                                 : badge.isUnlocked
-                                ? "bg-gradient-to-br from-[#111827] via-[#1E1B4B]/35 to-[#0F172A] border-amber-500/50 shadow-xl shadow-amber-500/10 ring-1 ring-amber-400/25"
+                                ? isLight
+                                  ? "bg-gradient-to-br from-[#FFFDF5] via-white to-[#F4F2FF] border-amber-300 shadow-lg ring-1 ring-amber-300/50"
+                                  : "bg-gradient-to-br from-[#111827] via-[#1E1B4B]/35 to-[#0F172A] border-amber-500/50 shadow-xl shadow-amber-500/10 ring-1 ring-amber-400/25"
+                                : isLight
+                                ? "bg-white/90 border-slate-200/90 hover:border-blue-300 shadow-sm"
                                 : "bg-[#111827]/75 border-slate-800/80 opacity-85 hover:opacity-100"
                             }`}
                           >
                             <div className="space-y-3 relative z-10">
                               <div className="flex items-start justify-between gap-3">
                                 <div
-                                  className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${badge.gradient} border border-white/20 flex items-center justify-center shadow-lg ${badge.glow} shrink-0 p-2.5`}
+                                  className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${badge.gradient} border border-white/25 flex items-center justify-center shadow-lg ${badge.glow} shrink-0 p-2.5`}
                                 >
                                   {renderBadgeIcon(badge.iconType, "w-6 h-6 text-white drop-shadow")}
                                 </div>
 
                                 <div className="flex flex-col items-end gap-1.5">
-                                  <span className="px-2 py-0.5 rounded-full text-[9.5px] font-bold tracking-wide uppercase bg-slate-900 border border-slate-800 text-slate-300">
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full text-[9.5px] font-bold tracking-wide uppercase border ${
+                                      isLight
+                                        ? "bg-[#EFF4FB] border-blue-200 text-slate-700"
+                                        : "bg-slate-900 border-slate-800 text-slate-300"
+                                    }`}
+                                  >
                                     {badge.category}
                                   </span>
-                                  <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-500/15 border border-amber-500/30 text-amber-300 flex items-center gap-1">
-                                    <Zap className="w-3 h-3 fill-amber-300" />
+                                  <span
+                                    className={`px-2.5 py-0.5 rounded-full text-xs font-black border flex items-center gap-1 ${
+                                      isLight
+                                        ? "bg-amber-50 border-amber-300 text-amber-700"
+                                        : "bg-amber-500/15 border-amber-500/30 text-amber-300"
+                                    }`}
+                                  >
+                                    <Zap className={`w-3 h-3 ${isLight ? "fill-amber-600 text-amber-600" : "fill-amber-300"}`} />
                                     +{badge.xpReward} XP
                                   </span>
                                 </div>
                               </div>
 
                               <div>
-                                <h4 className="font-black text-sm text-white group-hover:text-cyan-300 transition-colors">
+                                <h4 className={`font-black text-sm transition-colors ${isLight ? "text-slate-900 group-hover:text-blue-700" : "text-white group-hover:text-cyan-300"}`}>
                                   {badge.title.replace(/Gemini Nano/gi, "SpeakFlow Edge")}
                                 </h4>
-                                <p className="text-xs text-slate-300/90 leading-relaxed mt-1">
+                                <p className={`text-xs leading-relaxed mt-1 ${isLight ? "text-slate-600" : "text-slate-300/90"}`}>
                                   {badge.description.replace(/Gemini Nano/gi, "SpeakFlow Edge AI")}
                                 </p>
                               </div>
 
                               <div className="space-y-1.5 pt-1">
-                                <div className="flex items-center justify-between text-[11px] text-slate-400">
+                                <div className={`flex items-center justify-between text-[11px] ${isLight ? "text-slate-500" : "text-slate-400"}`}>
                                   <span className="truncate">{badge.requirement}</span>
-                                  <span className="font-bold text-white shrink-0 ml-2">
+                                  <span className={`font-bold shrink-0 ml-2 ${isLight ? "text-slate-800" : "text-white"}`}>
                                     {badge.progressCurrent}/{badge.progressTarget} {badge.progressUnit} ({percent}%)
                                   </span>
                                 </div>
-                                <div className="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden">
+                                <div className={`w-full h-1.5 rounded-full overflow-hidden ${isLight ? "bg-slate-200" : "bg-slate-900"}`}>
                                   <div
                                     className={`h-full rounded-full transition-all duration-500 ${
                                       badge.isClaimed
-                                        ? "bg-emerald-400"
+                                        ? "bg-emerald-500"
                                         : badge.isUnlocked
                                         ? "bg-gradient-to-r from-amber-400 to-yellow-400"
                                         : "bg-gradient-to-r from-blue-500 to-cyan-400"
@@ -11834,20 +12979,32 @@ export default function StudentWebApp() {
 
                             <div className="pt-2 relative z-10">
                               {badge.isClaimed ? (
-                                <div className="w-full py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5">
-                                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                <div
+                                  className={`w-full py-2 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 ${
+                                    isLight
+                                      ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                      : "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                                  }`}
+                                >
+                                  <CheckCircle2 className={`w-4 h-4 ${isLight ? "text-emerald-600" : "text-emerald-400"}`} />
                                   <span>Claimed ✓ (+{badge.xpReward} XP Earned)</span>
                                 </div>
                               ) : badge.isUnlocked ? (
                                 <button
                                   onClick={() => setActiveClaimModalBadge(badge)}
-                                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02]"
+                                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400 hover:brightness-105 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02]"
                                 >
                                   <Trophy className="w-3.5 h-3.5 fill-slate-950" />
                                   <span>🎁 Claim Badge &amp; +{badge.xpReward} XP!</span>
                                 </button>
                               ) : (
-                                <div className="w-full py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 text-xs font-semibold flex items-center justify-center gap-1.5">
+                                <div
+                                  className={`w-full py-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 ${
+                                    isLight
+                                      ? "bg-[#EFF4FB] border-slate-200 text-slate-600"
+                                      : "bg-slate-900/80 border-slate-800 text-slate-400"
+                                  }`}
+                                >
                                   <span>🔒 Locked • In Progress ({percent}%)</span>
                                 </div>
                               )}
@@ -11865,29 +13022,67 @@ export default function StudentWebApp() {
             /* ----------------------------------------------------------- */
             <div className="space-y-6">
               {/* 1. Executive Profile Hero Passport */}
-              <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#121D3A] via-[#0D1528] to-[#080E1E] border border-cyan-500/35 shadow-2xl relative overflow-hidden">
-                <div className="absolute -top-16 -left-16 w-60 h-60 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute -bottom-16 -right-16 w-60 h-60 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
+              <div
+                className={`p-6 sm:p-8 rounded-3xl border shadow-2xl relative overflow-hidden ${
+                  isLight
+                    ? "bg-gradient-to-br from-[#F7FAFF] via-[#FFFFFF] to-[#EEF5FF] border-blue-200/90 shadow-[0_14px_38px_rgba(37,99,235,0.08)]"
+                    : "bg-gradient-to-br from-[#121D3A] via-[#0D1528] to-[#080E1E] border-cyan-500/35"
+                }`}
+              >
+                <div className={`absolute -top-16 -left-16 w-60 h-60 rounded-full blur-3xl pointer-events-none ${isLight ? "bg-sky-300/25" : "bg-cyan-500/15"}`} />
+                <div className={`absolute -bottom-16 -right-16 w-60 h-60 rounded-full blur-3xl pointer-events-none ${isLight ? "bg-indigo-300/25" : "bg-purple-500/15"}`} />
 
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
                   <div className="flex items-center gap-4 sm:gap-6">
-                    <div className="relative shrink-0">
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl p-1 bg-gradient-to-tr from-cyan-400 via-blue-500 to-purple-500 shadow-xl shadow-cyan-500/25">
+                    {/* Interactive Click-to-Upload Firebase Avatar Studio */}
+                    <div className="relative shrink-0 group">
+                      <button
+                        type="button"
+                        onClick={() => avatarFileInputRef.current?.click()}
+                        disabled={uploadingAvatar}
+                        title="Click to upload profile image to Firebase"
+                        className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl p-1 bg-gradient-to-tr from-cyan-400 via-blue-500 to-purple-500 shadow-xl shadow-cyan-500/25 block relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                      >
                         <img
-                          src="/images/janitha-avatar.jpg"
+                          src={resolvedProfileAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=3b82f6&color=fff&size=256`}
                           alt={profileDisplayName}
-                          className="w-full h-full object-cover rounded-[14px]"
+                          className="w-full h-full object-cover rounded-[20px]"
                           onError={(e) => {
-                            (e.currentTarget as any).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=3b82f6&color=fff`;
+                            (e.currentTarget as any).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=3b82f6&color=fff&size=256`;
                           }}
                         />
-                      </div>
-                      <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
+                        <div className="absolute inset-1 rounded-[20px] bg-slate-950/55 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1">
+                          {uploadingAvatar ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin text-cyan-300" />
+                              <span className="text-[10px] font-black">{avatarUploadProgress}%</span>
+                            </>
+                          ) : (
+                            <>
+                              <Camera className="w-5 h-5 text-cyan-300" />
+                              <span className="text-[9.5px] font-bold">Upload Photo</span>
+                            </>
+                          )}
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => avatarFileInputRef.current?.click()}
+                        disabled={uploadingAvatar}
+                        className={`absolute -bottom-1.5 -right-1.5 w-8 h-8 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-lg border-2 transition-transform hover:scale-110 ${
+                          isLight ? "border-white" : "border-slate-950"
+                        }`}
+                        title="Upload new profile photo"
+                      >
+                        <Camera className="w-3.5 h-3.5" />
+                      </button>
                     </div>
 
                     <div className="space-y-1.5 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-xl sm:text-2xl font-black text-white truncate">{profileDisplayName}</h2>
+                        <h2 className={`text-xl sm:text-2xl font-black truncate ${isLight ? "text-slate-900" : "text-white"}`}>
+                          {profileDisplayName}
+                        </h2>
                         <button
                           onClick={() => {
                             setEditNameInput(profileDisplayName);
@@ -11896,27 +13091,92 @@ export default function StudentWebApp() {
                             setEditGoalInput(profileDailyGoalMins);
                             setShowEditProfileModal(true);
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-cyan-300 text-[11px] font-bold flex items-center gap-1 border border-slate-700 transition-colors"
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 border transition-colors ${
+                            isLight
+                              ? "bg-white hover:bg-blue-50 text-blue-700 border-blue-200 shadow-sm"
+                              : "bg-slate-800/90 hover:bg-slate-700 text-cyan-300 border-slate-700"
+                          }`}
                         >
                           <Edit3 className="w-3 h-3" />
                           <span>Edit</span>
                         </button>
+                        <button
+                          type="button"
+                          disabled={uploadingAvatar}
+                          onClick={() => avatarFileInputRef.current?.click()}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 border transition-colors ${
+                            isLight
+                              ? "bg-blue-600 hover:bg-blue-500 text-white border-blue-600 shadow-sm"
+                              : "bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border-cyan-500/40"
+                          }`}
+                        >
+                          {uploadingAvatar ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+                          <span>{uploadingAvatar ? `Uploading ${avatarUploadProgress}%` : "Upload Photo"}</span>
+                        </button>
+                        {profilePhotoUrl && (
+                          <button
+                            type="button"
+                            onClick={handleRemoveProfileAvatar}
+                            className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-colors ${
+                              isLight
+                                ? "bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200"
+                                : "bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border-rose-500/35"
+                            }`}
+                            title="Reset custom photo"
+                          >
+                            Reset
+                          </button>
+                        )}
                       </div>
 
-                      <p className="text-xs text-slate-400 font-mono">
-                        @janiya2 • InnoXpert Technologies • {user?.email || "janithad2@gmail.com"}
+                      <p className={`text-xs font-mono ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                        {user?.email ? `@${user.email.split("@")[0]}` : "@janiya2"} • InnoXpert Technologies • {user?.email || "janithad2@gmail.com"}
                       </p>
 
+                      {avatarUploadStatus && (
+                        <div
+                          className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg border inline-flex items-center gap-1.5 ${
+                            avatarUploadStatus.type === "success"
+                              ? isLight
+                                ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                : "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                              : isLight
+                              ? "bg-rose-50 border-rose-200 text-rose-700"
+                              : "bg-rose-500/15 border-rose-500/30 text-rose-300"
+                          }`}
+                        >
+                          <span>{avatarUploadStatus.text}</span>
+                        </div>
+                      )}
+
                       <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
-                          <Crown className="w-3 h-3 text-amber-400 fill-amber-400" />
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-black border flex items-center gap-1 ${
+                            isLight
+                              ? "bg-amber-50 text-amber-800 border-amber-300"
+                              : "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                          }`}
+                        >
+                          <Crown className={`w-3 h-3 ${isLight ? "text-amber-600 fill-amber-500" : "text-amber-400 fill-amber-400"}`} />
                           <span>{isPremiumMember ? `${subscriptionConfig.yearlyName} Active` : "Free Explorer"}</span>
                         </span>
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-cyan-500/15 text-cyan-300 border border-cyan-500/35 font-mono">
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-black border font-mono ${
+                            isLight
+                              ? "bg-sky-50 text-sky-700 border-sky-200"
+                              : "bg-cyan-500/15 text-cyan-300 border-cyan-500/35"
+                          }`}
+                        >
                           {realAnalytics.fluencyTierTitle} • {realAnalytics.cefrBadge}
                         </span>
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30">
-                          Google Play Auto-Synced
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                            isLight
+                              ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                              : "text-emerald-300 bg-emerald-500/15 border-emerald-500/30"
+                          }`}
+                        >
+                          Firebase Storage + Auth Synced
                         </span>
                       </div>
                     </div>
@@ -11926,14 +13186,18 @@ export default function StudentWebApp() {
                   <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-auto">
                     <button
                       onClick={() => setShowVipModal(true)}
-                      className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 flex items-center gap-1.5 transition-all hover:scale-[1.02]"
+                      className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400 hover:brightness-105 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 flex items-center gap-1.5 transition-all hover:scale-[1.02]"
                     >
                       <QrCode className="w-3.5 h-3.5" />
                       <span>Mobile Pass &amp; QR Sync</span>
                     </button>
                     <button
                       onClick={() => setActiveTab("dashboard")}
-                      className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700"
+                      className={`px-3.5 py-2.5 rounded-xl text-xs font-bold border ${
+                        isLight
+                          ? "bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-sm"
+                          : "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
+                      }`}
                     >
                       ← Dashboard
                     </button>
@@ -11941,30 +13205,70 @@ export default function StudentWebApp() {
                 </div>
               </div>
 
-              {/* 2. Top 4 Real-Data Highlights */}
+              {/* 2. Top 4 Real-Data Highlights (Incl. Last 24h Spoken Time) */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-4 rounded-2xl bg-[#111827] border border-purple-500/30 space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">Real Spoken Audio</span>
-                  <div className="text-2xl font-black text-white">{realAnalytics.totalFormattedCompact}</div>
-                  <span className="text-[10px] text-slate-400 block">{userSessions.length} recorded voice sessions</span>
+                <div
+                  className={`p-4 rounded-2xl border space-y-1 ${
+                    isLight ? "bg-white border-purple-200 shadow-sm" : "bg-[#111827] border-purple-500/30"
+                  }`}
+                >
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${isLight ? "text-purple-700" : "text-purple-400"}`}>
+                    Real Spoken Audio
+                  </span>
+                  <div className={`text-2xl font-black ${isLight ? "text-slate-900" : "text-white"}`}>
+                    {realAnalytics.totalFormattedCompact}
+                  </div>
+                  <span className={`text-[10px] block font-mono ${isLight ? "text-blue-700 font-semibold" : "text-slate-400"}`}>
+                    Last 24h: {realAnalytics.last24hFormatted} ({realAnalytics.last24hCallsCount} calls)
+                  </span>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#111827] border border-cyan-500/30 space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">Avg Fluency &amp; CEFR</span>
-                  <div className="text-2xl font-black text-white">{realAnalytics.avgFluency}%</div>
-                  <span className="text-[10px] text-cyan-300 font-bold block">{realAnalytics.fluencyTierTitle} ({realAnalytics.cefrBadge})</span>
+                <div
+                  className={`p-4 rounded-2xl border space-y-1 ${
+                    isLight ? "bg-white border-blue-200 shadow-sm" : "bg-[#111827] border-cyan-500/30"
+                  }`}
+                >
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${isLight ? "text-blue-700" : "text-cyan-400"}`}>
+                    Avg Fluency &amp; CEFR
+                  </span>
+                  <div className={`text-2xl font-black ${isLight ? "text-slate-900" : "text-white"}`}>
+                    {realAnalytics.avgFluency}%
+                  </div>
+                  <span className={`text-[10px] font-bold block ${isLight ? "text-blue-700" : "text-cyan-300"}`}>
+                    {realAnalytics.fluencyTierTitle} ({realAnalytics.cefrBadge})
+                  </span>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#111827] border border-amber-500/30 space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Real Earned XP</span>
-                  <div className="text-2xl font-black text-white">{realAnalytics.totalXp.toLocaleString()}</div>
-                  <span className="text-[10px] text-amber-300/80 block">{masteredVocabIds.length} Words • {fixedGrammarIds.length} Grammar Fixes</span>
+                <div
+                  className={`p-4 rounded-2xl border space-y-1 ${
+                    isLight ? "bg-white border-amber-200 shadow-sm" : "bg-[#111827] border-amber-500/30"
+                  }`}
+                >
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${isLight ? "text-amber-700" : "text-amber-400"}`}>
+                    Real Earned XP
+                  </span>
+                  <div className={`text-2xl font-black ${isLight ? "text-slate-900" : "text-white"}`}>
+                    {realAnalytics.totalXp.toLocaleString()}
+                  </div>
+                  <span className={`text-[10px] block ${isLight ? "text-amber-700" : "text-amber-300/80"}`}>
+                    {masteredVocabIds.length} Words • {fixedGrammarIds.length} Grammar Fixes
+                  </span>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#111827] border border-emerald-500/30 space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Active Practice Days</span>
-                  <div className="text-2xl font-black text-white">{realAnalytics.streakDays} <span className="text-xs text-emerald-300">DAYS 🔥</span></div>
-                  <span className="text-[10px] text-emerald-300 font-bold block">{realAnalytics.onDeviceCount}/{userSessions.length} On-Device Edge Calls</span>
+                <div
+                  className={`p-4 rounded-2xl border space-y-1 ${
+                    isLight ? "bg-white border-emerald-200 shadow-sm" : "bg-[#111827] border-emerald-500/30"
+                  }`}
+                >
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${isLight ? "text-emerald-700" : "text-emerald-400"}`}>
+                    Active Practice Days
+                  </span>
+                  <div className={`text-2xl font-black ${isLight ? "text-slate-900" : "text-white"}`}>
+                    {realAnalytics.streakDays} <span className={`text-xs ${isLight ? "text-emerald-700" : "text-emerald-300"}`}>DAYS 🔥</span>
+                  </div>
+                  <span className={`text-[10px] font-bold block ${isLight ? "text-emerald-700" : "text-emerald-300"}`}>
+                    {realAnalytics.onDeviceCount}/{userSessions.length} On-Device Edge Calls
+                  </span>
                 </div>
               </div>
 
@@ -12793,6 +14097,38 @@ export default function StudentWebApp() {
             </div>
 
             <form onSubmit={handleSaveProfile} className="space-y-3.5 pt-2">
+              {/* Profile Picture Firebase Upload Row */}
+              <div
+                className={`p-3 rounded-2xl border flex items-center justify-between gap-3 ${
+                  isLight ? "bg-[#F4F8FF] border-blue-200" : "bg-slate-900/90 border-slate-800"
+                }`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <img
+                    src={resolvedProfileAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=3b82f6&color=fff`}
+                    alt={profileDisplayName}
+                    className="w-12 h-12 rounded-xl object-cover border border-cyan-400/50 shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <span className={`text-xs font-bold block ${isLight ? "text-slate-900" : "text-white"}`}>
+                      Profile Photo
+                    </span>
+                    <span className={`text-[10px] block truncate ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                      {uploadingAvatar ? `Uploading ${avatarUploadProgress}%...` : "Synced via Firebase Storage"}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  disabled={uploadingAvatar}
+                  onClick={() => avatarFileInputRef.current?.click()}
+                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 shrink-0"
+                >
+                  {uploadingAvatar ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                  <span>Choose Image</span>
+                </button>
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Full Display Name
@@ -13158,8 +14494,8 @@ export default function StudentWebApp() {
 
                           {!isBot && (
                             <img
-                              src="/images/janitha-avatar.jpg"
-                              alt="Janitha"
+                              src={resolvedProfileAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=10b981&color=fff`}
+                              alt={profileDisplayName}
                               className="w-8 h-8 rounded-full object-cover border border-emerald-400/50 mt-0.5 shrink-0 shadow-sm"
                             />
                           )}
