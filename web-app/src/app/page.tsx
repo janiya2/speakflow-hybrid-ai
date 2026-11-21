@@ -125,17 +125,6 @@ interface CoachModel {
 
 const COACHES: CoachModel[] = [
   {
-    id: "sophia",
-    name: "Sophia Miller",
-    gender: "female",
-    tagline: "Executive Speech & Silicon Valley Pitch Coach",
-    accent: "American English 🇺🇸 / Executive Tone",
-    avatar: "/images/coaches/sophia.jpg",
-    voice: "en-US-JennyNeural",
-    talkingVideo: "/videos/coaches/sophia.mp4",
-    idleVideo: ""
-  },
-  {
     id: "sarah",
     name: "Sarah Jenkins",
     gender: "female",
@@ -145,6 +134,17 @@ const COACHES: CoachModel[] = [
     voice: "en-US-JennyNeural",
     talkingVideo: "/videos/coaches/sarah.mp4",
     idleVideo: "/videos/coaches/sarah_idle.mp4"
+  },
+  {
+    id: "oliver",
+    name: "Oliver Wright",
+    gender: "male",
+    tagline: "Cambridge Scholarly • Executive Debate & Prep",
+    accent: "British Oxford RP 🇬🇧 / Scholarly",
+    avatar: "/images/coaches/oliver.jpg",
+    voice: "en-GB-RyanNeural",
+    talkingVideo: "/videos/coaches/oliver.mp4",
+    idleVideo: "/videos/coaches/oliver_idle.mp4"
   },
   {
     id: "emma",
@@ -158,17 +158,6 @@ const COACHES: CoachModel[] = [
     idleVideo: "/videos/coaches/emma_idle.mp4"
   },
   {
-    id: "chloe",
-    name: "Camille Laurent",
-    gender: "female",
-    tagline: "French & European Accent & Conversational Master",
-    accent: "French 🇫🇷 / Elegant Tone",
-    avatar: "/images/coaches/chloe.jpg",
-    voice: "fr-FR-DeniseNeural",
-    talkingVideo: "/videos/coaches/chloe.mp4",
-    idleVideo: ""
-  },
-  {
     id: "alex",
     name: "Alex Rivera",
     gender: "male",
@@ -178,17 +167,6 @@ const COACHES: CoachModel[] = [
     voice: "en-US-GuyNeural",
     talkingVideo: "/videos/coaches/alex.mp4",
     idleVideo: "/videos/coaches/alex_idle.mp4"
-  },
-  {
-    id: "oliver",
-    name: "Oliver Wright",
-    gender: "male",
-    tagline: "Cambridge Scholarly • Executive Debate & Prep",
-    accent: "British Oxford RP 🇬🇧 / Scholarly",
-    avatar: "/images/coaches/oliver.jpg",
-    voice: "en-GB-RyanNeural",
-    talkingVideo: "/videos/coaches/oliver.mp4",
-    idleVideo: "/videos/coaches/oliver_idle.mp4"
   },
   {
     id: "kenji",
@@ -211,6 +189,28 @@ const COACHES: CoachModel[] = [
     voice: "ja-JP-NanamiNeural",
     talkingVideo: "/videos/coaches/aoi.mp4",
     idleVideo: "/videos/coaches/aoi_idle.mp4"
+  },
+  {
+    id: "sophia",
+    name: "Sophia Miller",
+    gender: "female",
+    tagline: "Executive Speech & Silicon Valley Pitch Coach",
+    accent: "American English 🇺🇸 / Executive Tone",
+    avatar: "/images/coaches/sophia.jpg",
+    voice: "en-US-JennyNeural",
+    talkingVideo: "/videos/coaches/sophia.mp4",
+    idleVideo: "/videos/coaches/sophia_idle.mp4"
+  },
+  {
+    id: "chloe",
+    name: "Camille Laurent",
+    gender: "female",
+    tagline: "French & European Accent & Conversational Master",
+    accent: "French 🇫🇷 / Elegant Tone",
+    avatar: "/images/coaches/chloe.jpg",
+    voice: "fr-FR-DeniseNeural",
+    talkingVideo: "/videos/coaches/chloe.mp4",
+    idleVideo: "/videos/coaches/chloe_idle.mp4"
   }
 ];
 
@@ -2967,7 +2967,7 @@ export default function StudentWebApp() {
                         <img
                           src={selectedCoach.avatar}
                           alt={selectedCoach.name}
-                          className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-300 ${
+                          className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-300 ${
                             !isBotSpeaking && !selectedCoach.idleVideo ? "opacity-100 z-10" : "opacity-0 pointer-events-none"
                           }`}
                         />
@@ -2982,7 +2982,7 @@ export default function StudentWebApp() {
                             loop
                             muted
                             playsInline
-                            className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-300 ${
+                            className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-300 ${
                               !isBotSpeaking ? "opacity-100 z-10" : "opacity-0 pointer-events-none"
                             }`}
                           />
@@ -2996,7 +2996,7 @@ export default function StudentWebApp() {
                           loop
                           muted
                           playsInline
-                          className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-300 ${
+                          className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-300 ${
                             isBotSpeaking ? "opacity-100 z-20" : "opacity-0 pointer-events-none"
                           }`}
                         />
