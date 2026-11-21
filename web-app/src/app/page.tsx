@@ -250,9 +250,21 @@ interface CallSessionRecord {
   createdAt: string;
 }
 
+export interface SessionGrammarSlip {
+  id?: string;
+  ruleTitle?: string;
+  category?: string;
+  level?: string;
+  original: string;
+  correction: string;
+  explanation: string;
+  similarExamples?: string[];
+}
+
 export interface SavedSessionItem {
   id: string;
   topicTitle: string;
+  language?: string;
   coachName: string;
   coachAvatar: string;
   coachRole: string;
@@ -274,6 +286,7 @@ export interface SavedSessionItem {
     ai: string;
     tip: string;
   };
+  correctionsList?: SessionGrammarSlip[];
   createdAt: string;
   xpEarned: number;
 }
@@ -892,6 +905,10 @@ export default function StudentWebApp() {
   const [grammarLevelFilter, setGrammarLevelFilter] = useState<string>("All");
   const [grammarLangFilter, setGrammarLangFilter] = useState<string>("English");
   const [grammarSearchQuery, setGrammarSearchQuery] = useState<string>("");
+  const [grammarModeTab, setGrammarModeTab] = useState<"call_mistakes" | "library">("call_mistakes");
+  const [selectedGrammarSessionId, setSelectedGrammarSessionId] = useState<string>("All");
+  const [fixedGrammarIds, setFixedGrammarIds] = useState<string[]>(["cm_session-rec-1_0"]);
+  const [grammarFixStatusFilter, setGrammarFixStatusFilter] = useState<"All" | "Needs Practice" | "Fixed">("All");
 
   // Automatically sync Practice, Vocabulary & Grammar language filters whenever Main Header Language changes
   useEffect(() => {
@@ -1072,8 +1089,8 @@ export default function StudentWebApp() {
     {
       id: "session-cricket-01",
       topicTitle: "Talking About Cricket & T20 World Cup",
-      coachName: "Coach Sophia Miller",
-      coachAvatar: "/images/coaches/sophia.jpg",
+      coachName: "Coach Sarah Jenkins",
+      coachAvatar: "/images/coaches/sarah.jpg",
       coachRole: "Executive Speech & Sports Cadence Coach",
       coachCountry: "United States",
       coachFlag: "🇺🇸",
@@ -1207,8 +1224,8 @@ export default function StudentWebApp() {
     {
       id: "session-rec-5",
       topicTitle: "Ordering Food & Authentic Dining",
-      coachName: "Coach Camille Laurent",
-      coachAvatar: "/images/coaches/camille.jpg",
+      coachName: "Coach Aoi Tanaka",
+      coachAvatar: "/images/coaches/aoi.jpg",
       coachRole: "French Elegant Conversational Coach",
       coachCountry: "France",
       coachFlag: "🇫🇷",
@@ -2589,6 +2606,24 @@ export default function StudentWebApp() {
           ? "Pro Tip: Practice sentence cadence and keep clauses connected without mid-phrase pauses."
           : "Pro Tip: Exceptional cadence! Maintain this confident vocal rhythm in upcoming dialogues."
       },
+      language: activeCallTopic.language,
+      correctionsList:
+        sessionCorrections.length > 0
+          ? sessionCorrections.map((c, idx) => ({
+              id: `live_slip_${Date.now()}_${idx}`,
+              ruleTitle: `Spoken Syntax Repair (${activeCallTopic.title})`,
+              category: activeCallTopic.category || "Live Call",
+              level: activeCallTopic.level || "Intermediate",
+              original: c.original,
+              correction: c.correction,
+              explanation: c.explanation,
+              similarExamples: [
+                c.correction,
+                `Could we also apply this natural pattern when discussing ${activeCallTopic.title}?`,
+                `Practice repeating "${c.correction}" with smooth native cadence.`
+              ]
+            }))
+          : [],
       createdAt: new Date().toISOString(),
       xpEarned
     };
@@ -7260,40 +7295,320 @@ export default function StudentWebApp() {
             })()
           ) : activeTab === "grammar" ? (
             /* ----------------------------------------------------------- */
-            /* TAB: INTERACTIVE AI GRAMMAR & SPOKEN MISTAKE REPAIR STUDIO  */
+            /* TAB: CALL-LINKED GRAMMAR MISTAKE VAULT & PATTERN DRILL HUB  */
             /* ----------------------------------------------------------- */
             (() => {
-              const GRAMMAR_CATEGORIES = [
-                "All",
-                "Career & Business",
-                "Travel & Transit",
-                "Food & Dining",
-                "Sports & Fitness",
-                "Daily Conversation",
-                "Tech & Innovation",
-                "Shopping & Health"
-              ];
+              interface EnrichedCallMistake {
+                id: string;
+                sessionId: string;
+                sessionTitle: string;
+                sessionTimeAgo: string;
+                sessionScore: number;
+                coachName: string;
+                coachAvatar: string;
+                coachFlag: string;
+                language: string;
+                category: string;
+                level: "Beginner" | "Intermediate" | "Advanced";
+                ruleTitle: string;
+                wrong: string;
+                correct: string;
+                explanation: string;
+                similarExamples: string[];
+              }
 
-              const langGrammarPool = FULL_GRAMMAR_CATALOG.filter((g) =>
-                grammarLangFilter === "All" ? true : g.language.toLowerCase() === grammarLangFilter.toLowerCase()
-              );
+              // Default call-specific grammar mistakes for the recorded sessions in userSessions
+              const SESSION_DEFAULT_MISTAKES_MAP: Record<string, Array<Omit<EnrichedCallMistake, "id" | "sessionId" | "sessionTitle" | "sessionTimeAgo" | "sessionScore" | "coachName" | "coachAvatar" | "coachFlag">>> = {
+                "session-cricket-01": [
+                  {
+                    language: "English",
+                    category: "Sports & Culture",
+                    level: "Beginner",
+                    ruleTitle: "Past Simple Questions With 'Did' (Base Verb Form)",
+                    wrong: "Did you watched the thrilling T20 cricket match yesterday?",
+                    correct: "Did you watch the thrilling T20 cricket match yesterday?",
+                    explanation: "When asking a question in the past tense with 'Did', the auxiliary verb 'did' already marks the past tense, so the main verb must remain in its base form ('watch', never 'watched').",
+                    similarExamples: [
+                      "Did you see that unbelievable six in the Super Over?",
+                      "Where did the captain decide to bowl in the final powerplay?",
+                      "How many wickets did the fast bowler take in the tournament?"
+                    ]
+                  },
+                  {
+                    language: "English",
+                    category: "Sports & Culture",
+                    level: "Intermediate",
+                    ruleTitle: "Question Word Order With 'What Do You Want'",
+                    wrong: "What you want to know about our batting lineup?",
+                    correct: "What do you want to know about our batting lineup?",
+                    explanation: "In English information questions (Wh- questions), you must include the auxiliary verb 'do / does / did' before the subject pronoun ('What do you want...', not 'What you want...').",
+                    similarExamples: [
+                      "Which cricket format do you prefer watching: Test matches or T20?",
+                      "Why do you think the captain chose to bat first on this pitch?",
+                      "How often do you play cricket with your teammates on weekends?"
+                    ]
+                  },
+                  {
+                    language: "English",
+                    category: "Sports & Culture",
+                    level: "Intermediate",
+                    ruleTitle: "Superlative Adjectives With 'All-Time'",
+                    wrong: "Virat Kohli is one of the most greatest player in T20 history.",
+                    correct: "Virat Kohli is one of the greatest players in T20 history.",
+                    explanation: "Never combine 'most' with an '-est' superlative ('greatest', not 'most greatest'), and always use a plural noun after 'one of the...' ('players', not 'player').",
+                    similarExamples: [
+                      "That final over was one of the most exciting moments in World Cup history.",
+                      "He is one of the fastest bowlers in international cricket today.",
+                      "Lord's is one of the most iconic stadiums in the world."
+                    ]
+                  }
+                ],
+                "session-rec-1": [
+                  {
+                    language: "English",
+                    category: "Business & Pitching",
+                    level: "Intermediate",
+                    ruleTitle: "Indirect Objects After 'Explain' (Explain To Us)",
+                    wrong: "Let me explain you how our on-device neural engine works.",
+                    correct: "Let me explain to you how our on-device neural engine works.",
+                    explanation: "The verb 'explain' cannot be followed directly by a person pronoun ('explain you'). Always say 'explain [something] to [person]' or 'explain to you how...'.",
+                    similarExamples: [
+                      "Can I explain our hybrid cloud fallback architecture to the panel?",
+                      "She explained the Q4 customer retention metrics to the investors clearly.",
+                      "Let me explain the zero-latency privacy advantages to your engineering team."
+                    ]
+                  },
+                  {
+                    language: "English",
+                    category: "Business & Pitching",
+                    level: "Advanced",
+                    ruleTitle: "Gerund (-ing) After Prepositional Phrase 'Look Forward To'",
+                    wrong: "We look forward to scale this AI platform globally this year.",
+                    correct: "We look forward to scaling this AI platform globally this year.",
+                    explanation: "In 'look forward to', the word 'to' is a preposition rather than an infinitive marker, so the following verb must always take the '-ing' gerund form ('scaling').",
+                    similarExamples: [
+                      "I look forward to hearing your thoughts on our Series A valuation.",
+                      "We are committed to reducing cloud inference costs by eighty percent.",
+                      "Our founders are dedicated to building privacy-first voice experiences."
+                    ]
+                  }
+                ],
+                "session-rec-2": [
+                  {
+                    language: "English",
+                    category: "Travel & Culture",
+                    level: "Beginner",
+                    ruleTitle: "Active Verbs vs. 'To Be' ('I Agree' vs. 'I Am Agree')",
+                    wrong: "I am completely agree with your point on cultural etiquette.",
+                    correct: "I completely agree with your point on cultural etiquette.",
+                    explanation: "'Agree' is an active verb in English, not an adjective. Never place 'am', 'is', or 'are' before 'agree'.",
+                    similarExamples: [
+                      "I strongly agree with your assessment of the debate topic.",
+                      "Do you agree with the argument that travel broadens our perspective?",
+                      "Most linguists agree that daily spoken practice builds fluency fastest."
+                    ]
+                  },
+                  {
+                    language: "English",
+                    category: "Travel & Culture",
+                    level: "Intermediate",
+                    ruleTitle: "Present Perfect Continuous for Ongoing Duration ('For' vs. 'Since')",
+                    wrong: "I am practicing spoken English since six months.",
+                    correct: "I have been practicing spoken English for six months.",
+                    explanation: "For an action that began in the past and continues right now, use 'have been + verb-ing'. Pair 'for' with a duration ('for six months') and 'since' with a starting point ('since January').",
+                    similarExamples: [
+                      "I have been preparing for the Cambridge speaking debate for three weeks.",
+                      "She has been living and studying in central London since last autumn.",
+                      "How long have you been learning foreign languages with AI voice coaches?"
+                    ]
+                  }
+                ],
+                "session-rec-3": [
+                  {
+                    language: "Japanese",
+                    category: "Tech Networking",
+                    level: "Intermediate",
+                    ruleTitle: "Respectful Company Reference 'Onsha (御社)' in Spoken Japanese",
+                    wrong: "あなたの会社のAIプロジェクトに興味があります (Anata no kaisha no AI...)",
+                    correct: "御社のAIプロジェクトに大変興味がございます (Onsha no AI purojekuto ni...)",
+                    explanation: "In spoken Japanese business networking and interviews, never refer to the partner's company as 'anata no kaisha'. Always use the respectful spoken honorific '御社 (Onsha)'.",
+                    similarExamples: [
+                      "御社のハイブリッドAI技術について詳しく教えていただけますか？ (Could you tell me more about your company's hybrid AI technology?)",
+                      "御社のグローバルな開発チームで貢献したいと考えております。 (I hope to contribute to your company's global engineering team.)",
+                      "本日は御社のブースを訪問できて光栄です。 (It is an honor to visit your company's summit booth today.)"
+                    ]
+                  },
+                  {
+                    language: "Japanese",
+                    category: "Tech Networking",
+                    level: "Beginner",
+                    ruleTitle: "Humble Self-Introduction Verb 'Moushimasu (申します)'",
+                    wrong: "私の名前はジャニタと言います (Casual in formal summit)",
+                    correct: "初めまして、ジャニタと申します (Hajimemashite, Janitha to moushimasu)",
+                    explanation: "At professional tech summits and business exchanges in Tokyo, use the humble form '[Name] と申します (to moushimasu)' instead of casual 'to iimasu'.",
+                    similarExamples: [
+                      "SpeakFlow AIのエンジニアのジャニタと申します。 (I am Janitha, an engineer at SpeakFlow AI.)",
+                      "名刺を交換させていただけますでしょうか。 (May I have the pleasure of exchanging business cards?)",
+                      "今後ともどうぞよろしくお願い申し上げます。 (I look forward to our continued professional relationship.)"
+                    ]
+                  }
+                ],
+                "session-rec-4": [
+                  {
+                    language: "English",
+                    category: "Travel & Transit",
+                    level: "Beginner",
+                    ruleTitle: "Embedded Indirect Questions at Airport Customs & Information",
+                    wrong: "Could you tell me where is the boarding gate for London?",
+                    correct: "Could you tell me where the boarding gate for London is?",
+                    explanation: "When embedding a question inside a polite opener like 'Could you tell me...' or 'Do you know...', keep statement word order ('where the gate is', not 'where is the gate').",
+                    similarExamples: [
+                      "Do you know what time the connecting flight to Heathrow starts boarding?",
+                      "Could you tell me which baggage carousel our suitcases will arrive at?",
+                      "Would you mind showing me where the fast-track security lane is?"
+                    ]
+                  },
+                  {
+                    language: "English",
+                    category: "Travel & Transit",
+                    level: "Intermediate",
+                    ruleTitle: "Uncountable Travel Nouns ('Luggage' & 'Baggage')",
+                    wrong: "I only brought two small carry-on luggages on this trip.",
+                    correct: "I only brought two small pieces of carry-on luggage on this trip.",
+                    explanation: "'Luggage' and 'baggage' are uncountable nouns in English and never take a plural '-s'. Count individual bags as 'two pieces of luggage' or 'two carry-on bags'.",
+                    similarExamples: [
+                      "All my hand luggage fits easily inside the overhead cabin compartment.",
+                      "How many pieces of checked baggage would you like to check in today?",
+                      "Can you give me some travel advice for riding the London Underground?"
+                    ]
+                  }
+                ],
+                "session-rec-5": [
+                  {
+                    language: "English",
+                    category: "Food & Social",
+                    level: "Beginner",
+                    ruleTitle: "Polite Conditional Ordering ('Could We Have' / 'I'd Like')",
+                    wrong: "We want a table for two near the terrace and two coffees.",
+                    correct: "Could we please have a table for two near the terrace and two lattes?",
+                    explanation: "In restaurants and cafes, direct statements with 'We want' or 'Give me' sound blunt. Use 'Could we please have...' or 'We would like...' for warm, natural hospitality etiquette.",
+                    similarExamples: [
+                      "I'd like to order the wood-fired Margherita pizza and a sparkling water, please.",
+                      "Could you please bring us the dessert menu and the bill when you have a moment?",
+                      "Would it be possible to get our salad dressing on the side?"
+                    ]
+                  },
+                  {
+                    language: "English",
+                    category: "Food & Social",
+                    level: "Intermediate",
+                    ruleTitle: "Using 'Recommend + Gerund (-ing)' When Asking Waiters",
+                    wrong: "What dish do you recommend us to try tonight?",
+                    correct: "What signature dish would you recommend trying tonight?",
+                    explanation: "After 'recommend', use a noun or an '-ing' gerund verb ('recommend trying') rather than 'recommend someone to do'.",
+                    similarExamples: [
+                      "Which white wine would you recommend pairing with the seared scallops?",
+                      "Do you recommend booking a table in advance for Friday dinner?",
+                      "Our chef highly recommends tasting the artisanal pistachio gelato."
+                    ]
+                  }
+                ]
+              };
 
-              const filteredGrammar = langGrammarPool.filter((g) => {
-                const matchesCat = grammarCategoryFilter === "All" || g.category === grammarCategoryFilter;
-                const matchesLvl = grammarLevelFilter === "All" || g.level.toLowerCase() === grammarLevelFilter.toLowerCase();
+              // Build unified list of call-linked grammar mistakes across all userSessions
+              const allCallMistakes: EnrichedCallMistake[] = [];
+              userSessions.forEach((sess, sIdx) => {
+                const rawCorrections =
+                  sess.correctionsList && sess.correctionsList.length > 0
+                    ? sess.correctionsList
+                    : SESSION_DEFAULT_MISTAKES_MAP[sess.id] || [
+                        {
+                          language: sess.language || "English",
+                          category: sess.category || "Conversational Practice",
+                          level: "Intermediate" as const,
+                          ruleTitle: `Spoken Clause & Tense Precision (${sess.topicTitle})`,
+                          wrong: "I was very enjoy talking about this topic yesterday.",
+                          correct: "I really enjoyed talking about this topic yesterday.",
+                          explanation: "'Enjoy' is a transitive action verb. Use the past simple 'I really enjoyed' followed by an '-ing' verb ('talking'), never 'I was enjoy'.",
+                          similarExamples: [
+                            `I thoroughly enjoyed practicing "${sess.topicTitle}" with ${sess.coachName}.`,
+                            "We really enjoyed exploring the local culture and speaking with native guides.",
+                            "Do you enjoy practicing real-time voice conversations every day?"
+                          ]
+                        }
+                      ];
+
+                rawCorrections.forEach((c: any, cIdx: number) => {
+                  allCallMistakes.push({
+                    id: c.id || `cm_${sess.id}_${cIdx}_${sIdx}`,
+                    sessionId: sess.id,
+                    sessionTitle: sess.topicTitle,
+                    sessionTimeAgo: sess.timeAgo || "Recently",
+                    sessionScore: sess.score || 92,
+                    coachName: sess.coachName || "Coach Sarah Jenkins",
+                    coachAvatar: sess.coachAvatar || "/images/coaches/sarah.jpg",
+                    coachFlag: sess.coachFlag || "🇺🇸",
+                    language: c.language || sess.language || "English",
+                    category: c.category || sess.category || "Daily Conversation",
+                    level: (c.level as any) || "Intermediate",
+                    ruleTitle: c.ruleTitle || "Spoken Grammar & Syntax Precision",
+                    wrong: c.original || c.wrong || "",
+                    correct: c.correction || c.correct || "",
+                    explanation: c.explanation || "",
+                    similarExamples:
+                      c.similarExamples && c.similarExamples.length > 0
+                        ? c.similarExamples
+                        : [
+                            c.correction || c.correct,
+                            "Notice how native speakers keep the auxiliary verb and main clause smoothly connected.",
+                            "Try using this exact grammatical structure in three different sentences aloud."
+                          ]
+                  });
+                });
+              });
+
+              // Count mistakes per recorded call session for the Call Filter cards
+              const getSessionMistakeCount = (sessionId: string) =>
+                allCallMistakes.filter((m) => m.sessionId === sessionId).length;
+
+              // Filter call mistakes by Selected Recorded Call, Category, Fix Status, and Search Query
+              const filteredCallMistakes = allCallMistakes.filter((m) => {
+                const matchesSession =
+                  selectedGrammarSessionId === "All" || m.sessionId === selectedGrammarSessionId;
+                const matchesCat =
+                  grammarCategoryFilter === "All" ||
+                  m.category.toLowerCase().includes(grammarCategoryFilter.toLowerCase());
+                const isFixed = fixedGrammarIds.includes(m.id);
+                const matchesStatus =
+                  grammarFixStatusFilter === "All"
+                    ? true
+                    : grammarFixStatusFilter === "Fixed"
+                    ? isFixed
+                    : !isFixed;
                 const q = grammarSearchQuery.trim().toLowerCase();
                 const matchesSearch =
                   !q ||
-                  g.title.toLowerCase().includes(q) ||
-                  g.wrong.toLowerCase().includes(q) ||
-                  g.correct.toLowerCase().includes(q) ||
-                  g.rule.toLowerCase().includes(q);
-                return matchesCat && matchesLvl && matchesSearch;
+                  m.ruleTitle.toLowerCase().includes(q) ||
+                  m.wrong.toLowerCase().includes(q) ||
+                  m.correct.toLowerCase().includes(q) ||
+                  m.explanation.toLowerCase().includes(q) ||
+                  m.sessionTitle.toLowerCase().includes(q) ||
+                  m.coachName.toLowerCase().includes(q);
+                return matchesSession && matchesCat && matchesStatus && matchesSearch;
               });
+
+              const selectedCallObj =
+                selectedGrammarSessionId !== "All"
+                  ? userSessions.find((s) => s.id === selectedGrammarSessionId) || null
+                  : null;
 
               const speakGrammarSentence = (id: string, text: string, langName: string) => {
                 if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
                 window.speechSynthesis.cancel();
+                if (speakingVocabId === id) {
+                  setSpeakingVocabId(null);
+                  return;
+                }
                 const utter = new SpeechSynthesisUtterance(text);
                 const langCodeMap: Record<string, string> = {
                   English: "en-US",
@@ -7306,207 +7621,713 @@ export default function StudentWebApp() {
                 utter.lang = langCodeMap[langName] || "en-US";
                 utter.rate = 0.92;
                 utter.onend = () => setSpeakingVocabId(null);
+                utter.onerror = () => setSpeakingVocabId(null);
                 setSpeakingVocabId(id);
                 window.speechSynthesis.speak(utter);
               };
 
+              const handleToggleGrammarFixed = (mistake: EnrichedCallMistake) => {
+                if (fixedGrammarIds.includes(mistake.id)) {
+                  setFixedGrammarIds((prev) => prev.filter((id) => id !== mistake.id));
+                } else {
+                  setFixedGrammarIds((prev) => [...prev, mistake.id]);
+                  setTotalXp((prev) => prev + 30);
+                  setCelebrationToast(`🎉 +30 XP! Repaired Grammar Rule: "${mistake.ruleTitle}"!`);
+                  setTimeout(() => setCelebrationToast(null), 3500);
+                }
+              };
+
+              // Launch a SPECIALIZED LIVE CALL that drills ONLY this specific grammar rule and its similar variations!
+              const handleLaunchTargetedGrammarCall = (mistake: EnrichedCallMistake) => {
+                if (mistake.language && mistake.language !== selectedLanguage) {
+                  setSelectedLanguage(mistake.language);
+                }
+                const matchingCoach =
+                  COACHES.find((c) => mistake.coachName.toLowerCase().includes(c.name.split(" ")[0].toLowerCase())) ||
+                  selectedCoach;
+                setSelectedCoach(matchingCoach);
+
+                const targetedGrammarTopic: TopicModel = {
+                  id: `grammar_drill_${mistake.id}_${Date.now()}`,
+                  title: `🎯 Grammar Repair: ${mistake.ruleTitle}`,
+                  language: mistake.language || selectedLanguage,
+                  level: mistake.level || "Intermediate",
+                  category: "Targeted Grammar Drill",
+                  subCategory: mistake.sessionTitle,
+                  icon: "🎯",
+                  scenario: `TARGETED GRAMMAR DRILL MODE (From Call: "${mistake.sessionTitle}"): You are drilling the student EXCLUSIVELY on the grammar rule "${mistake.ruleTitle}". In their previous call, the student said: "${mistake.wrong}" instead of the natural native form: "${mistake.correct}". Rule: ${mistake.explanation} Similar target patterns to practice: ${mistake.similarExamples.join(" | ")}. In every turn, ask the student a question that requires them to use this exact grammar structure, check if they used it accurately, and coach them until they master it!`,
+                  starterPrompt: `Welcome back! In our "${mistake.sessionTitle}" call, we caught a quick grammar slip on ${mistake.ruleTitle}. Instead of saying "${mistake.wrong}", native speakers say: "${mistake.correct}". First, try repeating "${mistake.correct}" aloud, and then we'll practice three similar sentences together!`,
+                  starterQuestions: [
+                    `Repeat after me: "${mistake.correct}"`,
+                    ...mistake.similarExamples.map((ex) => `Try saying or answering with this pattern: "${ex}"`)
+                  ]
+                };
+
+                handleInitiateCallPrompt(targetedGrammarTopic);
+              };
+
+              // Launch a SPECIALIZED LIVE CALL drilling ALL grammar mistakes caught in a specific recorded call (or all calls)
+              const handleLaunchCallMistakesBundleDrill = (targetSession?: SavedSessionItem | null) => {
+                const mistakesToDrill = targetSession
+                  ? allCallMistakes.filter((m) => m.sessionId === targetSession.id)
+                  : filteredCallMistakes.slice(0, 4);
+                if (mistakesToDrill.length === 0) {
+                  launchTopicByKeyword("random");
+                  return;
+                }
+                const first = mistakesToDrill[0];
+                const titleLabel = targetSession
+                  ? `🎯 Call Grammar Mastery: ${targetSession.topicTitle}`
+                  : `🎯 Personal Grammar Repair Sprint (${mistakesToDrill.length} Rules)`;
+                const rulesSummary = mistakesToDrill
+                  .map((m, i) => `Rule #${i + 1} (${m.ruleTitle}): Fix "${m.wrong}" -> "${m.correct}"`)
+                  .join("; ");
+
+                const bundleTopic: TopicModel = {
+                  id: `grammar_bundle_${Date.now()}`,
+                  title: titleLabel,
+                  language: first.language || selectedLanguage,
+                  level: "Intermediate",
+                  category: "Call Grammar Repair",
+                  subCategory: `${mistakesToDrill.length} Rules Drill`,
+                  icon: "🎓",
+                  scenario: `TARGETED CALL GRAMMAR REPAIR SESSION: Drill the student exclusively on the ${mistakesToDrill.length} grammar mistakes caught in their previous voice call(s): ${rulesSummary}. Walk through each rule one by one, have the student repeat the corrected native sentence and similar pattern variations, and test them with interactive questions using those exact grammar structures!`,
+                  starterPrompt: `Let's master all ${mistakesToDrill.length} grammar patterns caught in your recent call! First up is ${first.ruleTitle}: instead of "${first.wrong}", say "${first.correct}". Try repeating that sentence now, and then I'll test you on a similar example!`,
+                  starterQuestions: mistakesToDrill.map(
+                    (m) => `Practice ${m.ruleTitle}: "${m.correct}" (Similar: "${m.similarExamples[0]}")`
+                  )
+                };
+
+                handleInitiateCallPrompt(bundleTopic);
+              };
+
+              // Secondary Library Filtering (for when user switches to Full 34+ Grammar Rules Library tab)
+              const langGrammarPool = FULL_GRAMMAR_CATALOG.filter((g) =>
+                grammarLangFilter === "All" ? true : g.language.toLowerCase() === grammarLangFilter.toLowerCase()
+              );
+              const filteredLibraryGrammar = langGrammarPool.filter((g) => {
+                const matchesCat = grammarCategoryFilter === "All" || g.category === grammarCategoryFilter;
+                const matchesLvl = grammarLevelFilter === "All" || g.level.toLowerCase() === grammarLevelFilter.toLowerCase();
+                const q = grammarSearchQuery.trim().toLowerCase();
+                const matchesSearch =
+                  !q ||
+                  g.title.toLowerCase().includes(q) ||
+                  g.wrong.toLowerCase().includes(q) ||
+                  g.correct.toLowerCase().includes(q) ||
+                  g.rule.toLowerCase().includes(q);
+                return matchesCat && matchesLvl && matchesSearch;
+              });
+
               return (
                 <div className="space-y-6">
-                  {/* Hero Header */}
-                  <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#23153C] via-[#0F172A] to-[#0A0F1D] border border-purple-500/35 shadow-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-300 text-[11px] font-black uppercase tracking-wider">
-                          <GraduationCap className="w-3.5 h-3.5" />
-                          {FULL_GRAMMAR_CATALOG.length}+ Spoken Grammar &amp; Syntax Repair Drills
-                        </span>
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 text-[11px] font-bold">
-                          Real-Time Acoustic &amp; Grammar Engine
-                        </span>
-                      </div>
-                      <h2 className="text-xl sm:text-2xl font-black text-white">
-                        Common Spoken Mistakes vs. Natural Native Expressions
-                      </h2>
-                      <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
-                        Compare frequent spoken slips (<span className="text-rose-400 font-bold">❌ Common Mistake</span>) against natural native phrasing (<span className="text-emerald-400 font-bold">✅ Native Expression</span>). Listen to the correct sentence cadence and test each grammar structure inside a live AI voice call.
-                      </p>
-                    </div>
+                  {/* 1. HERO HEADER: CALL-LINKED GRAMMAR MISTAKE VAULT & PATTERN DRILL SYSTEM */}
+                  <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#23153C] via-[#11182E] to-[#090D1A] border border-purple-500/40 shadow-2xl space-y-5 relative overflow-hidden">
+                    <div className="absolute -top-20 -right-20 w-72 h-72 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
-                    <div className="flex items-center gap-2.5 shrink-0">
-                      <button
-                        onClick={() => launchTopicByKeyword("random")}
-                        className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs shadow-lg flex items-center gap-1.5"
-                      >
-                        <PhoneCall className="w-3.5 h-3.5" />
-                        <span>Test Grammar in Live Call →</span>
-                      </button>
-                      <button
-                        onClick={() => setActiveTab("dashboard")}
-                        className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700"
-                      >
-                        ← Back
-                      </button>
-                    </div>
-                  </div>
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-300 text-[11px] font-black uppercase tracking-wider">
+                            <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping" />
+                            {allCallMistakes.length} Spoken Mistakes Captured From Your {userSessions.length} Calls
+                          </span>
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[11px] font-black">
+                            ✅ {fixedGrammarIds.length} Repaired (+30 XP Each)
+                          </span>
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/30 text-purple-300 text-[11px] font-bold">
+                            🎯 1-Click Focused Pattern Drill Calls
+                          </span>
+                        </div>
 
-                  {/* Multi-Filter Bar for Grammar */}
-                  <div className="p-4 sm:p-5 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-                      <div className="relative flex-1 max-w-xl">
-                        <Search className="w-4 h-4 text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="text"
-                          value={grammarSearchQuery}
-                          onChange={(e) => setGrammarSearchQuery(e.target.value)}
-                          placeholder="Search grammar rules, common mistakes, or corrections..."
-                          className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-400"
-                        />
+                        <h1 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2.5 tracking-tight">
+                          <GraduationCap className="w-7 h-7 text-purple-400" />
+                          <span>Call-Linked Grammar Repair &amp; Targeted Pattern Studio</span>
+                        </h1>
+                        <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
+                          Every grammar slip caught during your live AI voice calls is automatically logged below and linked to the exact call you took. Filter mistakes by any recorded call, study <strong className="text-cyan-300">3 similar sentence patterns</strong> for each rule, and launch a <strong className="text-emerald-300">Targeted Grammar Drill Call</strong> where your AI Coach practices <strong className="text-white">only that grammar rule and its variations</strong> with you!
+                        </p>
                       </div>
 
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {["All", "Beginner", "Intermediate", "Advanced"].map((lvl) => (
-                          <button
-                            key={lvl}
-                            onClick={() => setGrammarLevelFilter(lvl)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                              grammarLevelFilter === lvl
-                                ? "bg-purple-500 text-white font-black shadow"
-                                : "bg-slate-900 text-slate-300 border border-slate-800"
-                            }`}
-                          >
-                            {lvl === "All" ? "All Levels" : lvl}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Category & Language Filter Pills */}
-                    <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-800/80 flex-wrap">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {GRAMMAR_CATEGORIES.map((cat) => (
-                          <button
-                            key={cat}
-                            onClick={() => setGrammarCategoryFilter(cat)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                              grammarCategoryFilter === cat
-                                ? "bg-indigo-600 text-white font-black"
-                                : "bg-slate-900 text-slate-400 border border-slate-800 hover:text-white"
-                            }`}
-                          >
-                            {cat === "All" ? `🌟 All Categories (${langGrammarPool.length})` : cat}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="flex items-center gap-1.5 flex-wrap">
+                      <div className="flex items-center gap-2.5 self-start lg:self-auto shrink-0">
                         <button
-                          onClick={() => setGrammarLangFilter("All")}
-                          className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border ${
-                            grammarLangFilter === "All"
-                              ? "bg-purple-500/20 border-purple-400 text-purple-300"
-                              : "bg-slate-900 border-slate-800 text-slate-400"
+                          onClick={() => handleLaunchCallMistakesBundleDrill(selectedCallObj)}
+                          className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-purple-500 via-indigo-600 to-cyan-500 hover:from-purple-400 hover:to-cyan-400 text-white font-black text-xs shadow-xl shadow-purple-500/30 flex items-center gap-2 transition-all hover:scale-[1.02]"
+                        >
+                          <PhoneCall className="w-3.5 h-3.5" />
+                          <span>
+                            {selectedCallObj
+                              ? `Drill All "${selectedCallObj.topicTitle.slice(0, 22)}..." Mistakes →`
+                              : "Practice My Call Mistakes in Live Call →"}
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => setActiveTab("dashboard")}
+                          className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700"
+                        >
+                          ← Back
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Top Mode Switcher: Mistakes From My Calls vs Full 34+ Grammar Library */}
+                    <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-800/80 flex-wrap relative z-10">
+                      <div className="flex items-center gap-2 bg-slate-950/90 p-1.5 rounded-2xl border border-slate-800">
+                        <button
+                          onClick={() => setGrammarModeTab("call_mistakes")}
+                          className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                            grammarModeTab === "call_mistakes"
+                              ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/30"
+                              : "text-slate-400 hover:text-white"
                           }`}
                         >
-                          🌐 All ({FULL_GRAMMAR_CATALOG.length})
+                          <PhoneCall className="w-3.5 h-3.5 text-rose-400" />
+                          <span>Mistakes Caught in My Calls ({allCallMistakes.length})</span>
                         </button>
-                        {AVAILABLE_LANGUAGES.map((lang) => (
-                          <button
-                            key={lang.id}
-                            onClick={() => {
-                              setGrammarLangFilter(lang.name);
-                              setSelectedLanguage(lang.name);
-                            }}
-                            className={`px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border ${
-                              grammarLangFilter.toLowerCase() === lang.name.toLowerCase()
-                                ? "bg-purple-500/20 border-purple-400 text-purple-300"
-                                : "bg-slate-900 border-slate-800 text-slate-400"
-                            }`}
-                          >
-                            <img src={lang.flagUrl} alt={lang.name} className="w-3.5 h-2.5 rounded-[2px] object-cover" />
-                            <span>{lang.name}</span>
-                          </button>
-                        ))}
+                        <button
+                          onClick={() => setGrammarModeTab("library")}
+                          className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                            grammarModeTab === "library"
+                              ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/30"
+                              : "text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>All Grammar Rules Library ({FULL_GRAMMAR_CATALOG.length})</span>
+                        </button>
+                      </div>
+
+                      <div className="text-[11px] text-slate-400 hidden md:flex items-center gap-2">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        <span>New mistakes from your live voice calls automatically appear here after every session!</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Grammar Rules Cards Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {filteredGrammar.map((item) => (
-                      <div
-                        key={item.id}
-                        className="p-5 rounded-3xl bg-[#111827] border border-slate-800 hover:border-purple-500/40 transition-all space-y-4 flex flex-col justify-between"
-                      >
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30">
-                                {item.category}
-                              </span>
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-700">
-                                {item.level} • {item.language}
-                              </span>
-                            </div>
+                  {grammarModeTab === "call_mistakes" ? (
+                    <>
+                      {/* 2. FILTER BY YOUR RECORDED CALLS (CALL SESSION FILTER BAR) */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between px-1">
+                          <div className="flex items-center gap-2">
+                            <PhoneCall className="w-4 h-4 text-cyan-400" />
+                            <h2 className="text-sm font-black text-white uppercase tracking-wider">
+                              Filter Grammar Mistakes by Calls You Took ({userSessions.length} Recorded Calls)
+                            </h2>
+                          </div>
+                          {selectedGrammarSessionId !== "All" && (
                             <button
-                              type="button"
-                              onClick={() => speakGrammarSentence(item.id, item.correct, item.language)}
-                              className="px-2.5 py-1 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/30 text-cyan-300 text-xs font-bold flex items-center gap-1.5 shrink-0"
+                              onClick={() => setSelectedGrammarSessionId("All")}
+                              className="text-xs font-bold text-cyan-400 hover:text-cyan-300"
                             >
-                              <Volume2 className="w-3.5 h-3.5" />
-                              <span>{speakingVocabId === item.id ? "Speaking..." : "Hear Native Audio"}</span>
+                              Show Mistakes From All {userSessions.length} Calls ({allCallMistakes.length})
                             </button>
-                          </div>
-
-                          <h3 className="text-sm font-black text-white">{item.title}</h3>
-
-                          {/* Wrong vs Correct Comparison Box */}
-                          <div className="space-y-2 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/90">
-                            <div className="flex items-start gap-2 text-xs">
-                              <span className="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-black text-[10px] shrink-0">
-                                ❌ Common Slip
-                              </span>
-                              <span className="line-through text-rose-300/90 font-medium">{item.wrong}</span>
-                            </div>
-                            <div className="flex items-start gap-2 text-xs pt-1 border-t border-slate-800/80">
-                              <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-black text-[10px] shrink-0">
-                                ✅ Native Form
-                              </span>
-                              <span className="font-black text-emerald-300 text-sm">{item.correct}</span>
-                            </div>
-                          </div>
-
-                          {/* Rule & Pro Tip (100% International English) */}
-                          <div className="space-y-1.5 text-xs px-1">
-                            <p className="text-slate-200 font-medium leading-relaxed">
-                              💡 <strong className="text-white">Grammar Rule:</strong> {item.rule}
-                            </p>
-                            <p className="text-cyan-300/95 text-[11px] leading-relaxed">
-                              🎯 <strong className="text-cyan-200">Pro Coaching Tip:</strong> {item.tip}
-                            </p>
-                          </div>
+                          )}
                         </div>
 
-                        <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                          <span className="text-[10px] font-mono text-purple-300">
-                            ⚡ SpeakFlow Live Grammar Detector Active
-                          </span>
+                        {/* Horizontal Grid of Taken Call Filter Cards */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-2.5">
+                          {/* "All My Calls" Card */}
                           <button
-                            type="button"
-                            onClick={() => {
-                              if (item.language !== selectedLanguage) {
-                                setSelectedLanguage(item.language);
-                              }
-                              launchTopicByKeyword(item.keyword);
-                            }}
-                            className="px-3.5 py-1.5 rounded-xl bg-purple-600/25 hover:bg-purple-600 border border-purple-500/40 text-purple-200 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-all"
+                            onClick={() => setSelectedGrammarSessionId("All")}
+                            className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between gap-2.5 ${
+                              selectedGrammarSessionId === "All"
+                                ? "bg-gradient-to-br from-purple-600/30 via-indigo-900/40 to-slate-900 border-purple-400 ring-2 ring-purple-400/40 shadow-xl scale-[1.02]"
+                                : "bg-[#111827]/95 border-slate-800 hover:border-slate-700"
+                            }`}
                           >
-                            <PhoneCall className="w-3.5 h-3.5" />
-                            <span>Practice Rule in Call →</span>
+                            <div className="flex items-center justify-between w-full">
+                              <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-lg">
+                                📞
+                              </div>
+                              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                                {allCallMistakes.length} Slips
+                              </span>
+                            </div>
+                            <div>
+                              <div className="font-black text-xs text-white truncate">All My Calls</div>
+                              <div className="text-[10px] text-slate-400 truncate">
+                                {userSessions.length} Recorded Sessions
+                              </div>
+                            </div>
                           </button>
+
+                          {/* Individual Taken Call Cards */}
+                          {userSessions.slice(0, 6).map((sess) => {
+                            const count = getSessionMistakeCount(sess.id);
+                            const isSelected = selectedGrammarSessionId === sess.id;
+                            return (
+                              <button
+                                key={sess.id}
+                                onClick={() =>
+                                  setSelectedGrammarSessionId(isSelected ? "All" : sess.id)
+                                }
+                                className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col justify-between gap-2.5 ${
+                                  isSelected
+                                    ? "bg-gradient-to-br from-cyan-500/25 via-indigo-900/40 to-slate-900 border-cyan-400 ring-2 ring-cyan-400/40 shadow-xl scale-[1.02]"
+                                    : "bg-[#111827]/95 border-slate-800 hover:border-slate-700"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between w-full gap-1">
+                                  <div className="relative shrink-0">
+                                    <img
+                                      src={sess.coachAvatar}
+                                      alt={sess.coachName}
+                                      className="w-9 h-9 rounded-xl object-cover border border-slate-700"
+                                    />
+                                    <span className="absolute -bottom-1 -right-1 text-[10px]">
+                                      {sess.coachFlag}
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
+                                    {count} {count === 1 ? "Slip" : "Slips"}
+                                  </span>
+                                </div>
+                                <div>
+                                  <div className="font-black text-xs text-white truncate" title={sess.topicTitle}>
+                                    {sess.topicTitle}
+                                  </div>
+                                  <div className="text-[10px] text-slate-400 truncate">
+                                    {sess.coachName.replace("Coach ", "")} • {sess.timeAgo}
+                                  </div>
+                                </div>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
-                    ))}
-                  </div>
+
+                      {/* Selected Call Spotlight Banner (When a specific call is clicked) */}
+                      {selectedCallObj && (
+                        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-cyan-950/60 via-indigo-950/60 to-purple-950/60 border border-cyan-400/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
+                          <div className="flex items-center gap-3.5">
+                            <img
+                              src={selectedCallObj.coachAvatar}
+                              alt={selectedCallObj.coachName}
+                              className="w-12 h-12 rounded-2xl object-cover border-2 border-cyan-400/60"
+                            />
+                            <div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+                                  Selected Call Session
+                                </span>
+                                <span className="text-xs font-bold text-slate-300">
+                                  {selectedCallObj.coachName} • {selectedCallObj.durationFormatted} • Score {selectedCallObj.score}% ({selectedCallObj.grade})
+                                </span>
+                              </div>
+                              <h3 className="text-base font-black text-white mt-0.5">
+                                {selectedCallObj.topicTitle}
+                              </h3>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                            <button
+                              onClick={() => handleLaunchCallMistakesBundleDrill(selectedCallObj)}
+                              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-500 hover:from-emerald-300 hover:to-cyan-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-lg"
+                            >
+                              <PhoneCall className="w-3.5 h-3.5 fill-slate-950" />
+                              <span>Practice All {getSessionMistakeCount(selectedCallObj.id)} Grammar Rules From This Call →</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 3. SEARCH & STATUS FILTER BAR */}
+                      <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                        <div className="relative flex-1 max-w-xl">
+                          <Search className="w-4 h-4 text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="text"
+                            value={grammarSearchQuery}
+                            onChange={(e) => setGrammarSearchQuery(e.target.value)}
+                            placeholder="Search your call mistakes, grammar rules, call titles, or similar sentences..."
+                            className="w-full pl-10 pr-9 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-400"
+                          />
+                          {grammarSearchQuery && (
+                            <button
+                              onClick={() => setGrammarSearchQuery("")}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                            {(["All", "Needs Practice", "Fixed"] as const).map((st) => (
+                              <button
+                                key={st}
+                                onClick={() => setGrammarFixStatusFilter(st)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                  grammarFixStatusFilter === st
+                                    ? "bg-purple-600 text-white font-black"
+                                    : "text-slate-400 hover:text-white"
+                                }`}
+                              >
+                                {st === "All" ? `All Mistakes (${allCallMistakes.length})` : st}
+                              </button>
+                            ))}
+                          </div>
+
+                          {(selectedGrammarSessionId !== "All" ||
+                            grammarFixStatusFilter !== "All" ||
+                            grammarSearchQuery.trim() !== "") && (
+                            <button
+                              onClick={() => {
+                                setSelectedGrammarSessionId("All");
+                                setGrammarFixStatusFilter("All");
+                                setGrammarSearchQuery("");
+                              }}
+                              className="text-xs font-bold text-rose-400 hover:text-rose-300 px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center gap-1"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                              <span>Reset Filter</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 4. CALL-LINKED GRAMMAR MISTAKE & SIMILAR PATTERNS CARDS */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        {filteredCallMistakes.map((mistake) => {
+                          const isFixed = fixedGrammarIds.includes(mistake.id);
+                          const isSpeakingMain = speakingVocabId === mistake.id;
+
+                          return (
+                            <div
+                              key={mistake.id}
+                              className={`p-5 sm:p-6 rounded-3xl bg-gradient-to-b from-[#141C32]/95 via-[#0E1526]/95 to-[#090E1A]/95 border transition-all duration-300 flex flex-col justify-between space-y-4 relative overflow-hidden group ${
+                                isFixed
+                                  ? "border-emerald-500/50 shadow-[0_12px_35px_rgba(16,185,129,0.12)]"
+                                  : "border-slate-800/90 hover:border-purple-400/60"
+                              }`}
+                            >
+                              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-purple-400 to-transparent opacity-80" />
+
+                              <div className="space-y-3.5 relative z-10">
+                                {/* Top Call Provenance Header */}
+                                <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-800/80">
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <div className="relative shrink-0">
+                                      <img
+                                        src={mistake.coachAvatar}
+                                        alt={mistake.coachName}
+                                        className="w-9 h-9 rounded-xl object-cover border border-purple-400/40"
+                                      />
+                                      <span className="absolute -bottom-1 -right-1 text-[10px]">
+                                        {mistake.coachFlag}
+                                      </span>
+                                    </div>
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-[10px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/15 px-2 py-0.2 rounded border border-purple-500/30">
+                                          📞 Caught in Call
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 font-mono">
+                                          {mistake.sessionTimeAgo}
+                                        </span>
+                                      </div>
+                                      <div className="text-xs font-bold text-white truncate mt-0.5" title={mistake.sessionTitle}>
+                                        {mistake.sessionTitle} ({mistake.coachName})
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => speakGrammarSentence(mistake.id, mistake.correct, mistake.language)}
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 shrink-0 transition-all ${
+                                      isSpeakingMain
+                                        ? "bg-emerald-400 text-slate-950 shadow-lg animate-pulse"
+                                        : "bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-300"
+                                    }`}
+                                  >
+                                    <Volume2 className="w-3.5 h-3.5" />
+                                    <span>{isSpeakingMain ? "Playing..." : "Hear Fix"}</span>
+                                  </button>
+                                </div>
+
+                                {/* Grammar Rule Title */}
+                                <div className="flex items-center justify-between gap-2">
+                                  <h3 className="text-base font-black text-white group-hover:text-cyan-300 transition-colors">
+                                    {mistake.ruleTitle}
+                                  </h3>
+                                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-700 shrink-0">
+                                    {mistake.level} • {mistake.language}
+                                  </span>
+                                </div>
+
+                                {/* What You Said vs Natural Native Form */}
+                                <div className="space-y-2.5 p-3.5 rounded-2xl bg-slate-950/85 border border-slate-800/90">
+                                  <div className="flex items-start gap-2.5 text-xs">
+                                    <span className="px-2 py-0.5 rounded-md bg-rose-500/20 border border-rose-500/30 text-rose-300 font-black text-[10px] shrink-0">
+                                      ❌ You Said
+                                    </span>
+                                    <span className="line-through text-rose-300/90 font-medium leading-relaxed">
+                                      &ldquo;{mistake.wrong}&rdquo;
+                                    </span>
+                                  </div>
+                                  <div className="flex items-start gap-2.5 text-xs pt-2 border-t border-slate-800/80">
+                                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-black text-[10px] shrink-0">
+                                      ✅ Native Fix
+                                    </span>
+                                    <span className="font-black text-emerald-300 text-sm leading-relaxed">
+                                      &ldquo;{mistake.correct}&rdquo;
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Why / Grammar Rule Explanation */}
+                                <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800/80 text-xs text-slate-200 leading-relaxed">
+                                  💡 <strong className="text-white">Why &amp; Grammar Rule:</strong> {mistake.explanation}
+                                </div>
+
+                                {/* 3 Similar Pattern Variations to Practice ("e ha samana dewalui") */}
+                                <div className="p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-500/30 space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[10.5px] font-black uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
+                                      <Repeat className="w-3.5 h-3.5 text-cyan-400" />
+                                      Similar Sentences Using This Exact Grammar Pattern:
+                                    </span>
+                                    <span className="text-[9.5px] text-cyan-400 font-mono">Click 🔊 to Hear</span>
+                                  </div>
+
+                                  <div className="space-y-1.5">
+                                    {mistake.similarExamples.map((sim, sIdx) => {
+                                      const simAudioId = `${mistake.id}_sim_${sIdx}`;
+                                      const isPlayingSim = speakingVocabId === simAudioId;
+                                      return (
+                                        <div
+                                          key={sIdx}
+                                          onClick={() => speakGrammarSentence(simAudioId, sim, mistake.language)}
+                                          className="p-2 rounded-xl bg-slate-950/75 hover:bg-slate-900 border border-slate-800/80 hover:border-cyan-500/40 flex items-center justify-between gap-2 cursor-pointer transition-all"
+                                        >
+                                          <div className="flex items-start gap-2 text-xs text-slate-200">
+                                            <span className="text-cyan-400 font-black text-[11px]">{sIdx + 1}.</span>
+                                            <span className="font-medium">&ldquo;{sim}&rdquo;</span>
+                                          </div>
+                                          <span className={`p-1 rounded-lg shrink-0 ${isPlayingSim ? "bg-emerald-400 text-slate-950" : "text-cyan-400 hover:bg-slate-800"}`}>
+                                            <Volume2 className="w-3.5 h-3.5" />
+                                          </span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Bottom Action Bar: Mark Fixed + Launch Targeted Grammar Drill Call */}
+                              <div className="pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 relative z-10">
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleGrammarFixed(mistake)}
+                                  className={`px-3.5 py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all ${
+                                    isFixed
+                                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/50"
+                                      : "bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700"
+                                  }`}
+                                >
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  <span>{isFixed ? "Rule Mastered ✓" : "Mark Fixed (+30 XP)"}</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleLaunchTargetedGrammarCall(mistake)}
+                                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-purple-600/30 transition-all hover:scale-[1.02]"
+                                >
+                                  <PhoneCall className="w-3.5 h-3.5" />
+                                  <span>Practice ONLY This Grammar &amp; Similar Patterns in Call →</span>
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  ) : (
+                    /* SECONDARY TAB: FULL 34+ GRAMMAR RULES LIBRARY */
+                    <>
+                      <div className="p-4 sm:p-5 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                          <div className="relative flex-1 max-w-xl">
+                            <Search className="w-4 h-4 text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                            <input
+                              type="text"
+                              value={grammarSearchQuery}
+                              onChange={(e) => setGrammarSearchQuery(e.target.value)}
+                              placeholder="Search 34+ grammar rules, common mistakes, or corrections..."
+                              className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-400"
+                            />
+                          </div>
+
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {["All", "Beginner", "Intermediate", "Advanced"].map((lvl) => (
+                              <button
+                                key={lvl}
+                                onClick={() => setGrammarLevelFilter(lvl)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                                  grammarLevelFilter === lvl
+                                    ? "bg-purple-500 text-white font-black shadow"
+                                    : "bg-slate-900 text-slate-300 border border-slate-800"
+                                }`}
+                              >
+                                {lvl === "All" ? "All Levels" : lvl}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-800/80 flex-wrap">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {[
+                              "All",
+                              "Career & Business",
+                              "Travel & Transit",
+                              "Food & Dining",
+                              "Sports & Fitness",
+                              "Daily Conversation",
+                              "Tech & Innovation",
+                              "Shopping & Health"
+                            ].map((cat) => (
+                              <button
+                                key={cat}
+                                onClick={() => setGrammarCategoryFilter(cat)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                                  grammarCategoryFilter === cat
+                                    ? "bg-indigo-600 text-white font-black"
+                                    : "bg-slate-900 text-slate-400 border border-slate-800 hover:text-white"
+                                }`}
+                              >
+                                {cat === "All" ? `🌟 All Categories (${langGrammarPool.length})` : cat}
+                              </button>
+                            ))}
+                          </div>
+
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <button
+                              onClick={() => setGrammarLangFilter("All")}
+                              className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border ${
+                                grammarLangFilter === "All"
+                                  ? "bg-purple-500/20 border-purple-400 text-purple-300"
+                                  : "bg-slate-900 border-slate-800 text-slate-400"
+                              }`}
+                            >
+                              🌐 All ({FULL_GRAMMAR_CATALOG.length})
+                            </button>
+                            {AVAILABLE_LANGUAGES.map((lang) => (
+                              <button
+                                key={lang.id}
+                                onClick={() => {
+                                  setGrammarLangFilter(lang.name);
+                                  setSelectedLanguage(lang.name);
+                                }}
+                                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border ${
+                                  grammarLangFilter.toLowerCase() === lang.name.toLowerCase()
+                                    ? "bg-purple-500/20 border-purple-400 text-purple-300"
+                                    : "bg-slate-900 border-slate-800 text-slate-400"
+                                }`}
+                              >
+                                <img src={lang.flagUrl} alt={lang.name} className="w-3.5 h-2.5 rounded-[2px] object-cover" />
+                                <span>{lang.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {filteredLibraryGrammar.map((item) => (
+                          <div
+                            key={item.id}
+                            className="p-5 rounded-3xl bg-[#111827] border border-slate-800 hover:border-purple-500/40 transition-all space-y-4 flex flex-col justify-between"
+                          >
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                                    {item.category}
+                                  </span>
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-700">
+                                    {item.level} • {item.language}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => speakGrammarSentence(item.id, item.correct, item.language)}
+                                  className="px-2.5 py-1 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/30 text-cyan-300 text-xs font-bold flex items-center gap-1.5 shrink-0"
+                                >
+                                  <Volume2 className="w-3.5 h-3.5" />
+                                  <span>{speakingVocabId === item.id ? "Speaking..." : "Hear Native Audio"}</span>
+                                </button>
+                              </div>
+
+                              <h3 className="text-sm font-black text-white">{item.title}</h3>
+
+                              <div className="space-y-2 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/90">
+                                <div className="flex items-start gap-2 text-xs">
+                                  <span className="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-black text-[10px] shrink-0">
+                                    ❌ Common Slip
+                                  </span>
+                                  <span className="line-through text-rose-300/90 font-medium">{item.wrong}</span>
+                                </div>
+                                <div className="flex items-start gap-2 text-xs pt-1 border-t border-slate-800/80">
+                                  <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-black text-[10px] shrink-0">
+                                    ✅ Native Form
+                                  </span>
+                                  <span className="font-black text-emerald-300 text-sm">{item.correct}</span>
+                                </div>
+                              </div>
+
+                              <div className="space-y-1.5 text-xs px-1">
+                                <p className="text-slate-200 font-medium leading-relaxed">
+                                  💡 <strong className="text-white">Grammar Rule:</strong> {item.rule}
+                                </p>
+                                <p className="text-cyan-300/95 text-[11px] leading-relaxed">
+                                  🎯 <strong className="text-cyan-200">Pro Coaching Tip:</strong> {item.tip}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                              <span className="text-[10px] font-mono text-purple-300">
+                                ⚡ Focused Pattern Drill Ready
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleLaunchTargetedGrammarCall({
+                                    id: item.id,
+                                    sessionId: "library",
+                                    sessionTitle: item.category,
+                                    sessionTimeAgo: "Library Rule",
+                                    sessionScore: 95,
+                                    coachName: selectedCoach.name,
+                                    coachAvatar: selectedCoach.avatar,
+                                    coachFlag: "🇺🇸",
+                                    language: item.language,
+                                    category: item.category,
+                                    level: item.level,
+                                    ruleTitle: item.title,
+                                    wrong: item.wrong,
+                                    correct: item.correct,
+                                    explanation: item.rule,
+                                    similarExamples: [item.correct, item.tip]
+                                  })
+                                }
+                                className="px-3.5 py-1.5 rounded-xl bg-purple-600/25 hover:bg-purple-600 border border-purple-500/40 text-purple-200 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-all"
+                              >
+                                <PhoneCall className="w-3.5 h-3.5" />
+                                <span>Practice Only This Rule in Call →</span>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               );
             })()
