@@ -201,55 +201,56 @@ video::cue {
 }
 
 /* ------------------------------------------------------------- */
-/* DUAL SYSTEM: COMPLETE DAYLIGHT LIGHT MODE (html.theme-light)  */
-/* Covers Sidebar, Header, All Tabs, Calling UI, Radar & Modals  */
+/* DUAL SYSTEM: SOFT PERIWINKLE-SLATE DAYLIGHT THEME              */
+/* Balanced cool slate-blue canvas (never glaring stark white!)  */
 /* ------------------------------------------------------------- */
 html.theme-light {
   color-scheme: light;
 }
 
 html.theme-light body {
-  background: #eff4fb !important;
+  background: linear-gradient(145deg, #d7e3f4 0%, #e4edf9 48%, #dde5f6 100%) !important;
+  background-attachment: fixed !important;
   color: #0f172a !important;
 }
 
 html.theme-light ::-webkit-scrollbar-track {
-  background: #e2e8f0;
+  background: #dce5f2;
 }
 html.theme-light ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #b6c5dc;
 }
 html.theme-light ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #94a8c7;
 }
 
 /* 1. Main Canvas, Sidebar, Header, Call Wrapper & Mobile Dock */
 html.theme-light .min-h-screen,
 html.theme-light [class*="bg-[#030612]"],
 html.theme-light [class*="bg-[#0A0F1D]"] {
-  background-color: #eff4fb !important;
+  background: linear-gradient(145deg, #d7e3f4 0%, #e4edf9 48%, #dde5f6 100%) !important;
   color: #0f172a !important;
 }
 
 html.theme-light aside {
-  background: linear-gradient(180deg, #ffffff 0%, #f8faff 60%, #f1f5fd 100%) !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 6px 0 28px rgba(15, 23, 42, 0.05) !important;
+  background: linear-gradient(180deg, #f5f8fd 0%, #edf2fb 60%, #e6edf9 100%) !important;
+  border-color: #cbd8ec !important;
+  box-shadow: 6px 0 28px rgba(15, 35, 75, 0.06) !important;
 }
 
 html.theme-light header {
-  background: rgba(255, 255, 255, 0.96) !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
+  background: rgba(246, 249, 254, 0.94) !important;
+  border-color: #cbd8ec !important;
+  box-shadow: 0 4px 20px rgba(15, 35, 75, 0.05) !important;
 }
 
 html.theme-light nav[aria-label="Mobile Navigation"] {
-  background: rgba(255, 255, 255, 0.96) !important;
-  border-color: #cbd5e1 !important;
-  box-shadow: 0 -8px 30px rgba(15, 23, 42, 0.08) !important;
+  background: rgba(246, 249, 254, 0.96) !important;
+  border-color: #c2d1e8 !important;
+  box-shadow: 0 -8px 30px rgba(15, 35, 75, 0.09) !important;
 }
 
-/* 2. Primary Neutral Card & Container Surfaces (Dashboards, Call Panels, Modals, Tabs) */
+/* 2. Primary Card Surfaces (Cool Porcelain Tint on Periwinkle Canvas) */
 html.theme-light [class*="bg-[#111827]"],
 html.theme-light [class*="bg-[#0F172A]"],
 html.theme-light [class*="bg-[#0C1222]"],
@@ -280,12 +281,12 @@ html.theme-light [class*="from-[#101a33]"],
 html.theme-light [class*="from-slate-900"],
 html.theme-light [class*="from-slate-950"] {
   background-image: none !important;
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05) !important;
+  background-color: #f9fbfe !important;
+  border-color: #cddaec !important;
+  box-shadow: 0 8px 24px rgba(15, 35, 75, 0.06) !important;
 }
 
-/* 3. Nested Sub-Cards, Inputs, Pill Docks & Inner Transcript Boxes */
+/* 3. Nested Sub-Cards, Inputs, Progress Tracks & Inner Boxes */
 html.theme-light [class*="bg-slate-950"],
 html.theme-light [class*="bg-slate-800"],
 html.theme-light [class*="bg-[#070E22]"],
@@ -295,12 +296,12 @@ html.theme-light [class*="bg-[#091128]"],
 html.theme-light [class*="bg-[#051c14]"],
 html.theme-light [class*="bg-[#0d1d1c]"] {
   background-image: none !important;
-  background-color: #f1f5f9 !important;
-  border-color: #e2e8f0 !important;
+  background-color: #ebf1fa !important;
+  border-color: #d2dfef !important;
 }
 
-/* 4. Tinted Coloured Bento Cards (Soft Daylight Pastel Gradients instead of muddy dark tints) */
-/* Purple / Violet Tinted Cards */
+/* 4. Tinted Coloured Bento Cards (Incl. Weekly Sprint & Yearly VIP Card Gradients) */
+/* Purple / Violet / Indigo Tinted Cards */
 html.theme-light [class*="from-[#1c143d]"],
 html.theme-light [class*="from-[#1E1B4B]"],
 html.theme-light [class*="from-[#1B1948]"],
@@ -308,12 +309,16 @@ html.theme-light [class*="from-[#17153B]"],
 html.theme-light [class*="from-[#1A1536]"],
 html.theme-light [class*="from-[#201436]"],
 html.theme-light [class*="from-[#23153C]"],
+html.theme-light [class*="from-indigo-950"],
+html.theme-light [class*="via-indigo-950"],
+html.theme-light [class*="from-purple-950"],
+html.theme-light [class*="to-purple-950"],
 html.theme-light [class*="bg-purple-950"],
 html.theme-light [class*="bg-indigo-950"] {
-  background-image: linear-gradient(180deg, #f5f3ff 0%, #ffffff 100%) !important;
-  background-color: #f5f3ff !important;
-  border-color: #ddd6fe !important;
-  box-shadow: 0 8px 22px rgba(109, 40, 217, 0.07) !important;
+  background-image: linear-gradient(155deg, #efeaff 0%, #f8f6ff 100%) !important;
+  background-color: #efeaff !important;
+  border-color: #d6ccfc !important;
+  box-shadow: 0 8px 22px rgba(109, 40, 217, 0.08) !important;
 }
 
 /* Emerald / Mint Tinted Cards */
@@ -324,22 +329,22 @@ html.theme-light [class*="from-[#0F2422]"],
 html.theme-light [class*="from-[#0F292A]"],
 html.theme-light [class*="from-emerald-950"],
 html.theme-light [class*="bg-emerald-950"] {
-  background-image: linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%) !important;
-  background-color: #ecfdf5 !important;
-  border-color: #a7f3d0 !important;
-  box-shadow: 0 8px 22px rgba(5, 150, 105, 0.07) !important;
+  background-image: linear-gradient(155deg, #e3f9ef 0%, #f5fcf9 100%) !important;
+  background-color: #e3f9ef !important;
+  border-color: #a9ebd0 !important;
+  box-shadow: 0 8px 22px rgba(5, 150, 105, 0.08) !important;
 }
 
 /* Amber / Gold / VIP Tinted Cards */
 html.theme-light [class*="from-[#381e0c]"],
 html.theme-light [class*="from-amber-950"] {
-  background-image: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%) !important;
-  background-color: #fffbeb !important;
-  border-color: #fde68a !important;
-  box-shadow: 0 8px 22px rgba(217, 119, 6, 0.08) !important;
+  background-image: linear-gradient(155deg, #fef3dc 0%, #fffaf0 100%) !important;
+  background-color: #fef3dc !important;
+  border-color: #f7d68d !important;
+  box-shadow: 0 8px 22px rgba(217, 119, 6, 0.09) !important;
 }
 
-/* Cyan / Blue / Sky Tinted Cards (incl. SpeakFlow Neural Sidebar Panel & Practice Pillars) */
+/* Cyan / Blue / Sky Tinted Cards (excl. hero backdrop scrims) */
 html.theme-light [class*="from-[#102a45]"],
 html.theme-light [class*="from-[#121F44]"],
 html.theme-light [class*="from-[#0c1f38]"],
@@ -347,20 +352,19 @@ html.theme-light [class*="from-[#0e1c33]"],
 html.theme-light [class*="from-[#0F1B3D]"],
 html.theme-light [class*="from-[#0F243C]"],
 html.theme-light [class*="from-cyan-950"],
-html.theme-light [class*="from-blue-950"],
 html.theme-light [class*="bg-cyan-950"],
 html.theme-light [class*="bg-blue-950"] {
-  background-image: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%) !important;
-  background-color: #eff6ff !important;
-  border-color: #bfdbfe !important;
-  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.07) !important;
+  background-image: linear-gradient(155deg, #e3f0fe 0%, #f5f9ff 100%) !important;
+  background-color: #e3f0fe !important;
+  border-color: #b7d4fb !important;
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.08) !important;
 }
 
 /* Rose Tinted Alert Containers */
 html.theme-light [class*="bg-rose-950"],
 html.theme-light [class*="from-rose-950"] {
-  background-image: linear-gradient(180deg, #fff1f2 0%, #ffffff 100%) !important;
-  background-color: #fff1f2 !important;
+  background-image: linear-gradient(155deg, #ffe9ed 0%, #fff7f8 100%) !important;
+  background-color: #ffe9ed !important;
   border-color: #fecdd3 !important;
 }
 
@@ -372,7 +376,7 @@ html.theme-light [class*="bg-black/8"] {
 /* 5. Crisp High-Contrast Daylight Borders & Typography */
 html.theme-light [class*="border-slate-8"],
 html.theme-light [class*="border-slate-7"] {
-  border-color: #e2e8f0 !important;
+  border-color: #cddaec !important;
 }
 
 html.theme-light .text-white:not(.bg-clip-text),
@@ -396,12 +400,12 @@ html.theme-light [class*="text-cyan-200"],
 html.theme-light [class*="text-cyan-300"],
 html.theme-light [class*="text-cyan-400"],
 html.theme-light [class*="text-sky-300"] {
-  color: #0284c7 !important;
+  color: #0369a1 !important;
 }
 html.theme-light [class*="text-blue-100"],
 html.theme-light [class*="text-blue-200"],
 html.theme-light [class*="text-blue-300"] {
-  color: #1d4ed8 !important;
+  color: #1e40af !important;
 }
 html.theme-light [class*="text-emerald-100"],
 html.theme-light [class*="text-emerald-200"],
@@ -470,9 +474,8 @@ html.theme-light [class*="bg-rose-500"] * {
   color: #ffffff !important;
 }
 
-html.theme-light .keep-dark-hero [class*="bg-white/1"] {
-  background-color: rgba(255, 255, 255, 0.14) !important;
-  border-color: rgba(255, 255, 255, 0.28) !important;
+html.theme-light [class*="from-amber-500"].text-white,
+html.theme-light [class*="from-amber-500"].text-white * {
   color: #ffffff !important;
 }
 
@@ -490,7 +493,8 @@ html.theme-light .keep-dark-hero {
   background-color: #081330 !important;
   color: #ffffff !important;
 }
-html.theme-light .keep-dark-hero .text-white:not(.bg-clip-text) {
+html.theme-light .keep-dark-hero .text-white:not(.bg-clip-text),
+html.theme-light .keep-dark-flame .text-white {
   color: #ffffff !important;
 }
 html.theme-light .keep-dark-hero [class*="text-blue-100"],
@@ -508,8 +512,9 @@ html.theme-light .keep-dark-hero [class*="text-emerald-400"] {
   color: #6ee7b7 !important;
 }
 html.theme-light .keep-dark-hero [class*="text-amber-300"],
-html.theme-light .keep-dark-hero [class*="text-amber-400"] {
-  color: #fcd34d !important;
+html.theme-light .keep-dark-hero [class*="text-amber-400"],
+html.theme-light .keep-dark-flame [class*="text-amber-300"] {
+  color: #fde68a !important;
 }
 html.theme-light .keep-dark-hero [class*="bg-slate-950"] {
   background-color: rgba(2, 6, 23, 0.78) !important;
@@ -518,6 +523,11 @@ html.theme-light .keep-dark-hero [class*="bg-slate-950"] {
 html.theme-light .keep-dark-hero [class*="bg-slate-900"] {
   background-color: rgba(15, 23, 42, 0.8) !important;
   border-color: rgba(56, 189, 248, 0.3) !important;
+}
+html.theme-light .keep-dark-hero [class*="bg-white/1"] {
+  background-color: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  color: #ffffff !important;
 }
 
 

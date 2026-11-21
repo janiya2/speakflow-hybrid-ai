@@ -4077,7 +4077,13 @@ export default function StudentWebApp() {
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-black text-xl text-white tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+                    <span
+                      className={`font-black text-xl tracking-tight bg-gradient-to-r bg-clip-text text-transparent ${
+                        isLight
+                          ? "from-slate-900 via-blue-700 to-indigo-700"
+                          : "from-white via-slate-100 to-slate-300"
+                      }`}
+                    >
                       SpeakFlow
                     </span>
                     <span className="text-[9px] font-black bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 px-1.5 py-0.5 rounded-md shadow-sm">
@@ -5996,59 +6002,93 @@ export default function StudentWebApp() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch">
               {/* LEFT & CENTER MAIN COLUMN (8 cols of 12) */}
               <div className="lg:col-span-8 flex flex-col justify-between gap-6">
-                {/* 1. HERO BANNER: Welcome Back Janitha! (Fully Visible Artwork & Centered Typography) */}
-                <div className="relative rounded-3xl overflow-hidden border border-blue-500/30 bg-[#0B132B] shadow-[0_20px_50px_rgba(30,58,138,0.3)] min-h-[250px] sm:min-h-[275px] lg:min-h-[290px] flex items-center justify-center pt-12 pb-6 px-5 sm:p-8 keep-dark-hero">
-                  {/* High Resolution Background Artwork (Full Robot on Left, Full Globe on Right, Clean Center) */}
+                {/* 1. HERO BANNER: Welcome Back Janitha! (Dual Daylight / Dark Panoramic Artwork) */}
+                <div
+                  className={`relative rounded-3xl overflow-hidden border shadow-[0_20px_50px_rgba(30,58,138,0.22)] min-h-[250px] sm:min-h-[275px] lg:min-h-[290px] flex items-center justify-center pt-12 pb-6 px-5 sm:p-8 ${
+                    isLight
+                      ? "border-blue-300/80 bg-[#DCEAFE]"
+                      : "border-blue-500/30 bg-[#0B132B] keep-dark-hero"
+                  }`}
+                >
+                  {/* High Resolution Background Artwork (Daylight vs Cosmic Night) */}
                   <img
-                    src="/images/hero_banner_panoramic_clean.jpg"
+                    src={isLight ? "/images/hero_banner_light.jpg" : "/images/hero_banner_panoramic_clean.jpg"}
                     alt="SpeakFlow AI Hero"
-                    className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none opacity-90"
+                    className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none opacity-95"
                     onError={(e) => {
                       (e.currentTarget as any).src = "/images/exact_reference_banner.png";
                     }}
                   />
 
-                  {/* Ambient Glow Gradient Overlays */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-950/30 via-transparent to-blue-950/30 pointer-events-none" />
+                  {/* Subtle Edge Depth (Zero white block over center artwork!) */}
+                  {!isLight && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-950/30 via-transparent to-blue-950/30 pointer-events-none" />
+                  )}
 
                   {/* Top-Right Floating Badges */}
                   <div className="absolute top-3.5 right-4 sm:top-4 sm:right-6 flex items-center gap-2 z-20">
-                    <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/75 border border-cyan-500/40 text-cyan-300 text-[11px] font-bold backdrop-blur-md shadow-lg shadow-cyan-950/40">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <div
+                      className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold backdrop-blur-md shadow-lg ${
+                        isLight
+                          ? "bg-white/85 border-blue-200 text-blue-700 shadow-blue-900/5"
+                          : "bg-slate-950/75 border-cyan-500/40 text-cyan-300 shadow-cyan-950/40"
+                      }`}
+                    >
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                       <span>SpeakFlow Neural Core</span>
                     </div>
                     <button
                       onClick={() => setActiveTab("achievements")}
-                      className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/80 hover:bg-slate-900 border border-amber-500/40 text-amber-300 text-[11px] font-bold backdrop-blur-md shadow-lg transition-all hover:scale-105 active:scale-95"
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold backdrop-blur-md shadow-lg transition-all hover:scale-105 active:scale-95 ${
+                        isLight
+                          ? "bg-white/90 hover:bg-white border-amber-300 text-amber-700"
+                          : "bg-slate-950/80 hover:bg-slate-900 border-amber-500/40 text-amber-300"
+                      }`}
                       title="View All 20 Achievements"
                     >
-                      <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                      <Trophy className="w-3.5 h-3.5 text-amber-500" />
                       <span>Badges ({achievements.filter(a => a.isUnlocked).length}/20)</span>
                     </button>
                   </div>
 
                   {/* CENTERED CRISP NATIVE VECTOR TYPOGRAPHY */}
                   <div className="relative z-10 max-w-sm sm:max-w-md lg:max-w-lg mx-auto text-center flex flex-col items-center justify-center space-y-2.5">
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight flex items-center justify-center gap-2 drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
+                    <h1
+                      className={`text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight flex items-center justify-center gap-2 ${
+                        isLight
+                          ? "text-slate-900 drop-shadow-[0_2px_10px_rgba(255,255,255,0.9)]"
+                          : "text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]"
+                      }`}
+                    >
                       <span>Welcome back, {user?.displayName?.split(" ")[0] || "Janitha"}!</span>
                       <span className="text-2xl sm:text-3xl animate-bounce">👋</span>
                     </h1>
-                    <p className="text-xs sm:text-sm lg:text-base text-blue-100/90 leading-relaxed font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] max-w-sm sm:max-w-md">
-                      Let's practice your language skills today and become more fluent!
+                    <p
+                      className={`text-xs sm:text-sm lg:text-base leading-relaxed font-semibold max-w-sm sm:max-w-md ${
+                        isLight
+                          ? "text-slate-700 drop-shadow-[0_1px_6px_rgba(255,255,255,0.9)]"
+                          : "text-blue-100/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
+                      }`}
+                    >
+                      Let&apos;s practice your language skills today and become more fluent!
                     </p>
                     <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
                       <button
                         onClick={() => launchTopicByKeyword("random")}
-                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 via-indigo-600 to-blue-700 hover:from-blue-400 hover:to-indigo-500 text-white font-bold text-xs shadow-xl shadow-blue-500/40 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-xl shadow-blue-500/35 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
                       >
                         <PhoneCall className="w-3.5 h-3.5 fill-white" />
                         <span>Quick Call ({selectedLanguage}) →</span>
                       </button>
                       <button
                         onClick={() => setActiveTab("practice")}
-                        className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs border border-white/20 transition-all flex items-center gap-1.5 backdrop-blur-md shadow-md hover:scale-105"
+                        className={`px-4 py-2.5 rounded-xl font-semibold text-xs border transition-all flex items-center gap-1.5 backdrop-blur-md shadow-md hover:scale-105 ${
+                          isLight
+                            ? "bg-white/85 hover:bg-white text-slate-800 border-blue-200"
+                            : "bg-white/10 hover:bg-white/15 text-white border-white/20"
+                        }`}
                       >
-                        <Compass className="w-3.5 h-3.5 text-cyan-300" />
+                        <Compass className={`w-3.5 h-3.5 ${isLight ? "text-blue-600" : "text-cyan-300"}`} />
                         <span>Browse All {selectedLanguage} Calls</span>
                       </button>
                     </div>
@@ -6991,9 +7031,9 @@ export default function StudentWebApp() {
                             <stop offset="100%" stopColor="#000000" stopOpacity="0" />
                           </radialGradient>
                           <radialGradient id="innerBallBurn" cx="50%" cy="45%" r="55%">
-                            <stop offset="0%" stopColor={isPremiumMember ? "#2e1065" : "#3d1405"} />
-                            <stop offset="65%" stopColor="#1a0b2e" />
-                            <stop offset="100%" stopColor="#0b0314" />
+                            <stop offset="0%" stopColor={isLight ? (isPremiumMember ? "#9333ea" : "#fb923c") : (isPremiumMember ? "#2e1065" : "#3d1405")} />
+                            <stop offset="65%" stopColor={isLight ? (isPremiumMember ? "#7e22ce" : "#ea580c") : "#1a0b2e"} />
+                            <stop offset="100%" stopColor={isLight ? (isPremiumMember ? "#581c87" : "#c2410c") : "#0b0314"} />
                           </radialGradient>
                           <linearGradient id="flameRingBurn" x1="0%" y1="100%" x2="0%" y2="0%">
                             <stop offset="0%" stopColor={isPremiumMember ? "#a855f7" : "#dc2626"} />
@@ -7026,8 +7066,8 @@ export default function StudentWebApp() {
                         <circle cx="100" cy="115" r="49" fill="none" stroke={isPremiumMember ? "#a855f7" : "#ea580c"} strokeWidth="1.5" strokeDasharray="4 2" opacity="0.5" />
                       </svg>
 
-                      <div className="absolute inset-0 pt-5 flex flex-col items-center justify-center pointer-events-none z-10">
-                        <span className="text-2xl font-black text-white tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]">
+                      <div className="absolute inset-0 pt-5 flex flex-col items-center justify-center pointer-events-none z-10 keep-dark-flame">
+                        <span className="text-2xl font-black text-white tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)]">
                           {realAnalytics.streakDays}
                         </span>
                         <span className="text-[8.5px] font-black text-amber-300 uppercase tracking-widest -mt-1">
@@ -7769,26 +7809,50 @@ export default function StudentWebApp() {
 
               return (
                 <div className="space-y-6">
-                  {/* 1. FULL-BLEED PANORAMIC CONVERSATION AI HERO STAGE (Matches SpeakFlow Dashboard Aesthetic) */}
-                  <div className="relative rounded-3xl overflow-hidden border border-cyan-500/40 bg-[#081330] shadow-[0_24px_65px_rgba(30,64,175,0.4)] min-h-[290px] sm:min-h-[330px] p-6 sm:p-8 lg:p-10 flex items-center keep-dark-hero">
+                  {/* 1. FULL-BLEED PANORAMIC CONVERSATION AI HERO STAGE (Dual Daylight / Cosmic Night) */}
+                  <div
+                    className={`relative rounded-3xl overflow-hidden border shadow-[0_24px_65px_rgba(30,64,175,0.28)] min-h-[290px] sm:min-h-[330px] p-6 sm:p-8 lg:p-10 flex items-center ${
+                      isLight
+                        ? "border-blue-300/80 bg-[#D8E7FA]"
+                        : "border-cyan-500/40 bg-[#081330] keep-dark-hero"
+                    }`}
+                  >
                     {/* Seamless Full-Width Background Illustration */}
                     <img
-                      src="/images/conversation_lounge_full_bg.jpg"
+                      src={isLight ? "/images/conversation_lounge_light_bg.jpg" : "/images/conversation_lounge_full_bg.jpg"}
                       alt="SpeakFlow AI Conversation Lounge Hero"
                       className="absolute inset-0 w-full h-full object-cover object-right pointer-events-none select-none opacity-95"
                     />
                     {/* Gentle Left-Weighted Gradient Overlay for Razor-Sharp Typography while Right Visual Glows Full-Bleed */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#060E27]/90 via-[#0A163B]/55 to-transparent pointer-events-none" />
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-r via-transparent to-transparent pointer-events-none ${
+                        isLight
+                          ? "from-[#DCE8FA]/80"
+                          : "from-[#060E27]/90 via-[#0A163B]/55"
+                      }`}
+                    />
                     <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-cyan-400/80 via-blue-400/80 to-indigo-400/80 pointer-events-none" />
 
                     {/* Top-Right Telemetry Pills */}
                     <div className="hidden sm:flex items-center gap-2 absolute top-4 right-5 z-20">
-                      <span className="px-3 py-1 rounded-full bg-slate-950/75 backdrop-blur-md border border-cyan-400/40 text-cyan-200 text-[11px] font-bold flex items-center gap-1.5 shadow-lg">
-                        <Bot className="w-3.5 h-3.5 text-cyan-300" />
+                      <span
+                        className={`px-3 py-1 rounded-full backdrop-blur-md border text-[11px] font-bold flex items-center gap-1.5 shadow-lg ${
+                          isLight
+                            ? "bg-white/90 border-blue-200 text-blue-800"
+                            : "bg-slate-950/75 border-cyan-400/40 text-cyan-200"
+                        }`}
+                      >
+                        <Bot className={`w-3.5 h-3.5 ${isLight ? "text-blue-600" : "text-cyan-300"}`} />
                         <span>Coach: {selectedCoach.name}</span>
                       </span>
-                      <span className="px-3 py-1 rounded-full bg-slate-950/75 backdrop-blur-md border border-emerald-400/40 text-emerald-200 text-[11px] font-bold flex items-center gap-1.5 shadow-lg">
-                        <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                      <span
+                        className={`px-3 py-1 rounded-full backdrop-blur-md border text-[11px] font-bold flex items-center gap-1.5 shadow-lg ${
+                          isLight
+                            ? "bg-white/90 border-emerald-200 text-emerald-700"
+                            : "bg-slate-950/75 border-emerald-400/40 text-emerald-200"
+                        }`}
+                      >
+                        <Zap className="w-3.5 h-3.5 text-emerald-500" />
                         <span>SpeakFlow Neural • 12ms</span>
                       </span>
                     </div>
@@ -7796,26 +7860,56 @@ export default function StudentWebApp() {
                     {/* Left Editorial Content Overlay */}
                     <div className="relative z-10 max-w-xl space-y-4">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-400/20 border border-cyan-400/45 text-cyan-200 text-[10.5px] font-black uppercase tracking-wider backdrop-blur-md">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10.5px] font-black uppercase tracking-wider backdrop-blur-md ${
+                            isLight
+                              ? "bg-white/85 border-blue-300 text-blue-700"
+                              : "bg-cyan-400/20 border-cyan-400/45 text-cyan-200"
+                          }`}
+                        >
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                           <span>AI Conversation Lounge • {selectedLanguage}</span>
                         </span>
-                        <span className="px-2.5 py-1 rounded-full bg-blue-500/25 border border-blue-400/40 text-blue-100 text-[10px] font-bold backdrop-blur-md">
+                        <span
+                          className={`px-2.5 py-1 rounded-full border text-[10px] font-bold backdrop-blur-md ${
+                            isLight
+                              ? "bg-indigo-50/90 border-indigo-200 text-indigo-700"
+                              : "bg-blue-500/25 border-blue-400/40 text-blue-100"
+                          }`}
+                        >
                           Practice + Vocabulary + Grammar Unified
                         </span>
                       </div>
 
                       <div className="space-y-2.5">
-                        <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-[1.12] drop-shadow-[0_4px_18px_rgba(0,0,0,0.85)]">
+                        <h2
+                          className={`text-2xl sm:text-4xl font-black tracking-tight leading-[1.12] ${
+                            isLight
+                              ? "text-slate-900"
+                              : "text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.85)]"
+                          }`}
+                        >
                           Interactive Voice Studio <br className="hidden sm:inline" />
-                          <span className="bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-200 bg-clip-text text-transparent">
+                          <span
+                            className={`bg-gradient-to-r bg-clip-text text-transparent ${
+                              isLight
+                                ? "from-blue-700 via-indigo-600 to-cyan-600"
+                                : "from-cyan-300 via-sky-200 to-indigo-200"
+                            }`}
+                          >
                             &amp; 3-in-1 Live Coaching
                           </span>
                         </h2>
-                        <p className="text-xs sm:text-sm text-blue-100/90 max-w-lg leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
-                          Blend real-world <strong className="text-white">Roleplay Scenarios</strong>, active{" "}
-                          <strong className="text-emerald-300">Vocabulary Targets</strong>, and your personal{" "}
-                          <strong className="text-cyan-300">Grammar Repairs</strong> inside one seamless AI voice call.
+                        <p
+                          className={`text-xs sm:text-sm max-w-lg leading-relaxed ${
+                            isLight
+                              ? "text-slate-700 font-medium"
+                              : "text-blue-100/90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]"
+                          }`}
+                        >
+                          Blend real-world <strong className={isLight ? "text-slate-900" : "text-white"}>Roleplay Scenarios</strong>, active{" "}
+                          <strong className={isLight ? "text-emerald-700" : "text-emerald-300"}>Vocabulary Targets</strong>, and your personal{" "}
+                          <strong className={isLight ? "text-blue-700" : "text-cyan-300"}>Grammar Repairs</strong> inside one seamless AI voice call.
                         </p>
                       </div>
 
@@ -7831,7 +7925,11 @@ export default function StudentWebApp() {
                         <button
                           type="button"
                           onClick={() => setActiveTab("practice")}
-                          className="px-4 py-3 rounded-2xl bg-slate-950/65 hover:bg-slate-900/80 border border-white/25 backdrop-blur-md text-white text-xs font-bold transition-all"
+                          className={`px-4 py-3 rounded-2xl border backdrop-blur-md text-xs font-bold transition-all ${
+                            isLight
+                              ? "bg-white/85 hover:bg-white border-blue-200 text-slate-800 shadow-sm"
+                              : "bg-slate-950/65 hover:bg-slate-900/80 border-white/25 text-white"
+                          }`}
                         >
                           Browse All {topics.length}+ Catalog →
                         </button>
