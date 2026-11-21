@@ -33,6 +33,9 @@ body {
 /* Disable Microsoft Edge & Chromium Picture-in-Picture floating hover overlay */
 video::-webkit-media-controls-picture-in-picture-button {
   display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 video::-webkit-media-controls-panel {
   display: none !important;
@@ -42,6 +45,15 @@ video::-webkit-media-controls {
 }
 video::-webkit-media-controls-enclosure {
   display: none !important;
+}
+video::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+}
+video::-webkit-media-controls-overlay-enclosure {
+  display: none !important;
+}
+video::cue {
+  visibility: hidden !important;
 }
 
 /* ------------------------------------------------------------- */

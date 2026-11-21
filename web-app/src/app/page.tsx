@@ -218,11 +218,6 @@ interface CallSessionRecord {
     correction: string;
     explanation: string;
   }>;
-  conversationTurns?: Array<{
-    sender: "user" | "bot";
-    text: string;
-    timestamp: Date | string;
-  }>;
   coachFeedback: string;
   createdAt: string;
 }
@@ -954,6 +949,9 @@ export default function StudentWebApp() {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [showSubtitles, setShowSubtitles] = useState(true);
   const [isAudioSlowMode, setIsAudioSlowMode] = useState(false);
+  const [isIdleVideoReady, setIsIdleVideoReady] = useState(false);
+  const [isTalkingVideoReady, setIsTalkingVideoReady] = useState(false);
+  const [scorecardActiveTab, setScorecardActiveTab] = useState<"radar" | "transcript" | "corrections">("radar");
   const userVideoRef = useRef<HTMLVideoElement | null>(null);
   const talkingVideoRef = useRef<HTMLVideoElement | null>(null);
   const idleVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -1048,8 +1046,6 @@ export default function StudentWebApp() {
   >([]);
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [completedSession, setCompletedSession] = useState<CallSessionRecord | null>(null);
-  const [scorecardTab, setScorecardTab] = useState<"summary" | "dialogue" | "corrections">("summary");
-  const [textSpeechInput, setTextSpeechInput] = useState("");
 
   // Call History State
   const [callHistory, setCallHistory] = useState<CallSessionRecord[]>([]);
@@ -1283,7 +1279,6 @@ export default function StudentWebApp() {
   const isProcessingRef = useRef(false);
   const isMutedRef = useRef(false);
   const isListeningIntentRef = useRef(false);
-  const latestUserCaptionRef = useRef("");
 
   // AudioContext Decibel Monitor Refs
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -1520,16 +1515,10 @@ export default function StudentWebApp() {
     };
   }, []);
 
-  // 7. Text-To-Speech (TTS) Engine — Synchronized Audio & Lip Movement
+  // 7. Text-To-Speech (TTS) Engine — Synchronized Audio & Lip Movement (Ultra-Low Latency)
   const speakText = async (text: string, langName: string) => {
-    // 1. DO NOT animate lips until audio actually plays from speaker!
     stopListening();
     stopCoachTalkingVideo();
-    setBotCaption(text);
-    setConversationTurns((prev) => [
-      ...prev,
-      { sender: "bot", text, timestamp: new Date() }
-    ]);
 
     if (activeAudioRef.current) {
       try {
@@ -1538,6 +1527,44 @@ export default function StudentWebApp() {
       } catch (_) { }
       activeAudioRef.current = null;
     }
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+
+    let hasStartedSpeaking = false;
+    const onVoiceStart = () => {
+      if (hasStartedSpeaking) return;
+      hasStartedSpeaking = true;
+      // Synchronize text and audio: Only display dialogue and subtitle when sound plays!
+      setBotCaption(text);
+      setConversationTurns((prev) => [
+        ...prev,
+        { sender: "bot", text, timestamp: new Date() }
+      ]);
+      startCoachTalkingVideo();
+    };
+
+    const onVoiceEnd = () => {
+      stopCoachTalkingVideo();
+      activeAudioRef.current = null;
+      startListening();
+      scheduleProactiveNudge();
+    };
+
+    // Fast-Race Threshold: If server Edge-TTS takes >650ms, start instant on-device SpeechSynthesis
+    const fallbackTimer: NodeJS.Timeout | null = setTimeout(() => {
+      if (!hasStartedSpeaking) {
+        if (activeAudioRef.current) {
+          try {
+            activeAudioRef.current.pause();
+            activeAudioRef.current.src = "";
+          } catch (_) {}
+          activeAudioRef.current = null;
+        }
+        console.info("⚡ Edge-TTS took >650ms, activating zero-latency On-Device SpeechSynthesis!");
+        fallbackBrowserTts(text, langName, onVoiceStart, onVoiceEnd);
+      }
+    }, 650);
 
     try {
       const ttsUrl = `/api/tts?text=${encodeURIComponent(text)}&coach=${selectedCoach.id}&gender=${selectedCoach.gender}&language=${encodeURIComponent(langName)}`;
@@ -1545,17 +1572,13 @@ export default function StudentWebApp() {
       audio.volume = 1.0;
       activeAudioRef.current = audio;
 
-      // 2. ONLY start lip movement when audio ACTUALLY starts playing out of speaker!
       audio.onplaying = () => {
-        startCoachTalkingVideo();
+        if (fallbackTimer) clearTimeout(fallbackTimer);
+        onVoiceStart();
       };
 
-      // 3. Exact instant speech ends or is paused, stop lip movement immediately!
       audio.onended = () => {
-        stopCoachTalkingVideo();
-        activeAudioRef.current = null;
-        startListening();
-        scheduleProactiveNudge();
+        onVoiceEnd();
       };
 
       audio.onpause = () => {
@@ -1563,20 +1586,36 @@ export default function StudentWebApp() {
       };
 
       audio.onerror = () => {
-        console.warn("Neural TTS server failed, falling back to Web Speech Synthesis.");
-        stopCoachTalkingVideo();
-        fallbackBrowserTts(text, langName);
+        if (fallbackTimer) clearTimeout(fallbackTimer);
+        if (!hasStartedSpeaking) {
+          fallbackBrowserTts(text, langName, onVoiceStart, onVoiceEnd);
+        }
       };
 
-      await audio.play();
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          if (fallbackTimer) clearTimeout(fallbackTimer);
+          if (!hasStartedSpeaking) {
+            fallbackBrowserTts(text, langName, onVoiceStart, onVoiceEnd);
+          }
+        });
+      }
       return;
     } catch (e) {
-      stopCoachTalkingVideo();
-      fallbackBrowserTts(text, langName);
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+      if (!hasStartedSpeaking) {
+        fallbackBrowserTts(text, langName, onVoiceStart, onVoiceEnd);
+      }
     }
   };
 
-  const fallbackBrowserTts = (text: string, langName: string) => {
+  const fallbackBrowserTts = (
+    text: string,
+    langName: string,
+    onStartCallback?: () => void,
+    onEndCallback?: () => void
+  ) => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
       stopCoachTalkingVideo();
       startListening();
@@ -1587,13 +1626,13 @@ export default function StudentWebApp() {
       window.speechSynthesis.resume();
     }
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = isAudioSlowMode ? 0.75 : 0.95;
-    utterance.pitch = selectedCoach.gender === "female" ? 1.15 : 0.9;
+    utterance.rate = isAudioSlowMode ? 0.75 : 0.98;
+    utterance.pitch = selectedCoach.gender === "female" ? 1.05 : 0.95;
 
     const voices = window.speechSynthesis.getVoices();
     if (voices.length > 0) {
       if (selectedCoach.accent.includes("British")) {
-        const gbVoice = voices.find((v) => v.lang.includes("GB") || v.lang.includes("en-GB"));
+        const gbVoice = voices.find((v) => (v.lang.includes("GB") || v.lang.includes("en-GB")) && (v.name.includes("Online") || v.name.includes("Natural") || v.name.includes("Sonia") || v.name.includes("Ryan")));
         if (gbVoice) utterance.voice = gbVoice;
       } else if (selectedCoach.accent.includes("French")) {
         const frVoice = voices.find((v) => v.lang.includes("fr") || v.lang.includes("FR"));
@@ -1602,7 +1641,7 @@ export default function StudentWebApp() {
         const jaVoice = voices.find((v) => v.lang.includes("ja") || v.lang.includes("JP"));
         if (jaVoice) utterance.voice = jaVoice;
       } else {
-        const usVoice = voices.find((v) => v.lang.includes("US") || v.lang.includes("en-US"));
+        const usVoice = voices.find((v) => (v.lang.includes("US") || v.lang.includes("en-US")) && (v.name.includes("Online") || v.name.includes("Natural") || v.name.includes("Jenny") || v.name.includes("Guy") || v.name.includes("Google")));
         if (usVoice) utterance.voice = usVoice;
       }
     }
@@ -1614,16 +1653,23 @@ export default function StudentWebApp() {
     utterance.lang = targetLang;
 
     utterance.onstart = () => {
-      startCoachTalkingVideo();
+      if (onStartCallback) onStartCallback();
+      else startCoachTalkingVideo();
     };
     utterance.onend = () => {
-      stopCoachTalkingVideo();
-      startListening();
-      scheduleProactiveNudge();
+      if (onEndCallback) onEndCallback();
+      else {
+        stopCoachTalkingVideo();
+        startListening();
+        scheduleProactiveNudge();
+      }
     };
     utterance.onerror = () => {
-      stopCoachTalkingVideo();
-      startListening();
+      if (onEndCallback) onEndCallback();
+      else {
+        stopCoachTalkingVideo();
+        startListening();
+      }
     };
     window.speechSynthesis.speak(utterance);
   };
@@ -1643,7 +1689,7 @@ export default function StudentWebApp() {
     }, 12000);
   };
 
-  // 8. Speech Recognition (STT) - High-Sensitivity Continuous Loop
+  // 8. Speech Recognition (STT) - Unbreakable Continuous Recognition Loop
   const startListening = () => {
     if (isMutedRef.current || !isCallActiveRef.current) return;
     if (typeof window === "undefined") return;
@@ -1670,14 +1716,12 @@ export default function StudentWebApp() {
       recognitionRef.current = recognition;
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.maxAlternatives = 1;
 
       const langName = (selectedLanguage !== "All" ? selectedLanguage : activeCallTopic?.language) || "English";
       let targetLang = "en-US";
       if (langName === "Japanese") targetLang = "ja-JP";
       else if (langName === "Korean") targetLang = "ko-KR";
       else if (langName === "Spanish") targetLang = "es-ES";
-      else if (langName === "French") targetLang = "fr-FR";
       recognition.lang = targetLang;
 
       recognition.onstart = () => {
@@ -1701,36 +1745,21 @@ export default function StudentWebApp() {
         const liveWords = (finalText + interimText).trim();
         if (liveWords) {
           setUserCaption(liveWords);
-          latestUserCaptionRef.current = liveWords;
           setIsUserSpeaking(true);
           stopCoachTalkingVideo();
         }
 
-        // Automatic smart-submit:
-        // Case A: Browser finalized an utterance (length >= 2) -> submit with short 650ms debounce
-        if (finalText.trim().length >= 2) {
-          const finalCandidate = finalText.trim();
+        // When user finishes a phrase, debounce before sending to AI
+        const hasFinalPhrase = Boolean(finalText.trim());
+        const phraseToSubmit = finalText.trim() || (interimText.length > 8 ? interimText.trim() : "");
+        if (phraseToSubmit) {
           if (speechDebounceTimerRef.current) clearTimeout(speechDebounceTimerRef.current);
+          const debounceMs = hasFinalPhrase ? 400 : 750;
           speechDebounceTimerRef.current = setTimeout(() => {
-            if (isListeningIntentRef.current && !isProcessingRef.current && !isBotSpeakingRef.current) {
-              latestUserCaptionRef.current = "";
-              setUserCaption("");
-              handleUserSpeech(finalCandidate);
+            if (isListeningIntentRef.current && phraseToSubmit.length >= 2) {
+              handleUserSpeech(phraseToSubmit);
             }
-          }, 650);
-        } else if (liveWords.length >= 2) {
-          // Case B: Interim speech in progress -> submit 900ms after user pauses speaking
-          if (speechDebounceTimerRef.current) clearTimeout(speechDebounceTimerRef.current);
-          speechDebounceTimerRef.current = setTimeout(() => {
-            if (isListeningIntentRef.current && !isProcessingRef.current && !isBotSpeakingRef.current) {
-              const pending = latestUserCaptionRef.current.trim();
-              if (pending.length >= 2) {
-                latestUserCaptionRef.current = "";
-                setUserCaption("");
-                handleUserSpeech(pending);
-              }
-            }
-          }, 900);
+          }, debounceMs);
         }
       };
 
@@ -1741,35 +1770,21 @@ export default function StudentWebApp() {
         }
         setIsUserSpeaking(false);
 
-        // Safe resurrection on no-speech or network hiccups
-        if ((event.error === "no-speech" || event.error === "network") && isCallActiveRef.current && !isBotSpeakingRef.current && !isMutedRef.current && !isProcessingRef.current) {
-          setTimeout(() => {
-            if (isListeningIntentRef.current && isCallActiveRef.current && !isBotSpeakingRef.current && !isProcessingRef.current) {
-              startListening();
-            }
-          }, 200);
+        // Auto-resurrect on no-speech
+        if (event.error === "no-speech" && isCallActiveRef.current && !isBotSpeakingRef.current && !isMutedRef.current) {
+          try {
+            recognition.start();
+          } catch (_) {}
         }
       };
 
       recognition.onend = () => {
         setIsUserSpeaking(false);
-        // CRITICAL FIX: If user stopped talking and silence caused onend before debounce finished, flush pending words immediately!
-        const pending = latestUserCaptionRef.current.trim();
-        if (pending.length >= 2 && !isProcessingRef.current && !isBotSpeakingRef.current && isListeningIntentRef.current) {
-          latestUserCaptionRef.current = "";
-          setUserCaption("");
-          if (speechDebounceTimerRef.current) clearTimeout(speechDebounceTimerRef.current);
-          handleUserSpeech(pending);
-          return;
-        }
-
-        // Automatic resurrection loop: Always keep listening while call is live
+        // Automatic resurrection loop: Keep listening continuously while call is active!
         if (isListeningIntentRef.current && isCallActiveRef.current && !isBotSpeakingRef.current && !isMutedRef.current && !isProcessingRef.current) {
-          setTimeout(() => {
-            if (isListeningIntentRef.current && isCallActiveRef.current && !isBotSpeakingRef.current && !isProcessingRef.current) {
-              startListening();
-            }
-          }, 150);
+          try {
+            recognition.start();
+          } catch (_) {}
         }
       };
 
@@ -1782,7 +1797,6 @@ export default function StudentWebApp() {
 
   const stopListening = () => {
     isListeningIntentRef.current = false;
-    latestUserCaptionRef.current = "";
     if (speechDebounceTimerRef.current) clearTimeout(speechDebounceTimerRef.current);
     if (recognitionRef.current) {
       try {
@@ -2107,7 +2121,6 @@ export default function StudentWebApp() {
       coachAvatar: selectedCoach.avatar,
       totalCorrections: errors,
       correctionsList: sessionCorrections,
-      conversationTurns: [...conversationTurns],
       coachFeedback: feedback,
       createdAt: new Date().toISOString()
     };
@@ -2985,17 +2998,18 @@ export default function StudentWebApp() {
         )}
 
         {/* MAIN BODY CONTENT */}
-        <main className={activeCallTopic ? "w-full min-h-screen p-2 sm:p-4 bg-[#030612] flex flex-col justify-center" : "p-4 sm:p-6 lg:p-8 space-y-6 w-full max-w-[1680px] mx-auto"}>
+        <main className={activeCallTopic ? "w-full h-screen overflow-hidden p-0 bg-[#030612] flex flex-col justify-center" : "p-4 sm:p-6 lg:p-8 space-y-6 w-full max-w-[1680px] mx-auto"}>
           {/* IF ACTIVE CALL IS RUNNING: FULL SCREEN LIVE AI VIDEO CALL STUDIO */}
           {activeCallTopic ? (
-            <div className="w-full max-w-[1680px] mx-auto bg-gradient-to-b from-[#0e1628] via-[#090d18] to-[#04060c] border border-cyan-500/40 rounded-3xl p-3 sm:p-5 shadow-[0_20px_70px_rgba(0,0,0,0.85)] relative overflow-hidden flex flex-col justify-between min-h-[calc(100vh-2rem)] space-y-3">
+            <div className="fixed inset-0 z-50 bg-[#030612] w-screen h-screen max-h-screen overflow-hidden p-2 sm:p-3 flex flex-col justify-between select-none">
+              <div className="w-full h-full max-w-[1720px] mx-auto bg-gradient-to-b from-[#0e1628] via-[#090d18] to-[#04060c] border border-cyan-500/40 rounded-2xl sm:rounded-3xl p-2.5 sm:p-3.5 shadow-[0_20px_70px_rgba(0,0,0,0.85)] relative overflow-hidden flex flex-col justify-between min-h-0">
               {/* Top ambient lights */}
               <div className="absolute -top-16 -left-16 w-60 h-60 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute -bottom-16 -right-16 w-60 h-60 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/80 to-transparent" />
 
               {/* 1. TOP BROADCAST & HYBRID TELEMETRY BAR */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3.5 border-b border-slate-800/80 relative z-10">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-800/80 relative z-10 shrink-0">
                 {/* Topic Info & Live Status */}
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/25 to-blue-600/30 border border-cyan-400/50 text-cyan-300 flex items-center justify-center font-bold text-2xl shadow-lg shadow-cyan-950/50 shrink-0">
@@ -3064,11 +3078,11 @@ export default function StudentWebApp() {
               </div>
 
               {/* 2. MAIN CALL STAGE: CINEMATIC AI VIDEO FEED & LIVE RADAR */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 items-stretch relative z-10">
+              <div className="flex-1 min-h-0 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-3 my-1.5 items-stretch relative z-10">
                 {/* Left/Center: High-Definition AI Video Call Screen (8 cols) */}
-                <div className="lg:col-span-8 flex flex-col justify-between rounded-3xl bg-gradient-to-tr from-[#050914] via-[#091122] to-[#040710] border-2 border-cyan-500/30 shadow-[0_0_50px_rgba(56,189,248,0.2)] p-4 sm:p-6 relative overflow-hidden min-h-[460px]">
+                <div className="lg:col-span-8 flex flex-col justify-between rounded-2xl sm:rounded-3xl bg-gradient-to-tr from-[#050914] via-[#091122] to-[#040710] border-2 border-cyan-500/30 shadow-[0_0_50px_rgba(56,189,248,0.2)] p-2 sm:p-3 relative overflow-hidden h-full min-h-0">
                   {/* Central Coach Presence & Dynamic Video Animation */}
-                  <div className="flex-1 flex flex-col items-center justify-center my-1 relative w-full">
+                  <div className="flex-1 min-h-0 flex flex-col items-center justify-center my-0.5 relative w-full overflow-hidden">
                     {/* Ambient Blurred Studio Video Backdrop */}
                     {selectedCoach.idleVideo ? (
                       <video
@@ -3079,6 +3093,7 @@ export default function StudentWebApp() {
                         muted
                         playsInline
                         disablePictureInPicture
+                        {...({ "disablepictureinpicture": "true", "x-webkit-airplay": "deny" } as any)}
                         controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
                         className="absolute inset-0 w-full h-full object-cover blur-3xl scale-110 opacity-25 pointer-events-none select-none transition-opacity duration-700"
                       />
@@ -3100,8 +3115,8 @@ export default function StudentWebApp() {
                     )}
 
                     {/* Widescreen Cinematic Coach Video Feed + Dynamic Interactive Flanks */}
-                    <div className="w-full max-w-4xl xl:max-w-5xl 2xl:max-w-6xl aspect-video rounded-3xl p-1 sm:p-1.5 transition-all duration-500 shadow-2xl mx-auto relative group z-10">
-                      <div className={`w-full h-full rounded-[22px] overflow-hidden relative bg-slate-950 transition-all duration-500 border-2 ${
+                    <div className="w-full relative h-full max-h-[44vh] sm:max-h-[48vh] xl:max-h-[52vh] aspect-video rounded-2xl p-0.5 sm:p-1 transition-all duration-500 shadow-2xl mx-auto group z-10 flex items-center justify-center">
+                      <div className={`w-full h-full rounded-[18px] sm:rounded-[22px] overflow-hidden relative bg-slate-950 transition-all duration-500 border-2 ${
                         isBotSpeaking
                           ? "border-cyan-400 shadow-[0_0_50px_rgba(56,189,248,0.6)]"
                           : isUserSpeaking
@@ -3126,15 +3141,19 @@ export default function StudentWebApp() {
                             muted
                             playsInline
                             disablePictureInPicture
+                            {...({ "disablepictureinpicture": "true", "x-webkit-airplay": "deny" } as any)}
                             controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
                             onContextMenu={(e) => e.preventDefault()}
+                            onLoadedData={() => setIsIdleVideoReady(true)}
                             onCanPlay={(e) => {
+                              setIsIdleVideoReady(true);
                               if (!isBotSpeaking) {
                                 e.currentTarget.play().catch(() => {});
                               }
                             }}
+                            onError={() => setIsIdleVideoReady(false)}
                             className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-300 pointer-events-none select-none ${
-                              !isBotSpeaking ? "opacity-100 z-10" : "opacity-0"
+                              !isBotSpeaking && isIdleVideoReady ? "opacity-100 z-10" : "opacity-0"
                             }`}
                           />
                         )}
@@ -3148,15 +3167,25 @@ export default function StudentWebApp() {
                           muted
                           playsInline
                           disablePictureInPicture
+                          {...({ "disablepictureinpicture": "true", "x-webkit-airplay": "deny" } as any)}
                           controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
                           onContextMenu={(e) => e.preventDefault()}
+                          onLoadedData={() => setIsTalkingVideoReady(true)}
+                          onCanPlay={() => setIsTalkingVideoReady(true)}
+                          onError={() => setIsTalkingVideoReady(false)}
                           className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-300 pointer-events-none select-none ${
-                            isBotSpeaking ? "opacity-100 z-20" : "opacity-0"
+                            isBotSpeaking && isTalkingVideoReady ? "opacity-100 z-20" : "opacity-0"
                           }`}
                         />
 
+                        {/* Edge PIP Invisible Hover Shield (Stops browser floating overlay icons) */}
+                        <div
+                          className="absolute inset-0 z-25 pointer-events-auto bg-transparent select-none"
+                          onContextMenu={(e) => e.preventDefault()}
+                        />
+
                         {/* Top-Left Floating Coach Badge inside Video */}
-                        <div className="absolute top-3 left-3 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/80 border border-slate-700/80 backdrop-blur-md text-xs font-bold text-white shadow-lg">
+                        <div className="absolute top-3 left-3 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/80 border border-slate-700/80 backdrop-blur-md text-xs font-bold text-white shadow-lg pointer-events-none">
                           <span className={`w-2.5 h-2.5 rounded-full ${isBotSpeaking ? "bg-cyan-400 animate-ping" : "bg-emerald-400"}`} />
                           <span>{selectedCoach.name}</span>
                           <span className="text-[10px] text-cyan-300 font-normal hidden sm:inline">• {selectedCoach.accent}</span>
@@ -3261,27 +3290,24 @@ export default function StudentWebApp() {
                           </div>
                         )}
 
-                        {/* Bottom Center Dynamic Live State Pill */}
+                        {/* Bottom Center Mutually Exclusive Dynamic Live State Pill */}
                         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-                          {isBotSpeaking && (
+                          {isBotSpeaking ? (
                             <div className="px-4 py-1.5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-black text-xs shadow-xl shadow-cyan-500/50 flex items-center gap-2 whitespace-nowrap animate-bounce">
                               <Volume2 className="w-4 h-4 animate-pulse" />
                               <span>{selectedCoach.name} is Speaking...</span>
                             </div>
-                          )}
-                          {isUserSpeaking && (
+                          ) : isUserSpeaking ? (
                             <div className="px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black text-xs shadow-xl shadow-emerald-500/50 flex items-center gap-2 whitespace-nowrap animate-bounce">
                               <Mic className="w-4 h-4 animate-pulse" />
                               <span>Hearing Your Speech...</span>
                             </div>
-                          )}
-                          {!isBotSpeaking && !isUserSpeaking && isProcessing && (
+                          ) : isProcessing ? (
                             <div className="px-4 py-1.5 rounded-full bg-purple-600 text-white font-black text-xs shadow-xl shadow-purple-600/50 flex items-center gap-2 whitespace-nowrap animate-pulse">
                               <Sparkles className="w-4 h-4" />
                               <span>Gemini Nano Thinking...</span>
                             </div>
-                          )}
-                          {!isBotSpeaking && !isUserSpeaking && !isProcessing && (
+                          ) : (
                             <div className="px-3.5 py-1 rounded-full bg-slate-950/75 border border-slate-700/80 text-slate-300 font-semibold text-[11px] backdrop-blur-md flex items-center gap-1.5">
                               <span className="w-2 h-2 rounded-full bg-emerald-400" />
                               <span>Your Turn to Speak</span>
@@ -3292,9 +3318,9 @@ export default function StudentWebApp() {
                     </div>
 
                     {/* LIVE MICROPHONE INPUT & DECIBEL LEVEL HUD */}
-                    <div className="flex flex-col items-center gap-1.5 mt-4 z-20">
-                      <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-950/90 border border-emerald-500/40 backdrop-blur-md shadow-lg">
-                        <span className={`w-2.5 h-2.5 rounded-full ${micVolumeLevel > 10 ? 'bg-emerald-400 animate-ping' : 'bg-emerald-500'}`} />
+                    <div className="flex flex-col items-center gap-1.5 mt-2 z-20 shrink-0">
+                      <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-950/90 border border-emerald-500/40 backdrop-blur-md shadow-lg">
+                        <span className={`w-2 h-2 rounded-full ${micVolumeLevel > 10 ? 'bg-emerald-400 animate-ping' : 'bg-emerald-500'}`} />
                         <Mic className="w-3.5 h-3.5 text-emerald-400" />
                         {/* Live Decibel Bar */}
                         <div className="w-24 sm:w-32 h-2 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
@@ -3311,29 +3337,24 @@ export default function StudentWebApp() {
                       {/* Manual Submit Button if user spoke something */}
                       {userCaption && (
                         <button
-                          onClick={() => {
-                            const val = userCaption;
-                            setUserCaption("");
-                            latestUserCaptionRef.current = "";
-                            handleUserSpeech(val);
-                          }}
-                          className="mt-1 px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/50 flex items-center gap-1.5 transition-all animate-bounce"
+                          onClick={() => handleUserSpeech(userCaption)}
+                          className="mt-0.5 px-4 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/50 flex items-center gap-1.5 transition-all animate-bounce"
                         >
-                          <Send className="w-3.5 h-3.5" />
-                          <span>Send Spoken Words: "{userCaption.slice(0, 36)}" →</span>
+                          <Send className="w-3 h-3" />
+                          <span>Send Speech: "{userCaption.slice(0, 32)}..." →</span>
                         </button>
                       )}
 
                       {/* Microphone Permission Blocked Warning */}
                       {micPermissionError && (
-                        <div className="mt-1 px-3 py-1 rounded-xl bg-rose-500/20 border border-rose-500/50 text-rose-300 text-[10px] font-bold flex items-center gap-1.5">
+                        <div className="mt-0.5 px-3 py-1 rounded-xl bg-rose-500/20 border border-rose-500/50 text-rose-300 text-[10px] font-bold flex items-center gap-1.5">
                           <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                           <span>Microphone blocked! Click the lock icon 🔒 in browser address bar to Allow.</span>
                         </div>
                       )}
 
                       {/* Quick Instant Response Chips */}
-                      <div className="flex items-center gap-1.5 flex-wrap justify-center mt-1">
+                      <div className="flex items-center gap-1.5 flex-wrap justify-center mt-0.5">
                         {[
                           { text: "I love cricket and Virat Kohli!", label: "🏏 Cricket & Kohli" },
                           { text: "Who is your all-time favorite player?", label: "❓ Favorite Player" },
@@ -3342,53 +3363,24 @@ export default function StudentWebApp() {
                           <button
                             key={cIdx}
                             onClick={() => handleUserSpeech(chip.text)}
-                            className="px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-cyan-600/30 text-slate-300 hover:text-cyan-200 border border-slate-700/80 text-[10px] font-semibold transition-all hover:scale-105 active:scale-95"
+                            className="px-2.5 py-0.5 rounded-lg bg-slate-900/90 hover:bg-cyan-600/30 text-slate-300 hover:text-cyan-200 border border-slate-700/80 text-[10px] font-semibold transition-all hover:scale-105 active:scale-95"
                           >
                             {chip.label}
                           </button>
                         ))}
                       </div>
-
-                      {/* Keyboard Quick-Type Input (Instant speech fallback) */}
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          if (textSpeechInput.trim().length >= 2) {
-                            const val = textSpeechInput.trim();
-                            setTextSpeechInput("");
-                            handleUserSpeech(val);
-                          }
-                        }}
-                        className="flex items-center gap-1.5 w-full max-w-sm mt-1"
-                      >
-                        <input
-                          type="text"
-                          value={textSpeechInput}
-                          onChange={(e) => setTextSpeechInput(e.target.value)}
-                          placeholder="Or type what you said (e.g. 'Yes I love it')..."
-                          className="flex-1 px-3 py-1 rounded-xl bg-slate-950/80 border border-slate-700/80 focus:border-cyan-400 text-xs text-white placeholder-slate-500 outline-none transition-all shadow-inner"
-                        />
-                        <button
-                          type="submit"
-                          disabled={!textSpeechInput.trim()}
-                          className="px-2.5 py-1 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 text-slate-950 font-bold text-xs flex items-center gap-1 transition-all shrink-0"
-                        >
-                          <Send className="w-3 h-3" />
-                          <span>Send</span>
-                        </button>
-                      </form>
                     </div>
                   </div>
 
                   {/* Closed Captions Subtitle Overlay (Bottom of Video, Clear of PIP) */}
                   {showSubtitles && (botCaption || userCaption) && (
-                    <div className="relative z-20 space-y-2 max-w-2xl mx-auto w-full px-2 pr-40 sm:pr-48">
+                    <div className="relative z-20 space-y-1.5 max-w-2xl mx-auto w-full px-2 pr-40 sm:pr-48 shrink-0 max-h-20 overflow-y-auto">
                       {botCaption && (
-                        <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-950/90 border border-cyan-500/50 text-xs text-cyan-100 leading-relaxed backdrop-blur-md shadow-2xl flex items-start gap-2.5 text-left animate-in fade-in duration-200">
+                        <div className="p-2 sm:p-2.5 rounded-2xl bg-slate-950/90 border border-cyan-500/50 text-xs text-cyan-100 leading-relaxed backdrop-blur-md shadow-2xl flex items-start gap-2.5 text-left animate-in fade-in duration-200">
                           <img
                             src={selectedCoach.avatar}
                             alt={selectedCoach.name}
-                            className="w-7 h-7 rounded-full object-cover border border-cyan-400 shrink-0 mt-0.5 shadow-sm"
+                            className="w-6 h-6 rounded-full object-cover border border-cyan-400 shrink-0 mt-0.5 shadow-sm"
                           />
                           <div className="min-w-0">
                             <strong className="text-cyan-400 text-[11px] block font-black">
@@ -3399,11 +3391,11 @@ export default function StudentWebApp() {
                         </div>
                       )}
                       {userCaption && (
-                        <div className="p-2.5 sm:p-3 rounded-2xl bg-[#051c14]/90 border border-emerald-500/50 text-xs text-emerald-100 leading-relaxed backdrop-blur-md shadow-2xl flex items-start gap-2.5 text-left animate-in fade-in duration-200">
+                        <div className="p-2 sm:p-2.5 rounded-2xl bg-[#051c14]/90 border border-emerald-500/50 text-xs text-emerald-100 leading-relaxed backdrop-blur-md shadow-2xl flex items-start gap-2.5 text-left animate-in fade-in duration-200">
                           <img
                             src="/images/janitha-avatar.jpg"
                             alt="Janitha"
-                            className="w-7 h-7 rounded-full object-cover border border-emerald-400 shrink-0 mt-0.5 shadow-sm"
+                            className="w-6 h-6 rounded-full object-cover border border-emerald-400 shrink-0 mt-0.5 shadow-sm"
                           />
                           <div className="min-w-0">
                             <strong className="text-emerald-400 text-[11px] block font-black">
@@ -3417,7 +3409,7 @@ export default function StudentWebApp() {
                   )}
 
                   {/* Floating Picture-In-Picture (PIP) Webcam Preview (Bottom-Right) */}
-                  <div className="absolute bottom-4 right-4 z-30 w-36 sm:w-44 aspect-video rounded-2xl bg-slate-950/90 border-2 border-cyan-500/50 shadow-2xl overflow-hidden group/pip">
+                  <div className="absolute bottom-3 right-3 z-30 w-32 sm:w-40 aspect-video rounded-2xl bg-slate-950/90 border-2 border-cyan-500/50 shadow-2xl overflow-hidden group/pip">
                     {/* Live User Webcam Video */}
                     <video
                       ref={userVideoRef}
@@ -3425,6 +3417,7 @@ export default function StudentWebApp() {
                       playsInline
                       muted
                       disablePictureInPicture
+                      {...({ "disablepictureinpicture": "true", "x-webkit-airplay": "deny" } as any)}
                       controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
                       onContextMenu={(e) => e.preventDefault()}
                       className={`w-full h-full object-cover pointer-events-none select-none ${isCameraActive ? "block" : "hidden"}`}
@@ -3432,8 +3425,8 @@ export default function StudentWebApp() {
 
                     {/* Camera Off Avatar Fallback */}
                     {!isCameraActive && (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-slate-900 to-[#0c1424]">
-                        <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-700 mb-1">
+                      <div className="w-full h-full flex flex-col items-center justify-center p-1.5 text-center bg-gradient-to-br from-slate-900 to-[#0c1424]">
+                        <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-700 mb-0.5">
                           <img src="/images/janitha-avatar.jpg" alt="Janitha" className="w-full h-full object-cover" />
                         </div>
                         <span className="text-[9px] font-bold text-slate-300 truncate">You (Janitha)</span>
@@ -3442,7 +3435,7 @@ export default function StudentWebApp() {
                     )}
 
                     {/* PIP Overlay Badge */}
-                    <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/70 text-[8px] font-mono text-emerald-400 flex items-center gap-1">
+                    <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/70 text-[8px] font-mono text-emerald-400 flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                       <span>{isCameraActive ? "Live Cam" : "Mic Only"}</span>
                     </div>
@@ -3450,7 +3443,7 @@ export default function StudentWebApp() {
                     {/* Quick Camera Toggle Button */}
                     <button
                       onClick={toggleCamera}
-                      className="absolute bottom-1.5 right-1.5 p-1 rounded-md bg-black/70 hover:bg-cyan-500 text-white text-[8px] transition-all"
+                      className="absolute bottom-1 right-1 p-1 rounded-md bg-black/70 hover:bg-cyan-500 text-white text-[8px] transition-all"
                       title={isCameraActive ? "Turn Off Camera" : "Turn On Camera"}
                     >
                       {isCameraActive ? <CameraOff className="w-3 h-3" /> : <Camera className="w-3 h-3" />}
@@ -3459,10 +3452,10 @@ export default function StudentWebApp() {
                 </div>
 
                 {/* Right: Live AI Fluency Radar & Dialogue Stream (4 cols) */}
-                <div className="lg:col-span-4 flex flex-col justify-between rounded-3xl bg-slate-900/85 border border-slate-800 p-4 space-y-3.5 relative overflow-hidden backdrop-blur-md shadow-2xl">
-                  <div className="space-y-3">
+                <div className="lg:col-span-4 flex flex-col justify-between rounded-2xl sm:rounded-3xl bg-slate-900/85 border border-slate-800 p-3 sm:p-3.5 relative overflow-hidden backdrop-blur-md shadow-2xl h-full min-h-0">
+                  <div className="space-y-2 flex-1 min-h-0 flex flex-col">
                     {/* Radar Header */}
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-800 shrink-0">
                       <div className="flex items-center gap-2">
                         <Award className="w-4 h-4 text-cyan-400" />
                         <h4 className="text-xs font-black uppercase tracking-wider text-white">
@@ -3476,7 +3469,7 @@ export default function StudentWebApp() {
 
                     {/* AI SPEECH CORRECTION & NATURAL PHRASING DIAGNOSIS CARD */}
                     {activeCorrection && (
-                      <div className="p-3 rounded-2xl bg-gradient-to-br from-rose-950/40 via-slate-900/90 to-emerald-950/40 border border-amber-500/50 shadow-xl shadow-amber-950/30 text-left space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="p-2.5 rounded-2xl bg-gradient-to-br from-rose-950/40 via-slate-900/90 to-emerald-950/40 border border-amber-500/50 shadow-xl shadow-amber-950/30 text-left space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300 shrink-0">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5 text-xs font-black text-amber-300">
                             <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
@@ -3488,7 +3481,7 @@ export default function StudentWebApp() {
                         </div>
 
                         {/* ❌ What you said */}
-                        <div className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/30">
+                        <div className="p-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30">
                           <div className="text-[8.5px] font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1 mb-0.5">
                             <span>❌ What you said:</span>
                           </div>
@@ -3498,7 +3491,7 @@ export default function StudentWebApp() {
                         </div>
 
                         {/* ✅ Say it naturally */}
-                        <div className="p-2 rounded-xl bg-emerald-500/15 border border-emerald-400/40 shadow-sm shadow-emerald-500/20">
+                        <div className="p-1.5 rounded-xl bg-emerald-500/15 border border-emerald-400/40 shadow-sm shadow-emerald-500/20">
                           <div className="text-[8.5px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1 mb-0.5">
                             <span>✅ Say it naturally:</span>
                           </div>
@@ -3532,12 +3525,12 @@ export default function StudentWebApp() {
 
                     {/* Active Repetition Drill Banner (When in drill mode) */}
                     {isDrillMode && targetPhraseToRepeat && !activeCorrection && (
-                      <div className="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-200 animate-pulse text-left space-y-1 shadow-lg">
+                      <div className="p-2.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-200 animate-pulse text-left space-y-1 shadow-lg shrink-0">
                         <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300">
                           <Target className="w-3.5 h-3.5" />
                           <span>Pronunciation Drill:</span>
                         </div>
-                        <p className="text-sm font-black text-white underline">
+                        <p className="text-xs font-black text-white underline">
                           "{targetPhraseToRepeat}"
                         </p>
                         <p className="text-[10px] text-amber-300/80">
@@ -3547,8 +3540,8 @@ export default function StudentWebApp() {
                     )}
 
                     {/* LIVE DIALOGUE STREAM (Luxury Cyber Chat Messenger) */}
-                    <div className="space-y-2.5">
-                      <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-800/80">
+                    <div className="space-y-1.5 flex-1 min-h-0 flex flex-col pt-1">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-800/80 shrink-0">
                         <span>Dialogue Transcript ({conversationTurns.length})</span>
                         <span className="text-[9px] font-mono text-cyan-400 flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
@@ -3556,7 +3549,7 @@ export default function StudentWebApp() {
                         </span>
                       </div>
 
-                      <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1 text-xs">
+                      <div className="space-y-2 flex-1 min-h-0 overflow-y-auto max-h-[190px] xl:max-h-[250px] pr-1 text-xs">
                         {conversationTurns.length === 0 ? (
                           <div className="text-center py-6 text-slate-500 text-xs italic">
                             Speak into your microphone to start the live conversation...
@@ -3578,7 +3571,7 @@ export default function StudentWebApp() {
                                 )}
 
                                 <div
-                                  className={`max-w-[85%] p-2.5 rounded-2xl text-[11px] leading-relaxed shadow-md ${
+                                  className={`max-w-[85%] p-2 rounded-2xl text-[11px] leading-relaxed shadow-md ${
                                     isBot
                                       ? "bg-gradient-to-br from-[#0e1c33] to-[#0a1424] border border-cyan-500/30 text-cyan-100 rounded-tl-sm"
                                       : "bg-gradient-to-br from-[#06291c] to-[#041a12] border border-emerald-500/40 text-emerald-100 rounded-tr-sm ml-auto"
@@ -3611,7 +3604,7 @@ export default function StudentWebApp() {
                   </div>
 
                   {/* Coach Advice Footnote */}
-                  <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800 text-[10px] text-slate-400 space-y-1">
+                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-[10px] text-slate-400 space-y-0.5 shrink-0 mt-2">
                     <div className="flex items-center gap-1 text-cyan-400 font-bold">
                       <Sparkles className="w-3 h-3" />
                       <span>{selectedCoach.name}'s Real-Time Tip:</span>
@@ -3624,13 +3617,13 @@ export default function StudentWebApp() {
               </div>
 
               {/* 3. EXECUTIVE VIDEO CALL CONTROL DOCK */}
-              <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-3 relative z-10 flex-wrap">
+              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-3 relative z-10 shrink-0">
                 {/* Left Controls: Mic, Camera, Slow Audio */}
                 <div className="flex items-center gap-2">
                   {/* Mic Toggle */}
                   <button
                     onClick={() => setIsMuted(!isMuted)}
-                    className={`p-3 rounded-2xl border transition-all flex items-center gap-2 ${
+                    className={`p-2.5 rounded-2xl border transition-all flex items-center gap-2 ${
                       isMuted
                         ? "bg-rose-500/20 border-rose-500/40 text-rose-300"
                         : "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200"
@@ -3644,7 +3637,7 @@ export default function StudentWebApp() {
                   {/* Camera Toggle */}
                   <button
                     onClick={toggleCamera}
-                    className={`p-3 rounded-2xl border transition-all flex items-center gap-2 ${
+                    className={`p-2.5 rounded-2xl border transition-all flex items-center gap-2 ${
                       isCameraActive
                         ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
                         : "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200"
@@ -3662,7 +3655,7 @@ export default function StudentWebApp() {
                         speakText(botCaption, activeCallTopic.language);
                       }
                     }}
-                    className="p-3 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition-all flex items-center gap-2"
+                    className="p-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition-all flex items-center gap-2"
                     title="Repeat coach's last sentence"
                   >
                     <RotateCcw className="w-4 h-4 text-indigo-400" />
@@ -3688,13 +3681,14 @@ export default function StudentWebApp() {
                 {/* Right: End Call Button */}
                 <button
                   onClick={handleEndCall}
-                  className="px-6 py-3 rounded-2xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-black text-xs sm:text-sm shadow-xl shadow-rose-600/40 hover:shadow-rose-600/60 flex items-center gap-2 transition-all hover:scale-[1.02]"
+                  className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-black text-xs sm:text-sm shadow-xl shadow-rose-600/40 hover:shadow-rose-600/60 flex items-center gap-2 transition-all hover:scale-[1.02]"
                 >
                   <PhoneOff className="w-4 h-4" />
                   <span>End Call & Generate Scorecard</span>
                 </button>
               </div>
             </div>
+          </div>
           ) : activeTab === "dashboard" ? (
             /* ----------------------------------------------------------- */
             /* TAB: 1:1 DASHBOARD VIEW (MATCHING THE SCREENSHOT EXACTLY)    */
@@ -5869,92 +5863,81 @@ export default function StudentWebApp() {
               </div>
             </div>
 
-            {/* Central Big Score Diploma Card */}
-            <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-[#0c1f38] via-[#091629] to-[#050c17] border border-cyan-500/40 shadow-xl relative overflow-hidden text-center space-y-3 z-10">
-              <div className="flex items-center justify-center gap-3">
-                {/* 3D Grade Badge */}
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-400 to-blue-600 text-slate-950 font-black text-2xl flex items-center justify-center shadow-lg shadow-cyan-400/40 border border-cyan-200">
-                  {completedSession.grade}
-                </div>
-                <div className="text-left">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl sm:text-5xl font-black text-white tracking-tight drop-shadow-md">
-                      {completedSession.score}
-                    </span>
-                    <span className="text-sm font-bold text-slate-400">/ 100</span>
-                    <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-black uppercase tracking-wider ml-1">
-                      {completedSession.cefrLevel || "B2 Upper Intermediate"}
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-cyan-300/90 font-mono block mt-0.5">
-                    ⚡ Evaluated with Gemini Nano On-Device Acoustic Engine
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Session Stats Pill Bar */}
-            <div className="flex items-center justify-between gap-2 p-3 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 flex-wrap relative z-10">
-              <div className="flex items-center gap-1.5 font-bold">
-                <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Time: {formatTimer(completedSession.durationSeconds)}</span>
-              </div>
-              <div className="flex items-center gap-1.5 font-bold">
-                <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Turns: {completedSession.turnsCount || userSpeechTurnsCount}</span>
-              </div>
-              <div className="flex items-center gap-1.5 font-bold">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>XP: +{completedSession.xpEarned || 250} XP</span>
-              </div>
-              <div className="flex items-center gap-1.5 font-bold text-amber-400">
-                <Flame className="w-3.5 h-3.5 fill-amber-400" />
-                <span>Streak: 12 Days Kept!</span>
-              </div>
-            </div>
-
-            {/* Interactive Tab Switcher */}
-            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-950/90 border border-slate-800 relative z-10">
+            {/* 3 Interactive View Tabs */}
+            <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-950/80 border border-slate-800 relative z-10">
               <button
-                onClick={() => setScorecardTab("summary")}
+                onClick={() => setScorecardActiveTab("radar")}
                 className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                  scorecardTab === "summary"
-                    ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md font-black"
-                    : "text-slate-400 hover:text-white hover:bg-slate-900"
+                  scorecardActiveTab === "radar"
+                    ? "bg-cyan-500/25 border border-cyan-400 text-cyan-300 shadow-md shadow-cyan-500/20"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
               >
-                <Activity className="w-3.5 h-3.5" />
-                <span>Radar &amp; Feedback</span>
+                <Award className="w-3.5 h-3.5" />
+                <span>📊 Radar & Feedback</span>
               </button>
-
               <button
-                onClick={() => setScorecardTab("dialogue")}
+                onClick={() => setScorecardActiveTab("transcript")}
                 className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                  scorecardTab === "dialogue"
-                    ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md font-black"
-                    : "text-slate-400 hover:text-white hover:bg-slate-900"
+                  scorecardActiveTab === "transcript"
+                    ? "bg-cyan-500/25 border border-cyan-400 text-cyan-300 shadow-md shadow-cyan-500/20"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
               >
                 <MessageSquare className="w-3.5 h-3.5" />
-                <span>Full Dialogue ({(completedSession.conversationTurns || conversationTurns).length})</span>
+                <span>💬 Full Transcript ({conversationTurns.length})</span>
               </button>
-
               <button
-                onClick={() => setScorecardTab("corrections")}
+                onClick={() => setScorecardActiveTab("corrections")}
                 className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                  scorecardTab === "corrections"
-                    ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md font-black"
-                    : "text-slate-400 hover:text-white hover:bg-slate-900"
+                  scorecardActiveTab === "corrections"
+                    ? "bg-amber-500/25 border border-amber-400 text-amber-300 shadow-md shadow-amber-500/20"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
               >
-                <AlertCircle className="w-3.5 h-3.5" />
-                <span>Corrections ({completedSession.correctionsList?.length || 0})</span>
+                <Target className="w-3.5 h-3.5" />
+                <span>🎯 Corrections ({completedSession.correctionsList?.length || 0})</span>
               </button>
             </div>
 
             {/* TAB 1: RADAR & FEEDBACK */}
-            {scorecardTab === "summary" && (
+            {scorecardActiveTab === "radar" && (
               <div className="space-y-4 relative z-10 animate-in fade-in duration-200">
+                {/* Central Big Score Diploma Card */}
+                <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-[#0c1f38] via-[#091629] to-[#050c17] border border-cyan-500/40 shadow-xl relative overflow-hidden text-center space-y-3">
+                  <div className="flex items-center justify-center gap-3">
+                    {/* 3D Grade Badge */}
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-400 to-blue-600 text-slate-950 font-black text-2xl flex items-center justify-center shadow-lg shadow-cyan-400/40 border border-cyan-200">
+                      {completedSession.grade}
+                    </div>
+                    <div className="text-left">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-4xl sm:text-5xl font-black text-white tracking-tight drop-shadow-md">
+                          {completedSession.score}
+                        </span>
+                        <span className="text-sm font-bold text-slate-400">/ 100</span>
+                        <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-black uppercase tracking-wider ml-1">
+                          {completedSession.cefrLevel || "B2 Upper Intermediate"}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-cyan-300/90 font-mono block mt-0.5">
+                        ⚡ Evaluated with Gemini Nano On-Device Acoustic Engine
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Coach Qualitative Speech Feedback Quote */}
+                  <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 text-left text-xs leading-relaxed text-slate-200 flex items-start gap-2.5">
+                    <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5 animate-pulse" />
+                    <div>
+                      <strong className="text-cyan-300 block mb-0.5 font-bold">
+                        {completedSession.coachName || selectedCoach.name}'s Feedback:
+                      </strong>
+                      <span>&ldquo;{completedSession.coachFeedback}&rdquo;</span>
+                    </div>
+                  </div>
+                </div>
+
                 {/* 4-Metric In-Depth Telemetry Radar (Fluency, Accuracy, Pronunciation, Vocabulary) */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {/* Metric 1: Fluency */}
@@ -5969,7 +5952,7 @@ export default function StudentWebApp() {
                         style={{ width: `${completedSession.fluencyScore}%` }}
                       />
                     </div>
-                    <span className="text-[9px] text-emerald-300/80 font-mono">Pace &amp; Cadence</span>
+                    <span className="text-[9px] text-emerald-300/80 font-mono">Pace & Cadence</span>
                   </div>
 
                   {/* Metric 2: Accuracy */}
@@ -6018,112 +6001,166 @@ export default function StudentWebApp() {
                   </div>
                 </div>
 
-                {/* Coach Qualitative Speech Feedback Quote */}
-                <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 text-left text-xs leading-relaxed text-slate-200 flex items-start gap-2.5">
-                  <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5 animate-pulse" />
-                  <div>
-                    <strong className="text-cyan-300 block mb-0.5 font-bold">
-                      {completedSession.coachName || selectedCoach.name}'s Feedback:
-                    </strong>
-                    <span>&ldquo;{completedSession.coachFeedback}&rdquo;</span>
+                {/* Session Stats Pill Bar */}
+                <div className="flex items-center justify-between gap-2 p-3 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 flex-wrap">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Time: {formatTimer(completedSession.durationSeconds)}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Turns: {completedSession.turnsCount || userSpeechTurnsCount}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>XP: +{completedSession.xpEarned || 250} XP</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 font-bold text-amber-400">
+                    <Flame className="w-3.5 h-3.5 fill-amber-400" />
+                    <span>Streak: 12 Days Kept!</span>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* TAB 2: 💬 FULL DIALOGUE TRANSCRIPT */}
-            {scorecardTab === "dialogue" && (
-              <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 text-left space-y-3 relative z-10 max-h-72 overflow-y-auto animate-in fade-in duration-200">
-                {(completedSession.conversationTurns || conversationTurns).length === 0 ? (
-                  <div className="py-8 text-center text-slate-500 text-xs">
-                    No dialogue recorded for this session. Speak into the microphone during your next call!
-                  </div>
-                ) : (
-                  (completedSession.conversationTurns || conversationTurns).map((turn, tIdx) => {
-                    const isBot = turn.sender === "bot";
-                    return (
-                      <div
-                        key={tIdx}
-                        className={`flex items-start gap-2.5 ${isBot ? "justify-start" : "justify-end"}`}
-                      >
-                        {isBot && (
-                          <img
-                            src={completedSession.coachAvatar || selectedCoach.avatar}
-                            alt=""
-                            className="w-7 h-7 rounded-full object-cover border border-cyan-400 shrink-0 mt-0.5"
-                          />
-                        )}
+            {/* TAB 2: FULL TURN-BY-TURN DIALOGUE TRANSCRIPT */}
+            {scorecardActiveTab === "transcript" && (
+              <div className="space-y-3 relative z-10 animate-in fade-in duration-200">
+                <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                  <span className="font-bold text-white flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-cyan-400" />
+                    Complete Spoken Conversation History
+                  </span>
+                  <span className="font-mono text-cyan-300">{conversationTurns.length} Total Turns Recorded</span>
+                </div>
+
+                <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1">
+                  {conversationTurns.length === 0 ? (
+                    <div className="text-center py-10 text-slate-500 text-xs italic">
+                      No dialogue turns recorded in this session.
+                    </div>
+                  ) : (
+                    conversationTurns.map((turn, tIdx) => {
+                      const isBot = turn.sender === "bot";
+                      return (
                         <div
-                          className={`max-w-[80%] p-2.5 rounded-2xl text-xs leading-relaxed space-y-1 ${
-                            isBot
-                              ? "bg-slate-900 border border-slate-700/80 text-cyan-100 rounded-tl-sm shadow-md"
-                              : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-tr-sm shadow-md shadow-emerald-500/20"
-                          }`}
+                          key={tIdx}
+                          className={`flex items-start gap-3 ${isBot ? "justify-start" : "justify-end"}`}
                         >
-                          <div className="flex items-center justify-between gap-3 text-[10px] opacity-75">
-                            <span className="font-bold">
-                              {isBot ? completedSession.coachName || selectedCoach.name : "You (Janitha)"}
-                            </span>
-                            {isBot && (
-                              <button
-                                onClick={() => speakText(turn.text, completedSession.language)}
-                                className="hover:text-cyan-300 transition-colors"
-                                title="Listen to this phrase"
-                              >
-                                <Volume2 className="w-3 h-3 text-cyan-300" />
-                              </button>
-                            )}
+                          {isBot && (
+                            <img
+                              src={completedSession.coachAvatar || selectedCoach.avatar}
+                              alt={completedSession.coachName || selectedCoach.name}
+                              className="w-8 h-8 rounded-full object-cover border border-cyan-400/50 mt-0.5 shrink-0 shadow-sm"
+                            />
+                          )}
+
+                          <div
+                            className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed shadow-md ${
+                              isBot
+                                ? "bg-gradient-to-br from-[#0e1c33] to-[#0a1424] border border-cyan-500/30 text-cyan-100 rounded-tl-sm"
+                                : "bg-gradient-to-br from-[#06291c] to-[#041a12] border border-emerald-500/40 text-emerald-100 rounded-tr-sm ml-auto text-left"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-3 mb-1">
+                              <span className={`font-black text-[11px] ${isBot ? "text-cyan-300" : "text-emerald-300"}`}>
+                                {isBot ? (completedSession.coachName || selectedCoach.name) : "You (Janitha)"}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[9px] font-mono text-slate-500">
+                                  {turn.timestamp ? new Date(turn.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Turn " + (tIdx + 1)}
+                                </span>
+                                <button
+                                  onClick={() => speakText(turn.text, completedSession.language || "English")}
+                                  className="p-1 rounded-md bg-slate-800 hover:bg-cyan-500/20 text-slate-400 hover:text-cyan-300 transition-all"
+                                  title="Listen to this phrase"
+                                >
+                                  <Volume2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                            <p className="font-normal text-left">{turn.text}</p>
                           </div>
-                          <p className="font-medium">{turn.text}</p>
-                        </div>
-                        {!isBot && (
-                          <div className="w-7 h-7 rounded-full overflow-hidden border border-emerald-400 shrink-0 mt-0.5 bg-slate-800">
+
+                          {!isBot && (
                             <img
                               src="/images/janitha-avatar.jpg"
-                              alt="You"
-                              className="w-full h-full object-cover"
+                              alt="Janitha"
+                              className="w-8 h-8 rounded-full object-cover border border-emerald-400/50 mt-0.5 shrink-0 shadow-sm"
                             />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })
-                )}
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
             )}
 
-            {/* TAB 3: 🎯 CORRECTIONS & FORENSICS */}
-            {scorecardTab === "corrections" && (
-              <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 text-left space-y-2.5 relative z-10 max-h-72 overflow-y-auto animate-in fade-in duration-200">
-                {completedSession.correctionsList && completedSession.correctionsList.length > 0 ? (
-                  completedSession.correctionsList.map((c, cIdx) => (
-                    <div key={cIdx} className="p-3 rounded-2xl bg-slate-900 border border-slate-800 text-xs space-y-1.5 shadow-md">
-                      <div className="flex items-center gap-1.5 text-rose-300">
-                        <span className="font-bold">❌ You said:</span>
-                        <span className="line-through font-mono">"{c.original}"</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-emerald-300">
-                        <span className="font-bold">✅ Say instead:</span>
-                        <span className="font-bold">"{c.correction}"</span>
-                      </div>
-                      {c.explanation && (
-                        <p className="text-[11px] text-cyan-200/90 italic pl-1 border-l-2 border-cyan-500/50 py-0.5 mt-1">
-                          💡 {c.explanation}
-                        </p>
-                      )}
+            {/* TAB 3: FORENSIC CORRECTIONS & LEARNING REVIEW */}
+            {scorecardActiveTab === "corrections" && (
+              <div className="space-y-3 relative z-10 animate-in fade-in duration-200">
+                <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                  <span className="font-bold text-white flex items-center gap-2">
+                    <Target className="w-4 h-4 text-amber-400" />
+                    Speech Diagnosis & Granular Fixes
+                  </span>
+                  <span className="font-mono text-amber-300">
+                    {completedSession.correctionsList?.length || 0} Slips Detected
+                  </span>
+                </div>
+
+                <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
+                  {(!completedSession.correctionsList || completedSession.correctionsList.length === 0) ? (
+                    <div className="p-8 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-2">
+                      <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
+                      <h4 className="text-sm font-black text-white">Flawless Cadence & Grammar!</h4>
+                      <p className="text-xs text-emerald-200/80 max-w-sm mx-auto">
+                        No grammatical or syntactical errors were flagged during this phone call. Native-like expression verified!
+                      </p>
                     </div>
-                  ))
-                ) : (
-                  <div className="py-8 px-4 rounded-2xl bg-gradient-to-br from-emerald-950/50 via-slate-900 to-[#07131e] border border-emerald-500/40 text-center space-y-2">
-                    <Trophy className="w-8 h-8 text-amber-400 mx-auto fill-amber-400 drop-shadow-md animate-bounce" />
-                    <h4 className="text-sm font-black text-emerald-300">
-                      🏆 Flawless Spoken Delivery!
-                    </h4>
-                    <p className="text-xs text-slate-300 max-w-md mx-auto">
-                      Zero grammatical slips or pronunciation errors detected during this session. You spoke with clean syntax and natural native cadence!
-                    </p>
-                  </div>
-                )}
+                  ) : (
+                    completedSession.correctionsList.map((c, cIdx) => (
+                      <div key={cIdx} className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-left space-y-2 shadow-lg">
+                        <div className="flex items-center justify-between pb-1 border-b border-slate-800">
+                          <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider">
+                            Correction #{cIdx + 1}
+                          </span>
+                          <button
+                            onClick={() => speakText(c.correction, completedSession.language || "English")}
+                            className="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-400/30 flex items-center gap-1 hover:bg-emerald-500/30 transition-all"
+                          >
+                            <Volume2 className="w-3 h-3" />
+                            <span>Hear Pronunciation</span>
+                          </button>
+                        </div>
+
+                        {/* ❌ What you said */}
+                        <div className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/30">
+                          <span className="text-[9px] font-bold text-rose-400 uppercase tracking-wider block mb-0.5">
+                            ❌ What you said:
+                          </span>
+                          <p className="text-xs text-rose-200 line-through font-mono">"{c.original}"</p>
+                        </div>
+
+                        {/* ✅ Say instead */}
+                        <div className="p-2 rounded-xl bg-emerald-500/15 border border-emerald-400/40">
+                          <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider block mb-0.5">
+                            ✅ Say it naturally:
+                          </span>
+                          <p className="text-xs font-black text-emerald-100">"{c.correction}"</p>
+                        </div>
+
+                        {c.explanation && (
+                          <div className="p-2 rounded-xl bg-cyan-950/40 border border-cyan-800/40 text-[10px] text-cyan-200 leading-relaxed">
+                            <span className="font-bold text-cyan-400">💡 Rule & Cadence: </span>
+                            <span>{c.explanation}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             )}
 

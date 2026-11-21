@@ -77,8 +77,8 @@ Reply ONLY with valid JSON:
             body: JSON.stringify({
               contents: [{ role: "user", parts: [{ text: prompt }] }],
               generationConfig: {
-                temperature: 0.7,
-                maxOutputTokens: 600,
+                temperature: 0.6,
+                maxOutputTokens: 180,
                 responseMimeType: "application/json",
               },
             }),
