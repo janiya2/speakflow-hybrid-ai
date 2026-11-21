@@ -22,7 +22,9 @@ import {
   addDoc,
   query,
   where,
-  orderBy
+  orderBy,
+  limit,
+  onSnapshot
 } from "firebase/firestore";
 import { auth, db, COLLECTIONS } from "@/lib/firebase";
 import {
@@ -780,6 +782,19 @@ export default function StudentWebApp() {
   const [selectedLanguage, setSelectedLanguage] = useState<string>("English");
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
+  const [pushNotifications, setPushNotifications] = useState<
+    Array<{
+      id: string;
+      title: string;
+      body: string;
+      audience: string;
+      actionRoute?: string;
+      sentAt: string;
+      status?: string;
+    }>
+  >([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(true);
+  const [readNotificationIds, setReadNotificationIds] = useState<string[]>([]);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [showVipModal, setShowVipModal] = useState(false);
 
@@ -2004,6 +2019,55 @@ export default function StudentWebApp() {
       }
     }
     fetchLandingAndSubscriptions();
+
+    // Load read notification IDs from localStorage
+    if (typeof window !== "undefined") {
+      try {
+        const storedRead = localStorage.getItem("speakflow_read_notifs");
+        if (storedRead) {
+          const parsed = JSON.parse(storedRead);
+          if (Array.isArray(parsed)) setReadNotificationIds(parsed);
+        }
+      } catch (_) {}
+    }
+
+    // Real-time Push Notification History listener synced with Mobile App & Admin Panel (lang_notifications)
+    const notifQuery = query(collection(db, COLLECTIONS.NOTIFICATIONS), limit(30));
+    const unsubscribeNotifs = onSnapshot(
+      notifQuery,
+      (snap) => {
+        const items = snap.docs
+          .map((d) => {
+            const data = d.data() as any;
+            const rawSent =
+              data.sentAt?.toDate?.()?.toISOString?.() ||
+              data.createdAt?.toDate?.()?.toISOString?.() ||
+              data.sentAt ||
+              data.createdAt ||
+              new Date().toISOString();
+            return {
+              id: d.id,
+              title: data.title || "SpeakFlow Notification",
+              body: data.body || "",
+              audience: data.targetAudience || data.audience || "all",
+              actionRoute: data.actionRoute || "/home",
+              sentAt: String(rawSent),
+              status: data.status || "Delivered"
+            };
+          })
+          .sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
+        setPushNotifications(items);
+        setNotificationsLoading(false);
+      },
+      (err) => {
+        console.warn("Could not subscribe to lang_notifications:", err);
+        setNotificationsLoading(false);
+      }
+    );
+
+    return () => {
+      unsubscribeNotifs();
+    };
   }, []);
 
   // 2. Auth State Observer
@@ -4008,135 +4072,353 @@ export default function StudentWebApp() {
       {/* 2. MAIN DASHBOARD CONTENT AREA */}
       {/* ------------------------------------------------------------- */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* TOP BAR - Hidden during active call for zero distraction */}
-        {!activeCallTopic && (
-          <header className="h-16 border-b border-slate-800/80 bg-[#0A0F1D]/85 backdrop-blur-xl sticky top-0 z-30 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-            <div className="flex items-center gap-4 flex-1 max-w-md">
-              <button
-                onClick={() => setMobileSidebarOpen(true)}
-                className="md:hidden text-slate-400 hover:text-white p-1 rounded-lg"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
+        {/* TOP EXECUTIVE COMMAND HEADER - Hidden during active call for zero distraction */}
+        {!activeCallTopic && (() => {
+          const tabLabels: Record<MainTab, { title: string; badge: string }> = {
+            dashboard: { title: "Command Dashboard", badge: "Live Telemetry" },
+            practice: { title: "Practice Catalog", badge: `${topics.length}+ Calls` },
+            conversation: { title: "Conversation Studio", badge: "3-in-1 AI" },
+            vocabulary: { title: "Vocabulary Studio", badge: `${FULL_VOCABULARY_CATALOG.length}+ Words` },
+            grammar: { title: "Grammar Vault", badge: "Pattern Repair" },
+            progress: { title: "Speaking Analytics", badge: `${realAnalytics.avgFluency}% Avg` },
+            achievements: { title: "Trophy Arena", badge: `${realAnalytics.totalXp.toLocaleString()} XP` },
+            profile: { title: "Learner Passport", badge: realAnalytics.cefrBadge },
+            settings: { title: "AI Engine Config", badge: "Hybrid Core" },
+            history: { title: "Call History", badge: `${userSessions.length} Logs` }
+          };
+          const currentTabMeta = tabLabels[activeTab] || tabLabels.dashboard;
+          const unreadCount = pushNotifications.filter((n) => !readNotificationIds.includes(n.id)).length;
 
-              {/* Cyber Search lessons, words with ⌘K badge */}
-              <div className="relative w-full">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search lessons, vocabulary, drills..."
-                  className="w-full bg-[#111827]/90 border border-slate-800/90 rounded-full pl-9 pr-14 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/80 focus:ring-1 focus:ring-cyan-500/50 transition-all shadow-inner"
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-mono text-slate-500 bg-slate-800/70 px-1.5 py-0.5 rounded border border-slate-700/60 hidden sm:block">
-                  ⌘K
-                </span>
-              </div>
-            </div>
+          const formatNotifAgo = (isoStr: string) => {
+            try {
+              const d = new Date(isoStr);
+              if (Number.isNaN(d.getTime())) return "Recent";
+              const mins = Math.floor((Date.now() - d.getTime()) / 60000);
+              if (mins < 1) return "Just now";
+              if (mins < 60) return `${mins}m ago`;
+              const hrs = Math.floor(mins / 60);
+              if (hrs < 24) return `${hrs}h ago`;
+              const days = Math.floor(hrs / 24);
+              if (days < 7) return `${days}d ago`;
+              return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+            } catch (_) {
+              return "Recent";
+            }
+          };
 
-            {/* Right Header Controls */}
-            <div className="flex items-center gap-2.5 sm:gap-3">
-              {/* Live AI Hybrid Engine Latency Chip */}
-              <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-950/40 border border-cyan-500/30 text-xs shadow-sm">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-400"></span>
-                </span>
-                <span className="font-mono text-[11px] text-cyan-300 font-bold">⚡ SpeakFlow Neural • 12ms</span>
-                <span className="text-[10px] text-slate-600">|</span>
-                <span className="text-[10.5px] text-slate-300 font-medium">Edge AI</span>
-              </div>
+          const handleMarkAllNotifsRead = () => {
+            const allIds = pushNotifications.map((n) => n.id);
+            setReadNotificationIds(allIds);
+            if (typeof window !== "undefined") {
+              try {
+                localStorage.setItem("speakflow_read_notifs", JSON.stringify(allIds));
+              } catch (_) {}
+            }
+          };
 
-              {/* Daily Streak Indicator */}
-              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold shadow-sm">
-                <Flame className="w-4 h-4 text-amber-400 fill-amber-400 animate-pulse" />
-                <span>{realAnalytics.streakDays} Days</span>
-                <span className="text-[8.5px] bg-amber-500/25 text-amber-200 px-1.5 py-0.2 rounded-full font-black">
-                  2x XP
-                </span>
-              </div>
+          const trimmedHeaderSearch = searchQuery.trim().toLowerCase();
+          const quickSearchMatches = trimmedHeaderSearch
+            ? topics
+                .filter(
+                  (t) =>
+                    t.title.toLowerCase().includes(trimmedHeaderSearch) ||
+                    t.category?.toLowerCase().includes(trimmedHeaderSearch) ||
+                    t.language.toLowerCase().includes(trimmedHeaderSearch)
+                )
+                .slice(0, 5)
+            : [];
 
-              {/* Notification Bell with Badge 3 */}
-              <div className="relative">
+          return (
+            <header className="h-16 border-b border-slate-800/80 bg-[#0A0F1D]/90 backdrop-blur-xl sticky top-0 z-30 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+              {/* Left Cluster: Mobile Menu + Active View Pill + Live Quick Search */}
+              <div className="flex items-center gap-3 flex-1 min-w-0">
                 <button
-                  onClick={() => {
-                    setShowNotifications(!showNotifications);
-                    setShowLanguageDropdown(false);
-                  }}
-                  className="p-2 rounded-xl bg-[#111827] border border-slate-800 text-slate-300 hover:text-white relative transition-colors"
+                  onClick={() => setMobileSidebarOpen(true)}
+                  className="md:hidden text-slate-400 hover:text-white p-1.5 rounded-xl bg-slate-900 border border-slate-800 shrink-0"
                 >
-                  <Bell className="w-4 h-4" />
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center animate-pulse">
-                    3
+                  <Menu className="w-5 h-5" />
+                </button>
+
+                {/* Active Page Context Badge */}
+                <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 shrink-0">
+                  <span className="text-xs font-black text-white">{currentTabMeta.title}</span>
+                  <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                    {currentTabMeta.badge}
+                  </span>
+                </div>
+
+                {/* Live Search Bar with Quick-Launch Dropdown */}
+                <div className="relative flex-1 max-w-md">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Quick find 164+ roleplay calls, skills, or languages..."
+                    className="w-full bg-[#111827]/95 border border-slate-800 rounded-xl pl-9 pr-14 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/80 focus:ring-1 focus:ring-cyan-500/40 transition-all shadow-inner"
+                  />
+                  {searchQuery ? (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  ) : (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-mono text-slate-500 bg-slate-800/70 px-1.5 py-0.5 rounded border border-slate-700/60 hidden sm:block">
+                      ⌘K
+                    </span>
+                  )}
+
+                  {/* Quick-Jump Search Dropdown */}
+                  {trimmedHeaderSearch && (
+                    <div className="absolute left-0 right-0 mt-2 bg-[#0F172A] border border-cyan-500/40 rounded-2xl p-2 shadow-2xl z-50 space-y-1">
+                      <div className="px-2.5 py-1 flex items-center justify-between text-[10px] text-slate-400 border-b border-slate-800">
+                        <span>Matching Voice Calls ({quickSearchMatches.length})</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveTab("practice");
+                            setSearchQuery("");
+                          }}
+                          className="text-cyan-400 hover:underline font-bold"
+                        >
+                          Open Catalog →
+                        </button>
+                      </div>
+                      {quickSearchMatches.length === 0 ? (
+                        <div className="px-3 py-3 text-xs text-slate-400 text-center">
+                          No scenarios matching &ldquo;{searchQuery}&rdquo;
+                        </div>
+                      ) : (
+                        quickSearchMatches.map((t) => (
+                          <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => {
+                              setSearchQuery("");
+                              handleInitiateCallPrompt(t);
+                            }}
+                            className="w-full px-3 py-2 rounded-xl hover:bg-slate-800/80 flex items-center justify-between gap-2 text-left transition-colors"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-sm shrink-0">{t.icon}</span>
+                              <div className="min-w-0">
+                                <div className="text-xs font-bold text-white truncate">{t.title}</div>
+                                <div className="text-[10px] text-slate-400">
+                                  {t.language} • {t.level}
+                                </div>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-black text-cyan-300 shrink-0">Call →</span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Cluster: Unified Executive Telemetry Dock */}
+              <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+                {/* Live AI Hybrid Engine Status Pill */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("settings")}
+                  className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-950/45 hover:bg-cyan-950/70 border border-cyan-500/30 text-xs shadow-sm transition-colors"
+                  title="Configure Hybrid Edge / Cloud AI Engine"
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                  </span>
+                  <span className="font-mono text-[11px] text-cyan-300 font-bold">SpeakFlow Neural</span>
+                  <span className="text-[10px] text-slate-600">•</span>
+                  <span className="text-[10.5px] text-emerald-300 font-semibold">12ms Edge</span>
+                </button>
+
+                {/* Daily Streak & XP Pill */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("achievements")}
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 to-orange-500/15 hover:from-amber-500/25 hover:to-orange-500/25 border border-amber-500/35 text-amber-300 text-xs font-bold shadow-sm transition-all"
+                  title="View Achievements & Leaderboard"
+                >
+                  <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                  <span>{realAnalytics.streakDays}d</span>
+                  <span className="text-[9px] bg-amber-500/25 text-amber-200 px-1.5 py-0.2 rounded font-black">
+                    {isPremiumMember ? "2x XP" : "1x XP"}
                   </span>
                 </button>
 
-                {/* Notification Dropdown */}
-                {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-76 bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-2xl z-50 space-y-3">
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                      <span className="text-xs font-bold text-white">Notifications</span>
-                      <span className="text-[10px] text-cyan-400 font-semibold cursor-pointer hover:underline">
-                        Mark all read
+                {/* Real Mobile App Push Notifications Center (lang_notifications) */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNotifications(!showNotifications);
+                      setShowLanguageDropdown(false);
+                    }}
+                    className={`p-2 rounded-xl border relative transition-all ${
+                      showNotifications
+                        ? "bg-cyan-500/20 border-cyan-400 text-white"
+                        : "bg-[#111827] border-slate-800 text-slate-300 hover:text-white hover:border-slate-700"
+                    }`}
+                    title="App Push Notifications History"
+                  >
+                    <Bell className="w-4 h-4" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center shadow ring-2 ring-[#0A0F1D]">
+                        {unreadCount > 9 ? "9+" : unreadCount}
                       </span>
-                    </div>
-                    <div className="space-y-2 text-xs">
-                      <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                        <p className="font-semibold text-white">🔥 12-Day Streak Achieved!</p>
-                        <p className="text-[10px] text-slate-400">Keep up your daily speaking momentum.</p>
-                      </div>
-                      <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                        <p className="font-semibold text-white">🏆 #1 on Weekly Winners Podium!</p>
-                        <p className="text-[10px] text-slate-400">190 min practice logged this week.</p>
-                      </div>
-                      <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                        <p className="font-semibold text-white">✨ 40 New Food &amp; Travel Topics</p>
-                        <p className="text-[10px] text-slate-400">Explore authentic restaurant and airport calls.</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+                    )}
+                  </button>
 
-              {/* Deluxe Country Flag Badge Language Flyout Selector */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowLanguageDropdown(!showLanguageDropdown);
-                    setShowNotifications(false);
-                  }}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800/90 border border-slate-700/80 hover:border-cyan-500/50 text-xs font-semibold text-slate-200 transition-all shadow-md group"
-                >
-                  {/* Current Language Flag Badge */}
-                  {(() => {
-                    const currentLang = AVAILABLE_LANGUAGES.find((l) => l.id === selectedLanguage) || AVAILABLE_LANGUAGES[0];
-                    return (
-                      <>
-                        <div className="w-5 h-5 rounded-full overflow-hidden border border-white/20 shrink-0 bg-slate-800 flex items-center justify-center">
-                          <img
-                            src={currentLang.flagUrl}
-                            alt={currentLang.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.currentTarget as any).style.display = "none";
-                            }}
-                          />
+                  {/* Properly Sized Wide Push Notifications Drawer */}
+                  {showNotifications && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
+                      <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#0F172A] border border-cyan-500/35 rounded-2xl p-4 shadow-2xl shadow-black/80 z-50 space-y-3">
+                        <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center">
+                              <Bell className="w-3.5 h-3.5 text-cyan-300" />
+                            </div>
+                            <div>
+                              <span className="text-xs font-black text-white block leading-tight">
+                                App Push Notifications
+                              </span>
+                              <span className="text-[9.5px] text-emerald-400 font-bold block leading-tight">
+                                Synced with SpeakFlow Mobile &amp; Admin CMS
+                              </span>
+                            </div>
+                          </div>
+                          {pushNotifications.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={handleMarkAllNotifsRead}
+                              className="text-[10px] text-cyan-400 hover:text-cyan-300 font-bold whitespace-nowrap shrink-0"
+                            >
+                              Mark all read
+                            </button>
+                          )}
                         </div>
-                        <span className="text-white font-bold tracking-tight">
-                          {currentLang.native}
-                        </span>
-                        <span className="text-[9px] font-bold text-cyan-300 bg-cyan-500/15 border border-cyan-400/30 px-1.5 py-0.2 rounded-full hidden sm:inline">
-                          {currentLang.cefr}
-                        </span>
-                        <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
-                          showLanguageDropdown ? "rotate-180 text-cyan-400" : "group-hover:text-white"
-                        }`} />
-                      </>
-                    );
-                  })()}
-                </button>
+
+                        <div className="space-y-2 max-h-80 overflow-y-auto pr-1 custom-scrollbar">
+                          {notificationsLoading ? (
+                            <div className="py-6 text-center text-xs text-slate-400">
+                              Syncing mobile push notifications...
+                            </div>
+                          ) : pushNotifications.length === 0 ? (
+                            <div className="py-6 px-3 text-center space-y-1.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                              <div className="text-xl">🔔</div>
+                              <p className="text-xs font-bold text-white">No Broadcast Alerts Yet</p>
+                              <p className="text-[10.5px] text-slate-400 leading-relaxed">
+                                Push alerts sent from your Admin Panel or Mobile App streak reminders appear here automatically in real time.
+                              </p>
+                            </div>
+                          ) : (
+                            pushNotifications.map((notif) => {
+                              const isUnread = !readNotificationIds.includes(notif.id);
+                              const aud = (notif.audience || "all").toLowerCase();
+                              return (
+                                <div
+                                  key={notif.id}
+                                  onClick={() => {
+                                    if (isUnread) {
+                                      const nextRead = [...readNotificationIds, notif.id];
+                                      setReadNotificationIds(nextRead);
+                                      if (typeof window !== "undefined") {
+                                        try {
+                                          localStorage.setItem("speakflow_read_notifs", JSON.stringify(nextRead));
+                                        } catch (_) {}
+                                      }
+                                    }
+                                    if (notif.actionRoute?.includes("practice")) setActiveTab("practice");
+                                    else if (notif.actionRoute?.includes("vocab")) setActiveTab("vocabulary");
+                                    else if (notif.actionRoute?.includes("grammar")) setActiveTab("grammar");
+                                    setShowNotifications(false);
+                                  }}
+                                  className={`p-3 rounded-xl border transition-all cursor-pointer space-y-1 ${
+                                    isUnread
+                                      ? "bg-cyan-950/25 border-cyan-500/40 hover:border-cyan-400"
+                                      : "bg-slate-950/60 border-slate-800/80 hover:border-slate-700 opacity-85"
+                                  }`}
+                                >
+                                  <div className="flex items-start justify-between gap-2">
+                                    <p className="text-xs font-bold text-white leading-snug flex items-center gap-1.5">
+                                      {isUnread && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />}
+                                      <span>{notif.title}</span>
+                                    </p>
+                                    <span className="text-[9.5px] font-mono text-slate-400 shrink-0">
+                                      {formatNotifAgo(notif.sentAt)}
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] text-slate-300 leading-relaxed">{notif.body}</p>
+                                  <div className="flex items-center justify-between pt-0.5">
+                                    <span
+                                      className={`text-[9px] font-black uppercase px-2 py-0.2 rounded-full border ${
+                                        aud.includes("pro") || aud.includes("vip")
+                                          ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                                          : aud.includes("free") || aud.includes("trial")
+                                          ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                                          : "bg-cyan-500/15 text-cyan-300 border-cyan-500/30"
+                                      }`}
+                                    >
+                                      {notif.audience || "All Users"}
+                                    </span>
+                                    <span className="text-[9px] text-emerald-400 font-bold">{notif.status}</span>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Deluxe Country Flag Badge Language Flyout Selector */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowLanguageDropdown(!showLanguageDropdown);
+                      setShowNotifications(false);
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-slate-700/80 hover:border-cyan-500/50 text-xs font-semibold text-slate-200 transition-all shadow-md group"
+                  >
+                    {(() => {
+                      const currentLang = AVAILABLE_LANGUAGES.find((l) => l.id === selectedLanguage) || AVAILABLE_LANGUAGES[0];
+                      return (
+                        <>
+                          <div className="w-5 h-5 rounded-full overflow-hidden border border-white/20 shrink-0 bg-slate-800 flex items-center justify-center">
+                            <img
+                              src={currentLang.flagUrl}
+                              alt={currentLang.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.currentTarget as any).style.display = "none";
+                              }}
+                            />
+                          </div>
+                          <span className="text-white font-bold tracking-tight">
+                            {currentLang.native}
+                          </span>
+                          <span className="text-[9px] font-bold text-cyan-300 bg-cyan-500/15 border border-cyan-400/30 px-1.5 py-0.2 rounded hidden sm:inline">
+                            {currentLang.cefr}
+                          </span>
+                          <ChevronDown
+                            className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                              showLanguageDropdown ? "rotate-180 text-cyan-400" : "group-hover:text-white"
+                            }`}
+                          />
+                        </>
+                      );
+                    })()}
+                  </button>
 
                 {/* Country Badge Flyout Menu */}
                 {showLanguageDropdown && (
@@ -4220,7 +4502,8 @@ export default function StudentWebApp() {
               </div>
             </div>
           </header>
-        )}
+          );
+        })()}
 
         {/* MAIN BODY CONTENT */}
         <main className={activeCallTopic ? "w-full h-screen overflow-hidden p-0 bg-[#030612] flex flex-col justify-center" : "p-4 sm:p-6 lg:p-8 space-y-6 w-full max-w-[1680px] mx-auto"}>

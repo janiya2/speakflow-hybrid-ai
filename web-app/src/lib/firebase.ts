@@ -40,7 +40,8 @@ export const COLLECTIONS = {
   USERS: "lang_users",
   TOPICS: "lang_topics",
   SETTINGS: "lang_settings",
-  SESSIONS: "lang_sessions"
+  SESSIONS: "lang_sessions",
+  NOTIFICATIONS: "lang_notifications"
 } as const;
 
 export default app;
