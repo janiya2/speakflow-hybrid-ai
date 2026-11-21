@@ -4072,16 +4072,16 @@ export default function StudentWebApp() {
                       />
                     </div>
                   </div>
-                  <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-cyan-400 ring-2 ring-[#080C18] animate-ping" />
-                  <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-cyan-400 ring-2 ring-[#080C18]" />
+                  <span className={`absolute -top-1 -right-1 w-3 h-3 rounded-full bg-cyan-400 ring-2 animate-ping ${isLight ? "ring-[#F3F7FD]" : "ring-[#080C18]"}`} />
+                  <span className={`absolute -top-1 -right-1 w-3 h-3 rounded-full bg-cyan-400 ring-2 ${isLight ? "ring-[#F3F7FD]" : "ring-[#080C18]"}`} />
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
                     <span
-                      className={`font-black text-xl tracking-tight bg-gradient-to-r bg-clip-text text-transparent ${
+                      className={`font-black text-xl tracking-tight ${
                         isLight
-                          ? "from-slate-900 via-blue-700 to-indigo-700"
-                          : "from-white via-slate-100 to-slate-300"
+                          ? "text-slate-900"
+                          : "bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent"
                       }`}
                     >
                       SpeakFlow
@@ -4958,34 +4958,66 @@ export default function StudentWebApp() {
                     }}
                     className={`p-2 rounded-xl border relative transition-all ${
                       showNotifications
-                        ? "bg-cyan-500/20 border-cyan-400 text-white"
+                        ? isLight
+                          ? "bg-sky-100 border-sky-400 text-sky-700 shadow-sm"
+                          : "bg-cyan-500/20 border-cyan-400 text-white"
+                        : isLight
+                        ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-sky-50 hover:border-sky-300"
                         : "bg-[#111827] border-slate-800 text-slate-300 hover:text-white hover:border-slate-700"
                     }`}
                     title="App Push Notifications History"
                   >
                     <Bell className="w-4 h-4" />
                     {unreadCount > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center shadow ring-2 ring-[#0A0F1D]">
+                      <span
+                        className={`absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center shadow ring-2 ${
+                          isLight ? "ring-[#F6F9FE]" : "ring-[#0A0F1D]"
+                        }`}
+                      >
                         {unreadCount > 9 ? "9+" : unreadCount}
                       </span>
                     )}
                   </button>
 
-                  {/* Properly Sized Wide Push Notifications Drawer */}
+                  {/* Properly Sized Wide Push Notifications Drawer (Frosted Ice-Slate Tray in Light Mode) */}
                   {showNotifications && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
-                      <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#0F172A] border border-cyan-500/35 rounded-2xl p-4 shadow-2xl shadow-black/80 z-50 space-y-3">
-                        <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+                      <div
+                        className={`absolute right-0 mt-2.5 w-80 sm:w-96 rounded-2xl p-4 z-50 space-y-3 border ${
+                          isLight
+                            ? "bg-[#E2ECF9] border-blue-300/90 shadow-[0_24px_60px_rgba(15,35,75,0.2)]"
+                            : "bg-[#0F172A] border-cyan-500/35 shadow-2xl shadow-black/80"
+                        }`}
+                      >
+                        <div
+                          className={`flex items-center justify-between gap-2 pb-2.5 border-b ${
+                            isLight ? "border-blue-200/80" : "border-slate-800"
+                          }`}
+                        >
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-lg bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center">
-                              <Bell className="w-3.5 h-3.5 text-cyan-300" />
+                            <div
+                              className={`w-7 h-7 rounded-xl border flex items-center justify-center ${
+                                isLight
+                                  ? "bg-sky-100 border-sky-300 text-sky-700"
+                                  : "bg-cyan-500/20 border-cyan-400/40 text-cyan-300"
+                              }`}
+                            >
+                              <Bell className="w-3.5 h-3.5" />
                             </div>
                             <div>
-                              <span className="text-xs font-black text-white block leading-tight">
+                              <span
+                                className={`text-xs font-black block leading-tight ${
+                                  isLight ? "text-slate-900" : "text-white"
+                                }`}
+                              >
                                 App Push Notifications
                               </span>
-                              <span className="text-[9.5px] text-emerald-400 font-bold block leading-tight">
+                              <span
+                                className={`text-[9.5px] font-bold block leading-tight ${
+                                  isLight ? "text-emerald-700" : "text-emerald-400"
+                                }`}
+                              >
                                 Synced with SpeakFlow Mobile &amp; Admin CMS
                               </span>
                             </div>
@@ -4994,7 +5026,11 @@ export default function StudentWebApp() {
                             <button
                               type="button"
                               onClick={handleMarkAllNotifsRead}
-                              className="text-[10px] text-cyan-400 hover:text-cyan-300 font-bold whitespace-nowrap shrink-0"
+                              className={`text-[10px] font-bold whitespace-nowrap shrink-0 px-2 py-1 rounded-lg transition-colors ${
+                                isLight
+                                  ? "bg-white/80 hover:bg-white text-blue-700 border border-blue-200"
+                                  : "text-cyan-400 hover:text-cyan-300"
+                              }`}
                             >
                               Mark all read
                             </button>
@@ -5003,14 +5039,22 @@ export default function StudentWebApp() {
 
                         <div className="space-y-2 max-h-80 overflow-y-auto pr-1 custom-scrollbar">
                           {notificationsLoading ? (
-                            <div className="py-6 text-center text-xs text-slate-400">
+                            <div className="py-6 text-center text-xs text-slate-500">
                               Syncing mobile push notifications...
                             </div>
                           ) : pushNotifications.length === 0 ? (
-                            <div className="py-6 px-3 text-center space-y-1.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                            <div
+                              className={`py-6 px-3 text-center space-y-1.5 rounded-xl border ${
+                                isLight
+                                  ? "bg-[#F4F8FF] border-blue-200"
+                                  : "bg-slate-950/60 border-slate-800/80"
+                              }`}
+                            >
                               <div className="text-xl">🔔</div>
-                              <p className="text-xs font-bold text-white">No Broadcast Alerts Yet</p>
-                              <p className="text-[10.5px] text-slate-400 leading-relaxed">
+                              <p className={`text-xs font-bold ${isLight ? "text-slate-900" : "text-white"}`}>
+                                No Broadcast Alerts Yet
+                              </p>
+                              <p className="text-[10.5px] text-slate-500 leading-relaxed">
                                 Push alerts sent from your Admin Panel or Mobile App streak reminders appear here automatically in real time.
                               </p>
                             </div>
@@ -5038,33 +5082,65 @@ export default function StudentWebApp() {
                                   }}
                                   className={`p-3 rounded-xl border transition-all cursor-pointer space-y-1 ${
                                     isUnread
-                                      ? "bg-cyan-950/25 border-cyan-500/40 hover:border-cyan-400"
+                                      ? isLight
+                                        ? "bg-[#FAFBFD] border-sky-400/70 hover:border-blue-500 shadow-sm"
+                                        : "bg-cyan-950/25 border-cyan-500/40 hover:border-cyan-400"
+                                      : isLight
+                                      ? "bg-[#EFF4FB] border-slate-300/80 hover:border-slate-400 opacity-90"
                                       : "bg-slate-950/60 border-slate-800/80 hover:border-slate-700 opacity-85"
                                   }`}
                                 >
                                   <div className="flex items-start justify-between gap-2">
-                                    <p className="text-xs font-bold text-white leading-snug flex items-center gap-1.5">
-                                      {isUnread && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />}
+                                    <p
+                                      className={`text-xs font-bold leading-snug flex items-center gap-1.5 ${
+                                        isLight ? "text-slate-900" : "text-white"
+                                      }`}
+                                    >
+                                      {isUnread && (
+                                        <span
+                                          className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                            isLight ? "bg-blue-600" : "bg-cyan-400"
+                                          }`}
+                                        />
+                                      )}
                                       <span>{notif.title}</span>
                                     </p>
-                                    <span className="text-[9.5px] font-mono text-slate-400 shrink-0">
+                                    <span className="text-[9.5px] font-mono text-slate-500 shrink-0">
                                       {formatNotifAgo(notif.sentAt)}
                                     </span>
                                   </div>
-                                  <p className="text-[11px] text-slate-300 leading-relaxed">{notif.body}</p>
+                                  <p
+                                    className={`text-[11px] leading-relaxed ${
+                                      isLight ? "text-slate-600" : "text-slate-300"
+                                    }`}
+                                  >
+                                    {notif.body}
+                                  </p>
                                   <div className="flex items-center justify-between pt-0.5">
                                     <span
                                       className={`text-[9px] font-black uppercase px-2 py-0.2 rounded-full border ${
                                         aud.includes("pro") || aud.includes("vip")
-                                          ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                                          ? isLight
+                                            ? "bg-amber-100 text-amber-800 border-amber-300"
+                                            : "bg-amber-500/15 text-amber-300 border-amber-500/30"
                                           : aud.includes("free") || aud.includes("trial")
-                                          ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                                          ? isLight
+                                            ? "bg-purple-100 text-purple-800 border-purple-300"
+                                            : "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                                          : isLight
+                                          ? "bg-sky-100 text-sky-800 border-sky-300"
                                           : "bg-cyan-500/15 text-cyan-300 border-cyan-500/30"
                                       }`}
                                     >
                                       {notif.audience || "All Users"}
                                     </span>
-                                    <span className="text-[9px] text-emerald-400 font-bold">{notif.status}</span>
+                                    <span
+                                      className={`text-[9px] font-bold ${
+                                        isLight ? "text-emerald-700" : "text-emerald-400"
+                                      }`}
+                                    >
+                                      {notif.status}
+                                    </span>
                                   </div>
                                 </div>
                               );
@@ -5123,13 +5199,37 @@ export default function StudentWebApp() {
                       className="fixed inset-0 z-40"
                       onClick={() => setShowLanguageDropdown(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-80 bg-[#0B0F19]/95 backdrop-blur-2xl border border-cyan-500/30 rounded-2xl p-2.5 shadow-[0_20px_60px_rgba(0,0,0,0.85)] z-50 space-y-1.5 animate-in fade-in zoom-in-95 duration-150">
-                      <div className="px-3 py-2 border-b border-slate-800/80 flex items-center justify-between">
+                    <div
+                      className={`absolute right-0 mt-2.5 w-80 rounded-2xl p-2.5 z-50 space-y-1.5 animate-in fade-in zoom-in-95 duration-150 border ${
+                        isLight
+                          ? "bg-[#E2ECF9] border-blue-300/90 shadow-[0_24px_60px_rgba(15,35,75,0.2)]"
+                          : "bg-[#0B0F19]/95 backdrop-blur-2xl border-cyan-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.85)]"
+                      }`}
+                    >
+                      <div
+                        className={`px-3 py-2 border-b flex items-center justify-between ${
+                          isLight ? "border-blue-200/80" : "border-slate-800/80"
+                        }`}
+                      >
                         <div>
-                          <span className="text-xs font-black text-white block">Learning Language</span>
-                          <span className="text-[9.5px] text-cyan-400 font-medium">Real-time dialect &amp; accent models</span>
+                          <span className={`text-xs font-black block ${isLight ? "text-slate-900" : "text-white"}`}>
+                            Learning Language
+                          </span>
+                          <span
+                            className={`text-[9.5px] font-medium ${
+                              isLight ? "text-blue-700" : "text-cyan-400"
+                            }`}
+                          >
+                            Real-time dialect &amp; accent models
+                          </span>
                         </div>
-                        <span className="text-[9px] font-mono text-slate-400 bg-slate-800/70 px-1.5 py-0.5 rounded border border-slate-700/60">
+                        <span
+                          className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${
+                            isLight
+                              ? "bg-white/80 text-slate-700 border-blue-200"
+                              : "text-slate-400 bg-slate-800/70 border-slate-700/60"
+                          }`}
+                        >
                           {AVAILABLE_LANGUAGES.length} Models
                         </span>
                       </div>
@@ -5146,10 +5246,14 @@ export default function StudentWebApp() {
                                 setPracticeSelectedSubCategory("All");
                                 setShowLanguageDropdown(false);
                               }}
-                              className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all ${
+                              className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all border ${
                                 isSelected
-                                  ? "bg-gradient-to-r from-cyan-950/60 to-blue-950/60 border border-cyan-500/40 text-white shadow-md shadow-cyan-950/30"
-                                  : "hover:bg-slate-800/60 border border-transparent text-slate-300 hover:text-white"
+                                  ? isLight
+                                    ? "bg-white border-blue-400 text-slate-900 shadow-sm"
+                                    : "bg-gradient-to-r from-cyan-950/60 to-blue-950/60 border-cyan-500/40 text-white shadow-md shadow-cyan-950/30"
+                                  : isLight
+                                  ? "bg-[#EFF4FB]/70 hover:bg-white border-transparent hover:border-blue-200 text-slate-700"
+                                  : "hover:bg-slate-800/60 border-transparent text-slate-300 hover:text-white"
                               }`}
                             >
                               <div className="flex items-center gap-3">
@@ -7260,10 +7364,12 @@ export default function StudentWebApp() {
                         <button
                           onClick={handleToggleChallengeAudio}
                           title={isPlayingChallengeAudio ? "Stop Audio Briefing" : `Listen to Coach ${langCoach.name}'s Briefing`}
-                          className={`px-2 py-1 rounded-xl text-[9px] font-bold flex items-center gap-1 transition-all shrink-0 ${
+                          className={`px-2 py-1 rounded-xl text-[9px] font-bold flex items-center gap-1 transition-all shrink-0 border ${
                             isPlayingChallengeAudio
-                              ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/40 animate-pulse"
-                              : "bg-slate-800 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30"
+                              ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/40 animate-pulse border-emerald-400"
+                              : isLight
+                              ? "bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-300"
+                              : "bg-slate-800 hover:bg-indigo-600/30 text-indigo-300 border-indigo-500/30"
                           }`}
                         >
                           {isPlayingChallengeAudio ? (
@@ -12124,8 +12230,18 @@ export default function StudentWebApp() {
       {/* 3. DELUXE CALL SETUP & AI COACH SELECTION MODAL                */}
       {/* ------------------------------------------------------------- */}
       {showDurationModal && pendingTopic && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
-          <div className="w-full max-w-2xl bg-gradient-to-b from-[#131b2e] via-[#0d1527] to-[#070b16] border border-cyan-500/40 rounded-3xl p-5 sm:p-6 shadow-[0_25px_80px_rgba(0,0,0,0.9)] relative overflow-hidden my-auto space-y-5">
+        <div
+          className={`fixed inset-0 z-50 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200 ${
+            isLight ? "bg-slate-900/45" : "bg-black/85"
+          }`}
+        >
+          <div
+            className={`w-full max-w-2xl border rounded-3xl p-5 sm:p-6 relative overflow-hidden my-auto space-y-5 ${
+              isLight
+                ? "bg-[#E6EEF9] border-blue-300 shadow-[0_25px_70px_rgba(15,35,75,0.22)]"
+                : "bg-gradient-to-b from-[#131b2e] via-[#0d1527] to-[#070b16] border-cyan-500/40 shadow-[0_25px_80px_rgba(0,0,0,0.9)]"
+            }`}
+          >
             {/* Ambient Corner Glows */}
             <div className="absolute -top-12 -left-12 w-48 h-48 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
@@ -12266,25 +12382,47 @@ export default function StudentWebApp() {
               </div>
 
               {/* Spotlight Banner for Selected Coach */}
-              <div className="p-3 rounded-2xl bg-gradient-to-r from-blue-950/50 via-cyan-950/40 to-indigo-950/50 border border-cyan-500/30 flex items-center justify-between gap-3">
+              <div
+                className={`p-3 rounded-2xl border flex items-center justify-between gap-3 ${
+                  isLight
+                    ? "bg-gradient-to-r from-sky-100 via-blue-50 to-indigo-100 border-blue-300 shadow-sm"
+                    : "bg-gradient-to-r from-blue-950/50 via-cyan-950/40 to-indigo-950/50 border-cyan-500/30"
+                }`}
+              >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-cyan-400/80 shadow-md shadow-cyan-400/30 shrink-0">
                     <img src={selectedCoach.avatar} alt={selectedCoach.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="truncate">
                     <div className="flex items-center gap-2">
-                      <span className="font-black text-xs text-white truncate">{selectedCoach.name}</span>
-                      <span className="text-[9px] font-bold text-cyan-300 bg-cyan-500/20 px-1.5 py-0.5 rounded border border-cyan-500/30 shrink-0">
+                      <span className={`font-black text-xs truncate ${isLight ? "text-slate-900" : "text-white"}`}>
+                        {selectedCoach.name}
+                      </span>
+                      <span
+                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded border shrink-0 ${
+                          isLight
+                            ? "text-blue-700 bg-white/80 border-blue-200"
+                            : "text-cyan-300 bg-cyan-500/20 border-cyan-500/30"
+                        }`}
+                      >
                         {selectedCoach.accent}
                       </span>
                     </div>
-                    <p className="text-[10px] text-slate-300 truncate mt-0.5">{selectedCoach.tagline}</p>
+                    <p className={`text-[10px] truncate mt-0.5 ${isLight ? "text-slate-600" : "text-slate-300"}`}>
+                      {selectedCoach.tagline}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-[10px] font-bold hidden sm:inline-flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span
+                    className={`px-2.5 py-1 rounded-full border text-[10px] font-bold hidden sm:inline-flex items-center gap-1.5 ${
+                      isLight
+                        ? "bg-emerald-100 border-emerald-300 text-emerald-800"
+                        : "bg-emerald-500/15 border-emerald-400/30 text-emerald-300"
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                     <span>Coach Online</span>
                   </span>
                 </div>

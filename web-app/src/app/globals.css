@@ -278,8 +278,8 @@ html.theme-light [class*="from-[#161933]"],
 html.theme-light [class*="from-[#161B33]"],
 html.theme-light [class*="from-[#1b2547]"],
 html.theme-light [class*="from-[#101a33]"],
-html.theme-light [class*="from-slate-900"],
-html.theme-light [class*="from-slate-950"] {
+html.theme-light [class*="from-slate-900"]:not(.bg-clip-text),
+html.theme-light [class*="from-slate-950"]:not(.bg-clip-text) {
   background-image: none !important;
   background-color: #f9fbfe !important;
   border-color: #cddaec !important;
