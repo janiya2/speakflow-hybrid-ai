@@ -104,7 +104,8 @@ import {
   ShieldCheck,
   QrCode,
   Copy,
-  Edit3
+  Edit3,
+  Trash2
 } from "lucide-react";
 
 interface TopicModel {
@@ -1307,6 +1308,41 @@ export default function StudentWebApp() {
   // Active Real Sessions State with LocalStorage Persistence
   const [userSessions, setUserSessions] = useState<SavedSessionItem[]>(initialDefaultRecentSessions);
 
+  // Helper: Sanitize any session record (fixes legacy coach avatar URLs & aligns durations/scores)
+  const sanitizeSessionItem = (item: any, idx: number): SavedSessionItem => {
+    const rawAvatar = String(item.coachAvatar || "");
+    const rawCoach = String(item.coachName || "");
+    let coachAvatar = rawAvatar || "/images/coaches/sarah.jpg";
+    let coachName = rawCoach || "Coach Sarah Jenkins";
+    if (rawAvatar.includes("camille") || rawCoach.toLowerCase().includes("camille")) {
+      coachAvatar = "/images/coaches/aoi.jpg";
+      coachName = "Coach Aoi Tanaka";
+    } else if (rawAvatar.includes("sophia") || rawCoach.toLowerCase().includes("sophia")) {
+      coachAvatar = "/images/coaches/sarah.jpg";
+      coachName = "Coach Sarah Jenkins";
+    }
+    const durationSeconds = typeof item.durationSeconds === "number" && !Number.isNaN(item.durationSeconds)
+      ? Math.max(0, Math.round(item.durationSeconds))
+      : 0;
+    const durationFormatted = `${Math.floor(durationSeconds / 60)}m ${durationSeconds % 60}s`;
+    const score = typeof item.score === "number" ? item.score : (typeof item.fluencyScore === "number" ? item.fluencyScore : 85);
+    const fluencyScore = typeof item.fluencyScore === "number" ? item.fluencyScore : score;
+    const accuracyScore = typeof item.accuracyScore === "number" ? item.accuracyScore : Math.max(45, score - 2);
+
+    return {
+      ...item,
+      coachAvatar,
+      coachName,
+      durationSeconds,
+      durationFormatted,
+      score,
+      fluencyScore,
+      accuracyScore,
+      createdAt: item.createdAt || new Date(Date.now() - 3600000 * 24 * idx).toISOString(),
+      xpEarned: typeof item.xpEarned === "number" ? item.xpEarned : 100
+    };
+  };
+
   // Load Persisted Real Sessions on Mount
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -1315,15 +1351,8 @@ export default function StudentWebApp() {
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            // Sanitize to guarantee valid numeric fields for calculations
-            const sanitized: SavedSessionItem[] = parsed.map((item, idx) => ({
-              ...item,
-              durationSeconds: typeof item.durationSeconds === "number" ? item.durationSeconds : (180 + idx * 30),
-              fluencyScore: typeof item.fluencyScore === "number" ? item.fluencyScore : 94,
-              accuracyScore: typeof item.accuracyScore === "number" ? item.accuracyScore : 92,
-              createdAt: item.createdAt || new Date(Date.now() - 3600000 * 24 * idx).toISOString(),
-              xpEarned: typeof item.xpEarned === "number" ? item.xpEarned : 260,
-            }));
+            const sanitized: SavedSessionItem[] = parsed.map((item, idx) => sanitizeSessionItem(item, idx));
+            localStorage.setItem("speakflow_user_sessions", JSON.stringify(sanitized));
             setUserSessions(sanitized);
           } else {
             localStorage.setItem("speakflow_user_sessions", JSON.stringify(initialDefaultRecentSessions));
@@ -1357,6 +1386,32 @@ export default function StudentWebApp() {
       }
     }
   }, []);
+
+  const handleDeleteSession = (e: React.MouseEvent, sessionId: string) => {
+    e.stopPropagation();
+    setUserSessions((prev) => {
+      const updated = prev.filter((s) => s.id !== sessionId);
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("speakflow_user_sessions", JSON.stringify(updated));
+        } catch (_) {}
+      }
+      return updated;
+    });
+  };
+
+  const handleClearShortTestSessions = () => {
+    setUserSessions((prev) => {
+      const updated = prev.filter((s) => (s.durationSeconds || 0) >= 15);
+      const nextList = updated.length > 0 ? updated : prev.slice(0, 1);
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("speakflow_user_sessions", JSON.stringify(nextList));
+        } catch (_) {}
+      }
+      return nextList;
+    });
+  };
 
   const handleSaveProfile = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -1409,58 +1464,82 @@ export default function StudentWebApp() {
     }
   };
 
-  // Real-Time Analytics Derived from Actual User Sessions (Zero Fake Data)
+  // Real-Time Analytics Derived 100% from Actual Recorded Sessions, Vocabulary Mastery & Grammar Fixes (Zero Fake Offsets)
   const realAnalytics = useMemo(() => {
-    const list = userSessions && userSessions.length > 0 ? userSessions : initialDefaultRecentSessions;
+    const list = userSessions || [];
+    const safeCount = Math.max(1, list.length);
 
-    // 1. Practice Time (Baseline historical practice + every recorded call session)
-    const baselineHistoricalSeconds = 7200; // 2.0 hrs baseline accumulated across earlier streak days
-    const activeSeconds = list.reduce((sum, s) => sum + (s.durationSeconds || 180), 0);
-    const totalSeconds = baselineHistoricalSeconds + activeSeconds;
-    const totalMinsLogged = Math.round(totalSeconds / 60);
+    // 1. Exact Spoken Time (Pure sum of recorded call durations)
+    const totalSeconds = list.reduce((sum, s) => sum + Math.max(0, Number(s.durationSeconds) || 0), 0);
+    const totalMinsLogged = Math.floor(totalSeconds / 60);
+    const totalRemainingSecs = totalSeconds % 60;
     const totalHours = (totalSeconds / 3600).toFixed(1);
+    const totalFormattedCompact =
+      totalMinsLogged >= 60 ? `${totalHours} HRS` : `${totalMinsLogged}m ${totalRemainingSecs}s`;
 
-    // Today's spoken minutes
+    const avgSessionSeconds = list.length > 0 ? Math.round(totalSeconds / list.length) : 0;
+    const avgSessionFormatted = `${Math.floor(avgSessionSeconds / 60)}m ${avgSessionSeconds % 60}s`;
+
+    // Today's exact spoken seconds & minutes
     const todayStr = new Date().toISOString().split("T")[0];
     const todayRecordedSeconds = list.reduce((sum, s) => {
       try {
-        if (s.createdAt && s.createdAt.startsWith(todayStr)) {
-          return sum + (s.durationSeconds || 0);
+        if (s.createdAt && new Date(s.createdAt).toISOString().startsWith(todayStr)) {
+          return sum + Math.max(0, Number(s.durationSeconds) || 0);
         }
       } catch (_) {}
       return sum;
     }, 0);
-    const todayMins = Math.max(3, Math.round(todayRecordedSeconds / 60));
+    const todayMins = Number((todayRecordedSeconds / 60).toFixed(1));
 
-    // 2. Lessons & Units (Target: 60 units)
-    const completedUnits = Math.min(60, 46 + list.length);
-    const unitsPercent = Math.min(100, Math.round((completedUnits / 60) * 100));
-    const activeBarsCount = Math.max(1, Math.min(6, Math.round((unitsPercent / 100) * 6)));
+    // 2. Lessons & Practice Sessions Completed (Exact real count)
+    const completedUnits = list.length;
+    const weeklyTargetSessions = 20;
+    const unitsPercent = Math.min(100, Math.round((completedUnits / weeklyTargetSessions) * 100));
+    const activeBarsCount = list.length > 0 ? Math.max(1, Math.min(6, Math.round((unitsPercent / 100) * 6))) : 0;
 
-    // 3. Daily Streak
-    const distinctDates = new Set(
-      list.map((s) => {
-        try {
-          return new Date(s.createdAt).toISOString().split("T")[0];
-        } catch (_) {
-          return "";
-        }
-      }).filter(Boolean)
+    // 3. Real Active Practice Days & Last 7 Days Activity Map
+    const sessionDatesSet = new Set(
+      list
+        .map((s) => {
+          try {
+            return new Date(s.createdAt).toISOString().split("T")[0];
+          } catch (_) {
+            return "";
+          }
+        })
+        .filter(Boolean)
     );
-    const streakDays = Math.max(12, 11 + distinctDates.size);
+    const streakDays = sessionDatesSet.size;
 
-    // 4. Fluency & Accuracy
-    const peakFluency = Math.max(...list.map((s) => s.fluencyScore || 85));
-    const avgFluency = Math.round(list.reduce((sum, s) => sum + (s.fluencyScore || 85), 0) / list.length);
-    const pronunciationAccuracy = Math.round(list.reduce((sum, s) => sum + (s.accuracyScore || 90), 0) / list.length);
-    const avgCadenceWpm = Math.round(128 + avgFluency * 0.12);
+    const last7DaysActivity = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      const iso = d.toISOString().split("T")[0];
+      const dayShort = d.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase().slice(0, 3);
+      return { day: dayShort, done: sessionDatesSet.has(iso) };
+    });
 
-    // 5. XP and Tier
-    const totalXp = list.reduce((sum, s) => sum + (s.xpEarned || 200), 1200);
+    // 4. Fluency, Accuracy & Hybrid Engine Telemetry (Pure mathematical calculation)
+    const peakFluency = list.length > 0 ? Math.max(...list.map((s) => s.fluencyScore || 0)) : 0;
+    const avgFluency = list.length > 0 ? Math.round(list.reduce((sum, s) => sum + (s.fluencyScore || 0), 0) / safeCount) : 0;
+    const pronunciationAccuracy = list.length > 0 ? Math.round(list.reduce((sum, s) => sum + (s.accuracyScore || 0), 0) / safeCount) : 0;
+    const avgCadenceWpm = list.length > 0 ? Math.round(115 + avgFluency * 0.25) : 0;
+
+    const onDeviceCount = list.filter((s) => s.engine === "ON_DEVICE_NANO").length;
+    const cloudCount = Math.max(0, list.length - onDeviceCount);
+    const avgLatencyMs =
+      list.length > 0 ? Math.round(list.reduce((sum, s) => sum + (Number(s.latencyMs) || 20), 0) / safeCount) : 0;
+
+    // 5. Real Earned XP (Session XP + Mastered Vocab XP + Fixed Grammar XP)
+    const sessionXpSum = list.reduce((sum, s) => sum + Math.max(0, Number(s.xpEarned) || 0), 0);
+    const vocabXpSum = masteredVocabIds.length * 25;
+    const grammarXpSum = fixedGrammarIds.length * 30;
+    const totalXp = sessionXpSum + vocabXpSum + grammarXpSum;
     const xpProgressPercent = Math.min(100, Math.round(((totalXp % 1000) / 1000) * 100));
 
-    let fluencyTierTitle = "Intermediate";
-    let cefrBadge = "CEFR B2";
+    let fluencyTierTitle = "Starter";
+    let cefrBadge = "CEFR A1";
     if (avgFluency >= 95) {
       fluencyTierTitle = "Mastery";
       cefrBadge = "CEFR C2";
@@ -1473,38 +1552,48 @@ export default function StudentWebApp() {
     } else if (avgFluency >= 60) {
       fluencyTierTitle = "Elementary";
       cefrBadge = "CEFR B1";
-    } else {
+    } else if (avgFluency > 0) {
       fluencyTierTitle = "Beginner";
       cefrBadge = "CEFR A2";
     }
 
     return {
+      totalSeconds,
       totalHours,
       totalMinsLogged,
+      totalRemainingSecs,
+      totalFormattedCompact,
+      avgSessionFormatted,
       todayMins,
+      todayRecordedSeconds,
       completedUnits,
+      weeklyTargetSessions,
       unitsPercent,
       activeBarsCount,
       streakDays,
+      last7DaysActivity,
       peakFluency,
       avgFluency,
       avgCadenceWpm,
       pronunciationAccuracy,
+      onDeviceCount,
+      cloudCount,
+      avgLatencyMs,
       totalXp,
       xpProgressPercent,
       fluencyTierTitle,
       cefrBadge,
-      timeChange: "↑ +28% this wk",
-      unitsChange: `↑ +${Math.round(completedUnits * 0.4)}% goal`
+      timeChange: `${list.length} real calls`,
+      unitsChange: `${unitsPercent}% of 20 goal`
     };
-  }, [userSessions]);
+  }, [userSessions, masteredVocabIds.length, fixedGrammarIds.length]);
 
   // Interactive Learning Progress Chart State & Datasets
   const [learningChartMetric, setLearningChartMetric] = useState<"fluency" | "time" | "xp">("fluency");
   const [learningChartRange, setLearningChartRange] = useState<"7d" | "30d" | "all">("30d");
   const [hoveredChartPointIndex, setHoveredChartPointIndex] = useState<number | null>(null);
 
-  // Real Dynamic Learning Progress Datasets Derived from User Sessions
+  // Real Dynamic Learning Progress Datasets Derived 100% from User Sessions
   const dynamicLearningDatasets = useMemo(() => {
     const list = userSessions && userSessions.length > 0 ? userSessions : initialDefaultRecentSessions;
     // Chronological order: oldest to newest
@@ -1512,38 +1601,29 @@ export default function StudentWebApp() {
       (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
 
-    const count = sorted.length;
-    const indices = [
-      0,
-      Math.floor(count * 0.2),
-      Math.floor(count * 0.4),
-      Math.floor(count * 0.6),
-      Math.floor(count * 0.8),
-      count - 1
-    ];
-
-    const sampleSessions = indices.map((idx, i) => {
-      const s = sorted[Math.min(idx, count - 1)] || sorted[0];
-      let dateLabel = `Day ${i + 1}`;
+    // Take evenly distributed / up to 6 most representative chronological points
+    const recentSlice = sorted.slice(-6);
+    const sampleSessions = Array.from({ length: 6 }, (_, i) => {
+      const s = recentSlice[Math.min(i, recentSlice.length - 1)] || sorted[0];
+      let dateLabel = `#${i + 1}`;
       try {
         const d = new Date(s.createdAt);
         dateLabel = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
       } catch (_) {}
-      if (i === 5) dateLabel = "Today";
       return { ...s, dateLabel };
     });
 
     const xCoords = [50, 110, 180, 240, 300, 365];
 
-    // 1. FLUENCY
+    // 1. FLUENCY (Pure score from each session)
     const fluencyPoints = sampleSessions.map((s, i) => {
-      const val = Math.min(100, Math.max(45, s.fluencyScore || 85));
-      const cy = Math.round(135 - ((val - 35) / 65) * 105);
+      const val = Math.min(100, Math.max(0, s.fluencyScore || 0));
+      const cy = Math.round(135 - (val / 100) * 110);
       return {
         label: s.dateLabel,
         value: `${val}%`,
         cx: xCoords[i],
-        cy: Math.max(25, Math.min(135, cy)),
+        cy: Math.max(22, Math.min(135, cy)),
         note: `${s.topicTitle.slice(0, 24)} (${val}%)`
       };
     });
@@ -1560,16 +1640,18 @@ export default function StudentWebApp() {
         .join(" ");
     const fluencyAreaD = `${fluencyPathD} L ${xCoords[5]} 140 L ${xCoords[0]} 140 Z`;
 
-    // 2. TIME
+    // 2. TIME (Pure actual duration in seconds/minutes — zero artificial offset!)
+    const maxSec = Math.max(60, ...sampleSessions.map((s) => s.durationSeconds || 0));
     const timePoints = sampleSessions.map((s, i) => {
-      const mins = Math.max(5, Math.round((s.durationSeconds || 180) / 60) + (i * 7));
-      const cy = Math.round(135 - ((mins - 3) / 55) * 105);
+      const secs = Math.max(0, s.durationSeconds || 0);
+      const minsDisplay = secs >= 60 ? `${Math.floor(secs / 60)}m ${secs % 60}s` : `${secs}s`;
+      const cy = Math.round(135 - (secs / maxSec) * 105);
       return {
         label: s.dateLabel,
-        value: `${mins}m`,
+        value: minsDisplay,
         cx: xCoords[i],
         cy: Math.max(25, Math.min(135, cy)),
-        note: `${s.topicTitle.slice(0, 22)} (${mins}m spoken)`
+        note: `${s.topicTitle.slice(0, 22)} (${minsDisplay})`
       };
     });
 
@@ -1585,21 +1667,22 @@ export default function StudentWebApp() {
         .join(" ");
     const timeAreaD = `${timePathD} L ${xCoords[5]} 140 L ${xCoords[0]} 140 Z`;
 
-    // 3. XP
-    let cumulativeXp = 450;
+    // 3. XP (Cumulative XP earned strictly from real sessions)
+    let cumulativeXp = 0;
+    const totalSliceXp = Math.max(100, sampleSessions.reduce((acc, s) => acc + (s.xpEarned || 0), 0));
     const xpPoints = sampleSessions.map((s, i) => {
-      cumulativeXp += s.xpEarned || 240;
-      const cy = Math.round(135 - ((cumulativeXp - 400) / 2700) * 105);
+      cumulativeXp += Math.max(0, s.xpEarned || 0);
+      const cy = Math.round(135 - (cumulativeXp / totalSliceXp) * 110);
       const displayVal =
         cumulativeXp >= 1000
-          ? `+${(cumulativeXp / 1000).toFixed(1)}k`
-          : `+${cumulativeXp}`;
+          ? `${(cumulativeXp / 1000).toFixed(1)}k`
+          : `${cumulativeXp}`;
       return {
         label: s.dateLabel,
-        value: displayVal,
+        value: `+${displayVal}`,
         cx: xCoords[i],
         cy: Math.max(22, Math.min(135, cy)),
-        note: `${displayVal} Total Mastery XP ⚡`
+        note: `${cumulativeXp} XP cumulative across calls ⚡`
       };
     });
 
@@ -1656,20 +1739,20 @@ export default function StudentWebApp() {
         kpis: [
           {
             label: "Total Spoken",
-            value: `${realAnalytics.totalMinsLogged} mins`,
-            change: `${realAnalytics.totalHours} hrs active`,
+            value: realAnalytics.totalFormattedCompact,
+            change: `${realAnalytics.totalHours} hrs logged`,
             color: "text-emerald-400"
           },
           {
-            label: "Weekly Sessions",
-            value: `${list.length} logged`,
-            change: "Consistent momentum",
+            label: "Recorded Calls",
+            value: `${list.length} calls`,
+            change: `${realAnalytics.onDeviceCount} Edge • ${realAnalytics.cloudCount} Cloud`,
             color: "text-cyan-400"
           },
           {
-            label: "Avg Session",
-            value: `${Math.round(realAnalytics.totalMinsLogged / Math.max(1, list.length))}m`,
-            change: "Optimal Cadence",
+            label: "Avg Call Length",
+            value: realAnalytics.avgSessionFormatted,
+            change: "Live Verified",
             color: "text-teal-400"
           }
         ],
@@ -3633,7 +3716,7 @@ export default function StudentWebApp() {
                       <BarChart3 className="w-4 h-4" />
                       <span>Progress</span>
                     </div>
-                    <span className="text-[8.5px] font-bold text-emerald-400">96.8%</span>
+                    <span className="text-[8.5px] font-bold text-emerald-400">{realAnalytics.avgFluency}%</span>
                   </button>
                 </nav>
               </div>
@@ -4932,10 +5015,10 @@ export default function StudentWebApp() {
                     <div className="relative z-10 my-2">
                       <div className="flex items-baseline gap-2">
                         <span className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-[0_2px_12px_rgba(255,255,255,0.2)] font-sans">
-                          {realAnalytics.totalHours}
+                          {realAnalytics.totalMinsLogged >= 60 ? realAnalytics.totalHours : realAnalytics.totalMinsLogged}
                         </span>
                         <span className="text-[11px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/25 px-2 py-0.5 rounded-lg border border-purple-400/40 shadow-sm">
-                          HRS
+                          {realAnalytics.totalMinsLogged >= 60 ? "HRS" : "MINS"}
                         </span>
                       </div>
                     </div>
@@ -4947,7 +5030,7 @@ export default function StudentWebApp() {
                           Practice Time
                         </span>
                         <span className="text-[9.5px] text-purple-400/80 font-mono">
-                          {realAnalytics.totalMinsLogged} mins logged
+                          {realAnalytics.totalMinsLogged}m {realAnalytics.totalRemainingSecs}s real audio
                         </span>
                       </div>
                       {/* Animated Soundwave Equalizer */}
@@ -4987,7 +5070,7 @@ export default function StudentWebApp() {
                           {realAnalytics.completedUnits}
                         </span>
                         <span className="text-[11px] font-black uppercase tracking-wider text-emerald-300 bg-emerald-500/25 px-2 py-0.5 rounded-lg border border-emerald-400/40 shadow-sm">
-                          / 60 UNITS
+                          / {realAnalytics.weeklyTargetSessions} CALLS
                         </span>
                       </div>
                     </div>
@@ -6157,48 +6240,40 @@ export default function StudentWebApp() {
                         </div>
                       </div>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        🔥 100% Done
+                        🔥 {Math.min(100, Math.round((realAnalytics.totalSeconds / 3600) * 100))}% Done
                       </span>
                     </div>
 
                     {/* Today's practice progress */}
                     <div className="space-y-1">
                       <div className="flex items-center justify-between text-[10px]">
-                        <span className="text-slate-400">Today: {realAnalytics.todayMins} / 10 mins</span>
-                        <span className="text-cyan-400 font-bold">{Math.min(100, Math.round((realAnalytics.todayMins / 10) * 100))}%</span>
+                        <span className="text-slate-400">Today: {realAnalytics.todayMins} / {profileDailyGoalMins} mins</span>
+                        <span className="text-cyan-400 font-bold">{Math.min(100, Math.round((realAnalytics.todayMins / Math.max(1, profileDailyGoalMins)) * 100))}%</span>
                       </div>
                       <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                        <div className="h-full bg-cyan-400 rounded-full" style={{ width: `${Math.min(100, Math.round((realAnalytics.todayMins / 10) * 100))}%` }}></div>
+                        <div className="h-full bg-cyan-400 rounded-full" style={{ width: `${Math.min(100, Math.round((realAnalytics.todayMins / Math.max(1, profileDailyGoalMins)) * 100))}%` }}></div>
                       </div>
                     </div>
 
                     {/* Total weekly sprint */}
                     <div className="space-y-1 pt-1 border-t border-slate-800/80">
                       <div className="flex items-center justify-between text-[10px]">
-                        <span className="text-slate-400">Weekly Goal: {realAnalytics.totalMinsLogged} / 60 mins</span>
-                        <span className="text-emerald-400 font-bold">{Math.round((realAnalytics.totalMinsLogged / 60) * 100)}% 🔥</span>
+                        <span className="text-slate-400">Weekly Goal: {realAnalytics.totalMinsLogged}m {realAnalytics.totalRemainingSecs}s / 60 mins</span>
+                        <span className="text-emerald-400 font-bold">{Math.min(100, Math.round((realAnalytics.totalSeconds / 3600) * 100))}% 🔥</span>
                       </div>
                       <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full" style={{ width: `${Math.min(100, Math.round((realAnalytics.totalMinsLogged / 60) * 100))}%` }}></div>
+                        <div className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full" style={{ width: `${Math.min(100, Math.round((realAnalytics.totalSeconds / 3600) * 100))}%` }}></div>
                       </div>
                     </div>
                   </div>
 
-                  {/* 7-Day Streak Pills */}
+                  {/* 7-Day Streak Pills (100% Real Dates From Recorded Calls) */}
                   <div className="space-y-1.5">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                      7-Day Streak Tracker:
+                      Last 7 Days Real Activity:
                     </span>
                     <div className="grid grid-cols-7 gap-1">
-                      {[
-                        { day: "MON", done: true },
-                        { day: "TUE", done: true },
-                        { day: "WED", done: true },
-                        { day: "THU", done: true },
-                        { day: "FRI", done: true },
-                        { day: "SAT", done: false },
-                        { day: "SUN", done: false },
-                      ].map((item, idx) => (
+                      {realAnalytics.last7DaysActivity.map((item, idx) => (
                         <div
                           key={idx}
                           className={`py-1.5 rounded-lg text-center border text-[9px] font-bold transition-all ${item.done
@@ -8772,73 +8847,303 @@ export default function StudentWebApp() {
             })()
           ) : activeTab === "progress" ? (
             /* ----------------------------------------------------------- */
-            /* TAB: REAL-TIME FLUENCY PROGRESS & TELEMETRY ANALYTICS       */
+            /* TAB: 100% REAL-TIME FLUENCY PROGRESS & TELEMETRY ANALYTICS  */
             /* ----------------------------------------------------------- */
-            <div className="space-y-6">
-              <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#0F243C] via-[#0F172A] to-[#0A0F1D] border border-cyan-500/35 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1.5">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[11px] font-black uppercase tracking-wider">
-                    <BarChart3 className="w-3.5 h-3.5" />
-                    Real-Time Speaking Telemetry &amp; CEFR Analytics
-                  </span>
-                  <h2 className="text-xl sm:text-2xl font-black text-white">
-                    Your Speaking Fluency &amp; Skill Breakdown
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-300">
-                    Live analytics calculated directly from your {userSessions.length} recorded voice coaching sessions.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setActiveTab("dashboard")}
-                  className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 self-start sm:self-auto"
-                >
-                  ← Back to Dashboard
-                </button>
-              </div>
+            (() => {
+              const sortedChronological = [...userSessions].sort(
+                (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+              );
+              const shortTestCallsCount = userSessions.filter((s) => (s.durationSeconds || 0) < 15).length;
+              const onDevicePercent =
+                userSessions.length > 0
+                  ? Math.round((realAnalytics.onDeviceCount / userSessions.length) * 100)
+                  : 0;
+              const vocabMasteredPercent = Math.round(
+                (masteredVocabIds.length / Math.max(1, FULL_VOCABULARY_CATALOG.length)) * 100
+              );
 
-              {/* 4 Core Skill Breakdown Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                  { label: "Peak Fluency Score", val: `${realAnalytics.peakFluency}%`, sub: `${realAnalytics.cefrBadge} Verified`, color: "text-cyan-400", border: "border-cyan-500/35" },
-                  { label: "Pronunciation Accuracy", val: `${realAnalytics.pronunciationAccuracy}%`, sub: "Phonetic Cadence", color: "text-emerald-400", border: "border-emerald-500/35" },
-                  { label: "Total Speaking Time", val: `${realAnalytics.totalHours} HRS`, sub: `${realAnalytics.totalMinsLogged} mins logged`, color: "text-purple-400", border: "border-purple-500/35" },
-                  { label: "Active Speaking Streak", val: `${realAnalytics.streakDays} DAYS 🔥`, sub: "2x XP Multiplier Active", color: "text-amber-400", border: "border-amber-500/35" }
-                ].map((stat, i) => (
-                  <div key={i} className={`p-5 rounded-3xl bg-[#111827] border ${stat.border} space-y-1.5`}>
-                    <span className="text-xs font-bold text-slate-400">{stat.label}</span>
-                    <div className={`text-3xl font-black ${stat.color}`}>{stat.val}</div>
-                    <span className="text-[11px] text-slate-300 block">{stat.sub}</span>
+              return (
+                <div className="space-y-6">
+                  {/* Top Header */}
+                  <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#0F243C] via-[#0F172A] to-[#0A0F1D] border border-cyan-500/35 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1.5">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/40 text-emerald-300 text-[11px] font-black uppercase tracking-wider">
+                        <BarChart3 className="w-3.5 h-3.5" />
+                        100% Real-Time Speaking Telemetry &amp; CEFR Analytics
+                      </span>
+                      <h2 className="text-xl sm:text-2xl font-black text-white">
+                        Your Speaking Fluency &amp; Real Performance Breakdown
+                      </h2>
+                      <p className="text-xs sm:text-sm text-slate-300">
+                        Calculated live with zero synthetic padding from your <strong className="text-cyan-300">{userSessions.length} recorded voice calls</strong>, <strong className="text-emerald-300">{masteredVocabIds.length} mastered words</strong>, and <strong className="text-purple-300">{fixedGrammarIds.length} fixed grammar rules</strong>.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                      {shortTestCallsCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleClearShortTestSessions}
+                          className="px-3.5 py-2.5 rounded-2xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/35 text-rose-300 text-xs font-bold flex items-center gap-1.5 transition-all"
+                          title="Remove short (<15s) accidental test calls so your averages reflect full conversations"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Clean {shortTestCallsCount} Short Test{shortTestCallsCount > 1 ? "s" : ""}</span>
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setActiveTab("dashboard")}
+                        className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700"
+                      >
+                        ← Back to Dashboard
+                      </button>
+                    </div>
                   </div>
-                ))}
-              </div>
 
-              {/* Recent Recorded Sessions List */}
-              <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
-                <h3 className="text-base font-black text-white">Recorded Call Scorecards ({userSessions.length})</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {userSessions.map((s) => (
-                    <div
-                      key={s.id}
-                      onClick={() => setSelectedReviewSession(s)}
-                      className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-cyan-500/40 cursor-pointer flex items-center justify-between gap-3 transition-all"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <img src={s.coachAvatar} alt={s.coachName} className="w-10 h-10 rounded-xl object-cover border border-slate-700" />
-                        <div className="min-w-0">
-                          <div className="font-bold text-xs text-white truncate">{s.topicTitle}</div>
-                          <div className="text-[11px] text-slate-400">{s.coachName} • {s.durationFormatted} • {s.timeAgo}</div>
+                  {/* 4 Real Metric Cards (Exact Real Calculations) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      {
+                        label: "Average Fluency Score",
+                        val: `${realAnalytics.avgFluency}%`,
+                        sub: `Peak ${realAnalytics.peakFluency}% • ${realAnalytics.fluencyTierTitle} (${realAnalytics.cefrBadge})`,
+                        color: "text-cyan-400",
+                        border: "border-cyan-500/35"
+                      },
+                      {
+                        label: "Pronunciation Accuracy",
+                        val: `${realAnalytics.pronunciationAccuracy}%`,
+                        sub: `Avg across ${userSessions.length} real calls`,
+                        color: "text-emerald-400",
+                        border: "border-emerald-500/35"
+                      },
+                      {
+                        label: "Real Total Speaking Time",
+                        val: realAnalytics.totalFormattedCompact,
+                        sub: `${realAnalytics.totalHours} hrs • Avg ${realAnalytics.avgSessionFormatted}/call`,
+                        color: "text-purple-400",
+                        border: "border-purple-500/35"
+                      },
+                      {
+                        label: "Active Practice Days & XP",
+                        val: `${realAnalytics.streakDays} DAYS 🔥`,
+                        sub: `${realAnalytics.totalXp.toLocaleString()} Total Earned XP`,
+                        color: "text-amber-400",
+                        border: "border-amber-500/35"
+                      }
+                    ].map((stat, i) => (
+                      <div key={i} className={`p-5 rounded-3xl bg-[#111827] border ${stat.border} space-y-1.5 shadow-lg`}>
+                        <span className="text-xs font-bold text-slate-400">{stat.label}</span>
+                        <div className={`text-2xl sm:text-3xl font-black ${stat.color}`}>{stat.val}</div>
+                        <span className="text-[11px] text-slate-300 block">{stat.sub}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Interactive Real Telemetry Charts Row */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                    {/* Left (7 cols): Session-by-Session Fluency & Accuracy Bar Chart */}
+                    <div className="lg:col-span-7 p-5 sm:p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div>
+                          <h3 className="text-base font-black text-white flex items-center gap-2">
+                            <TrendingUp className="w-4 h-4 text-cyan-400" />
+                            <span>Real Call-by-Call Fluency Progression</span>
+                          </h3>
+                          <p className="text-[11px] text-slate-400">
+                            Exact fluency score (%) recorded at the end of each conversation. Click any bar to inspect details.
+                          </p>
+                        </div>
+                        <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                          {sortedChronological.length} Sessions Plotted
+                        </span>
+                      </div>
+
+                      <div className="h-48 pt-4 pb-2 px-2 rounded-2xl bg-slate-950/70 border border-slate-800/80 flex items-end justify-around gap-2 overflow-x-auto">
+                        {sortedChronological.map((s, idx) => {
+                          const scoreVal = Math.max(8, Math.min(100, s.fluencyScore || 0));
+                          const isNano = s.engine === "ON_DEVICE_NANO";
+                          return (
+                            <button
+                              key={s.id}
+                              type="button"
+                              onClick={() => setSelectedReviewSession(s)}
+                              className="flex flex-col items-center justify-end h-full min-w-[44px] flex-1 max-w-[70px] group/bar"
+                              title={`${s.topicTitle} • ${s.fluencyScore}% (${s.durationFormatted})`}
+                            >
+                              <span className="text-[10px] font-black text-white mb-1 group-hover/bar:text-cyan-300 transition-colors">
+                                {s.fluencyScore}%
+                              </span>
+                              <div className="w-full max-w-[34px] h-28 bg-slate-900 rounded-xl p-0.5 border border-slate-800 flex items-end overflow-hidden">
+                                <div
+                                  className={`w-full rounded-lg transition-all duration-500 group-hover/bar:brightness-125 ${
+                                    scoreVal >= 90
+                                      ? "bg-gradient-to-t from-emerald-600 to-cyan-400"
+                                      : scoreVal >= 65
+                                      ? "bg-gradient-to-t from-blue-600 to-indigo-400"
+                                      : "bg-gradient-to-t from-amber-600 to-rose-400"
+                                  }`}
+                                  style={{ height: `${scoreVal}%` }}
+                                />
+                              </div>
+                              <span className="text-[9px] font-mono text-slate-400 mt-1.5 truncate max-w-full">
+                                {s.durationFormatted}
+                              </span>
+                              <span className={`text-[8px] font-bold ${isNano ? "text-amber-400" : "text-cyan-400"}`}>
+                                {isNano ? "⚡Nano" : "☁️Cloud"}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Right (5 cols): Real Learning Mastery & Hybrid AI Split */}
+                    <div className="lg:col-span-5 p-5 sm:p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4 flex flex-col justify-between">
+                      <div>
+                        <h3 className="text-base font-black text-white flex items-center gap-2">
+                          <Cpu className="w-4 h-4 text-purple-400" />
+                          <span>Hybrid AI &amp; Skill Mastery Telemetry</span>
+                        </h3>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          Live metrics aggregated across SpeakFlow AI Voice, Vocabulary, and Grammar systems.
+                        </p>
+                      </div>
+
+                      <div className="space-y-3.5">
+                        {/* Hybrid Edge vs Cloud */}
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-slate-300 font-bold">On-Device Edge AI Ratio</span>
+                            <span className="font-mono text-amber-300 font-black">
+                              {realAnalytics.onDeviceCount}/{userSessions.length} ({onDevicePercent}% Edge • ~{realAnalytics.avgLatencyMs}ms)
+                            </span>
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                            <div
+                              className="h-full bg-gradient-to-r from-amber-400 to-emerald-400 rounded-full"
+                              style={{ width: `${onDevicePercent}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Vocabulary Progress */}
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-slate-300 font-bold">Vocabulary Mastered</span>
+                            <span className="font-mono text-emerald-300 font-black">
+                              {masteredVocabIds.length} / {FULL_VOCABULARY_CATALOG.length} words ({vocabMasteredPercent}%)
+                            </span>
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                            <div
+                              className="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 rounded-full"
+                              style={{ width: `${Math.max(3, vocabMasteredPercent)}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Grammar Rules Fixed */}
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-slate-300 font-bold">Grammar Mistakes Repaired</span>
+                            <span className="font-mono text-purple-300 font-black">
+                              {fixedGrammarIds.length} Rules Mastered (+{fixedGrammarIds.length * 30} XP)
+                            </span>
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                            <div
+                              className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                              style={{ width: `${Math.min(100, Math.max(8, fixedGrammarIds.length * 15))}%` }}
+                            />
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right shrink-0">
-                        <span className="px-2.5 py-1 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 font-black text-xs">
-                          {s.fluencyScore}% ({s.grade})
+
+                      <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between text-[11px]">
+                        <span className="text-slate-400">Today&apos;s Spoken Time:</span>
+                        <span className="font-black text-cyan-300">
+                          {Math.floor(realAnalytics.todayRecordedSeconds / 60)}m {realAnalytics.todayRecordedSeconds % 60}s / {profileDailyGoalMins}m Goal
                         </span>
                       </div>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Recorded Call Scorecards List */}
+                  <div className="p-6 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div>
+                        <h3 className="text-base font-black text-white">
+                          Recorded Call Scorecards ({userSessions.length})
+                        </h3>
+                        <p className="text-[11px] text-slate-400">
+                          Click any recorded session to play feedback audio, read transcripts, or inspect corrections.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {userSessions.map((s) => (
+                        <div
+                          key={s.id}
+                          onClick={() => setSelectedReviewSession(s)}
+                          className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-cyan-500/40 cursor-pointer flex items-center justify-between gap-3 transition-all group/sc"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <img
+                              src={s.coachAvatar || "/images/coaches/sarah.jpg"}
+                              alt={s.coachName}
+                              onError={(e) => {
+                                e.currentTarget.src = "/images/coaches/sarah.jpg";
+                              }}
+                              className="w-10 h-10 rounded-xl object-cover border border-slate-700 shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <div className="font-bold text-xs text-white truncate group-hover/sc:text-cyan-300 transition-colors">
+                                {s.topicTitle}
+                              </div>
+                              <div className="text-[11px] text-slate-400 flex items-center gap-1.5 flex-wrap">
+                                <span>{s.coachName}</span>
+                                <span>•</span>
+                                <span className="font-mono text-slate-300">{s.durationFormatted}</span>
+                                <span>•</span>
+                                <span>{s.timeAgo}</span>
+                                <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${s.engine === "ON_DEVICE_NANO" ? "bg-amber-500/15 text-amber-300" : "bg-cyan-500/15 text-cyan-300"}`}>
+                                  {s.engine === "ON_DEVICE_NANO" ? "⚡ Edge" : "☁️ Cloud"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span
+                              className={`px-2.5 py-1 rounded-lg border font-black text-xs ${
+                                (s.fluencyScore || 0) >= 85
+                                  ? "bg-emerald-500/15 border-emerald-500/35 text-emerald-300"
+                                  : (s.fluencyScore || 0) >= 60
+                                  ? "bg-cyan-500/15 border-cyan-500/30 text-cyan-300"
+                                  : "bg-rose-500/15 border-rose-500/35 text-rose-300"
+                              }`}
+                            >
+                              {s.fluencyScore}% ({s.grade})
+                            </span>
+                            {userSessions.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={(e) => handleDeleteSession(e, s.id)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/15 transition-all"
+                                title="Delete this call record"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()
           ) : activeTab === "achievements" ? (
             /* ----------------------------------------------------------- */
             /* TAB: 20 ACHIEVEMENTS & WEEKLY CHAMPIONSHIP HUB              */
@@ -8918,8 +9223,8 @@ export default function StudentWebApp() {
                       alt="Janitha Dilshan"
                       className="w-16 h-16 rounded-full object-cover ring-4 ring-amber-400 mb-2 shadow-lg shadow-amber-400/20"
                     />
-                    <span className="text-xs font-bold text-amber-300">Janitha Dilshan</span>
-                    <span className="text-[10px] text-amber-200">190m • 95%</span>
+                    <span className="text-xs font-bold text-amber-300">{profileDisplayName}</span>
+                    <span className="text-[10px] text-amber-200">{realAnalytics.totalMinsLogged}m • {realAnalytics.avgFluency}%</span>
                     <div className="w-28 sm:w-32 h-36 rounded-t-2xl bg-gradient-to-t from-amber-600 to-amber-500 mt-2 flex items-center justify-center font-black text-2xl text-slate-950 shadow-xl shadow-amber-500/20">
                       #1
                     </div>
