@@ -982,6 +982,8 @@ export default function StudentWebApp() {
   const [isAudioSlowMode, setIsAudioSlowMode] = useState(false);
   const [isIdleVideoReady, setIsIdleVideoReady] = useState(false);
   const [isTalkingVideoReady, setIsTalkingVideoReady] = useState(false);
+  const [hasTalkingVideoError, setHasTalkingVideoError] = useState(false);
+  const [hasIdleVideoError, setHasIdleVideoError] = useState(false);
   const [scorecardActiveTab, setScorecardActiveTab] = useState<"radar" | "transcript" | "corrections">("radar");
   const userVideoRef = useRef<HTMLVideoElement | null>(null);
   const talkingVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -997,7 +999,12 @@ export default function StudentWebApp() {
     }
     if (talkingVideoRef.current) {
       try {
-        talkingVideoRef.current.currentTime = 0;
+        if (talkingVideoRef.current.readyState >= 2) {
+          setIsTalkingVideoReady(true);
+        }
+        if (talkingVideoRef.current.paused) {
+          talkingVideoRef.current.currentTime = 0;
+        }
         const p = talkingVideoRef.current.play();
         if (p !== undefined) p.catch(() => {});
       } catch (_) {}
@@ -1009,17 +1016,56 @@ export default function StudentWebApp() {
     if (talkingVideoRef.current) {
       try {
         talkingVideoRef.current.pause();
-        talkingVideoRef.current.currentTime = 0;
       } catch (_) {}
     }
     if (idleVideoRef.current) {
       try {
-        idleVideoRef.current.currentTime = 0;
+        if (idleVideoRef.current.readyState >= 2) {
+          setIsIdleVideoReady(true);
+        }
         const p = idleVideoRef.current.play();
         if (p !== undefined) p.catch(() => {});
       } catch (_) {}
     }
   };
+
+  // Reset coach video error flags whenever coach changes & keep video playback strictly synced with speaking state
+  useEffect(() => {
+    setHasTalkingVideoError(false);
+    setHasIdleVideoError(false);
+    setIsTalkingVideoReady(false);
+    setIsIdleVideoReady(false);
+  }, [selectedCoach.id]);
+
+  useEffect(() => {
+    if (!activeCallTopic) return;
+    const talkVid = talkingVideoRef.current;
+    const idleVid = idleVideoRef.current;
+
+    if (isBotSpeaking) {
+      if (idleVid) {
+        try { idleVid.pause(); } catch (_) {}
+      }
+      if (talkVid) {
+        try {
+          if (talkVid.readyState >= 2) setIsTalkingVideoReady(true);
+          const p = talkVid.play();
+          if (p !== undefined) p.catch(() => {});
+        } catch (_) {}
+      }
+    } else {
+      if (talkVid) {
+        try { talkVid.pause(); } catch (_) {}
+      }
+      if (idleVid) {
+        try {
+          if (idleVid.readyState >= 2) setIsIdleVideoReady(true);
+          const p = idleVid.play();
+          if (p !== undefined) p.catch(() => {});
+        } catch (_) {}
+      }
+    }
+  }, [isBotSpeaking, activeCallTopic, selectedCoach.id]);
 
   const toggleCamera = async () => {
     if (isCameraActive) {
@@ -4122,11 +4168,12 @@ export default function StudentWebApp() {
                         />
 
                         {/* Idle / Listening Video Loop */}
-                        {selectedCoach.idleVideo && (
+                        {selectedCoach.idleVideo && !hasIdleVideoError && (
                           <video
                             ref={idleVideoRef}
                             key={`${selectedCoach.id}-idle-feed`}
                             src={selectedCoach.idleVideo}
+                            preload="auto"
                             autoPlay
                             loop
                             muted
@@ -4135,39 +4182,73 @@ export default function StudentWebApp() {
                             {...({ "disablepictureinpicture": "true", "x-webkit-airplay": "deny" } as any)}
                             controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
                             onContextMenu={(e) => e.preventDefault()}
-                            onLoadedData={() => setIsIdleVideoReady(true)}
-                            onCanPlay={(e) => {
+                            onLoadedData={(e) => {
                               setIsIdleVideoReady(true);
-                              if (!isBotSpeaking) {
+                              if (!isBotSpeakingRef.current) {
                                 e.currentTarget.play().catch(() => {});
                               }
                             }}
-                            onError={() => setIsIdleVideoReady(false)}
-                            className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-300 pointer-events-none select-none ${
-                              !isBotSpeaking && isIdleVideoReady ? "opacity-100 z-10" : "opacity-0"
+                            onCanPlay={(e) => {
+                              setIsIdleVideoReady(true);
+                              if (!isBotSpeakingRef.current) {
+                                e.currentTarget.play().catch(() => {});
+                              }
+                            }}
+                            onError={() => {
+                              setIsIdleVideoReady(false);
+                              setHasIdleVideoError(true);
+                            }}
+                            className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-200 pointer-events-none select-none ${
+                              !isBotSpeaking || !isTalkingVideoReady ? "opacity-100 z-10" : "opacity-0 z-10"
                             }`}
                           />
                         )}
 
-                        {/* Talking / Speaking Video Feed (Imperatively driven on audio.onplaying) */}
-                        <video
-                          ref={talkingVideoRef}
-                          key={`${selectedCoach.id}-talking-feed`}
-                          src={selectedCoach.talkingVideo}
-                          loop
-                          muted
-                          playsInline
-                          disablePictureInPicture
-                          {...({ "disablepictureinpicture": "true", "x-webkit-airplay": "deny" } as any)}
-                          controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
-                          onContextMenu={(e) => e.preventDefault()}
-                          onLoadedData={() => setIsTalkingVideoReady(true)}
-                          onCanPlay={() => setIsTalkingVideoReady(true)}
-                          onError={() => setIsTalkingVideoReady(false)}
-                          className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-300 pointer-events-none select-none ${
-                            isBotSpeaking && isTalkingVideoReady ? "opacity-100 z-20" : "opacity-0"
-                          }`}
-                        />
+                        {/* Talking / Speaking Video Feed (Preloaded & Imperatively Synced with Voice) */}
+                        {!hasTalkingVideoError && (
+                          <video
+                            ref={talkingVideoRef}
+                            key={`${selectedCoach.id}-talking-feed`}
+                            src={selectedCoach.talkingVideo}
+                            preload="auto"
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            disablePictureInPicture
+                            {...({ "disablepictureinpicture": "true", "x-webkit-airplay": "deny" } as any)}
+                            controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
+                            onContextMenu={(e) => e.preventDefault()}
+                            onLoadedMetadata={(e) => {
+                              if (isBotSpeakingRef.current) {
+                                e.currentTarget.play().catch(() => {});
+                              }
+                            }}
+                            onLoadedData={(e) => {
+                              setIsTalkingVideoReady(true);
+                              if (isBotSpeakingRef.current) {
+                                e.currentTarget.play().catch(() => {});
+                              } else {
+                                e.currentTarget.pause();
+                              }
+                            }}
+                            onCanPlay={(e) => {
+                              setIsTalkingVideoReady(true);
+                              if (isBotSpeakingRef.current) {
+                                e.currentTarget.play().catch(() => {});
+                              } else {
+                                e.currentTarget.pause();
+                              }
+                            }}
+                            onError={() => {
+                              setIsTalkingVideoReady(false);
+                              setHasTalkingVideoError(true);
+                            }}
+                            className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-200 pointer-events-none select-none ${
+                              isBotSpeaking ? "opacity-100 z-20" : "opacity-0 z-0"
+                            }`}
+                          />
+                        )}
 
                         {/* Edge PIP Invisible Hover Shield (Stops browser floating overlay icons) */}
                         <div
@@ -7760,6 +7841,11 @@ export default function StudentWebApp() {
               // Build unified list of call-linked grammar mistakes across all userSessions
               const allCallMistakes: EnrichedCallMistake[] = [];
               userSessions.forEach((sess, sIdx) => {
+                const cleanTopicLabel = (sess.topicTitle || "Voice Practice")
+                  .replace(/^(?:🎯\s*)?(?:Grammar Repair:|Call Grammar Mastery:)\s*/gi, "")
+                  .replace(/^Spoken Clause & Tense Precision\s*\(/i, "")
+                  .replace(/\)+$/g, "")
+                  .trim();
                 const rawCorrections =
                   sess.correctionsList && sess.correctionsList.length > 0
                     ? sess.correctionsList
@@ -7768,12 +7854,12 @@ export default function StudentWebApp() {
                           language: sess.language || "English",
                           category: sess.category || "Conversational Practice",
                           level: "Intermediate" as const,
-                          ruleTitle: `Spoken Clause & Tense Precision (${sess.topicTitle})`,
+                          ruleTitle: `Past Tense Action Verb Precision (${cleanTopicLabel})`,
                           wrong: "I was very enjoy talking about this topic yesterday.",
                           correct: "I really enjoyed talking about this topic yesterday.",
                           explanation: "'Enjoy' is a transitive action verb. Use the past simple 'I really enjoyed' followed by an '-ing' verb ('talking'), never 'I was enjoy'.",
                           similarExamples: [
-                            `I thoroughly enjoyed practicing "${sess.topicTitle}" with ${sess.coachName}.`,
+                            `I thoroughly enjoyed practicing ${cleanTopicLabel} with ${sess.coachName}.`,
                             "We really enjoyed exploring the local culture and speaking with native guides.",
                             "Do you enjoy practicing real-time voice conversations every day?"
                           ]
@@ -7889,16 +7975,19 @@ export default function StudentWebApp() {
                   selectedCoach;
                 setSelectedCoach(matchingCoach);
 
+                const shortRuleName = mistake.ruleTitle.split("(")[0].trim();
                 const targetedGrammarTopic: TopicModel = {
                   id: `grammar_drill_${mistake.id}_${Date.now()}`,
-                  title: `🎯 Grammar Repair: ${mistake.ruleTitle}`,
+                  title: mistake.ruleTitle.includes("Grammar Repair")
+                    ? mistake.ruleTitle
+                    : `🎯 Grammar Repair: ${mistake.ruleTitle}`,
                   language: mistake.language || selectedLanguage,
                   level: mistake.level || "Intermediate",
                   category: "Targeted Grammar Drill",
                   subCategory: mistake.sessionTitle,
                   icon: "🎯",
-                  scenario: `TARGETED GRAMMAR DRILL MODE (From Call: "${mistake.sessionTitle}"): You are drilling the student EXCLUSIVELY on the grammar rule "${mistake.ruleTitle}". In their previous call, the student said: "${mistake.wrong}" instead of the natural native form: "${mistake.correct}". Rule: ${mistake.explanation} Similar target patterns to practice: ${mistake.similarExamples.join(" | ")}. In every turn, ask the student a question that requires them to use this exact grammar structure, check if they used it accurately, and coach them until they master it!`,
-                  starterPrompt: `Let's practice ${mistake.ruleTitle}! Instead of "${mistake.wrong}", native speakers say: "${mistake.correct}". Try repeating "${mistake.correct}" aloud now!`,
+                  scenario: `TARGETED GRAMMAR DRILL MODE (From Call: "${mistake.sessionTitle}"): You are drilling the student EXCLUSIVELY on the grammar rule "${shortRuleName}". In their previous call, the student said: "${mistake.wrong}" instead of the natural native form: "${mistake.correct}". Rule: ${mistake.explanation} Similar target patterns to practice: ${mistake.similarExamples.join(" | ")}. In every turn, ask the student a question that requires them to use this exact grammar structure, check if they used it accurately, and coach them until they master it!`,
+                  starterPrompt: `Let's practice ${shortRuleName}! Instead of "${mistake.wrong}", native speakers say: "${mistake.correct}". Try repeating "${mistake.correct}" aloud now!`,
                   starterQuestions: [
                     mistake.correct,
                     ...mistake.similarExamples
