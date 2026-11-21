@@ -2022,7 +2022,8 @@ export default function StudentWebApp() {
     }
     fetchLandingAndSubscriptions();
 
-    // Load read notification IDs from localStorage
+    let removeKeyListener: (() => void) | null = null;
+    // Load read notification IDs from localStorage + register Cmd/Ctrl+K search shortcut
     if (typeof window !== "undefined") {
       try {
         const storedRead = localStorage.getItem("speakflow_read_notifs");
@@ -2042,7 +2043,7 @@ export default function StudentWebApp() {
         }
       };
       window.addEventListener("keydown", handleKeyDown);
-      return () => {
+      removeKeyListener = () => {
         window.removeEventListener("keydown", handleKeyDown);
       };
     }
@@ -2082,6 +2083,7 @@ export default function StudentWebApp() {
     );
 
     return () => {
+      if (removeKeyListener) removeKeyListener();
       unsubscribeNotifs();
     };
   }, []);
