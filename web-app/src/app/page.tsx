@@ -30,6 +30,7 @@ import {
   checkOnDeviceNanoAvailability
 } from "@/lib/hybrid-ai";
 import { FULL_MOBILE_TOPICS_CATALOG } from "./topicsCatalog";
+import { FULL_VOCABULARY_CATALOG, FULL_GRAMMAR_CATALOG, VocabCatalogItem, GrammarCatalogItem } from "./vocabAndGrammarCatalog";
 
 type HybridEngineType = "ON_DEVICE_NANO" | "CLOUD_GEMINI_FLASH";
 type HybridModeSetting = "auto" | "nano_only" | "cloud_only";
@@ -762,13 +763,13 @@ export default function StudentWebApp() {
 
   // User Profile Settings State (Matching Mobile App Profile)
   const [profileDisplayName, setProfileDisplayName] = useState<string>("Janitha Dilshan");
-  const [profileNativeLang, setProfileNativeLang] = useState<string>("Sinhala (සිංහල)");
-  const [profileTargetLang, setProfileTargetLang] = useState<string>("English (US / UK)");
+  const [profileNativeLang, setProfileNativeLang] = useState<string>("English (US / UK)");
+  const [profileTargetLang, setProfileTargetLang] = useState<string>("Spanish (Español)");
   const [profileDailyGoalMins, setProfileDailyGoalMins] = useState<number>(10);
   const [showEditProfileModal, setShowEditProfileModal] = useState<boolean>(false);
   const [editNameInput, setEditNameInput] = useState<string>("Janitha Dilshan");
-  const [editNativeInput, setEditNativeInput] = useState<string>("Sinhala (සිංහල)");
-  const [editTargetInput, setEditTargetInput] = useState<string>("English (US / UK)");
+  const [editNativeInput, setEditNativeInput] = useState<string>("English (US / UK)");
+  const [editTargetInput, setEditTargetInput] = useState<string>("Spanish (Español)");
   const [editGoalInput, setEditGoalInput] = useState<number>(10);
   const [copiedAppUrl, setCopiedAppUrl] = useState<boolean>(false);
 
@@ -880,14 +881,25 @@ export default function StudentWebApp() {
   const [customTopicLevel, setCustomTopicLevel] = useState<string>("Intermediate");
   const [expandedTopicPreviewId, setExpandedTopicPreviewId] = useState<string | null>(null);
   const [vocabCategoryFilter, setVocabCategoryFilter] = useState<string>("All");
-  const [masteredVocabIds, setMasteredVocabIds] = useState<string[]>(["en_v1", "es_v1", "jp_v1"]);
+  const [vocabLevelFilter, setVocabLevelFilter] = useState<string>("All");
+  const [vocabLangFilter, setVocabLangFilter] = useState<string>("English");
+  const [vocabStatusFilter, setVocabStatusFilter] = useState<"All" | "To Learn" | "Mastered">("All");
+  const [vocabSearchQuery, setVocabSearchQuery] = useState<string>("");
+  const [vocabViewMode, setVocabViewMode] = useState<"categories" | "grid">("categories");
+  const [masteredVocabIds, setMasteredVocabIds] = useState<string[]>(["v_en_1", "v_en_15", "v_en_29", "v_es_1", "v_ja_1", "v_ko_1"]);
   const [speakingVocabId, setSpeakingVocabId] = useState<string | null>(null);
+  const [grammarCategoryFilter, setGrammarCategoryFilter] = useState<string>("All");
+  const [grammarLevelFilter, setGrammarLevelFilter] = useState<string>("All");
+  const [grammarLangFilter, setGrammarLangFilter] = useState<string>("English");
+  const [grammarSearchQuery, setGrammarSearchQuery] = useState<string>("");
 
-  // Automatically sync Practice Studio language filter whenever Main Header Language changes
+  // Automatically sync Practice, Vocabulary & Grammar language filters whenever Main Header Language changes
   useEffect(() => {
     if (selectedLanguage && selectedLanguage !== "All") {
       setPracticeSelectedLangFilter(selectedLanguage);
       setPracticeSelectedSubCategory("All");
+      setVocabLangFilter(selectedLanguage);
+      setGrammarLangFilter(selectedLanguage);
     }
   }, [selectedLanguage]);
 
@@ -6626,466 +6638,59 @@ export default function StudentWebApp() {
             })()
           ) : activeTab === "vocabulary" ? (
             /* ----------------------------------------------------------- */
-            /* TAB: INTERACTIVE AI VOICE VOCABULARY & PRONUNCIATION STUDIO */
+            /* TAB: 220+ VOCABULARY & PHONETIC PRONUNCIATION STUDIO        */
             /* ----------------------------------------------------------- */
             (() => {
-              interface VocabDrillItem {
+              const VOCAB_CATEGORIES: Array<{
                 id: string;
-                word: string;
-                phonetic: string;
-                category: "Daily Conversation" | "Travel & Dining" | "Career & Business" | "Idioms & Expressions";
-                level: "Beginner" | "Intermediate" | "Advanced";
-                meaningEn: string;
-                meaningSi: string;
-                exampleTarget: string;
-                exampleTranslation: string;
-                relatedKeyword: string;
-              }
+                label: string;
+                sub: string;
+                icon: string;
+                accentText: string;
+                accentBg: string;
+                accentBorder: string;
+                topGradient: string;
+              }> = [
+                { id: "Career & Business", label: "Career & Business", sub: "Interviews, Pitches & Standups", icon: "💼", accentText: "text-purple-300", accentBg: "bg-purple-500/15", accentBorder: "border-purple-500/35", topGradient: "from-transparent via-purple-400 to-transparent" },
+                { id: "Travel & Transit", label: "Travel & Transit", sub: "Airports, Hotels & High-Speed Rail", icon: "✈️", accentText: "text-sky-300", accentBg: "bg-sky-500/15", accentBorder: "border-sky-500/35", topGradient: "from-transparent via-sky-400 to-transparent" },
+                { id: "Food & Dining", label: "Food & Dining", sub: "Cafes, Fine Dining & Street Food", icon: "🍕", accentText: "text-amber-300", accentBg: "bg-amber-500/15", accentBorder: "border-amber-500/35", topGradient: "from-transparent via-amber-400 to-transparent" },
+                { id: "Sports & Fitness", label: "Sports & Fitness", sub: "Cricket, Football, F1, Gym & Running", icon: "🏏", accentText: "text-emerald-300", accentBg: "bg-emerald-500/15", accentBorder: "border-emerald-500/35", topGradient: "from-transparent via-emerald-400 to-transparent" },
+                { id: "Daily Conversation", label: "Daily Conversation", sub: "Greetings, Networking & Small Talk", icon: "💬", accentText: "text-cyan-300", accentBg: "bg-cyan-500/15", accentBorder: "border-cyan-500/35", topGradient: "from-transparent via-cyan-400 to-transparent" },
+                { id: "Idioms & Phrasal Verbs", label: "Idioms & Expressions", sub: "Native Metaphors & Fluency Boosters", icon: "🔥", accentText: "text-rose-300", accentBg: "bg-rose-500/15", accentBorder: "border-rose-500/35", topGradient: "from-transparent via-rose-400 to-transparent" },
+                { id: "Tech & Innovation", label: "Tech & Innovation", sub: "AI, Robotics, Edge & Cloud Systems", icon: "🤖", accentText: "text-teal-300", accentBg: "bg-teal-500/15", accentBorder: "border-teal-500/35", topGradient: "from-transparent via-teal-400 to-transparent" },
+                { id: "Shopping & Health", label: "Shopping & Health", sub: "Retail, Doctor Visits & Pharmacy", icon: "🛍️", accentText: "text-indigo-300", accentBg: "bg-indigo-500/15", accentBorder: "border-indigo-500/35", topGradient: "from-transparent via-indigo-400 to-transparent" }
+              ];
 
-              const MULTILINGUAL_VOCAB_BANK: Record<string, VocabDrillItem[]> = {
-                English: [
-                  {
-                    id: "en_v1",
-                    word: "Cut to the chase",
-                    phonetic: "KUHT too thuh CHAYS",
-                    category: "Career & Business",
-                    level: "Intermediate",
-                    meaningEn: "Get straight to the main point without wasting time.",
-                    meaningSi: "වටේ යන්නේ නැතුව කෙලින්ම ප්‍රධාන කාරණාවට එන්න.",
-                    exampleTarget: "Let's cut to the chase and discuss the project timeline.",
-                    exampleTranslation: "We don't have much time, so let's focus on the key goal.",
-                    relatedKeyword: "interview"
-                  },
-                  {
-                    id: "en_v2",
-                    word: "Break the ice",
-                    phonetic: "BRAYK thuh AYS",
-                    category: "Daily Conversation",
-                    level: "Beginner",
-                    meaningEn: "Start a friendly conversation with someone you just met.",
-                    meaningSi: "අලුත් කෙනෙක් එක්ක සුහදව කතාබහක් ආරම්භ කරන්න.",
-                    exampleTarget: "Asking about favorite travel spots is a great way to break the ice.",
-                    exampleTranslation: "Makes people feel comfortable in social or business meetings.",
-                    relatedKeyword: "meetup"
-                  },
-                  {
-                    id: "en_v3",
-                    word: "Grab a bite to eat",
-                    phonetic: "GRAB uh BAYT too EET",
-                    category: "Travel & Dining",
-                    level: "Beginner",
-                    meaningEn: "Go get a quick meal or snack at a cafe or restaurant.",
-                    meaningSi: "ඉක්මනින් කෑමක් හෝ තේ එකක් ගන්න යමු.",
-                    exampleTarget: "Let's grab a bite to eat at the Italian cafe before our flight.",
-                    exampleTranslation: "Casual and natural phrase used by native speakers daily.",
-                    relatedKeyword: "coffee"
-                  },
-                  {
-                    id: "en_v4",
-                    word: "Think outside the box",
-                    phonetic: "THINK owt-SAYD thuh BOKS",
-                    category: "Career & Business",
-                    level: "Intermediate",
-                    meaningEn: "Think creatively and find innovative solutions.",
-                    meaningSi: "සාමාන්‍ය විදිහට වඩා නිර්මාණශීලීව අලුත් විදිහකට හිතන්න.",
-                    exampleTarget: "In our startup pitch, we showed how we think outside the box.",
-                    exampleTranslation: "Great power phrase to impress in job interviews.",
-                    relatedKeyword: "pitch"
-                  },
-                  {
-                    id: "en_v5",
-                    word: "Under the weather",
-                    phonetic: "UHN-der thuh WEH-ther",
-                    category: "Daily Conversation",
-                    level: "Beginner",
-                    meaningEn: "Feeling slightly sick, tired, or unwell.",
-                    meaningSi: "පොඩි අසනීප ගතියක් හෝ මහන්සියක් දැනෙනවා.",
-                    exampleTarget: "I'm feeling a bit under the weather today, so I visited the doctor.",
-                    exampleTranslation: "Common idiom when explaining mild illness politely.",
-                    relatedKeyword: "doctor"
-                  },
-                  {
-                    id: "en_v6",
-                    word: "Up in the air",
-                    phonetic: "UHP in thuh AIR",
-                    category: "Idioms & Expressions",
-                    level: "Intermediate",
-                    meaningEn: "Uncertain or not yet finally decided.",
-                    meaningSi: "තවම හරියටම තීරණය කරලා නැති දෙයක්.",
-                    exampleTarget: "Our summer holiday travel plans are still up in the air.",
-                    exampleTranslation: "Used when plans or schedules are still flexible.",
-                    relatedKeyword: "hotel"
-                  },
-                  {
-                    id: "en_v7",
-                    word: "Go the extra mile",
-                    phonetic: "GOH thuh EKS-truh MAYL",
-                    category: "Career & Business",
-                    level: "Advanced",
-                    meaningEn: "Make more effort than is expected to achieve excellence.",
-                    meaningSi: "බලාපොරොත්තු වෙනවාටත් වඩා උපරිම කැපවීමෙන් වැඩක් කරනවා.",
-                    exampleTarget: "I always go the extra mile to ensure our customers are satisfied.",
-                    exampleTranslation: "Top-tier phrase for job interviews and salary negotiations.",
-                    relatedKeyword: "salary"
-                  },
-                  {
-                    id: "en_v8",
-                    word: "Window or aisle seat",
-                    phonetic: "WIN-doh or AYL seet",
-                    category: "Travel & Dining",
-                    level: "Beginner",
-                    meaningEn: "Choosing between sitting by the airplane window or walkway.",
-                    meaningSi: "ගුවන් යානයක ජනේලය ළඟ ආසනයද නැත්නම් මැද තීරුවේ ආසනයද.",
-                    exampleTarget: "Could I please have a window seat for my flight to London?",
-                    exampleTranslation: "Essential phrase at every airport check-in counter.",
-                    relatedKeyword: "airport"
-                  },
-                  {
-                    id: "en_v9",
-                    word: "Call it a day",
-                    phonetic: "KAWL it uh DAY",
-                    category: "Idioms & Expressions",
-                    level: "Beginner",
-                    meaningEn: "Stop working on something for the rest of the day.",
-                    meaningSi: "අද දවසට කරපු වැඩ ඉවර කරලා විවේක ගමු.",
-                    exampleTarget: "We completed all our sprint tasks, so let's call it a day!",
-                    exampleTranslation: "Friendly way to wrap up a team meeting or workout.",
-                    relatedKeyword: "standup"
-                  }
-                ],
-                Spanish: [
-                  {
-                    id: "es_v1",
-                    word: "¡Mucho gusto en conocerte!",
-                    phonetic: "MOO-choh GOOS-toh en koh-noh-SER-teh",
-                    category: "Daily Conversation",
-                    level: "Beginner",
-                    meaningEn: "Nice to meet you! (Warm & polite greeting)",
-                    meaningSi: "ඔබව හඳුනාගැනීමට ලැබීම ලොකු සතුටක්!",
-                    exampleTarget: "¡Hola! Me llamo Janitha, mucho gusto en conocerte.",
-                    exampleTranslation: "Hello! My name is Janitha, very nice to meet you.",
-                    relatedKeyword: "madrid"
-                  },
-                  {
-                    id: "es_v2",
-                    word: "La cuenta, por favor",
-                    phonetic: "lah KWEN-tah por fah-VOR",
-                    category: "Travel & Dining",
-                    level: "Beginner",
-                    meaningEn: "The bill / check, please (at a restaurant or cafe).",
-                    meaningSi: "කරුණාකරලා බිල ගේන්න (අවන්හලකදී).",
-                    exampleTarget: "Todo estuvo delicioso. ¿Nos trae la cuenta, por favor?",
-                    exampleTranslation: "Everything was delicious. Could you bring us the bill, please?",
-                    relatedKeyword: "tapas"
-                  },
-                  {
-                    id: "es_v3",
-                    word: "Tengo una reservación",
-                    phonetic: "TEN-goh OO-nah reh-ser-vah-SYON",
-                    category: "Travel & Dining",
-                    level: "Beginner",
-                    meaningEn: "I have a reservation (for hotel check-in or dining).",
-                    meaningSi: "මම කලින් කාමරයක් / මේසයක් වෙන් කරවාගෙන (Reserve කරලා) තියෙනවා.",
-                    exampleTarget: "Buenas tardes, tengo una reservación a nombre de Janitha.",
-                    exampleTranslation: "Good afternoon, I have a reservation under the name Janitha.",
-                    relatedKeyword: "hotel"
-                  },
-                  {
-                    id: "es_v4",
-                    word: "¿Cuánto cuesta esto?",
-                    phonetic: "KWAN-toh KWES-tah ES-toh",
-                    category: "Daily Conversation",
-                    level: "Beginner",
-                    meaningEn: "How much does this cost?",
-                    meaningSi: "මේකේ මිල කීයද?",
-                    exampleTarget: "Disculpe, ¿cuánto cuesta este billete de tren AVE a Barcelona?",
-                    exampleTranslation: "Excuse me, how much does this AVE train ticket to Barcelona cost?",
-                    relatedKeyword: "tren"
-                  },
-                  {
-                    id: "es_v5",
-                    word: "Experiencia profesional",
-                    phonetic: "eks-peh-RYEN-syah pro-feh-syo-NAL",
-                    category: "Career & Business",
-                    level: "Intermediate",
-                    meaningEn: "Professional work experience and career background.",
-                    meaningSi: "වෘත්තීය පළපුරුද්ද සහ රැකියා අත්දැකීම්.",
-                    exampleTarget: "Tengo cinco años de experiencia profesional en desarrollo de software.",
-                    exampleTranslation: "I have five years of professional experience in software development.",
-                    relatedKeyword: "entrevista"
-                  },
-                  {
-                    id: "es_v6",
-                    word: "¡Pan comido!",
-                    phonetic: "PAHN koh-MEE-doh",
-                    category: "Idioms & Expressions",
-                    level: "Intermediate",
-                    meaningEn: "Piece of cake! / Super easy to do.",
-                    meaningSi: "හරිම ලේසියි! (කේක් කෑල්ලක් වගේ පහසු දෙයක්).",
-                    exampleTarget: "Practicar español con SpeakFlow es pan comido.",
-                    exampleTranslation: "Practicing Spanish with SpeakFlow is a piece of cake.",
-                    relatedKeyword: "clásico"
-                  }
-                ],
-                Japanese: [
-                  {
-                    id: "jp_v1",
-                    word: "初めまして、よろしくお願いします",
-                    phonetic: "Hajimemashite, yoroshiku onegaishimasu",
-                    category: "Daily Conversation",
-                    level: "Beginner",
-                    meaningEn: "Nice to meet you, please treat me well!",
-                    meaningSi: "මුල්ම වතාවට හමුවීම සතුටක්, ඔබේ සහයෝගය බලාපොරොත්තු වෙනවා!",
-                    exampleTarget: "初めまして、ジャニタです。どうぞよろしくお願いします。",
-                    exampleTranslation: "Nice to meet you, I am Janitha. Pleased to make your acquaintance.",
-                    relatedKeyword: "tokyo"
-                  },
-                  {
-                    id: "jp_v2",
-                    word: "お会計をお願いします",
-                    phonetic: "O-kaikei o onegaishimasu",
-                    category: "Travel & Dining",
-                    level: "Beginner",
-                    meaningEn: "Could I have the bill/check, please?",
-                    meaningSi: "කරුණාකරලා බිල ගේන්න පුළුවන්ද?",
-                    exampleTarget: "とても美味しかったです。すみません、お会計をお願いします。",
-                    exampleTranslation: "It was very delicious. Excuse me, check please.",
-                    relatedKeyword: "ramen"
-                  },
-                  {
-                    id: "jp_v3",
-                    word: "おすすめの料理は何ですか？",
-                    phonetic: "Osusume no ryouri wa nan desu ka?",
-                    category: "Travel & Dining",
-                    level: "Beginner",
-                    meaningEn: "What dish do you recommend?",
-                    meaningSi: "ඔබ නිර්දේශ කරන හොඳම කෑම එක මොකක්ද?",
-                    exampleTarget: "今日の一番おすすめの寿司ネタは何ですか？",
-                    exampleTranslation: "What is today's most recommended sushi topping?",
-                    relatedKeyword: "sushi"
-                  },
-                  {
-                    id: "jp_v4",
-                    word: "名刺を交換させていただけますか",
-                    phonetic: "Meishi o koukan sasete itadakemasu ka",
-                    category: "Career & Business",
-                    level: "Intermediate",
-                    meaningEn: "May I exchange business cards with you?",
-                    meaningSi: "අපි Business Cards හුවමාරු කරගනිමුද?",
-                    exampleTarget: "本日はお時間をいただきありがとうございます。名刺を交換させていただけますか。",
-                    exampleTranslation: "Thank you for your time today. May we exchange business cards?",
-                    relatedKeyword: "business"
-                  },
-                  {
-                    id: "jp_v5",
-                    word: "一期一会 (いちごいちえ)",
-                    phonetic: "Ichigo Ichie",
-                    category: "Idioms & Expressions",
-                    level: "Advanced",
-                    meaningEn: "Once-in-a-lifetime encounter; treasure every meeting.",
-                    meaningSi: "ජීවිතයේ එක් වරක් පමණක් ලැබෙන වටිනා අවස්ථාවක්.",
-                    exampleTarget: "お茶会では「一期一会」の心を大切にしています。",
-                    exampleTranslation: "In the tea ceremony, we cherish the spirit of 'one time, one meeting'.",
-                    relatedKeyword: "matcha"
-                  },
-                  {
-                    id: "jp_v6",
-                    word: "駅までどうやって行きますか？",
-                    phonetic: "Eki made douyatte ikimasu ka?",
-                    category: "Travel & Dining",
-                    level: "Beginner",
-                    meaningEn: "How do I get to the train station?",
-                    meaningSi: "දුම්රිය ස්ථානයට යන්නේ කොහොමද?",
-                    exampleTarget: "すみません、渋谷駅までどうやって行きますか？",
-                    exampleTranslation: "Excuse me, how do I get to Shibuya Station?",
-                    relatedKeyword: "shinjuku"
-                  }
-                ],
-                Korean: [
-                  {
-                    id: "kr_v1",
-                    word: "만나서 반갑습니다",
-                    phonetic: "Mannaseo bangapseumnida",
-                    category: "Daily Conversation",
-                    level: "Beginner",
-                    meaningEn: "Very nice to meet you! (Polite greeting)",
-                    meaningSi: "ඔබව හමුවීම ලොකු සතුටක්!",
-                    exampleTarget: "안녕하세요! 저는 자니타입니다. 만나서 반갑습니다!",
-                    exampleTranslation: "Hello! I am Janitha. Nice to meet you!",
-                    relatedKeyword: "seoul"
-                  },
-                  {
-                    id: "kr_v2",
-                    word: "이거 얼마예요?",
-                    phonetic: "Igeo eolmayeyo?",
-                    category: "Travel & Dining",
-                    level: "Beginner",
-                    meaningEn: "How much is this?",
-                    meaningSi: "මේකේ ගාණ කීයද?",
-                    exampleTarget: "명동 화장품 가게에서: 저기요, 이 수분 크림은 얼마예요?",
-                    exampleTranslation: "Excuse me, how much is this moisturizing cream?",
-                    relatedKeyword: "myeongdong"
-                  },
-                  {
-                    id: "kr_v3",
-                    word: "잘 먹겠습니다!",
-                    phonetic: "Jal meokgetseumnida!",
-                    category: "Travel & Dining",
-                    level: "Beginner",
-                    meaningEn: "I will eat well! (Said thankfully before starting a meal)",
-                    meaningSi: "බොහොම ස්තූතියි, මම රසවත්ව ආහාර ගන්නම්! (කෑමට පෙර කියන වදනක්)",
-                    exampleTarget: "삼겹살이 정말 맛있어 보여요! 잘 먹겠습니다!",
-                    exampleTranslation: "The Korean BBQ pork belly looks delicious! Thank you for the meal!",
-                    relatedKeyword: "bbq"
-                  },
-                  {
-                    id: "kr_v4",
-                    word: "자기소개를 부탁드립니다",
-                    phonetic: "Jagisogaereul butakdeurimnida",
-                    category: "Career & Business",
-                    level: "Intermediate",
-                    meaningEn: "Please tell us about yourself / Give a self-introduction.",
-                    meaningSi: "කරුණාකරලා ඔබ ගැන කෙටි හැඳින්වීමක් කරන්න.",
-                    exampleTarget: "면접관: 먼저 간단하게 자기소개를 부탁드립니다.",
-                    exampleTranslation: "Interviewer: First, please give us a brief self-introduction.",
-                    relatedKeyword: "interview"
-                  },
-                  {
-                    id: "kr_v5",
-                    word: "포장해 주세요",
-                    phonetic: "Pojanghae juseyo",
-                    category: "Travel & Dining",
-                    level: "Beginner",
-                    meaningEn: "Please pack it to go (Takeaway order).",
-                    meaningSi: "කරුණාකරලා මේක අරන් යන්න පැක් කරලා දෙන්න (Takeaway).",
-                    exampleTarget: "떡볶이랑 김밥 일 인분 포장해 주세요.",
-                    exampleTranslation: "Please pack one serving of tteokbokki and kimbap to go.",
-                    relatedKeyword: "bingsu"
-                  },
-                  {
-                    id: "kr_v6",
-                    word: "화이팅! (파이팅!)",
-                    phonetic: "Hwaiting! (Paiting!)",
-                    category: "Idioms & Expressions",
-                    level: "Beginner",
-                    meaningEn: "You can do it! / Cheer up & good luck!",
-                    meaningSi: "ජය වේවා! ඔයාට මේක කරන්න පුළුවන්!",
-                    exampleTarget: "오늘 한국어 말하기 연습도 화이팅!",
-                    exampleTranslation: "Good luck with your Korean speaking practice today too!",
-                    relatedKeyword: "k-pop"
-                  }
-                ],
-                Arabic: [
-                  {
-                    id: "ar_v1",
-                    word: "السلام عليكم ورحمة الله",
-                    phonetic: "As-salamu alaykum wa rahmatullah",
-                    category: "Daily Conversation",
-                    level: "Beginner",
-                    meaningEn: "Peace be upon you (Warm traditional Arabic greeting).",
-                    meaningSi: "ඔබට සාමය සහ ආශිර්වාදය උදා වේවා!",
-                    exampleTarget: "السلام عليكم! تشرفت بلقائك اليوم في دبي.",
-                    exampleTranslation: "Peace be upon you! Honored to meet you today in Dubai.",
-                    relatedKeyword: "dubai"
-                  },
-                  {
-                    id: "ar_v2",
-                    word: "كم سعر هذا من فضلك؟",
-                    phonetic: "Kam si'r hadha min fadlik?",
-                    category: "Travel & Dining",
-                    level: "Beginner",
-                    meaningEn: "How much does this cost, please?",
-                    meaningSi: "කරුණාකරලා මේකේ මිල කීයද කියන්න පුළුවන්ද?",
-                    exampleTarget: "هذا العطر رائع جداً، كم سعر هذا من فضلك؟",
-                    exampleTranslation: "This perfume is wonderful, how much is it please?",
-                    relatedKeyword: "souq"
-                  },
-                  {
-                    id: "ar_v3",
-                    word: "الفاتورة من فضلك",
-                    phonetic: "Al-fatura min fadlik",
-                    category: "Travel & Dining",
-                    level: "Beginner",
-                    meaningEn: "The bill / check, please.",
-                    meaningSi: "කරුණාකරලා බිල ගේන්න.",
-                    exampleTarget: "الشاورما والقهوة العربية ممتازة. الفاتورة من فضلك.",
-                    exampleTranslation: "The shawarma and Arabic coffee were excellent. The bill, please.",
-                    relatedKeyword: "shawarma"
-                  },
-                  {
-                    id: "ar_v4",
-                    word: "تشرفت بمعرفتك",
-                    phonetic: "Tasharraftu bi-ma'rifatik",
-                    category: "Career & Business",
-                    level: "Intermediate",
-                    meaningEn: "I am honored to meet you.",
-                    meaningSi: "ඔබව හඳුනාගැනීමට ලැබීම ගෞරවයක්.",
-                    exampleTarget: "تشرفت بمعرفتك، وأتطلع للتعاون مع شركتكم.",
-                    exampleTranslation: "Honored to meet you, and I look forward to collaborating with your company.",
-                    relatedKeyword: "business"
-                  }
-                ],
-                Tamil: [
-                  {
-                    id: "ta_v1",
-                    word: "வணக்கம்! எப்படி இருக்கீங்க?",
-                    phonetic: "Vanakkam! Eppadi irukkeenga?",
-                    category: "Daily Conversation",
-                    level: "Beginner",
-                    meaningEn: "Hello! How are you doing?",
-                    meaningSi: "ආයුබෝවන්! ඔයාට කොහොමද?",
-                    exampleTarget: "வணக்கம் நண்பா! ரொம்ப நாள் ஆச்சு, எப்படி இருக்கீங்க?",
-                    exampleTranslation: "Hello my friend! It's been a long time, how are you?",
-                    relatedKeyword: "chennai"
-                  },
-                  {
-                    id: "ta_v2",
-                    word: "இதன் விலை எவ்வளவு?",
-                    phonetic: "Ithan vilai evvalavu?",
-                    category: "Travel & Dining",
-                    level: "Beginner",
-                    meaningEn: "How much is the price of this?",
-                    meaningSi: "මේකේ මිල කීයද?",
-                    exampleTarget: "அண்ணா, இந்த காஞ்சிபுரம் பட்டுப் புடவையின் விலை எவ்வளவு?",
-                    exampleTranslation: "Brother, how much is the price of this Kanchipuram silk saree?",
-                    relatedKeyword: "shopping"
-                  },
-                  {
-                    id: "ta_v3",
-                    word: "சூடான பில்டர் காப்பி கொண்டு வாங்க",
-                    phonetic: "Soodaana filter kaapi kondu vaanga",
-                    category: "Travel & Dining",
-                    level: "Beginner",
-                    meaningEn: "Please bring a hot filter coffee.",
-                    meaningSi: "කරුණාකරලා උණුසුම් ෆිල්ටර් කෝපි එකක් ගේන්න.",
-                    exampleTarget: "ஒரு நெய் தோசையும் சூடான பில்டர் காப்பியும் கொண்டு வாங்க.",
-                    exampleTranslation: "Please bring one ghee roast dosa and a hot filter coffee.",
-                    relatedKeyword: "dosa"
-                  },
-                  {
-                    id: "ta_v4",
-                    word: "மிக்க நன்றி, மீண்டும் சந்திப்போம்",
-                    phonetic: "Mikka nandri, meendum santhippom",
-                    category: "Career & Business",
-                    level: "Intermediate",
-                    meaningEn: "Thank you very much, let's meet again!",
-                    meaningSi: "බොහොම ස්තූතියි, අපි නැවත හමුවෙමු!",
-                    exampleTarget: "நேர்காணல் வாய்ப்பிற்கு மிக்க நன்றி, மீண்டும் சந்திப்போம்.",
-                    exampleTranslation: "Thank you very much for the interview opportunity, see you again.",
-                    relatedKeyword: "interview"
-                  }
-                ]
-              };
-
-              const activeLangVocab = MULTILINGUAL_VOCAB_BANK[selectedLanguage] || MULTILINGUAL_VOCAB_BANK["English"];
-              const filteredVocab = activeLangVocab.filter(
-                (v) => vocabCategoryFilter === "All" || v.category === vocabCategoryFilter
-              );
-              const currentLangMeta =
-                AVAILABLE_LANGUAGES.find((l) => l.name.toLowerCase() === selectedLanguage.toLowerCase()) ||
+              const getLangMeta = (langName: string) =>
+                AVAILABLE_LANGUAGES.find((l) => l.name.toLowerCase() === langName.toLowerCase()) ||
                 AVAILABLE_LANGUAGES[0];
 
-              const handleSpeakVocab = (id: string, textToSpeak: string) => {
+              const langPool = FULL_VOCABULARY_CATALOG.filter((v) =>
+                vocabLangFilter === "All" ? true : v.language.toLowerCase() === vocabLangFilter.toLowerCase()
+              );
+
+              const filteredVocab = langPool.filter((v) => {
+                const matchesCat = vocabCategoryFilter === "All" || v.category === vocabCategoryFilter;
+                const matchesLevel = vocabLevelFilter === "All" || v.level.toLowerCase() === vocabLevelFilter.toLowerCase();
+                const isMastered = masteredVocabIds.includes(v.id);
+                const matchesStatus =
+                  vocabStatusFilter === "All"
+                    ? true
+                    : vocabStatusFilter === "Mastered"
+                    ? isMastered
+                    : !isMastered;
+                const q = vocabSearchQuery.trim().toLowerCase();
+                const matchesSearch =
+                  !q ||
+                  v.word.toLowerCase().includes(q) ||
+                  v.meaning.toLowerCase().includes(q) ||
+                  v.category.toLowerCase().includes(q) ||
+                  v.subCategory.toLowerCase().includes(q) ||
+                  v.exampleTarget.toLowerCase().includes(q);
+                return matchesCat && matchesLevel && matchesStatus && matchesSearch;
+              });
+
+              const handleSpeakVocab = (id: string, textToSpeak: string, langName: string) => {
                 if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
                 window.speechSynthesis.cancel();
                 if (speakingVocabId === id) {
@@ -7101,7 +6706,7 @@ export default function StudentWebApp() {
                   Arabic: "ar-SA",
                   Tamil: "ta-IN"
                 };
-                utter.lang = langCodeMap[selectedLanguage] || "en-US";
+                utter.lang = langCodeMap[langName] || "en-US";
                 utter.rate = 0.92;
                 utter.onend = () => setSpeakingVocabId(null);
                 utter.onerror = () => setSpeakingVocabId(null);
@@ -7109,76 +6714,221 @@ export default function StudentWebApp() {
                 window.speechSynthesis.speak(utter);
               };
 
-              const handleToggleMastered = (vocab: VocabDrillItem) => {
+              const handleToggleMastered = (vocab: VocabCatalogItem) => {
                 if (masteredVocabIds.includes(vocab.id)) {
                   setMasteredVocabIds((prev) => prev.filter((i) => i !== vocab.id));
                 } else {
                   setMasteredVocabIds((prev) => [...prev, vocab.id]);
                   setTotalXp((prev) => prev + 25);
-                  setCelebrationToast(`🎉 +25 XP! Mastered "${vocab.word}" in ${selectedLanguage}!`);
+                  setCelebrationToast(`🎉 +25 XP! Mastered "${vocab.word}" (${vocab.language})!`);
                   setTimeout(() => setCelebrationToast(null), 3500);
                 }
               };
 
-              const masteredCountInLang = activeLangVocab.filter((v) => masteredVocabIds.includes(v.id)).length;
+              const masteredInCurrentPool = langPool.filter((v) => masteredVocabIds.includes(v.id)).length;
+
+              const renderVocabCard = (item: VocabCatalogItem) => {
+                const isMastered = masteredVocabIds.includes(item.id);
+                const isSpeakingWord = speakingVocabId === item.id;
+                const isSpeakingEx = speakingVocabId === item.id + "_ex";
+                const catMeta = VOCAB_CATEGORIES.find((c) => c.id === item.category) || VOCAB_CATEGORIES[0];
+                const itemLangMeta = getLangMeta(item.language);
+
+                const levelStyle =
+                  item.level === "Advanced"
+                    ? "bg-purple-500/20 text-purple-300 border-purple-500/40"
+                    : item.level === "Intermediate"
+                    ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                    : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
+
+                return (
+                  <div
+                    key={item.id}
+                    className={`p-5 rounded-3xl bg-gradient-to-b from-[#131C31]/95 via-[#0F172A]/95 to-[#090E1A]/95 border transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.65)] flex flex-col justify-between space-y-4 relative overflow-hidden group ${
+                      isMastered
+                        ? "border-emerald-500/50 shadow-[0_10px_30px_rgba(16,185,129,0.12)]"
+                        : "border-slate-800/90 hover:border-cyan-500/50"
+                    }`}
+                  >
+                    <div className={`absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r ${catMeta.topGradient} opacity-80`} />
+
+                    <div className="space-y-3 relative z-10">
+                      {/* Top Metadata Row */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${catMeta.accentBg} ${catMeta.accentText} border ${catMeta.accentBorder}`}>
+                            {catMeta.icon} {item.category}
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-900 border border-slate-700/80 text-slate-300">
+                            {item.subCategory}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[10px] font-mono font-black px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                            {item.cefr}
+                          </span>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${levelStyle}`}>
+                            {item.level}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Word, Flag, Phonetics & Native Audio Button */}
+                      <div className="flex items-start justify-between gap-3 pt-1">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={itemLangMeta.flagUrl}
+                              alt={item.language}
+                              className="w-4 h-3 rounded-[2px] object-cover border border-white/20 shrink-0"
+                            />
+                            <h3 className="text-base sm:text-lg font-black text-white group-hover:text-cyan-300 transition-colors leading-snug">
+                              {item.word}
+                            </h3>
+                          </div>
+                          <span className="text-[11px] font-mono text-emerald-400 block">
+                            🗣️ /{item.phonetic}/
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleSpeakVocab(item.id, item.word, item.language)}
+                          title="Listen to Native AI Pronunciation"
+                          className={`px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 shrink-0 transition-all ${
+                            isSpeakingWord
+                              ? "bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-400/40 animate-pulse"
+                              : "bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/40"
+                          }`}
+                        >
+                          <Volume2 className="w-4 h-4" />
+                          <span>{isSpeakingWord ? "Playing..." : "Listen"}</span>
+                        </button>
+                      </div>
+
+                      {/* Meaning & Native Coaching Tip Box (100% International English) */}
+                      <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800/90 space-y-1.5">
+                        <div className="text-xs font-bold text-white leading-relaxed">
+                          💡 {item.meaning}
+                        </div>
+                        <div className="text-[11px] font-medium text-cyan-300/90 leading-relaxed">
+                          🎯 <strong className="text-cyan-200">Coach Tip:</strong> {item.usageTip}
+                        </div>
+                      </div>
+
+                      {/* Real Spoken Example Sentence with Audio Playback */}
+                      <div className="p-3 rounded-2xl bg-indigo-950/30 border border-indigo-500/25 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-indigo-300">
+                            Spoken Context in Live Call:
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleSpeakVocab(item.id + "_ex", item.exampleTarget, item.language)}
+                            className="text-[10px] font-bold text-cyan-300 hover:text-white flex items-center gap-1"
+                          >
+                            <Volume2 className="w-3 h-3" />
+                            <span>{isSpeakingEx ? "Speaking..." : "Hear Sentence"}</span>
+                          </button>
+                        </div>
+                        <p className="text-xs text-white font-semibold italic leading-relaxed">
+                          &ldquo;{item.exampleTarget}&rdquo;
+                        </p>
+                        <p className="text-[11px] text-slate-400">
+                          {item.exampleContext}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Bottom Actions: Mark Mastered + Practice in Live Call */}
+                    <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2 relative z-10">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleMastered(item)}
+                        className={`px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all ${
+                          isMastered
+                            ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/50"
+                            : "bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700"
+                        }`}
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>{isMastered ? "Mastered ✓" : "Mark Learned (+25 XP)"}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (item.language !== selectedLanguage) {
+                            setSelectedLanguage(item.language);
+                          }
+                          launchTopicByKeyword(item.relatedKeyword);
+                        }}
+                        className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs flex items-center gap-1.5 shadow-md transition-all"
+                      >
+                        <PhoneCall className="w-3.5 h-3.5" />
+                        <span>Use in Call →</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              };
 
               return (
                 <div className="space-y-6">
-                  {/* 1. HERO EXPLAINER BANNER: WHAT THIS PAGE DOES */}
+                  {/* 1. HERO STUDIO HEADER */}
                   <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#0F292A] via-[#0F172A] to-[#0A1120] border border-emerald-500/35 shadow-2xl space-y-5 relative overflow-hidden">
-                    <div className="absolute -top-20 -right-20 w-64 h-64 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -top-20 -right-20 w-72 h-72 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
 
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[11px] font-black uppercase tracking-wider">
-                            <img
-                              src={currentLangMeta.flagUrl}
-                              alt={selectedLanguage}
-                              className="w-4 h-3 rounded-[2px] object-cover"
-                            />
-                            {selectedLanguage} Voice Vocabulary Trainer
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                            {FULL_VOCABULARY_CATALOG.length}+ Spoken Vocabulary &amp; Phonetic Drills
                           </span>
                           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[11px] font-black">
-                            ✅ {masteredCountInLang} / {activeLangVocab.length} Words Mastered (+25 XP each)
+                            ✅ {masteredInCurrentPool} / {langPool.length} Mastered (+25 XP Each)
+                          </span>
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 text-[11px] font-bold">
+                            8 Categories • 6 Languages
                           </span>
                         </div>
 
-                        <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5">
-                          <BookOpen className="w-6 h-6 text-emerald-400" />
-                          <span>Essential Speaking Vocabulary &amp; Pronunciation Studio</span>
-                        </h2>
+                        <h1 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2.5 tracking-tight">
+                          <BookOpen className="w-7 h-7 text-emerald-400" />
+                          <span>Spoken Vocabulary, Idioms &amp; Phonetic Studio</span>
+                        </h1>
                         <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
-                          මෙම පිටුවෙන් ඔබට <strong className="text-emerald-300">{selectedLanguage}</strong> කතා කරනකොට නිතරම ඕන වෙන වචන සහ වාක්‍ය ඛණ්ඩ (Phrases &amp; Idioms) නිවැරදිව උච්චාරණය කරන විදිහ <strong className="text-cyan-300">🔊 Audio වලින් අහලා</strong>, තේරුම බලලා, කෙලින්ම <strong className="text-amber-300">📞 Live AI Call එකකින් පුහුණු වෙන්න</strong> පුළුවන්!
+                          Master high-frequency conversational phrases, executive idioms, and real-world vocabulary across 8 categories. Listen to native neural pronunciation, review phonetic guides, and launch an instant AI roleplay call to practice using any phrase live.
                         </p>
                       </div>
 
                       <div className="flex items-center gap-2.5 self-start lg:self-auto shrink-0">
                         <button
                           onClick={() => launchTopicByKeyword("random")}
-                          className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/25 flex items-center gap-1.5 transition-all"
+                          className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/25 flex items-center gap-1.5 transition-all"
                         >
                           <PhoneCall className="w-3.5 h-3.5 fill-slate-950" />
-                          <span>Practice in {selectedLanguage} Call →</span>
+                          <span>Quick Call ({selectedLanguage}) →</span>
                         </button>
                         <button
                           onClick={() => setActiveTab("dashboard")}
                           className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700"
                         >
-                          ← Back
+                          ← Back to Dashboard
                         </button>
                       </div>
                     </div>
 
-                    {/* 3-Step Visual Guide Bar */}
+                    {/* 3-Step Visual Workflow Guide */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-slate-800/80 relative z-10">
                       <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/90 flex items-center gap-3">
                         <div className="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 font-black text-xs flex items-center justify-center shrink-0">
                           1
                         </div>
                         <div className="text-xs">
-                          <span className="font-bold text-white block">🔊 Listen Native Audio</span>
-                          <span className="text-[11px] text-slate-400">Click the speaker button to hear native AI pronunciation</span>
+                          <span className="font-bold text-white block">🔊 Hear Native Pronunciation</span>
+                          <span className="text-[11px] text-slate-400">Listen to the phrase &amp; full spoken example sentence</span>
                         </div>
                       </div>
                       <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/90 flex items-center gap-3">
@@ -7186,8 +6936,8 @@ export default function StudentWebApp() {
                           2
                         </div>
                         <div className="text-xs">
-                          <span className="font-bold text-white block">📖 Meaning &amp; Phonetics</span>
-                          <span className="text-[11px] text-slate-400">Read the Sinhala &amp; English meaning + phonetic guide</span>
+                          <span className="font-bold text-white block">🗣️ Master Phonetics &amp; Context</span>
+                          <span className="text-[11px] text-slate-400">Study the syllable cadence guide &amp; executive usage tips</span>
                         </div>
                       </div>
                       <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/90 flex items-center gap-3">
@@ -7195,167 +6945,316 @@ export default function StudentWebApp() {
                           3
                         </div>
                         <div className="text-xs">
-                          <span className="font-bold text-white block">📞 Use in Live AI Call</span>
-                          <span className="text-[11px] text-slate-400">Launch a roleplay call &amp; mark words mastered for +25 XP</span>
+                          <span className="font-bold text-white block">📞 Apply in Live AI Roleplay</span>
+                          <span className="text-[11px] text-slate-400">Click &ldquo;Use in Call&rdquo; to practice live &amp; earn +25 XP</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* 2. CATEGORY & LANGUAGE SWITCHER BAR */}
-                  <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {["All", "Daily Conversation", "Travel & Dining", "Career & Business", "Idioms & Expressions"].map(
-                        (cat) => (
-                          <button
-                            key={cat}
-                            onClick={() => setVocabCategoryFilter(cat)}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                              vocabCategoryFilter === cat
-                                ? "bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-500/20"
-                                : "bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700"
-                            }`}
-                          >
-                            {cat === "All" ? `🌟 All ${selectedLanguage} Words (${activeLangVocab.length})` : cat}
-                          </button>
-                        )
+                  {/* 2. 8 CATEGORY BENTO FILTER CARDS */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between px-1">
+                      <div className="flex items-center gap-2">
+                        <Compass className="w-4 h-4 text-emerald-400" />
+                        <h2 className="text-sm font-black text-white uppercase tracking-wider">
+                          Filter Vocabulary by Category (8 Categories)
+                        </h2>
+                      </div>
+                      {vocabCategoryFilter !== "All" && (
+                        <button
+                          onClick={() => setVocabCategoryFilter("All")}
+                          className="text-xs font-bold text-emerald-400 hover:text-emerald-300"
+                        >
+                          Show All Categories ({langPool.length})
+                        </button>
                       )}
                     </div>
 
-                    {/* Quick Language Switcher Pills */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {AVAILABLE_LANGUAGES.map((lang) => (
-                        <button
-                          key={lang.id}
-                          onClick={() => setSelectedLanguage(lang.name)}
-                          className={`px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border transition-all ${
-                            selectedLanguage.toLowerCase() === lang.name.toLowerCase()
-                              ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
-                              : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          <img src={lang.flagUrl} alt={lang.name} className="w-3.5 h-2.5 rounded-[2px] object-cover" />
-                          <span>{lang.name}</span>
-                        </button>
-                      ))}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-9 gap-2.5">
+                      <button
+                        onClick={() => setVocabCategoryFilter("All")}
+                        className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between gap-2 ${
+                          vocabCategoryFilter === "All"
+                            ? "bg-gradient-to-br from-emerald-500/25 via-teal-600/20 to-slate-900 border-emerald-400 shadow-lg scale-[1.02]"
+                            : "bg-[#111827]/90 border-slate-800 hover:border-slate-700"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-2xl">🌟</span>
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            {langPool.length}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="font-black text-xs text-white truncate">All Words</div>
+                          <div className="text-[9.5px] text-slate-400 truncate">Full Bank</div>
+                        </div>
+                      </button>
+
+                      {VOCAB_CATEGORIES.map((cat) => {
+                        const count = langPool.filter((v) => v.category === cat.id).length;
+                        const isSelected = vocabCategoryFilter === cat.id;
+                        return (
+                          <button
+                            key={cat.id}
+                            onClick={() => setVocabCategoryFilter(isSelected ? "All" : cat.id)}
+                            className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between gap-2 ${
+                              isSelected
+                                ? `bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 ${cat.accentBorder} ring-2 ring-emerald-400/50 shadow-xl scale-[1.02]`
+                                : "bg-[#111827]/90 border-slate-800 hover:border-slate-700"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <span className="text-2xl">{cat.icon}</span>
+                              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${cat.accentBg} ${cat.accentText} border ${cat.accentBorder}`}>
+                                {count}
+                              </span>
+                            </div>
+                            <div>
+                              <div className="font-black text-xs text-white truncate">{cat.label.split(" & ")[0]}</div>
+                              <div className="text-[9.5px] text-slate-400 truncate">{cat.sub.split(",")[0]}</div>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {/* 3. INTERACTIVE VOCABULARY CARDS GRID */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredVocab.map((item) => {
-                      const isMastered = masteredVocabIds.includes(item.id);
-                      const isSpeakingWord = speakingVocabId === item.id;
-                      const isSpeakingEx = speakingVocabId === item.id + "_ex";
+                  {/* 3. MULTI-FILTER COMMAND BAR (SEARCH, LANGUAGES, LEVELS, MASTERY STATUS & VIEW MODE) */}
+                  <div className="p-4 sm:p-5 rounded-3xl bg-[#111827]/95 border border-slate-800/90 shadow-xl space-y-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                      {/* Search Bar */}
+                      <div className="relative flex-1 max-w-xl">
+                        <Search className="w-4 h-4 text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={vocabSearchQuery}
+                          onChange={(e) => setVocabSearchQuery(e.target.value)}
+                          placeholder="Search 220+ words, idioms, meanings, or phonetics (e.g. chase, airport, paella, pitch)..."
+                          className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-slate-950/90 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
+                        />
+                        {vocabSearchQuery && (
+                          <button
+                            onClick={() => setVocabSearchQuery("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
 
-                      return (
-                        <div
-                          key={item.id}
-                          className={`p-5 rounded-3xl bg-gradient-to-b from-[#131C31] via-[#0F172A] to-[#0A101F] border transition-all duration-300 flex flex-col justify-between space-y-4 relative overflow-hidden group ${
-                            isMastered
-                              ? "border-emerald-500/50 shadow-[0_10px_30px_rgba(16,185,129,0.12)]"
-                              : "border-slate-800 hover:border-cyan-500/50"
+                      {/* Level Filter Pills */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {["All", "Beginner", "Intermediate", "Advanced"].map((lvl) => (
+                          <button
+                            key={lvl}
+                            onClick={() => setVocabLevelFilter(lvl)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                              vocabLevelFilter === lvl
+                                ? "bg-emerald-500 text-slate-950 font-black shadow-md"
+                                : "bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700"
+                            }`}
+                          >
+                            {lvl === "All" ? "All Levels" : lvl}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Mastery Status Filter */}
+                      <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                        {(["All", "To Learn", "Mastered"] as const).map((st) => (
+                          <button
+                            key={st}
+                            onClick={() => setVocabStatusFilter(st)}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                              vocabStatusFilter === st
+                                ? "bg-cyan-500 text-slate-950 font-black"
+                                : "text-slate-400 hover:text-white"
+                            }`}
+                          >
+                            {st}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* View Mode Switcher */}
+                      <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                        <button
+                          onClick={() => setVocabViewMode("categories")}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            vocabViewMode === "categories"
+                              ? "bg-indigo-600 text-white shadow"
+                              : "text-slate-400 hover:text-white"
                           }`}
                         >
-                          <div className="space-y-3">
-                            {/* Category & Level Header */}
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
-                                {item.category}
-                              </span>
-                              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-700 text-slate-300">
-                                {item.level}
-                              </span>
-                            </div>
+                          🗂️ By Category
+                        </button>
+                        <button
+                          onClick={() => setVocabViewMode("grid")}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            vocabViewMode === "grid"
+                              ? "bg-indigo-600 text-white shadow"
+                              : "text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          ⊞ Grid View
+                        </button>
+                      </div>
+                    </div>
 
-                            {/* Word + Phonetic Pronunciation + Audio Button */}
-                            <div className="flex items-start justify-between gap-3 pt-1">
-                              <div>
-                                <h3 className="text-lg font-black text-white group-hover:text-cyan-300 transition-colors leading-snug">
-                                  {item.word}
-                                </h3>
-                                <span className="text-[11px] font-mono text-emerald-400 block mt-0.5">
-                                  🗣️ /{item.phonetic}/
-                                </span>
+                    {/* Language Filter Row with Real Country Flags & Counts */}
+                    <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-800/80 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">
+                          Language:
+                        </span>
+
+                        <button
+                          onClick={() => setVocabLangFilter("All")}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                            vocabLangFilter === "All"
+                              ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-black shadow-md"
+                              : "bg-slate-900/90 text-slate-300 border border-slate-800 hover:border-slate-700"
+                          }`}
+                        >
+                          <Globe className="w-3.5 h-3.5" />
+                          <span>All Languages</span>
+                          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/25 font-mono">
+                            {FULL_VOCABULARY_CATALOG.length}
+                          </span>
+                        </button>
+
+                        {AVAILABLE_LANGUAGES.map((lang) => {
+                          const count = FULL_VOCABULARY_CATALOG.filter(
+                            (v) => v.language.toLowerCase() === lang.name.toLowerCase()
+                          ).length;
+                          const isSelected = vocabLangFilter.toLowerCase() === lang.name.toLowerCase();
+                          return (
+                            <button
+                              key={lang.id}
+                              onClick={() => {
+                                setVocabLangFilter(lang.name);
+                                setSelectedLanguage(lang.name);
+                              }}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                                isSelected
+                                  ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-black shadow-md"
+                                  : "bg-slate-900/90 text-slate-300 border border-slate-800 hover:border-slate-700"
+                              }`}
+                            >
+                              <img
+                                src={lang.flagUrl}
+                                alt={lang.name}
+                                className="w-4 h-3 rounded-[2px] object-cover border border-white/20"
+                              />
+                              <span>{lang.name}</span>
+                              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/25 font-mono">
+                                {count}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {(vocabCategoryFilter !== "All" ||
+                        vocabLevelFilter !== "All" ||
+                        vocabStatusFilter !== "All" ||
+                        vocabLangFilter !== "All" ||
+                        vocabSearchQuery.trim() !== "") && (
+                        <button
+                          onClick={() => {
+                            setVocabCategoryFilter("All");
+                            setVocabLevelFilter("All");
+                            setVocabStatusFilter("All");
+                            setVocabLangFilter("All");
+                            setVocabSearchQuery("");
+                          }}
+                          className="text-xs font-bold text-rose-400 hover:text-rose-300 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/30"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                          <span>Reset All Filters (Show All {FULL_VOCABULARY_CATALOG.length})</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 4. RESULTS COUNTER BAR */}
+                  <div className="flex items-center justify-between px-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-xs sm:text-sm font-black text-white">
+                        Showing {filteredVocab.length} Vocabulary &amp; Phonetic Drills
+                      </span>
+                      {vocabLangFilter !== "All" && (
+                        <span className="text-xs font-bold text-emerald-400">({vocabLangFilter})</span>
+                      )}
+                    </div>
+                    <span className="text-xs text-slate-400 hidden sm:inline">
+                      Click &ldquo;Listen&rdquo; for native pronunciation or &ldquo;Use in Call&rdquo; for live AI conversation
+                    </span>
+                  </div>
+
+                  {/* 5. DISPLAY: CATEGORY-GROUPED VIEW OR FLAT GRID VIEW */}
+                  {filteredVocab.length === 0 ? (
+                    <div className="p-12 rounded-3xl bg-[#111827] border border-slate-800 text-center space-y-4">
+                      <div className="text-3xl">🔍</div>
+                      <h3 className="text-base font-black text-white">No Vocabulary Items Match Your Filter</h3>
+                      <button
+                        onClick={() => {
+                          setVocabCategoryFilter("All");
+                          setVocabLevelFilter("All");
+                          setVocabStatusFilter("All");
+                          setVocabLangFilter("All");
+                          setVocabSearchQuery("");
+                        }}
+                        className="px-5 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs"
+                      >
+                        Show All {FULL_VOCABULARY_CATALOG.length} Words
+                      </button>
+                    </div>
+                  ) : vocabViewMode === "categories" && vocabCategoryFilter === "All" ? (
+                    <div className="space-y-8">
+                      {VOCAB_CATEGORIES.map((cat) => {
+                        const catItems = filteredVocab.filter((v) => v.category === cat.id);
+                        if (catItems.length === 0) return null;
+                        return (
+                          <div key={cat.id} className="space-y-4">
+                            <div className={`p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#111827] via-[#0F172A] to-[#111827] border ${cat.accentBorder} flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg`}>
+                              <div className="flex items-center gap-3.5">
+                                <div className={`w-12 h-12 rounded-2xl ${cat.accentBg} border ${cat.accentBorder} flex items-center justify-center text-2xl`}>
+                                  {cat.icon}
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="text-base sm:text-lg font-black text-white">{cat.label}</h3>
+                                    <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${cat.accentBg} ${cat.accentText} border ${cat.accentBorder}`}>
+                                      {catItems.length} Words
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-slate-400 mt-0.5">{cat.sub}</p>
+                                </div>
                               </div>
-
                               <button
-                                type="button"
-                                onClick={() => handleSpeakVocab(item.id, item.word)}
-                                title="Listen to Native Pronunciation"
-                                className={`px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 shrink-0 transition-all ${
-                                  isSpeakingWord
-                                    ? "bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-400/40 animate-pulse"
-                                    : "bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/40"
-                                }`}
+                                onClick={() => setVocabCategoryFilter(cat.id)}
+                                className={`px-3.5 py-2 rounded-xl ${cat.accentBg} border ${cat.accentBorder} ${cat.accentText} text-xs font-black hover:scale-105 transition-transform self-start sm:self-auto`}
                               >
-                                <Volume2 className="w-4 h-4" />
-                                <span>{isSpeakingWord ? "Speaking..." : "Listen"}</span>
+                                Focus {cat.label.split(" & ")[0]} ({catItems.length}) →
                               </button>
                             </div>
 
-                            {/* Bilingual Meaning Box (English + Sinhala) */}
-                            <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800/90 space-y-1.5">
-                              <div className="text-xs font-bold text-white leading-relaxed">
-                                💡 {item.meaningEn}
-                              </div>
-                              <div className="text-[11.5px] font-medium text-amber-300/95 leading-relaxed">
-                                🇱🇰 {item.meaningSi}
-                              </div>
-                            </div>
-
-                            {/* Real Spoken Example Sentence with Audio Playback */}
-                            <div className="p-3 rounded-2xl bg-indigo-950/30 border border-indigo-500/25 space-y-1.5">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-black uppercase tracking-wider text-indigo-300">
-                                  Spoken Example in Call:
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleSpeakVocab(item.id + "_ex", item.exampleTarget)}
-                                  className="text-[10px] font-bold text-cyan-300 hover:text-white flex items-center gap-1"
-                                >
-                                  <Volume2 className="w-3 h-3" />
-                                  <span>{isSpeakingEx ? "Playing..." : "Hear Sentence"}</span>
-                                </button>
-                              </div>
-                              <p className="text-xs text-white font-semibold italic leading-relaxed">
-                                &ldquo;{item.exampleTarget}&rdquo;
-                              </p>
-                              <p className="text-[11px] text-slate-400">
-                                {item.exampleTranslation}
-                              </p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {catItems.map((item) => renderVocabCard(item))}
                             </div>
                           </div>
-
-                          {/* Bottom Actions: Mark Mastered + Practice in Live Call */}
-                          <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleToggleMastered(item)}
-                              className={`px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all ${
-                                isMastered
-                                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/50"
-                                  : "bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700"
-                              }`}
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              <span>{isMastered ? "Mastered ✓" : "Mark Learned (+25 XP)"}</span>
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => launchTopicByKeyword(item.relatedKeyword)}
-                              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs flex items-center gap-1.5 shadow-md transition-all"
-                            >
-                              <PhoneCall className="w-3.5 h-3.5" />
-                              <span>Use in Call →</span>
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {filteredVocab.map((item) => renderVocabCard(item))}
+                    </div>
+                  )}
                 </div>
               );
             })()
@@ -7364,157 +7263,35 @@ export default function StudentWebApp() {
             /* TAB: INTERACTIVE AI GRAMMAR & SPOKEN MISTAKE REPAIR STUDIO  */
             /* ----------------------------------------------------------- */
             (() => {
-              interface GrammarFixRule {
-                id: string;
-                category: string;
-                wrong: string;
-                correct: string;
-                ruleEn: string;
-                ruleSi: string;
-                keyword: string;
-              }
+              const GRAMMAR_CATEGORIES = [
+                "All",
+                "Career & Business",
+                "Travel & Transit",
+                "Food & Dining",
+                "Sports & Fitness",
+                "Daily Conversation",
+                "Tech & Innovation",
+                "Shopping & Health"
+              ];
 
-              const MULTILINGUAL_GRAMMAR_FIXES: Record<string, GrammarFixRule[]> = {
-                English: [
-                  {
-                    id: "g_en_1",
-                    category: "Verb Agreement",
-                    wrong: "I am agree with your opinion.",
-                    correct: "I agree with your opinion.",
-                    ruleEn: "'Agree' is already an action verb, so never put 'am / is / are' before it.",
-                    ruleSi: "'Agree' කියන්නේ ක්‍රියා පදයක් (Verb). ඒ නිසා ඒකට කලින් 'am' දාන්න එපා.",
-                    keyword: "debate"
-                  },
-                  {
-                    id: "g_en_2",
-                    category: "Prepositions & Gerunds",
-                    wrong: "I look forward to meet you at the interview.",
-                    correct: "I look forward to meeting you at the interview.",
-                    ruleEn: "In 'look forward to', 'to' is a preposition, so the verb after it must end in '-ing'.",
-                    ruleSi: "'Look forward to' කියන යෙදුමට පස්සේ එන ක්‍රියා පදයට අනිවාර්යයෙන්ම '-ing' එකතු වෙන්න ඕනේ (meeting).",
-                    keyword: "interview"
-                  },
-                  {
-                    id: "g_en_3",
-                    category: "Indirect Objects",
-                    wrong: "Can you explain me this software architecture?",
-                    correct: "Can you explain this software architecture to me?",
-                    ruleEn: "After 'explain', always use 'explain [something] to me' — never 'explain me'.",
-                    ruleSi: "'Explain me' කියලා කියන්නේ නෑ. 'Explain [දෙයක්] to me' හෝ 'Explain to me' කියලා පාවිච්චි කරන්න.",
-                    keyword: "standup"
-                  },
-                  {
-                    id: "g_en_4",
-                    category: "Present Perfect Duration",
-                    wrong: "I am working in this company since three years.",
-                    correct: "I have been working at this company for three years.",
-                    ruleEn: "Use 'have been + -ing' with 'for' when describing a duration of time up to now.",
-                    ruleSi: "අතීතයේ පටන් අරන් තවමත් කරගෙන යන දෙයක් කාල සීමාවක් එක්ක කියද්දී 'have been working ... for' පාවිච්චි කරන්න.",
-                    keyword: "career"
-                  },
-                  {
-                    id: "g_en_5",
-                    category: "Polite Requests",
-                    wrong: "Give me one coffee with milk.",
-                    correct: "Could I please have a latte with oat milk?",
-                    ruleEn: "In native English cafes and hotels, 'Could I please have...' or 'I would like...' sounds much more polite.",
-                    ruleSi: "අවන්හලකදී හෝ හෝටලයකදී 'Give me' වෙනුවට 'Could I please have...' කියන එක ගොඩක් ආචාරශීලීයි.",
-                    keyword: "coffee"
-                  },
-                  {
-                    id: "g_en_6",
-                    category: "Past Tense Questions",
-                    wrong: "Where did you went yesterday evening?",
-                    correct: "Where did you go yesterday evening?",
-                    ruleEn: "When a question already has 'did', keep the main verb in its base form ('go', not 'went').",
-                    ruleSi: "ප්‍රශ්නයක 'did' තියෙනකොට ක්‍රියා පදයේ මූලික ස්වරූපය ('go') පාවිච්චි කරන්න ('went' දාන්න එපා).",
-                    keyword: "weekend"
-                  }
-                ],
-                Spanish: [
-                  {
-                    id: "g_es_1",
-                    category: "Polite Ordering",
-                    wrong: "Quiero un café ahora.",
-                    correct: "Me gustaría pedir un café con leche, por favor.",
-                    ruleEn: "Using 'Me gustaría...' (I would like) or 'Quisiera...' sounds much warmer and more polite than 'Quiero'.",
-                    ruleSi: "ආපනශාලාවකදී 'Quiero' වෙනුවට 'Me gustaría...' (මම කැමතියි...) කියලා ඉල්ලන එක වඩාත් ආචාරශීලීයි.",
-                    keyword: "tapas"
-                  },
-                  {
-                    id: "g_es_2",
-                    category: "Ser vs Estar",
-                    wrong: "Estoy un ingeniero de software.",
-                    correct: "Soy ingeniero de software.",
-                    ruleEn: "Always use 'Soy' (from Ser) for professions, identity, and nationality, not 'Estoy'.",
-                    ruleSi: "ඔබේ රැකියාව හෝ ජාතිකත්වය කියද්දී 'Estoy' වෙනුවට හැමවිටම 'Soy' පාවිච්චි කරන්න.",
-                    keyword: "entrevista"
-                  },
-                  {
-                    id: "g_es_3",
-                    category: "Age Expression",
-                    wrong: "Soy veinticinco años.",
-                    correct: "Tengo veinticinco años.",
-                    ruleEn: "In Spanish, age is expressed with 'Tener' (to have years), never 'Ser'.",
-                    ruleSi: "ස්පාඤ්ඤ භාෂාවෙන් වයස කියද්දී 'Soy' නෙවෙයි 'Tengo [වයස] años' කියලා පාවිච්චි කරන්න.",
-                    keyword: "madrid"
-                  },
-                  {
-                    id: "g_es_4",
-                    category: "Gender Agreement",
-                    wrong: "La problema es muy difícil.",
-                    correct: "El problema es muy difícil.",
-                    ruleEn: "Words ending in '-ma' of Greek origin (el problema, el sistema, el tema) are masculine!",
-                    ruleSi: "'Problema' කියන වචනය '-a' වලින් ඉවර උනාට පුරුෂ ලිංග පදයක් නිසා 'El problema' කියලා කියන්න ඕනේ.",
-                    keyword: "hotel"
-                  }
-                ],
-                Japanese: [
-                  {
-                    id: "g_jp_1",
-                    category: "Polite Requests",
-                    wrong: "水をくれ (Mizu o kure)",
-                    correct: "お水をお願いします (Omizu o onegaishimasu)",
-                    ruleEn: "Always use '...o onegaishimasu' or '...o kudasai' when ordering at restaurants or speaking to staff.",
-                    ruleSi: "ජපන් අවන්හලකදී හෝ ආයතනයකදී ආචාරශීලීව යමක් ඉල්ලද්දී '...o onegaishimasu' පාවිච්චි කරන්න.",
-                    keyword: "ramen"
-                  },
-                  {
-                    id: "g_jp_2",
-                    category: "Self Reference in Interviews",
-                    wrong: "俺はエンジニアです (Ore wa enjinia desu)",
-                    correct: "私はソフトウェアエンジニアです (Watashi wa sofutowea enjinia desu)",
-                    ruleEn: "In professional and polite conversations, always use 'Watashi' (or 'Watakushi'), never casual 'Ore' or 'Boku'.",
-                    ruleSi: "රැකියා සම්මුඛ පරීක්ෂණ සහ නිල කතාබහේදී 'මම' කියන්න හැමවිටම 'Watashi' පාවිච්චි කරන්න.",
-                    keyword: "tokyo"
-                  }
-                ],
-                Korean: [
-                  {
-                    id: "g_kr_1",
-                    category: "Polite Honorifics (존댓말)",
-                    wrong: "이거 줘 (Igeo jwo)",
-                    correct: "이거 주세요 (Igeo juseyo)",
-                    ruleEn: "Add '주세요 (juseyo)' when ordering food or shopping to speak politely to staff.",
-                    ruleSi: "කොරියානු වෙළඳසැලකදී හෝ අවන්හලකදී ආචාරශීලීව ඉල්ලීමට '주세요 (juseyo)' භාවිතා කරන්න.",
-                    keyword: "seoul"
-                  },
-                  {
-                    id: "g_kr_2",
-                    category: "Formal Self-Introduction",
-                    wrong: "내 이름은 자니타야 (Nae ireumeun Janita-ya)",
-                    correct: "제 이름은 자니타입니다 (Je ireumeun Janita-imnida)",
-                    ruleEn: "Use humble '제 (Je)' instead of '내 (Nae)' and formal '-입니다 (-imnida)' when meeting someone new.",
-                    ruleSi: "අලුත් කෙනෙක්ට හෝ සම්මුඛ පරීක්ෂණයකදී ඔබව හඳුන්වා දෙන විට '제 이름은 ...입니다' භාවිතා කරන්න.",
-                    keyword: "interview"
-                  }
-                ]
-              };
+              const langGrammarPool = FULL_GRAMMAR_CATALOG.filter((g) =>
+                grammarLangFilter === "All" ? true : g.language.toLowerCase() === grammarLangFilter.toLowerCase()
+              );
 
-              const activeGrammarList =
-                MULTILINGUAL_GRAMMAR_FIXES[selectedLanguage] || MULTILINGUAL_GRAMMAR_FIXES["English"];
+              const filteredGrammar = langGrammarPool.filter((g) => {
+                const matchesCat = grammarCategoryFilter === "All" || g.category === grammarCategoryFilter;
+                const matchesLvl = grammarLevelFilter === "All" || g.level.toLowerCase() === grammarLevelFilter.toLowerCase();
+                const q = grammarSearchQuery.trim().toLowerCase();
+                const matchesSearch =
+                  !q ||
+                  g.title.toLowerCase().includes(q) ||
+                  g.wrong.toLowerCase().includes(q) ||
+                  g.correct.toLowerCase().includes(q) ||
+                  g.rule.toLowerCase().includes(q);
+                return matchesCat && matchesLvl && matchesSearch;
+              });
 
-              const speakGrammarSentence = (id: string, text: string) => {
+              const speakGrammarSentence = (id: string, text: string, langName: string) => {
                 if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
                 window.speechSynthesis.cancel();
                 const utter = new SpeechSynthesisUtterance(text);
@@ -7526,7 +7303,7 @@ export default function StudentWebApp() {
                   Arabic: "ar-SA",
                   Tamil: "ta-IN"
                 };
-                utter.lang = langCodeMap[selectedLanguage] || "en-US";
+                utter.lang = langCodeMap[langName] || "en-US";
                 utter.rate = 0.92;
                 utter.onend = () => setSpeakingVocabId(null);
                 setSpeakingVocabId(id);
@@ -7538,15 +7315,20 @@ export default function StudentWebApp() {
                   {/* Hero Header */}
                   <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#23153C] via-[#0F172A] to-[#0A0F1D] border border-purple-500/35 shadow-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     <div className="space-y-2">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-300 text-[11px] font-black uppercase tracking-wider">
-                        <GraduationCap className="w-3.5 h-3.5" />
-                        {selectedLanguage} Spoken Grammar &amp; Mistake Coach
-                      </span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-300 text-[11px] font-black uppercase tracking-wider">
+                          <GraduationCap className="w-3.5 h-3.5" />
+                          {FULL_GRAMMAR_CATALOG.length}+ Spoken Grammar &amp; Syntax Repair Drills
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 text-[11px] font-bold">
+                          Real-Time Acoustic &amp; Grammar Engine
+                        </span>
+                      </div>
                       <h2 className="text-xl sm:text-2xl font-black text-white">
                         Common Spoken Mistakes vs. Natural Native Expressions
                       </h2>
                       <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
-                        Students ලා කතා කරද්දී නිතරම වරද්දන වාක්‍ය (<span className="text-rose-400 font-bold">❌ Wrong</span>) සහ ඒවා නිවැරදිව Native Speaker කෙනෙක් වගේ කියන විදිහ (<span className="text-emerald-400 font-bold">✅ Correct</span>) සිංහල පැහැදිලි කිරීම සහ <strong className="text-cyan-300">🔊 Audio Pronunciation</strong> එක්ක මෙතනින් පුහුණු වෙන්න පුළුවන්.
+                        Compare frequent spoken slips (<span className="text-rose-400 font-bold">❌ Common Mistake</span>) against natural native phrasing (<span className="text-emerald-400 font-bold">✅ Native Expression</span>). Listen to the correct sentence cadence and test each grammar structure inside a live AI voice call.
                       </p>
                     </div>
 
@@ -7567,48 +7349,140 @@ export default function StudentWebApp() {
                     </div>
                   </div>
 
-                  {/* Grammar Rules Cards */}
+                  {/* Multi-Filter Bar for Grammar */}
+                  <div className="p-4 sm:p-5 rounded-3xl bg-[#111827] border border-slate-800 space-y-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                      <div className="relative flex-1 max-w-xl">
+                        <Search className="w-4 h-4 text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={grammarSearchQuery}
+                          onChange={(e) => setGrammarSearchQuery(e.target.value)}
+                          placeholder="Search grammar rules, common mistakes, or corrections..."
+                          className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-400"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {["All", "Beginner", "Intermediate", "Advanced"].map((lvl) => (
+                          <button
+                            key={lvl}
+                            onClick={() => setGrammarLevelFilter(lvl)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                              grammarLevelFilter === lvl
+                                ? "bg-purple-500 text-white font-black shadow"
+                                : "bg-slate-900 text-slate-300 border border-slate-800"
+                            }`}
+                          >
+                            {lvl === "All" ? "All Levels" : lvl}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Category & Language Filter Pills */}
+                    <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-800/80 flex-wrap">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {GRAMMAR_CATEGORIES.map((cat) => (
+                          <button
+                            key={cat}
+                            onClick={() => setGrammarCategoryFilter(cat)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                              grammarCategoryFilter === cat
+                                ? "bg-indigo-600 text-white font-black"
+                                : "bg-slate-900 text-slate-400 border border-slate-800 hover:text-white"
+                            }`}
+                          >
+                            {cat === "All" ? `🌟 All Categories (${langGrammarPool.length})` : cat}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <button
+                          onClick={() => setGrammarLangFilter("All")}
+                          className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border ${
+                            grammarLangFilter === "All"
+                              ? "bg-purple-500/20 border-purple-400 text-purple-300"
+                              : "bg-slate-900 border-slate-800 text-slate-400"
+                          }`}
+                        >
+                          🌐 All ({FULL_GRAMMAR_CATALOG.length})
+                        </button>
+                        {AVAILABLE_LANGUAGES.map((lang) => (
+                          <button
+                            key={lang.id}
+                            onClick={() => {
+                              setGrammarLangFilter(lang.name);
+                              setSelectedLanguage(lang.name);
+                            }}
+                            className={`px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border ${
+                              grammarLangFilter.toLowerCase() === lang.name.toLowerCase()
+                                ? "bg-purple-500/20 border-purple-400 text-purple-300"
+                                : "bg-slate-900 border-slate-800 text-slate-400"
+                            }`}
+                          >
+                            <img src={lang.flagUrl} alt={lang.name} className="w-3.5 h-2.5 rounded-[2px] object-cover" />
+                            <span>{lang.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Grammar Rules Cards Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {activeGrammarList.map((item) => (
+                    {filteredGrammar.map((item) => (
                       <div
                         key={item.id}
                         className="p-5 rounded-3xl bg-[#111827] border border-slate-800 hover:border-purple-500/40 transition-all space-y-4 flex flex-col justify-between"
                       >
                         <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30">
-                              {item.category}
-                            </span>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                                {item.category}
+                              </span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-700">
+                                {item.level} • {item.language}
+                              </span>
+                            </div>
                             <button
                               type="button"
-                              onClick={() => speakGrammarSentence(item.id, item.correct)}
-                              className="px-2.5 py-1 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/30 text-cyan-300 text-xs font-bold flex items-center gap-1.5"
+                              onClick={() => speakGrammarSentence(item.id, item.correct, item.language)}
+                              className="px-2.5 py-1 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/30 text-cyan-300 text-xs font-bold flex items-center gap-1.5 shrink-0"
                             >
                               <Volume2 className="w-3.5 h-3.5" />
-                              <span>{speakingVocabId === item.id ? "Speaking..." : "Hear Correct Sentence"}</span>
+                              <span>{speakingVocabId === item.id ? "Speaking..." : "Hear Native Audio"}</span>
                             </button>
                           </div>
+
+                          <h3 className="text-sm font-black text-white">{item.title}</h3>
 
                           {/* Wrong vs Correct Comparison Box */}
                           <div className="space-y-2 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/90">
                             <div className="flex items-start gap-2 text-xs">
                               <span className="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-black text-[10px] shrink-0">
-                                ❌ Don&apos;t Say
+                                ❌ Common Slip
                               </span>
                               <span className="line-through text-rose-300/90 font-medium">{item.wrong}</span>
                             </div>
                             <div className="flex items-start gap-2 text-xs pt-1 border-t border-slate-800/80">
                               <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-black text-[10px] shrink-0">
-                                ✅ Say This
+                                ✅ Native Form
                               </span>
                               <span className="font-black text-emerald-300 text-sm">{item.correct}</span>
                             </div>
                           </div>
 
-                          {/* Bilingual Rule Explanation */}
-                          <div className="space-y-1 text-xs px-1">
-                            <p className="text-slate-200 font-medium">💡 {item.ruleEn}</p>
-                            <p className="text-amber-300/95 text-[11.5px]">🇱🇰 {item.ruleSi}</p>
+                          {/* Rule & Pro Tip (100% International English) */}
+                          <div className="space-y-1.5 text-xs px-1">
+                            <p className="text-slate-200 font-medium leading-relaxed">
+                              💡 <strong className="text-white">Grammar Rule:</strong> {item.rule}
+                            </p>
+                            <p className="text-cyan-300/95 text-[11px] leading-relaxed">
+                              🎯 <strong className="text-cyan-200">Pro Coaching Tip:</strong> {item.tip}
+                            </p>
                           </div>
                         </div>
 
@@ -7618,7 +7492,12 @@ export default function StudentWebApp() {
                           </span>
                           <button
                             type="button"
-                            onClick={() => launchTopicByKeyword(item.keyword)}
+                            onClick={() => {
+                              if (item.language !== selectedLanguage) {
+                                setSelectedLanguage(item.language);
+                              }
+                              launchTopicByKeyword(item.keyword);
+                            }}
                             className="px-3.5 py-1.5 rounded-xl bg-purple-600/25 hover:bg-purple-600 border border-purple-500/40 text-purple-200 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-all"
                           >
                             <PhoneCall className="w-3.5 h-3.5" />
@@ -8790,15 +8669,16 @@ export default function StudentWebApp() {
                   onChange={(e) => setEditNativeInput(e.target.value)}
                   className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
                 >
-                  <option value="Sinhala (සිංහල)">Sinhala (සිංහල)</option>
+                  <option value="English (US / UK)">English (US / UK)</option>
                   <option value="English (United States)">English (United States)</option>
                   <option value="English (United Kingdom)">English (United Kingdom)</option>
-                  <option value="Tamil (தமிழ்)">Tamil (தமிழ்)</option>
-                  <option value="Japanese (日本語)">Japanese (日本語)</option>
-                  <option value="French (Français)">French (Français)</option>
                   <option value="Spanish (Español)">Spanish (Español)</option>
-                  <option value="German (Deutsch)">German (Deutsch)</option>
+                  <option value="Japanese (日本語)">Japanese (日本語)</option>
                   <option value="Korean (한국어)">Korean (한국어)</option>
+                  <option value="Arabic (العربية)">Arabic (العربية)</option>
+                  <option value="Tamil (தமிழ்)">Tamil (தமிழ்)</option>
+                  <option value="French (Français)">French (Français)</option>
+                  <option value="German (Deutsch)">German (Deutsch)</option>
                 </select>
               </div>
 
