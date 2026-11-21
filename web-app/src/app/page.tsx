@@ -874,11 +874,19 @@ export default function StudentWebApp() {
   const [practiceSelectedCategory, setPracticeSelectedCategory] = useState<string>("All");
   const [practiceSelectedSubCategory, setPracticeSelectedSubCategory] = useState<string>("All");
   const [practiceSelectedLevel, setPracticeSelectedLevel] = useState<string>("All");
-  const [practiceSelectedLangFilter, setPracticeSelectedLangFilter] = useState<string>("All");
+  const [practiceSelectedLangFilter, setPracticeSelectedLangFilter] = useState<string>("English");
   const [practiceViewMode, setPracticeViewMode] = useState<"categories" | "grid">("categories");
   const [customTopicInput, setCustomTopicInput] = useState<string>("");
   const [customTopicLevel, setCustomTopicLevel] = useState<string>("Intermediate");
   const [expandedTopicPreviewId, setExpandedTopicPreviewId] = useState<string | null>(null);
+
+  // Automatically sync Practice Studio language filter whenever Main Header Language changes
+  useEffect(() => {
+    if (selectedLanguage && selectedLanguage !== "All") {
+      setPracticeSelectedLangFilter(selectedLanguage);
+      setPracticeSelectedSubCategory("All");
+    }
+  }, [selectedLanguage]);
 
   // Gemini Settings & Multi-Key Failover Pool
   const [geminiApiKey, setGeminiApiKey] = useState("");
@@ -1622,6 +1630,18 @@ export default function StudentWebApp() {
   // Today's Live AI Voice Challenge State & Audio Handler
   const [isPlayingChallengeAudio, setIsPlayingChallengeAudio] = useState(false);
 
+  // Featured Daily Challenge Scenario dynamically synced with Main Selected Language
+  const activeDailyChallengeTopic = useMemo(() => {
+    const activeLang = selectedLanguage && selectedLanguage !== "All" ? selectedLanguage : "English";
+    const langPool = topics.filter((t) => t.language.toLowerCase() === activeLang.toLowerCase());
+    const pool = langPool.length > 0 ? langPool : topics;
+    return (
+      pool.find((t) => (t.category || "").toLowerCase() === "career" && t.level === "Advanced") ||
+      pool.find((t) => (t.category || "").toLowerCase() === "career") ||
+      pool[0]
+    );
+  }, [topics, selectedLanguage]);
+
   const handleToggleChallengeAudio = () => {
     if (isPlayingChallengeAudio) {
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -1631,9 +1651,19 @@ export default function StudentWebApp() {
     } else {
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(
-          "Hi Janitha! I am Coach Sarah. In today's AI voice challenge, your mission is to pitch your SpeakFlow Hybrid AI architecture in under three minutes. Speak with confidence, maintain steady cadence, and aim for 95% fluency. Whenever you are ready, tap Call Coach Sarah and let's begin!"
-        );
+        const promptText =
+          activeDailyChallengeTopic?.starterPrompt ||
+          `Hello Janitha! Let's practice your ${selectedLanguage} speaking skills today.`;
+        const utter = new SpeechSynthesisUtterance(promptText);
+        const langCodeMap: Record<string, string> = {
+          English: "en-US",
+          Spanish: "es-ES",
+          Japanese: "ja-JP",
+          Korean: "ko-KR",
+          Arabic: "ar-SA",
+          Tamil: "ta-IN"
+        };
+        utter.lang = langCodeMap[selectedLanguage] || "en-US";
         utter.rate = 0.95;
         utter.onend = () => setIsPlayingChallengeAudio(false);
         utter.onerror = () => setIsPlayingChallengeAudio(false);
@@ -2618,20 +2648,33 @@ export default function StudentWebApp() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Quick Lesson Launch Helper with Strict Language Filtering
+  // Quick Lesson Launch Helper strictly synced with Main Header Language (selectedLanguage)
   const launchTopicByKeyword = (keyword: string) => {
-    const isLangRestricted = selectedLanguage && selectedLanguage !== "All";
-    const matchingLangTopics = isLangRestricted
-      ? topics.filter((t) => t.language.toLowerCase() === selectedLanguage.toLowerCase())
-      : topics;
+    const activeLang = selectedLanguage && selectedLanguage !== "All" ? selectedLanguage : "English";
+    const matchingLangTopics = topics.filter(
+      (t) => t.language.toLowerCase() === activeLang.toLowerCase()
+    );
 
     const pool = matchingLangTopics.length > 0 ? matchingLangTopics : topics;
-    const found =
-      pool.find((t) => t.title.toLowerCase().includes(keyword.toLowerCase())) ||
-      pool.find((t) => t.category?.toLowerCase().includes(keyword.toLowerCase())) ||
-      pool[0];
+    const kw = (keyword || "").trim().toLowerCase();
 
-    handleInitiateCallPrompt(found);
+    if (!kw || kw === "random" || kw === "quick") {
+      const randomTopic = pool[Math.floor(Math.random() * pool.length)] || pool[0];
+      handleInitiateCallPrompt(randomTopic);
+      return;
+    }
+
+    const matchedList = pool.filter(
+      (t) =>
+        t.title.toLowerCase().includes(kw) ||
+        (t.category || "").toLowerCase().includes(kw) ||
+        (t.subCategory || "").toLowerCase().includes(kw) ||
+        t.scenario.toLowerCase().includes(kw)
+    );
+
+    const finalPool = matchedList.length > 0 ? matchedList : pool;
+    const chosen = finalPool[Math.floor(Math.random() * finalPool.length)] || pool[0];
+    handleInitiateCallPrompt(chosen);
   };
 
   if (authLoading) {
@@ -3175,7 +3218,7 @@ export default function StudentWebApp() {
                     onClick={() => {
                       setActiveTab("conversation");
                       setMobileSidebarOpen(false);
-                      launchTopicByKeyword("cricket");
+                      launchTopicByKeyword("random");
                     }}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all relative ${
                       activeTab === "conversation"
@@ -3617,6 +3660,8 @@ export default function StudentWebApp() {
                               key={lang.id}
                               onClick={() => {
                                 setSelectedLanguage(lang.id);
+                                setPracticeSelectedLangFilter(lang.id);
+                                setPracticeSelectedSubCategory("All");
                                 setShowLanguageDropdown(false);
                               }}
                               className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all ${
@@ -4414,18 +4459,18 @@ export default function StudentWebApp() {
                     </p>
                     <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
                       <button
-                        onClick={() => launchTopicByKeyword("travel")}
+                        onClick={() => launchTopicByKeyword("random")}
                         className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 via-indigo-600 to-blue-700 hover:from-blue-400 hover:to-indigo-500 text-white font-bold text-xs shadow-xl shadow-blue-500/40 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
                       >
-                        <Play className="w-3.5 h-3.5 fill-white" />
-                        <span>Start Practice →</span>
+                        <PhoneCall className="w-3.5 h-3.5 fill-white" />
+                        <span>Quick Call ({selectedLanguage}) →</span>
                       </button>
                       <button
-                        onClick={() => setActiveTab("achievements")}
+                        onClick={() => setActiveTab("practice")}
                         className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs border border-white/20 transition-all flex items-center gap-1.5 backdrop-blur-md shadow-md hover:scale-105"
                       >
-                        <Trophy className="w-3.5 h-3.5 text-amber-300" />
-                        <span>View Badges & XP</span>
+                        <Compass className="w-3.5 h-3.5 text-cyan-300" />
+                        <span>Browse All {selectedLanguage} Calls</span>
                       </button>
                     </div>
                   </div>
@@ -4904,25 +4949,25 @@ export default function StudentWebApp() {
 
                     {/* 2x2 Feature Action Tiles */}
                     <div className="grid grid-cols-2 gap-2.5 relative z-10">
-                      {/* Tile 1: Start Speaking Practice */}
+                      {/* Tile 1: Start Speaking Practice in Main Language */}
                       <button
-                        onClick={() => launchTopicByKeyword("cricket")}
+                        onClick={() => launchTopicByKeyword("random")}
                         className="p-3 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white flex flex-col justify-between text-left gap-2 border border-blue-400/30 shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] group"
                       >
                         <div className="flex items-center justify-between w-full">
                           <div className="w-8 h-8 rounded-xl bg-white/15 flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <Mic className="w-4 h-4 text-white" />
+                            <PhoneCall className="w-4 h-4 text-white" />
                           </div>
                           <span className="text-[8.5px] font-bold bg-blue-400/20 border border-blue-300/30 text-blue-100 px-1.5 py-0.2 rounded-full">
-                            ⚡ AI Voice
+                            ⚡ {selectedLanguage}
                           </span>
                         </div>
                         <div>
                           <span className="font-black text-xs block text-white leading-tight">
-                            Speaking Practice
+                            Quick Voice Call
                           </span>
                           <span className="text-[9.5px] text-blue-100/80 font-medium mt-0.5 block line-clamp-1">
-                            14ms Nano Coach
+                            Instant {selectedLanguage} Coach
                           </span>
                         </div>
                       </button>
@@ -4973,7 +5018,7 @@ export default function StudentWebApp() {
                         </div>
                       </button>
 
-                      {/* Tile 4: Chat with AI */}
+                      {/* Tile 4: Chat with AI in Main Language */}
                       <button
                         onClick={() => launchTopicByKeyword("travel")}
                         className="p-3 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-600 to-amber-600 hover:from-amber-400 hover:to-orange-500 text-white flex flex-col justify-between text-left gap-2 border border-amber-400/30 shadow-lg shadow-amber-600/20 transition-all hover:scale-[1.02] group"
@@ -4983,15 +5028,15 @@ export default function StudentWebApp() {
                             <MessageCircle className="w-4 h-4 text-white" />
                           </div>
                           <span className="text-[8.5px] font-bold bg-amber-400/20 border border-amber-300/30 text-amber-100 px-1.5 py-0.2 rounded-full">
-                            4 Online
+                            {topics.filter((t) => t.language.toLowerCase() === selectedLanguage.toLowerCase()).length} Calls
                           </span>
                         </div>
                         <div>
                           <span className="font-black text-xs block text-white leading-tight">
-                            Chat with AI
+                            {selectedLanguage} Roleplay
                           </span>
                           <span className="text-[9.5px] text-amber-100/80 font-medium mt-0.5 block line-clamp-1">
-                            Roleplay Scenarios
+                            Real-World Scenarios
                           </span>
                         </div>
                       </button>
@@ -4999,15 +5044,15 @@ export default function StudentWebApp() {
 
                     {/* Instant Lightning Drill Banner */}
                     <button
-                      onClick={() => launchTopicByKeyword("travel")}
+                      onClick={() => launchTopicByKeyword("food")}
                       className="w-full py-2.5 px-3 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/25 to-yellow-500/20 border border-amber-400/40 text-amber-200 flex items-center justify-between text-[11px] font-bold hover:scale-[1.01] transition-all shadow-md shadow-amber-500/10 cursor-pointer relative z-10"
                     >
                       <div className="flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Daily Sprint: 2-min Fluency Warmup</span>
+                        <span>Daily Sprint: {selectedLanguage} Fluency Call</span>
                       </div>
                       <span className="px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 font-black text-[10px] shadow">
-                        Launch (+100 XP) →
+                        Quick Call (+100 XP) →
                       </span>
                     </button>
                   </div>
@@ -5611,11 +5656,11 @@ export default function StudentWebApp() {
                     </button>
                   </div>
 
-                  {/* Challenge Mission Details */}
+                  {/* Challenge Mission Details (Synced with Main Selected Language) */}
                   <div className="space-y-2 p-3 rounded-2xl bg-indigo-950/30 border border-indigo-500/20 relative z-10">
                     <div className="flex items-center justify-between text-[10px]">
                       <span className="font-bold text-indigo-300 bg-indigo-500/20 px-2 py-0.5 rounded-full border border-indigo-400/30">
-                        💼 Business Pitching
+                        {activeDailyChallengeTopic?.icon || "💼"} {activeDailyChallengeTopic?.category || "Career"} ({selectedLanguage})
                       </span>
                       <span className="font-mono text-slate-400 flex items-center gap-1">
                         <Clock className="w-3 h-3 text-cyan-400" />
@@ -5624,11 +5669,11 @@ export default function StudentWebApp() {
                     </div>
 
                     <h4 className="font-black text-sm text-white leading-snug">
-                      &ldquo;Pitching Hybrid AI to Silicon Valley VCs&rdquo;
+                      &ldquo;{activeDailyChallengeTopic?.title || "Pitching Hybrid AI to Silicon Valley VCs"}&rdquo;
                     </h4>
 
-                    <p className="text-[11px] text-slate-300 leading-relaxed font-serif italic">
-                      &ldquo;Explain why SpeakFlow&apos;s hybrid neural voice architecture guarantees sub-20ms response with 100% privacy.&rdquo;
+                    <p className="text-[11px] text-slate-300 leading-relaxed font-serif italic line-clamp-2">
+                      &ldquo;{activeDailyChallengeTopic?.starterPrompt || "Explain why SpeakFlow's hybrid neural voice architecture guarantees sub-20ms response with 100% privacy."}&rdquo;
                     </p>
 
                     {/* Target & Reward Bar */}
@@ -5646,11 +5691,15 @@ export default function StudentWebApp() {
 
                   {/* Primary 1-Click Call CTA Button */}
                   <button
-                    onClick={() => launchTopicByKeyword("business")}
+                    onClick={() =>
+                      activeDailyChallengeTopic
+                        ? handleInitiateCallPrompt(activeDailyChallengeTopic)
+                        : launchTopicByKeyword("random")
+                    }
                     className="w-full py-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-black text-xs shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-98 relative z-10"
                   >
                     <PhoneCall className="w-4 h-4 animate-bounce" />
-                    <span>Call Coach Sarah Now (14ms Nano) →</span>
+                    <span>Quick Call in {selectedLanguage} →</span>
                   </button>
                 </div>
 
@@ -5949,7 +5998,21 @@ export default function StudentWebApp() {
               };
 
               const handleQuickRandomCall = () => {
-                const pool = studioFilteredTopics.length > 0 ? studioFilteredTopics : langFilteredPool.length > 0 ? langFilteredPool : topics;
+                const targetLang = practiceSelectedLangFilter === "All" ? selectedLanguage : practiceSelectedLangFilter;
+                const strictLangMatches = studioFilteredTopics.filter(
+                  (t) => t.language.toLowerCase() === targetLang.toLowerCase()
+                );
+                const allLangMatches = topics.filter(
+                  (t) => t.language.toLowerCase() === targetLang.toLowerCase()
+                );
+                const pool =
+                  strictLangMatches.length > 0
+                    ? strictLangMatches
+                    : allLangMatches.length > 0
+                    ? allLangMatches
+                    : studioFilteredTopics.length > 0
+                    ? studioFilteredTopics
+                    : topics;
                 const randomPick = pool[Math.floor(Math.random() * pool.length)];
                 if (randomPick) {
                   handleInitiateCallPrompt(randomPick);
