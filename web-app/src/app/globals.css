@@ -30,6 +30,20 @@ body {
   background: #475569;
 }
 
+/* Disable Microsoft Edge & Chromium Picture-in-Picture floating hover overlay */
+video::-webkit-media-controls-picture-in-picture-button {
+  display: none !important;
+}
+video::-webkit-media-controls-panel {
+  display: none !important;
+}
+video::-webkit-media-controls {
+  display: none !important;
+}
+video::-webkit-media-controls-enclosure {
+  display: none !important;
+}
+
 /* ------------------------------------------------------------- */
 /* BURNING FIRE STREAK ANIMATIONS                               */
 /* ------------------------------------------------------------- */

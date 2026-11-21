@@ -3035,14 +3035,16 @@ export default function StudentWebApp() {
                         loop
                         muted
                         playsInline
-                        className="absolute inset-0 w-full h-full object-cover blur-3xl scale-110 opacity-25 pointer-events-none transition-opacity duration-700"
+                        disablePictureInPicture
+                        controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
+                        className="absolute inset-0 w-full h-full object-cover blur-3xl scale-110 opacity-25 pointer-events-none select-none transition-opacity duration-700"
                       />
                     ) : (
                       <img
                         key={`${selectedCoach.id}-backdrop-img`}
                         src={selectedCoach.avatar}
                         alt=""
-                        className="absolute inset-0 w-full h-full object-cover blur-3xl scale-110 opacity-20 pointer-events-none"
+                        className="absolute inset-0 w-full h-full object-cover blur-3xl scale-110 opacity-20 pointer-events-none select-none"
                       />
                     )}
 
@@ -3063,13 +3065,11 @@ export default function StudentWebApp() {
                           ? "border-emerald-400 shadow-[0_0_40px_rgba(16,185,129,0.5)]"
                           : "border-slate-700/80 shadow-2xl"
                       }`}>
-                        {/* Fallback Portrait Image */}
+                        {/* Fallback Portrait Image - ALWAYS rendered underneath so screen is NEVER black */}
                         <img
                           src={selectedCoach.avatar}
                           alt={selectedCoach.name}
-                          className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-300 ${
-                            !isBotSpeaking && !selectedCoach.idleVideo ? "opacity-100 z-10" : "opacity-0 pointer-events-none"
-                          }`}
+                          className="absolute inset-0 w-full h-full object-contain object-center z-0 pointer-events-none select-none"
                         />
 
                         {/* Idle / Listening Video Loop */}
@@ -3082,8 +3082,16 @@ export default function StudentWebApp() {
                             loop
                             muted
                             playsInline
-                            className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-300 ${
-                              !isBotSpeaking ? "opacity-100 z-10" : "opacity-0 pointer-events-none"
+                            disablePictureInPicture
+                            controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
+                            onContextMenu={(e) => e.preventDefault()}
+                            onCanPlay={(e) => {
+                              if (!isBotSpeaking) {
+                                e.currentTarget.play().catch(() => {});
+                              }
+                            }}
+                            className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-300 pointer-events-none select-none ${
+                              !isBotSpeaking ? "opacity-100 z-10" : "opacity-0"
                             }`}
                           />
                         )}
@@ -3096,8 +3104,11 @@ export default function StudentWebApp() {
                           loop
                           muted
                           playsInline
-                          className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-300 ${
-                            isBotSpeaking ? "opacity-100 z-20" : "opacity-0 pointer-events-none"
+                          disablePictureInPicture
+                          controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
+                          onContextMenu={(e) => e.preventDefault()}
+                          className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-300 pointer-events-none select-none ${
+                            isBotSpeaking ? "opacity-100 z-20" : "opacity-0"
                           }`}
                         />
 
@@ -3336,7 +3347,10 @@ export default function StudentWebApp() {
                       autoPlay
                       playsInline
                       muted
-                      className={`w-full h-full object-cover ${isCameraActive ? "block" : "hidden"}`}
+                      disablePictureInPicture
+                      controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
+                      onContextMenu={(e) => e.preventDefault()}
+                      className={`w-full h-full object-cover pointer-events-none select-none ${isCameraActive ? "block" : "hidden"}`}
                     />
 
                     {/* Camera Off Avatar Fallback */}
