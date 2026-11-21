@@ -119,6 +119,8 @@ interface CoachModel {
   accent: string;
   avatar: string;
   voice: string;
+  talkingVideo: string;
+  idleVideo: string;
 }
 
 const COACHES: CoachModel[] = [
@@ -129,7 +131,9 @@ const COACHES: CoachModel[] = [
     tagline: "Executive Speech & Silicon Valley Pitch Coach",
     accent: "American English 🇺🇸 / Executive Tone",
     avatar: "/images/coaches/sophia.jpg",
-    voice: "en-US-JennyNeural"
+    voice: "en-US-JennyNeural",
+    talkingVideo: "/videos/coaches/sophia.mp4",
+    idleVideo: "/videos/coaches/sophia.mp4"
   },
   {
     id: "sarah",
@@ -138,7 +142,9 @@ const COACHES: CoachModel[] = [
     tagline: "Warm & Patient • Master English Tutor",
     accent: "American English 🇺🇸 / Warm Tone",
     avatar: "/images/coaches/sarah.jpg",
-    voice: "en-US-JennyNeural"
+    voice: "en-US-JennyNeural",
+    talkingVideo: "/videos/coaches/sarah.mp4",
+    idleVideo: "/videos/coaches/sarah_idle.mp4"
   },
   {
     id: "emma",
@@ -147,7 +153,9 @@ const COACHES: CoachModel[] = [
     tagline: "Executive & Cambridge Business English",
     accent: "British 🇬🇧 / Confident RP Tone",
     avatar: "/images/coaches/emma.jpg",
-    voice: "en-GB-SoniaNeural"
+    voice: "en-GB-SoniaNeural",
+    talkingVideo: "/videos/coaches/emma.mp4",
+    idleVideo: "/videos/coaches/emma_idle.mp4"
   },
   {
     id: "chloe",
@@ -156,7 +164,9 @@ const COACHES: CoachModel[] = [
     tagline: "French & European Accent & Conversational Master",
     accent: "French 🇫🇷 / Elegant Tone",
     avatar: "/images/coaches/chloe.jpg",
-    voice: "fr-FR-DeniseNeural"
+    voice: "fr-FR-DeniseNeural",
+    talkingVideo: "/videos/coaches/chloe.mp4",
+    idleVideo: "/videos/coaches/chloe.mp4"
   },
   {
     id: "alex",
@@ -165,7 +175,9 @@ const COACHES: CoachModel[] = [
     tagline: "Energetic & Friendly • Daily Fluency & Idioms",
     accent: "American English 🇺🇸 / Energetic Tone",
     avatar: "/images/coaches/alex.jpg",
-    voice: "en-US-GuyNeural"
+    voice: "en-US-GuyNeural",
+    talkingVideo: "/videos/coaches/alex.mp4",
+    idleVideo: "/videos/coaches/alex_idle.mp4"
   },
   {
     id: "oliver",
@@ -174,7 +186,9 @@ const COACHES: CoachModel[] = [
     tagline: "Cambridge Scholarly • Executive Debate & Prep",
     accent: "British Oxford RP 🇬🇧 / Scholarly",
     avatar: "/images/coaches/oliver.jpg",
-    voice: "en-GB-RyanNeural"
+    voice: "en-GB-RyanNeural",
+    talkingVideo: "/videos/coaches/oliver.mp4",
+    idleVideo: "/videos/coaches/oliver_idle.mp4"
   },
   {
     id: "kenji",
@@ -183,7 +197,9 @@ const COACHES: CoachModel[] = [
     tagline: "Analytical & Calm • Global Tech & Bilingual JP/EN",
     accent: "Bilingual Japanese 🇯🇵 / Tech English",
     avatar: "/images/coaches/kenji.jpg",
-    voice: "en-US-ChristopherNeural"
+    voice: "en-US-ChristopherNeural",
+    talkingVideo: "/videos/coaches/kenji.mp4",
+    idleVideo: "/videos/coaches/kenji_idle.mp4"
   },
   {
     id: "aoi",
@@ -192,7 +208,9 @@ const COACHES: CoachModel[] = [
     tagline: "Gentle & Clear • Multilingual Specialist",
     accent: "Multilingual 🇯🇵 / Gentle & Clear Tone",
     avatar: "/images/coaches/aoi.jpg",
-    voice: "ja-JP-NanamiNeural"
+    voice: "ja-JP-NanamiNeural",
+    talkingVideo: "/videos/coaches/aoi.mp4",
+    idleVideo: "/videos/coaches/aoi_idle.mp4"
   }
 ];
 
@@ -1561,10 +1579,12 @@ export default function StudentWebApp() {
     if (proactiveNudgeTimerRef.current) clearTimeout(proactiveNudgeTimerRef.current);
     proactiveNudgeTimerRef.current = setTimeout(() => {
       if (!isBotSpeaking && !isUserSpeaking && activeCallTopic) {
-        const lang = activeCallTopic.language;
+        const lang = (selectedLanguage !== "All" ? selectedLanguage : activeCallTopic.language) || "English";
         let nudge = "I'm listening! What do you think about that?";
         if (lang === "Japanese") nudge = "聞いていますよ！どう思いますか？";
         else if (lang === "Korean") nudge = "듣고 있어요! 어떻게 생각하세요?";
+        else if (lang === "Spanish") nudge = "¡Te estoy escuchando! ¿Qué opinas?";
+        else if (lang === "French") nudge = "Je vous écoute ! Qu'en pensez-vous ?";
         speakText(nudge, lang);
       }
     }, 12000);
@@ -1598,7 +1618,7 @@ export default function StudentWebApp() {
       recognition.continuous = true;
       recognition.interimResults = true;
 
-      const langName = activeCallTopic?.language || "English";
+      const langName = (selectedLanguage !== "All" ? selectedLanguage : activeCallTopic?.language) || "English";
       let targetLang = "en-US";
       if (langName === "Japanese") targetLang = "ja-JP";
       else if (langName === "Korean") targetLang = "ko-KR";
@@ -1714,7 +1734,8 @@ export default function StudentWebApp() {
       setRemainingSeconds(null);
     }
 
-    speakText(topic.starterPrompt, topic.language);
+    const langToUse = (selectedLanguage !== "All" ? selectedLanguage : topic.language) || "English";
+    speakText(topic.starterPrompt, langToUse);
   };
 
   // 10. Repeat Match Helper
@@ -1744,7 +1765,7 @@ export default function StudentWebApp() {
     setUserSpeechTurnsCount((prev) => prev + 1);
     if (proactiveNudgeTimerRef.current) clearTimeout(proactiveNudgeTimerRef.current);
 
-    const lang = activeCallTopic?.language || "English";
+    const lang = (selectedLanguage !== "All" ? selectedLanguage : activeCallTopic?.language) || "English";
 
     // Active Drill Repetition Loop
     if (isDrillMode && targetPhraseToRepeat) {
@@ -1993,11 +2014,19 @@ export default function StudentWebApp() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Quick Lesson Launch Helper
+  // Quick Lesson Launch Helper with Strict Language Filtering
   const launchTopicByKeyword = (keyword: string) => {
+    const isLangRestricted = selectedLanguage && selectedLanguage !== "All";
+    const matchingLangTopics = isLangRestricted
+      ? topics.filter((t) => t.language.toLowerCase() === selectedLanguage.toLowerCase())
+      : topics;
+
+    const pool = matchingLangTopics.length > 0 ? matchingLangTopics : topics;
     const found =
-      topics.find((t) => t.title.toLowerCase().includes(keyword.toLowerCase())) ||
-      topics[0];
+      pool.find((t) => t.title.toLowerCase().includes(keyword.toLowerCase())) ||
+      pool.find((t) => t.category?.toLowerCase().includes(keyword.toLowerCase())) ||
+      pool[0];
+
     handleInitiateCallPrompt(found);
   };
 
@@ -2787,15 +2816,15 @@ export default function StudentWebApp() {
                 {/* Hybrid Engine Telemetry HUD + Call Timer */}
                 <div className="flex items-center gap-2.5 flex-wrap">
                   {/* Real-Time Engine Indicator */}
-                  {simulateOffline ? (
+                  {simulateOffline || hybridEngine === "ON_DEVICE_NANO" ? (
                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400 text-emerald-300 text-xs font-mono font-bold shadow-md shadow-emerald-500/30">
                       <Zap className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400 animate-bounce" />
-                      <span>⚡ Gemini Nano (0ms Offline Fallback)</span>
+                      <span>⚡ Gemini Nano ({hybridLatency || 12}ms • On-Device)</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-xs font-mono font-bold shadow-md shadow-cyan-500/30">
                       <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-                      <span>☁️ Cloud Gemini 2.5 Flash (180ms)</span>
+                      <span>☁️ Cloud Gemini 2.5 Flash ({hybridLatency || 140}ms)</span>
                     </div>
                   )}
 
@@ -2862,10 +2891,14 @@ export default function StudentWebApp() {
                   {/* Central Coach Presence & Dynamic Video Animation */}
                   <div className="flex-1 flex flex-col items-center justify-center my-2 relative">
                     {/* Ambient Blurred Studio Video Backdrop */}
-                    <img
-                      src={selectedCoach.avatar}
-                      alt="Studio Backdrop"
-                      className="absolute inset-0 w-full h-full object-cover blur-3xl scale-125 opacity-25 pointer-events-none"
+                    <video
+                      key={`${selectedCoach.id}-backdrop`}
+                      src={isBotSpeaking ? selectedCoach.talkingVideo : selectedCoach.idleVideo}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="absolute inset-0 w-full h-full object-cover blur-3xl scale-125 opacity-30 pointer-events-none transition-opacity duration-500"
                     />
 
                     {/* Concentric Audio Pulse Rings when Speaking */}
@@ -2885,12 +2918,37 @@ export default function StudentWebApp() {
                           ? "bg-gradient-to-tr from-emerald-400 to-teal-500 shadow-[0_0_50px_rgba(16,185,129,0.5)] scale-100"
                           : "bg-gradient-to-tr from-slate-700 to-slate-800 shadow-2xl"
                       }`}>
-                        <div className="w-full h-full rounded-[22px] overflow-hidden relative">
+                        <div className="w-full h-full rounded-[22px] overflow-hidden relative bg-slate-900 shadow-inner">
+                          {/* Fallback Poster Portrait */}
                           <img
                             src={selectedCoach.avatar}
                             alt={selectedCoach.name}
-                            className={`w-full h-full object-cover transition-transform duration-700 ${
-                              isBotSpeaking ? "scale-110" : "scale-100"
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+
+                          {/* Idle / Listening Video Loop */}
+                          <video
+                            key={`${selectedCoach.id}-idle-feed`}
+                            src={selectedCoach.idleVideo}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+                              !isBotSpeaking ? "opacity-100 z-10" : "opacity-0 pointer-events-none"
+                            }`}
+                          />
+
+                          {/* Talking / Speaking Video Loop */}
+                          <video
+                            key={`${selectedCoach.id}-talking-feed`}
+                            src={selectedCoach.talkingVideo}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+                              isBotSpeaking ? "opacity-100 z-10" : "opacity-0 pointer-events-none"
                             }`}
                           />
                         </div>

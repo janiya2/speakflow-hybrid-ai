@@ -88,18 +88,27 @@ export async function synthesizeEdgeSpeech(
 ): Promise<Buffer> {
   const hash = crypto.createHash("md5").update(`${text}_${voice}`).digest("hex");
 
-  // 1. Check in-memory RAM cache first
+  // 1. Check in-memory RAM cache first (strictly require non-empty buffer)
   if (inMemoryCache.has(hash)) {
-    return inMemoryCache.get(hash)!;
+    const memBuf = inMemoryCache.get(hash)!;
+    if (memBuf && memBuf.length > 0) {
+      return memBuf;
+    }
+    inMemoryCache.delete(hash);
   }
 
-  // 2. Check disk cache
+  // 2. Check disk cache (strictly require non-empty buffer)
   const cacheDir = getCacheDir();
   const filePath = path.join(cacheDir, `${hash}.mp3`);
   if (fs.existsSync(filePath)) {
-    const cachedBuffer = fs.readFileSync(filePath);
-    inMemoryCache.set(hash, cachedBuffer);
-    return cachedBuffer;
+    try {
+      const cachedBuffer = fs.readFileSync(filePath);
+      if (cachedBuffer && cachedBuffer.length > 0) {
+        inMemoryCache.set(hash, cachedBuffer);
+        return cachedBuffer;
+      }
+      fs.unlinkSync(filePath);
+    } catch (_) { }
   }
 
   // 3. Synthesize via pure Node.js MsEdgeTTS (WebSocket to Microsoft Edge Neural speech)
@@ -112,11 +121,15 @@ export async function synthesizeEdgeSpeech(
     audioStream.on("data", (chunk: Buffer) => chunks.push(chunk));
     audioStream.on("end", () => {
       const fullBuffer = Buffer.concat(chunks);
-      try {
-        fs.writeFileSync(filePath, fullBuffer);
-      } catch (_) { }
-      inMemoryCache.set(hash, fullBuffer);
-      resolve(fullBuffer);
+      if (fullBuffer.length > 0) {
+        try {
+          fs.writeFileSync(filePath, fullBuffer);
+        } catch (_) { }
+        inMemoryCache.set(hash, fullBuffer);
+        resolve(fullBuffer);
+      } else {
+        reject(new Error("MsEdgeTTS returned empty audio stream"));
+      }
     });
     audioStream.on("error", (err: any) => reject(err));
   });

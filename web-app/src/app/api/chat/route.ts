@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Server-side secure API key retrieval (Never exposed to client browser)
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyAnnukRBGkqn6nhjcDMvw46BbxaqEkxdpw";
     if (!apiKey) {
       return NextResponse.json(
         { error: "Server-side GEMINI_API_KEY environment variable not configured" },

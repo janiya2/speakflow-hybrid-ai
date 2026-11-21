@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     try {
       audioBuffer = await synthesizeEdgeSpeech(text, targetVoice);
     } catch (nodeTtsErr: any) {
-      console.warn("Pure Node Edge-TTS failed, attempting local fallback engine:", nodeTtsErr?.message || nodeTtsErr);
+      console.error("[TTS API] Pure Node Edge-TTS failed:", nodeTtsErr?.message || nodeTtsErr);
 
       // Secondary Fallback Engine: Python edge_tts script (for local dev / environments with python runtime)
       const scriptPath = path.join(process.cwd(), "scripts", "edge_tts_service.py");
@@ -91,10 +91,13 @@ export async function GET(request: NextRequest) {
           ]);
           const mp3FilePath = stdout.trim();
           if (fs.existsSync(mp3FilePath)) {
-            audioBuffer = fs.readFileSync(mp3FilePath);
+            const fileBuf = fs.readFileSync(mp3FilePath);
+            if (fileBuf && fileBuf.length > 0) {
+              audioBuffer = fileBuf;
+            }
           }
         } catch (pyErr: any) {
-          console.error("Python TTS fallback also failed:", pyErr?.message || pyErr);
+          console.error("[TTS API] Python TTS fallback also failed:", pyErr?.message || pyErr);
         }
       }
     }
