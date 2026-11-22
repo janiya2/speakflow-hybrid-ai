@@ -77,6 +77,7 @@ interface LandingPageProps {
   adminNotice?: string;
   config?: Partial<LandingPageConfig>;
   onOpenAdminCMS?: () => void;
+  currentUser?: any;
 }
 
 export default function LandingPage({
@@ -88,6 +89,7 @@ export default function LandingPage({
   adminNotice,
   config,
   onOpenAdminCMS,
+  currentUser,
 }: LandingPageProps) {
   const [activeTheme, setActiveTheme] = useState<"dark" | "light">(themeMode);
   const [selectedScenarioCategory, setSelectedScenarioCategory] = useState<string>("All");
@@ -97,11 +99,19 @@ export default function LandingPage({
 
   useEffect(() => {
     setActiveTheme(themeMode);
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle("theme-light", themeMode === "light");
+      document.documentElement.classList.toggle("dark", themeMode === "dark");
+    }
   }, [themeMode]);
 
   const toggleThemeLocal = () => {
     const next = activeTheme === "dark" ? "light" : "dark";
     setActiveTheme(next);
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle("theme-light", next === "light");
+      document.documentElement.classList.toggle("dark", next === "dark");
+    }
     if (onToggleTheme) onToggleTheme(next);
   };
 
@@ -262,26 +272,33 @@ export default function LandingPage({
         </div>
       )}
 
-      {/* 2. Sticky Glassmorphism Header */}
+      {/* 2. Sticky Glassmorphism Header (FULL WIDTH with Brand Logo) */}
       <header
         className={`sticky top-0 z-50 backdrop-blur-xl border-b transition-colors duration-200 ${
           isLight
-            ? "bg-white/85 border-slate-200/80 shadow-sm"
-            : "bg-[#070C1A]/85 border-indigo-900/30 shadow-lg"
+            ? "bg-white/95 border-slate-200/90 shadow-sm"
+            : "bg-[#070C1A]/90 border-indigo-900/30 shadow-lg"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          {/* Brand Logo */}
+        <div className="w-full px-4 sm:px-8 lg:px-12 h-20 flex items-center justify-between">
+          {/* Brand Logo with Real app_logo.png */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => onOpenDashboard()}>
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
-              <span className="text-xl">🎙️</span>
+            <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-lg shadow-cyan-500/25 shrink-0 border border-cyan-400/30">
+              <Image
+                src="/images/app_logo.png"
+                alt="SpeakFlow Logo"
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+                priority
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-black text-xl tracking-tight bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
-                  SpeakFlow<span className="text-cyan-400 font-serif">.ai</span>
+                <span className={`font-black text-xl tracking-tight ${isLight ? "text-slate-900" : "text-white"}`}>
+                  SpeakFlow<span className="text-cyan-500 font-serif">.ai</span>
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-cyan-500/15 text-cyan-400 border border-cyan-400/30">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border border-cyan-400/30">
                   20 Langs
                 </span>
               </div>
@@ -290,23 +307,23 @@ export default function LandingPage({
           </div>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-slate-400">
-            <a href="#scenarios" className="hover:text-cyan-400 transition-colors">
+          <nav className="hidden md:flex items-center gap-7 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <a href="#scenarios" className="hover:text-cyan-500 transition-colors">
               Scenarios
             </a>
-            <a href="#features" className="hover:text-cyan-400 transition-colors">
+            <a href="#features" className="hover:text-cyan-500 transition-colors">
               Instant Feedback
             </a>
-            <a href="#languages" className="hover:text-cyan-400 transition-colors">
+            <a href="#languages" className="hover:text-cyan-500 transition-colors">
               20 Languages
             </a>
-            <a href="#pricing" className="hover:text-cyan-400 transition-colors">
+            <a href="#pricing" className="hover:text-cyan-500 transition-colors">
               Pricing
             </a>
-            <a href="#reviews" className="hover:text-cyan-400 transition-colors">
+            <a href="#reviews" className="hover:text-cyan-500 transition-colors">
               Reviews
             </a>
-            <a href="#faq" className="hover:text-cyan-400 transition-colors">
+            <a href="#faq" className="hover:text-cyan-500 transition-colors">
               FAQ
             </a>
           </nav>
@@ -342,33 +359,44 @@ export default function LandingPage({
               {isLight ? "🌙" : "☀️"}
             </button>
 
-            {/* Sign In Button */}
-            <button
-              onClick={() => onOpenAuth("login")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                isLight
-                  ? "text-slate-700 hover:text-indigo-600 hover:bg-slate-100"
-                  : "text-slate-300 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              Log In
-            </button>
+            {/* Log In OR Dashboard Button (If user is logged in, show Dashboard!) */}
+            {currentUser ? (
+              <button
+                onClick={() => onOpenDashboard()}
+                className="px-5 py-2.5 rounded-xl font-black text-xs text-white bg-gradient-to-r from-emerald-500 via-teal-600 to-cyan-600 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
+              >
+                <span>Dashboard</span>
+                <span>→</span>
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => onOpenAuth("login")}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    isLight
+                      ? "text-slate-800 hover:text-indigo-600 hover:bg-slate-100"
+                      : "text-slate-300 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  Log In
+                </button>
 
-            {/* Launch App / Start Free Call */}
-            <button
-              onClick={() => onOpenDashboard()}
-              className="px-5 py-2.5 rounded-xl font-black text-xs text-white bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
-            >
-              <span>Launch App</span>
-              <span className="text-cyan-200">→</span>
-            </button>
+                <button
+                  onClick={() => onOpenDashboard()}
+                  className="px-5 py-2.5 rounded-xl font-black text-xs text-white bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
+                >
+                  <span>Launch App</span>
+                  <span className="text-cyan-200">→</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </header>
 
-      {/* 3. Hero Section (Modeled after YayTalk Image 1 & Image 2 with user's exact character banner) */}
+      {/* 3. Hero Section (Modeled after YayTalk Image 1 & Image 2) */}
       <section className={`relative pt-12 sm:pt-16 pb-12 sm:pb-16 overflow-hidden ${
-        isLight ? "bg-gradient-to-b from-[#EFF4FF] via-[#F7FAFF] to-[#FFFFFF]" : "bg-[#060913]"
+        isLight ? "bg-gradient-to-b from-[#EFF4FF] via-[#F7FAFF] to-[#FFFFFF] text-slate-900" : "bg-[#060913] text-white"
       }`}>
         {/* Ambient Dark Mode Animation System: Cosmic Glowing Orbs */}
         {!isLight && (
@@ -393,20 +421,28 @@ export default function LandingPage({
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8">
           {/* Social Proof Pill */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-indigo-400/25 bg-indigo-500/10 backdrop-blur-md text-xs font-bold text-cyan-400 shadow-sm">
-            <span className="flex text-amber-400 text-xs">★★★★★</span>
-            <span className="text-slate-400 dark:text-slate-300 font-medium">4.8/5 Rating</span>
-            <span className="w-1 h-1 rounded-full bg-slate-500" />
-            <span className="text-slate-900 dark:text-white">{config?.heroBadge || "Next-Gen AI Voice Tutor • #BuildHybridAI 2026"}</span>
+          <div className={`inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border text-xs font-bold shadow-sm ${
+            isLight
+              ? "border-blue-300 bg-blue-50 text-blue-700"
+              : "border-indigo-400/25 bg-indigo-500/10 text-cyan-400"
+          }`}>
+            <span className="flex text-amber-500 text-xs">★★★★★</span>
+            <span className={`${isLight ? "text-slate-600" : "text-slate-300"} font-medium`}>4.8/5 Rating</span>
+            <span className="w-1 h-1 rounded-full bg-slate-400" />
+            <span className={`font-bold ${isLight ? "text-slate-800" : "text-white"}`}>
+              {config?.heroBadge || "Next-Gen AI Voice Tutor • #BuildHybridAI 2026"}
+            </span>
           </div>
 
-          {/* Master Headline (Modeled after Image 1) */}
+          {/* Master Headline (Modeled after Image 1 with Guaranteed High Contrast) */}
           <div className="space-y-4 max-w-4xl mx-auto">
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.08] text-slate-900 dark:text-white">
+            <h1 className={`text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.08] ${
+              isLight ? "text-[#0F172A]" : "text-white"
+            }`}>
               {config?.heroHeadline || (
                 <>
                   Learn to speak 🎙️{" "}
-                  <span className="bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
                     20 Languages
                   </span>{" "}
                   confidently with AI Tutors.
@@ -414,8 +450,8 @@ export default function LandingPage({
               )}
             </h1>
             <p
-              className={`text-base sm:text-xl font-normal leading-relaxed max-w-2xl mx-auto ${
-                isLight ? "text-slate-600" : "text-slate-300/90"
+              className={`text-base sm:text-xl font-medium leading-relaxed max-w-2xl mx-auto ${
+                isLight ? "text-slate-700" : "text-slate-300/90"
               }`}
             >
               {config?.heroSubtitle ||
@@ -474,7 +510,6 @@ export default function LandingPage({
               className="w-full h-auto object-contain hero-banner-pulse drop-shadow-[0_25px_45px_rgba(0,0,0,0.3)]"
               priority
             />
-            {/* Ambient character glow in dark mode */}
             {!isLight && (
               <div className="absolute inset-x-8 bottom-0 h-36 bg-blue-600/25 blur-3xl -z-10 rounded-full" />
             )}
@@ -482,10 +517,10 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* 3.5. Supported Languages Infinite Marquee Slider (The user asked: "aye pluwn nm meke yatin ape meke support languages slider ekakuth dmu") */}
+      {/* 3.5. Supported Languages Infinite Marquee Slider */}
       {config?.languagesSliderActive !== false && (
         <section className={`py-6 border-y relative overflow-hidden ${
-          isLight ? "bg-slate-100/60 border-slate-200" : "bg-[#070C1B]/80 border-indigo-900/40"
+          isLight ? "bg-slate-100/70 border-slate-200" : "bg-[#070C1B]/80 border-indigo-900/40"
         }`}>
           {/* Gradient fade edge masks */}
           <div className={`pointer-events-none absolute left-0 top-0 bottom-0 w-24 z-10 ${
@@ -496,11 +531,13 @@ export default function LandingPage({
           }`} />
 
           <div className="max-w-7xl mx-auto px-4 mb-3 text-center">
-            <div className="text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-cyan-400/90 flex items-center justify-center gap-2">
+            <div className={`text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-2 ${
+              isLight ? "text-slate-600" : "text-cyan-400/90"
+            }`}>
               <span>🌍</span>
               <span>{config?.languagesSliderTitle || "20 Supported World Languages & Native Accents"}</span>
               <span>•</span>
-              <span className="text-emerald-400 font-bold">Sub-20ms Neural Engine</span>
+              <span className="text-emerald-500 font-bold">Sub-20ms Neural Engine</span>
             </div>
           </div>
 
@@ -512,14 +549,14 @@ export default function LandingPage({
                   onClick={() => onStartCall()}
                   className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl border text-xs font-bold transition-all shrink-0 ${
                     isLight
-                      ? "bg-white border-slate-200 text-slate-800 hover:border-indigo-400 hover:shadow-sm"
+                      ? "bg-white border-slate-300 text-slate-800 hover:border-indigo-500 hover:shadow-md"
                       : "bg-slate-900/80 border-indigo-500/20 text-slate-200 hover:border-cyan-400/50 hover:bg-slate-800"
                   }`}
                 >
                   <span className="text-base">{item.flag}</span>
-                  <span className="text-slate-900 dark:text-white font-black">{item.name}</span>
-                  <span className="text-[10.5px] text-slate-400 font-medium">({item.native})</span>
-                  <span className="text-[10px] text-cyan-400 opacity-60">→</span>
+                  <span className={`font-black ${isLight ? "text-slate-900" : "text-white"}`}>{item.name}</span>
+                  <span className={`text-[10.5px] font-medium ${isLight ? "text-slate-500" : "text-slate-400"}`}>({item.native})</span>
+                  <span className={`text-[10px] ${isLight ? "text-blue-600" : "text-cyan-400 opacity-60"}`}>→</span>
                 </button>
               ))}
             </div>
@@ -527,17 +564,21 @@ export default function LandingPage({
         </section>
       )}
 
-      {/* 4. Panoramic Scenarios Section (Modeled after User's Image 3 & Image 4) */}
+      {/* 4. Panoramic Scenarios Section (FULL WIDTH - User requested: "me image eka full widght dnn") */}
       <section className={`py-20 sm:py-28 relative overflow-hidden text-center ${
-        isLight ? "bg-white" : "bg-[#060A18]"
+        isLight ? "bg-white text-slate-900" : "bg-[#060A18] text-white"
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <div className="space-y-3 max-w-3xl mx-auto">
-            <div className="text-xs sm:text-sm font-black uppercase tracking-wider text-cyan-400 dark:text-cyan-300 flex items-center justify-center gap-1.5">
+        <div className="w-full px-4 sm:px-6 lg:px-8 space-y-6">
+          <div className="space-y-3 max-w-4xl mx-auto text-center">
+            <div className={`text-xs sm:text-sm font-black uppercase tracking-wider flex items-center justify-center gap-1.5 ${
+              isLight ? "text-blue-600" : "text-cyan-400"
+            }`}>
               <span>{config?.scenariosHeadingTag || "Everything you need to speak English 🔮 fluently"}</span>
             </div>
 
-            <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-slate-900 dark:text-white">
+            <h2 className={`text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight ${
+              isLight ? "text-[#0F172A]" : "text-white"
+            }`}>
               {config?.scenariosTitle || "Practice the conversations you'll actually have"}
             </h2>
 
@@ -548,20 +589,20 @@ export default function LandingPage({
             </p>
           </div>
 
-          {/* Full-Width Panoramic Strip Image (User's Image 3) */}
-          <div className="relative w-full max-w-6xl mx-auto mt-8 sm:mt-12 px-2 sm:px-4">
+          {/* Full-Width Panoramic Strip Image (Image 3) */}
+          <div className="relative w-full max-w-[1700px] mx-auto mt-8 sm:mt-12 px-0 sm:px-2 md:px-6">
             <Image
               src={config?.scenariosStripImageUrl || "/images/landing/scenarios_panoramic_strip.png"}
               alt="Real-world conversations in multiple scenarios"
-              width={1024}
-              height={370}
-              className="w-full h-auto object-contain drop-shadow-[0_20px_45px_rgba(0,0,0,0.25)] hover:scale-[1.01] transition-transform duration-500 rounded-3xl"
+              width={1600}
+              height={580}
+              className="w-full h-auto object-contain drop-shadow-[0_20px_45px_rgba(0,0,0,0.25)] hover:scale-[1.01] transition-transform duration-500 rounded-2xl sm:rounded-3xl"
               priority
             />
           </div>
 
           {/* Interactive Role / Scenario Quick Filter Pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-4 max-w-4xl mx-auto">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-4 max-w-5xl mx-auto px-4">
             {[
               { icon: "🦐", label: "Street Food & Dining", topicId: "sp_si_249" },
               { icon: "🗺️", label: "Travel & Exploration", topicId: "sp_en_1" },
@@ -573,15 +614,15 @@ export default function LandingPage({
               <button
                 key={idx}
                 onClick={() => onStartCall(s.topicId)}
-                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-bold transition-all ${
+                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-bold transition-all shadow-sm ${
                   isLight
-                    ? "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                    ? "bg-slate-50 border-slate-300 text-slate-800 hover:bg-slate-100 hover:border-blue-400"
                     : "bg-slate-900/70 border-indigo-500/20 text-slate-300 hover:border-cyan-400/40 hover:text-white"
                 }`}
               >
                 <span>{s.icon}</span>
                 <span>{s.label}</span>
-                <span className="text-[10px] text-cyan-400">→</span>
+                <span className={`text-[10px] ${isLight ? "text-blue-600" : "text-cyan-400"}`}>→</span>
               </button>
             ))}
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
+  onAuthStateChanged,
 } from "firebase/auth";
 
 export default function LoginPage() {
@@ -22,6 +23,16 @@ export default function LoginPage() {
   const [themeMode, setThemeMode] = useState<"dark" | "light">("dark");
 
   const isLight = themeMode === "light";
+
+  // Automatically redirect authenticated users straight to User Area
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        router.push("/?view=app");
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,9 +75,8 @@ export default function LoginPage() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col lg:flex-row transition-colors duration-300 font-sans selection:bg-indigo-500 selection:text-white ${
-        isLight ? "bg-[#F8FAFC] text-slate-800" : "bg-[#060913] text-slate-100"
-      }`}
+      className={`min-h-screen flex flex-col lg:flex-row transition-colors duration-300 font-sans selection:bg-indigo-500 selection:text-white ${isLight ? "bg-[#F8FAFC] text-slate-800" : "bg-[#060913] text-slate-100"
+        }`}
     >
       {/* Left Column: Visual Showcase Card */}
       <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between p-12 overflow-hidden bg-gradient-to-br from-indigo-950 via-[#0B122C] to-slate-950 border-r border-indigo-900/30">
@@ -145,9 +155,8 @@ export default function LoginPage() {
         <div className="flex items-center justify-between w-full">
           <Link
             href="/"
-            className={`text-xs font-bold flex items-center gap-1.5 transition-colors ${
-              isLight ? "text-slate-500 hover:text-slate-900" : "text-slate-400 hover:text-white"
-            }`}
+            className={`text-xs font-bold flex items-center gap-1.5 transition-colors ${isLight ? "text-slate-500 hover:text-slate-900" : "text-slate-400 hover:text-white"
+              }`}
           >
             <span>←</span>
             <span>Back to Home</span>
@@ -155,11 +164,10 @@ export default function LoginPage() {
 
           <button
             onClick={() => setThemeMode(isLight ? "dark" : "light")}
-            className={`p-2 rounded-xl border text-sm transition-all ${
-              isLight
-                ? "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
-                : "bg-slate-900 border-indigo-500/30 text-amber-300 hover:border-amber-400/50"
-            }`}
+            className={`p-2 rounded-xl border text-sm transition-all ${isLight
+              ? "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
+              : "bg-slate-900 border-indigo-500/30 text-amber-300 hover:border-amber-400/50"
+              }`}
           >
             {isLight ? "🌙" : "☀️"}
           </button>
@@ -179,11 +187,10 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={isLoading}
-            className={`w-full py-3.5 px-4 rounded-2xl border font-bold text-xs flex items-center justify-center gap-3 transition-all ${
-              isLight
-                ? "bg-white border-slate-300 text-slate-700 hover:bg-slate-50 shadow-sm"
-                : "bg-slate-900 border-indigo-500/30 text-white hover:border-cyan-400/60 shadow-lg"
-            }`}
+            className={`w-full py-3.5 px-4 rounded-2xl border font-bold text-xs flex items-center justify-center gap-3 transition-all ${isLight
+              ? "bg-white border-slate-300 text-slate-700 hover:bg-slate-50 shadow-sm"
+              : "bg-slate-900 border-indigo-500/30 text-white hover:border-cyan-400/60 shadow-lg"
+              }`}
           >
             <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
               <path
@@ -210,9 +217,8 @@ export default function LoginPage() {
           <div className="relative flex items-center justify-center">
             <div className={`w-full border-t ${isLight ? "border-slate-300" : "border-slate-800"}`} />
             <span
-              className={`absolute px-3 text-[11px] font-bold uppercase tracking-wider ${
-                isLight ? "bg-[#F8FAFC] text-slate-400" : "bg-[#060913] text-slate-500"
-              }`}
+              className={`absolute px-3 text-[11px] font-bold uppercase tracking-wider ${isLight ? "bg-[#F8FAFC] text-slate-400" : "bg-[#060913] text-slate-500"
+                }`}
             >
               Or with email
             </span>
@@ -236,11 +242,10 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="janitha@example.com"
                 required
-                className={`w-full px-4 py-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all ${
-                  isLight
-                    ? "bg-white border-slate-300 text-slate-900"
-                    : "bg-slate-900/90 border-indigo-500/30 text-slate-100 placeholder-slate-500"
-                }`}
+                className={`w-full px-4 py-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all ${isLight
+                  ? "bg-white border-slate-300 text-slate-900"
+                  : "bg-slate-900/90 border-indigo-500/30 text-slate-100 placeholder-slate-500"
+                  }`}
               />
             </div>
 
@@ -258,11 +263,10 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
                   required
-                  className={`w-full px-4 py-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all ${
-                    isLight
-                      ? "bg-white border-slate-300 text-slate-900"
-                      : "bg-slate-900/90 border-indigo-500/30 text-slate-100 placeholder-slate-500"
-                  }`}
+                  className={`w-full px-4 py-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all ${isLight
+                    ? "bg-white border-slate-300 text-slate-900"
+                    : "bg-slate-900/90 border-indigo-500/30 text-slate-100 placeholder-slate-500"
+                    }`}
                 />
                 <button
                   type="button"
@@ -315,9 +319,8 @@ export default function LoginPage() {
         </div>
 
         {/* Mobile-Only Account Creation Notice */}
-        <div className={`p-4 rounded-2xl border text-center space-y-2 ${
-          isLight ? "bg-indigo-50/70 border-indigo-200" : "bg-indigo-950/40 border-indigo-500/25"
-        }`}>
+        <div className={`p-4 rounded-2xl border text-center space-y-2 ${isLight ? "bg-indigo-50/70 border-indigo-200" : "bg-indigo-950/40 border-indigo-500/25"
+          }`}>
           <div className="text-xs font-bold text-cyan-400 flex items-center justify-center gap-1.5">
             <span>📱</span>
             <span>New to SpeakFlow?</span>
@@ -339,11 +342,10 @@ export default function LoginPage() {
               href="https://play.google.com/store/apps/details?id=com.innoxpert.speakflow"
               target="_blank"
               rel="noopener noreferrer"
-              className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all ${
-                isLight
-                  ? "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"
-                  : "bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800"
-              }`}
+              className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all ${isLight
+                ? "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"
+                : "bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800"
+                }`}
             >
               Google Play
             </a>

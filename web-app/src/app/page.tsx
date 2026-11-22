@@ -976,16 +976,28 @@ export default function StudentWebApp() {
   // View Mode: Public Commercial Landing Page vs Protected App Dashboard
   const [viewMode, setViewMode] = useState<"landing" | "app">("landing");
 
-  // Read view mode from query parameter (e.g. ?view=app or ?view=dashboard)
+  // Automatically route authenticated users straight to the App Dashboard (User Area)
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const urlView = params.get("view");
-      if (urlView === "app" || urlView === "dashboard") {
-        setViewMode("app");
+      if (user) {
+        // Logged-in user: redirect straight to User Area unless explicitly requesting ?view=landing
+        if (urlView === "landing") {
+          setViewMode("landing");
+        } else {
+          setViewMode("app");
+        }
+      } else {
+        // Visitor: show commercial landing page unless requesting ?view=app
+        if (urlView === "app" || urlView === "dashboard") {
+          setViewMode("app");
+        } else {
+          setViewMode("landing");
+        }
       }
     }
-  }, []);
+  }, [user]);
 
   // Top Bar State
   const [selectedLanguage, setSelectedLanguage] = useState<string>("English");
@@ -4537,7 +4549,7 @@ export default function StudentWebApp() {
   // VIEW A: PUBLIC COMMERCIAL LANDING PAGE (YAYTALK-GRADE 10-SECTION SHOWCASE)
   // Renders instantly (0ms FCP, zero auth blocking) for all visitors & landing view
   // =========================================================================
-  if (viewMode === "landing" || (!user && !authLoading)) {
+  if ((viewMode === "landing" && !user) || (viewMode === "landing" && typeof window !== "undefined" && new URLSearchParams(window.location.search).get("view") === "landing") || (!user && !authLoading && viewMode !== "app")) {
     return (
       <LandingPage
         themeMode={themeMode}
@@ -4545,6 +4557,7 @@ export default function StudentWebApp() {
         adminNotice={landingConfig.announcementActive ? landingConfig.announcementText : undefined}
         config={landingConfig}
         onOpenAdminCMS={openLandingAdminModal}
+        currentUser={user}
         onOpenDashboard={() => setViewMode("app")}
         onOpenAuth={() => {
           window.location.href = "/login";
