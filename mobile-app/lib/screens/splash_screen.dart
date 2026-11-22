@@ -29,11 +29,18 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   Future<User?>? _authRestoreFuture;
 
   final List<Map<String, String>> _languages = [
-    {'name': 'Japanese', 'flag': 'assets/images/flag_jp.png'},
-    {'name': 'Korean', 'flag': 'assets/images/flag_kr.png'},
     {'name': 'English', 'flag': 'assets/images/flag_us.png'},
     {'name': 'Spanish', 'flag': 'assets/images/flag_es.png'},
+    {'name': 'French', 'flag': 'assets/images/flag_fr.png'},
+    {'name': 'German', 'flag': 'assets/images/flag_de.png'},
+    {'name': 'Italian', 'flag': 'assets/images/flag_it.png'},
+    {'name': 'Portuguese', 'flag': 'assets/images/flag_br.png'},
+    {'name': 'Japanese', 'flag': 'assets/images/flag_jp.png'},
+    {'name': 'Korean', 'flag': 'assets/images/flag_kr.png'},
+    {'name': 'Chinese', 'flag': 'assets/images/flag_cn.png'},
     {'name': 'Arabic', 'flag': 'assets/images/flag_sa.png'},
+    {'name': 'Hindi', 'flag': 'assets/images/flag_in.png'},
+    {'name': 'Russian', 'flag': 'assets/images/flag_ru.png'},
     {'name': 'Tamil', 'flag': 'assets/images/flag_lk.png'},
   ];
 

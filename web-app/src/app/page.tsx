@@ -224,11 +224,34 @@ interface LanguageOption {
 const AVAILABLE_LANGUAGES: LanguageOption[] = [
   { id: "English", name: "English", native: "English", flagUrl: "/images/flag_us.png", emoji: "🇺🇸", cefr: "A1 - C2", accent: "US / UK RP" },
   { id: "Spanish", name: "Spanish", native: "Español", flagUrl: "/images/flag_es.png", emoji: "🇪🇸", cefr: "A1 - B2", accent: "Castilian / Latin" },
+  { id: "French", name: "French", native: "Français", flagUrl: "/images/flag_fr.png", emoji: "🇫🇷", cefr: "A1 - C1", accent: "Parisian Standard" },
+  { id: "German", name: "German", native: "Deutsch", flagUrl: "/images/flag_de.png", emoji: "🇩🇪", cefr: "A1 - C1", accent: "Hochdeutsch" },
+  { id: "Italian", name: "Italian", native: "Italiano", flagUrl: "/images/flag_it.png", emoji: "🇮🇹", cefr: "A1 - B2", accent: "Standard Italian" },
+  { id: "Portuguese", name: "Portuguese", native: "Português", flagUrl: "/images/flag_br.png", emoji: "🇧🇷", cefr: "A1 - B2", accent: "Brazilian / Lisbon" },
   { id: "Japanese", name: "Japanese", native: "日本語", flagUrl: "/images/flag_jp.png", emoji: "🇯🇵", cefr: "N5 - N2", accent: "Tokyo Standard" },
   { id: "Korean", name: "Korean", native: "한국어", flagUrl: "/images/flag_kr.png", emoji: "🇰🇷", cefr: "Topik 1-4", accent: "Seoul Standard" },
+  { id: "Chinese", name: "Chinese (Mandarin)", native: "中文 (普通话)", flagUrl: "/images/flag_cn.png", emoji: "🇨🇳", cefr: "HSK 1-6", accent: "Beijing Standard" },
   { id: "Arabic", name: "Arabic", native: "العربية", flagUrl: "/images/flag_sa.png", emoji: "🇸🇦", cefr: "MSA Native", accent: "Modern Standard" },
+  { id: "Hindi", name: "Hindi", native: "हिन्दी", flagUrl: "/images/flag_in.png", emoji: "🇮🇳", cefr: "A1 - B2", accent: "Standard Hindustani" },
+  { id: "Russian", name: "Russian", native: "Русский", flagUrl: "/images/flag_ru.png", emoji: "🇷🇺", cefr: "A1 - B2", accent: "Moscow Standard" },
   { id: "Tamil", name: "Tamil", native: "தமிழ்", flagUrl: "/images/flag_lk.png", emoji: "🇱🇰", cefr: "Spoken", accent: "Colloquial Dialect" },
 ];
+
+const GLOBAL_LANG_CODE_MAP: Record<string, string> = {
+  English: "en-US",
+  Spanish: "es-ES",
+  French: "fr-FR",
+  German: "de-DE",
+  Italian: "it-IT",
+  Portuguese: "pt-BR",
+  Japanese: "ja-JP",
+  Korean: "ko-KR",
+  Chinese: "zh-CN",
+  Arabic: "ar-SA",
+  Hindi: "hi-IN",
+  Russian: "ru-RU",
+  Tamil: "ta-IN",
+};
 
 interface CallSessionRecord {
   id?: string;
@@ -1094,6 +1117,12 @@ export default function StudentWebApp() {
     if (l.includes("arab") || l === "ar") return "ar-EG";
     if (l.includes("tamil") || l === "ta") return "ta-IN";
     if (l.includes("french") || l.includes("fran") || l === "fr") return "fr-FR";
+    if (l.includes("german") || l.includes("deutsch") || l === "de") return "de-DE";
+    if (l.includes("italian") || l === "it") return "it-IT";
+    if (l.includes("portug") || l === "pt") return "pt-BR";
+    if (l.includes("chinese") || l.includes("mandarin") || l === "zh") return "zh-CN";
+    if (l.includes("hindi") || l === "hi") return "hi-IN";
+    if (l.includes("russian") || l === "ru") return "ru-RU";
     return coachObj.accent.toLowerCase().includes("british") ? "en-GB" : "en-US";
   };
 
@@ -2433,15 +2462,7 @@ export default function StudentWebApp() {
           activeDailyChallengeTopic?.starterPrompt ||
           `Hello Janitha! Let's practice your ${selectedLanguage} speaking skills today.`;
         const utter = new SpeechSynthesisUtterance(promptText);
-        const langCodeMap: Record<string, string> = {
-          English: "en-US",
-          Spanish: "es-ES",
-          Japanese: "ja-JP",
-          Korean: "ko-KR",
-          Arabic: "ar-SA",
-          Tamil: "ta-IN"
-        };
-        utter.lang = langCodeMap[selectedLanguage] || "en-US";
+        utter.lang = GLOBAL_LANG_CODE_MAP[selectedLanguage] || "en-US";
         utter.rate = 0.95;
         utter.onend = () => setIsPlayingChallengeAudio(false);
         utter.onerror = () => setIsPlayingChallengeAudio(false);
@@ -8859,15 +8880,7 @@ export default function StudentWebApp() {
                   return;
                 }
                 const utter = new SpeechSynthesisUtterance(text);
-                const langCodeMap: Record<string, string> = {
-                  English: "en-US",
-                  Spanish: "es-ES",
-                  Japanese: "ja-JP",
-                  Korean: "ko-KR",
-                  Arabic: "ar-SA",
-                  Tamil: "ta-IN"
-                };
-                utter.lang = langCodeMap[langName] || "en-US";
+                utter.lang = GLOBAL_LANG_CODE_MAP[langName] || "en-US";
                 utter.rate = 0.92;
                 utter.onend = () => setSpeakingVocabId(null);
                 utter.onerror = () => setSpeakingVocabId(null);
@@ -9180,15 +9193,7 @@ export default function StudentWebApp() {
                   return;
                 }
                 const utter = new SpeechSynthesisUtterance(text);
-                const langCodeMap: Record<string, string> = {
-                  English: "en-US",
-                  Spanish: "es-ES",
-                  Japanese: "ja-JP",
-                  Korean: "ko-KR",
-                  Arabic: "ar-SA",
-                  Tamil: "ta-IN"
-                };
-                utter.lang = langCodeMap[langName] || "en-US";
+                utter.lang = GLOBAL_LANG_CODE_MAP[langName] || "en-US";
                 utter.rate = 0.92;
                 utter.onend = () => setSpeakingVocabId(null);
                 utter.onerror = () => setSpeakingVocabId(null);
@@ -10661,15 +10666,7 @@ export default function StudentWebApp() {
                   return;
                 }
                 const utter = new SpeechSynthesisUtterance(textToSpeak);
-                const langCodeMap: Record<string, string> = {
-                  English: "en-US",
-                  Spanish: "es-ES",
-                  Japanese: "ja-JP",
-                  Korean: "ko-KR",
-                  Arabic: "ar-SA",
-                  Tamil: "ta-IN"
-                };
-                utter.lang = langCodeMap[langName] || "en-US";
+                utter.lang = GLOBAL_LANG_CODE_MAP[langName] || "en-US";
                 utter.rate = 0.92;
                 utter.onend = () => setSpeakingVocabId(null);
                 utter.onerror = () => setSpeakingVocabId(null);
@@ -11613,15 +11610,7 @@ export default function StudentWebApp() {
                   return;
                 }
                 const utter = new SpeechSynthesisUtterance(text);
-                const langCodeMap: Record<string, string> = {
-                  English: "en-US",
-                  Spanish: "es-ES",
-                  Japanese: "ja-JP",
-                  Korean: "ko-KR",
-                  Arabic: "ar-SA",
-                  Tamil: "ta-IN"
-                };
-                utter.lang = langCodeMap[langName] || "en-US";
+                utter.lang = GLOBAL_LANG_CODE_MAP[langName] || "en-US";
                 utter.rate = 0.92;
                 utter.onend = () => setSpeakingVocabId(null);
                 utter.onerror = () => setSpeakingVocabId(null);

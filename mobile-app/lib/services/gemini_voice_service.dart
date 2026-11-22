@@ -387,8 +387,22 @@ CRITICAL RULE: Speak 100% purely in $targetLanguage native script. DO NOT includ
         correctionTemplate = "좋은 시도였어요! 한국어로는 '[exact targetPhrase]'(이)라고 해요. 다시 따라 해보시겠어요?";
       } else if (targetLanguage == 'Spanish') {
         correctionTemplate = "¡Buen intento! En español decimos: '[exact targetPhrase]'. ¿Puedes repetirlo conmigo?";
+      } else if (targetLanguage == 'French') {
+        correctionTemplate = "Bon essai ! En français, on dit : '[exact targetPhrase]'. Peux-tu répéter avec moi ?";
+      } else if (targetLanguage == 'German') {
+        correctionTemplate = "Guter Versuch! Auf Deutsch sagen wir: '[exact targetPhrase]'. Kannst du das nachsprechen?";
+      } else if (targetLanguage == 'Italian') {
+        correctionTemplate = "Ottimo tentativo! In italiano diciamo: '[exact targetPhrase]'. Puoi ripeterlo con me?";
+      } else if (targetLanguage == 'Portuguese') {
+        correctionTemplate = "Boa tentativa! Em português dizemos: '[exact targetPhrase]'. Pode repetir comigo?";
+      } else if (targetLanguage == 'Chinese') {
+        correctionTemplate = "很棒的尝试！中文里我们说：'[exact targetPhrase]'。你能跟我重复一遍吗？";
       } else if (targetLanguage == 'Arabic') {
         correctionTemplate = "محاولة جيدة! باللغة العربية نقول: '[exact targetPhrase]'. هل يمكنك تكرار ذلك معي؟";
+      } else if (targetLanguage == 'Hindi') {
+        correctionTemplate = "अच्छा प्रयास! हिंदी में हम कहते हैं: '[exact targetPhrase]'. क्या आप मेरे साथ दोहरा सकते हैं?";
+      } else if (targetLanguage == 'Russian') {
+        correctionTemplate = "Хорошая попытка! По-русски мы говорим: '[exact targetPhrase]'. Повтори со мной, пожалуйста?";
       } else if (targetLanguage == 'Tamil') {
         correctionTemplate = "நல்ல முயற்சி! தமிழில் நாம் '[exact targetPhrase]' என்று சொல்வோம். அதைத் திரும்பச் சொல்ல முடியுமா?";
       }

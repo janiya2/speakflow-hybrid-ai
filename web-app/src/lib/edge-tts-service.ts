@@ -17,6 +17,13 @@ export const VOICE_MAP: Record<string, string> = {
   female_es: "es-ES-ElviraNeural",
   female_ar: "ar-EG-SalmaNeural",
   female_ta: "ta-IN-PallaviNeural",
+  female_fr: "fr-FR-DeniseNeural",
+  female_de: "de-DE-KatjaNeural",
+  female_it: "it-IT-ElsaNeural",
+  female_pt: "pt-BR-FranciscaNeural",
+  female_zh: "zh-CN-XiaoxiaoNeural",
+  female_hi: "hi-IN-SwaraNeural",
+  female_ru: "ru-RU-SvetlanaNeural",
 
   // Male Voices
   alex: "en-US-GuyNeural",
@@ -28,6 +35,13 @@ export const VOICE_MAP: Record<string, string> = {
   male_es: "es-ES-AlvaroNeural",
   male_ar: "ar-EG-ShakirNeural",
   male_ta: "ta-IN-ValluvarNeural",
+  male_fr: "fr-FR-HenriNeural",
+  male_de: "de-DE-KillianNeural",
+  male_it: "it-IT-DiegoNeural",
+  male_pt: "pt-BR-AntonioNeural",
+  male_zh: "zh-CN-YunxiNeural",
+  male_hi: "hi-IN-MadhurNeural",
+  male_ru: "ru-RU-DmitryNeural",
 };
 
 export function resolveEdgeVoice(coachId: string, gender: string, language: string): string {
@@ -39,7 +53,7 @@ export function resolveEdgeVoice(coachId: string, gender: string, language: stri
     coachKey === "kenji" ||
     gender.toLowerCase().trim() === "male";
 
-  // Match explicit target language using safe word/locale boundaries (never match "ar" inside "grammar"/"elementary" or "es" inside other words)
+  // Match explicit target language using safe word/locale boundaries
   let langKey = "en";
   if (l.includes("japan") || l === "ja" || l.startsWith("ja-") || l.startsWith("ja_")) {
     langKey = "ja";
@@ -53,12 +67,23 @@ export function resolveEdgeVoice(coachId: string, gender: string, language: stri
     langKey = "ta";
   } else if (l.includes("french") || l.includes("fran") || l === "fr" || l.startsWith("fr-") || l.startsWith("fr_")) {
     langKey = "fr";
+  } else if (l.includes("german") || l.includes("deutsch") || l === "de" || l.startsWith("de-") || l.startsWith("de_")) {
+    langKey = "de";
+  } else if (l.includes("italian") || l === "it" || l.startsWith("it-") || l.startsWith("it_")) {
+    langKey = "it";
+  } else if (l.includes("portug") || l === "pt" || l.startsWith("pt-") || l.startsWith("pt_")) {
+    langKey = "pt";
+  } else if (l.includes("chinese") || l.includes("mandarin") || l === "zh" || l.startsWith("zh-") || l.startsWith("zh_")) {
+    langKey = "zh";
+  } else if (l.includes("hindi") || l === "hi" || l.startsWith("hi-") || l.startsWith("hi_")) {
+    langKey = "hi";
+  } else if (l.includes("russian") || l === "ru" || l.startsWith("ru-") || l.startsWith("ru_")) {
+    langKey = "ru";
   }
 
   // If practicing a non-English target language, strictly match coach gender in that language
   if (langKey !== "en") {
     const g = isMale ? "male" : "female";
-    if (langKey === "fr") return isMale ? "fr-FR-HenriNeural" : "fr-FR-DeniseNeural";
     return VOICE_MAP[`${g}_${langKey}`] || (isMale ? "en-US-GuyNeural" : "en-US-JennyNeural");
   }
 
