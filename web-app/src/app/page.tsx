@@ -5309,7 +5309,7 @@ export default function StudentWebApp() {
       {/* ------------------------------------------------------------- */}
       {/* 2. MAIN DASHBOARD CONTENT AREA */}
       {/* ------------------------------------------------------------- */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
         {/* TOP EXECUTIVE COMMAND HEADER - Hidden during active call for zero distraction */}
         {!activeCallTopic && (() => {
           const tabLabels: Record<MainTab, { title: string; badge: string }> = {
@@ -12260,13 +12260,16 @@ export default function StudentWebApp() {
               const leaderboardRows = computedLeaderboardRows;
               const championRow = leaderboardRows[0];
               const yourRow = leaderboardRows.find((r) => r.isYou) || leaderboardRows[0];
-              const xpGapToFirst = championRow && yourRow && !yourRow.isYou ? Math.max(0, championRow.xp - yourRow.xp) : 0;
+              const xpGapToFirst =
+                championRow && yourRow && championRow.uid !== yourRow.uid
+                  ? Math.max(0, championRow.xp - yourRow.xp)
+                  : 0;
 
               return (
-                <div className="space-y-6">
+                <div className="space-y-6 w-full min-w-0">
                   {/* 1. UPGRADED EXECUTIVE CHAMPIONSHIP ARENA HERO SECTION */}
                   <div
-                    className={`rounded-3xl border shadow-2xl relative overflow-hidden p-6 sm:p-8 ${
+                    className={`rounded-3xl border shadow-2xl relative overflow-hidden p-5 sm:p-7 ${
                       isLight
                         ? "bg-gradient-to-br from-[#F7FAFF] via-[#E8F1FF] to-[#FFF6DE] border-blue-200/90 shadow-[0_18px_45px_rgba(37,99,235,0.10)]"
                         : "bg-gradient-to-br from-[#0F1733] via-[#131C3E] to-[#1A1338] border-amber-400/35 shadow-[0_24px_60px_rgba(0,0,0,0.55)] keep-dark-hero"
@@ -12284,9 +12287,9 @@ export default function StudentWebApp() {
                       }`}
                     />
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center relative z-10 min-w-0">
                       {/* Left 8 cols: Headline + Real Live Telemetry Tiles */}
-                      <div className="lg:col-span-8 space-y-4">
+                      <div className="lg:col-span-8 min-w-0 space-y-4">
                         <div className="flex flex-wrap items-center gap-2">
                           <div
                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black tracking-wider uppercase ${
@@ -12316,7 +12319,7 @@ export default function StudentWebApp() {
 
                         <div>
                           <h2
-                            className={`text-2xl sm:text-3xl font-black tracking-tight ${
+                            className={`text-xl sm:text-2xl xl:text-3xl font-black tracking-tight ${
                               isLight ? "text-slate-900" : "text-white"
                             }`}
                           >
@@ -12327,36 +12330,36 @@ export default function StudentWebApp() {
                               isLight ? "text-slate-600" : "text-slate-300"
                             }`}
                           >
-                            Powered 100% by real Firestore call sessions, rolling Last 24h spoken duration, vocabulary mastery, and repaired grammar patterns.
+                            Compare today&apos;s speaking time (Last 24h), total hours practiced, and fluency rankings across all real SpeakFlow learners.
                           </p>
                         </div>
 
                         {/* 4 Live Championship Metric Tiles */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
                           <div
-                            className={`p-3 rounded-2xl border backdrop-blur-md ${
+                            className={`p-3 rounded-2xl border backdrop-blur-md min-w-0 ${
                               isLight
                                 ? "bg-white/90 border-amber-200 shadow-sm"
                                 : "bg-slate-950/65 border-amber-500/30"
                             }`}
                           >
                             <span className={`text-[9.5px] uppercase font-bold block ${isLight ? "text-amber-700" : "text-amber-300"}`}>
-                              Real Earned XP
+                              Your Earned XP
                             </span>
                             <span className={`text-base font-black font-mono ${isLight ? "text-slate-900" : "text-white"}`}>
-                              {realAnalytics.totalXp.toLocaleString()}
+                              {realAnalytics.totalXp.toLocaleString()} XP
                             </span>
                           </div>
 
                           <div
-                            className={`p-3 rounded-2xl border backdrop-blur-md ${
+                            className={`p-3 rounded-2xl border backdrop-blur-md min-w-0 ${
                               isLight
                                 ? "bg-white/90 border-blue-200 shadow-sm"
                                 : "bg-slate-950/65 border-cyan-500/30"
                             }`}
                           >
                             <span className={`text-[9.5px] uppercase font-bold block ${isLight ? "text-blue-700" : "text-cyan-300"}`}>
-                              Last 24h Spoken
+                              Today&apos;s Spoken (24h)
                             </span>
                             <span className={`text-base font-black font-mono ${isLight ? "text-slate-900" : "text-white"}`}>
                               {realAnalytics.last24hFormatted}
@@ -12364,7 +12367,7 @@ export default function StudentWebApp() {
                           </div>
 
                           <div
-                            className={`p-3 rounded-2xl border backdrop-blur-md ${
+                            className={`p-3 rounded-2xl border backdrop-blur-md min-w-0 ${
                               isLight
                                 ? "bg-white/90 border-emerald-200 shadow-sm"
                                 : "bg-slate-950/65 border-emerald-500/30"
@@ -12379,14 +12382,14 @@ export default function StudentWebApp() {
                           </div>
 
                           <div
-                            className={`p-3 rounded-2xl border backdrop-blur-md ${
+                            className={`p-3 rounded-2xl border backdrop-blur-md min-w-0 ${
                               isLight
                                 ? "bg-white/90 border-purple-200 shadow-sm"
                                 : "bg-slate-950/65 border-purple-500/30"
                             }`}
                           >
                             <span className={`text-[9.5px] uppercase font-bold block ${isLight ? "text-purple-700" : "text-purple-300"}`}>
-                              Your Cohort Rank
+                              Your Rank
                             </span>
                             <span className={`text-base font-black font-mono ${isLight ? "text-slate-900" : "text-white"}`}>
                               #{yourRow?.rank || 1} of {leaderboardRows.length}
@@ -12396,8 +12399,8 @@ export default function StudentWebApp() {
                       </div>
 
                       {/* Right 4 cols: Sculptural 3D-Style Holographic Trophy Crest + Controls */}
-                      <div className="lg:col-span-4 flex flex-col items-center lg:items-end justify-between gap-4">
-                        <div className="relative w-44 h-36 flex items-center justify-center select-none">
+                      <div className="lg:col-span-4 min-w-0 flex flex-col items-center lg:items-end justify-between gap-3">
+                        <div className="relative w-40 h-32 flex items-center justify-center select-none">
                           <div
                             className={`absolute inset-0 rounded-full blur-2xl ${
                               isLight ? "bg-amber-300/35" : "bg-amber-400/20"
@@ -12439,10 +12442,10 @@ export default function StudentWebApp() {
                           </svg>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center justify-end gap-2">
                           <button
                             onClick={() => refreshFirebaseCohort()}
-                            className={`px-3 py-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-all ${
+                            className={`px-3 py-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-all shrink-0 ${
                               isLight
                                 ? "bg-white hover:bg-blue-50 text-blue-700 border-blue-200 shadow-sm"
                                 : "bg-slate-900/80 hover:bg-slate-800 text-cyan-300 border-cyan-500/35"
@@ -12454,7 +12457,7 @@ export default function StudentWebApp() {
                           </button>
                           <button
                             onClick={() => setActiveTab("dashboard")}
-                            className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all shrink-0 ${
                               isLight
                                 ? "bg-slate-900 hover:bg-slate-800 text-white border-slate-900 shadow-sm"
                                 : "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
@@ -12468,11 +12471,11 @@ export default function StudentWebApp() {
                   </div>
 
                   {/* 2. EXECUTIVE 2-COLUMN ESPORTS LEADERBOARD & #1 CHAMPION SPOTLIGHT */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch min-w-0">
                     {/* Left (5 cols): Real #1 Champion Spotlight Card (Zero Dead Space) */}
                     {championRow && (
                       <div
-                        className={`lg:col-span-5 p-6 rounded-3xl border shadow-2xl flex flex-col justify-between gap-5 relative overflow-hidden ${
+                        className={`lg:col-span-5 min-w-0 p-5 sm:p-6 rounded-3xl border shadow-2xl flex flex-col justify-between gap-4 relative overflow-hidden ${
                           isLight
                             ? "bg-gradient-to-b from-[#FFFBF0] via-[#FFFFFF] to-[#EEF5FF] border-amber-300/90 shadow-[0_14px_38px_rgba(217,119,6,0.12)]"
                             : "bg-gradient-to-b from-[#1A1536] via-[#11182C] to-[#0A0F1E] border-amber-400/45"
@@ -12485,7 +12488,7 @@ export default function StudentWebApp() {
                         />
 
                         {/* Header Pill */}
-                        <div className="flex items-center justify-between relative z-10">
+                        <div className="flex items-center justify-between gap-2 flex-wrap relative z-10">
                           <span
                             className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${
                               isLight
@@ -12496,9 +12499,9 @@ export default function StudentWebApp() {
                             <Crown className={`w-3.5 h-3.5 ${isLight ? "fill-amber-600 text-amber-600" : "fill-amber-400 text-amber-400"}`} />
                             <span>
                               {leaderboardWindow === "24h"
-                                ? "24h Spoken #1 Champion"
+                                ? "Today's #1 Champion"
                                 : leaderboardWindow === "weekly"
-                                ? "Weekly Rank #1 Champion"
+                                ? "Weekly #1 Champion"
                                 : "All-Time #1 Champion"}
                             </span>
                           </span>
@@ -12509,14 +12512,14 @@ export default function StudentWebApp() {
                                 : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
                             }`}
                           >
-                            {championRow.isYou ? "👑 You Lead!" : "Live Verified"}
+                            {championRow.uid === yourRow?.uid ? "👑 You Lead!" : "Live Verified"}
                           </span>
                         </div>
 
                         {/* Centered Royal Champion Identity */}
                         <div className="flex items-center gap-4 relative z-10">
                           <div className="relative shrink-0">
-                            <div className="w-24 h-24 rounded-3xl p-1 bg-gradient-to-tr from-amber-400 via-yellow-300 to-orange-500 shadow-xl shadow-amber-500/30">
+                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl p-1 bg-gradient-to-tr from-amber-400 via-yellow-300 to-orange-500 shadow-xl shadow-amber-500/30">
                               {championRow.photoUrl ? (
                                 <img
                                   src={championRow.photoUrl}
@@ -12543,10 +12546,10 @@ export default function StudentWebApp() {
 
                           <div className="min-w-0 space-y-1">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <h3 className={`text-xl font-black truncate ${isLight ? "text-slate-900" : "text-white"}`}>
+                              <h3 className={`text-lg sm:text-xl font-black truncate ${isLight ? "text-slate-900" : "text-white"}`}>
                                 {championRow.name}
                               </h3>
-                              {championRow.isYou && (
+                              {championRow.uid === yourRow?.uid && (
                                 <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${isLight ? "bg-blue-100 text-blue-700" : "bg-cyan-500/20 text-cyan-300"}`}>
                                   YOU
                                 </span>
@@ -12556,12 +12559,12 @@ export default function StudentWebApp() {
                               {championRow.fluencyTier} • {championRow.cefr}
                             </p>
                             <p className={`text-[11px] font-mono truncate ${isLight ? "text-slate-500" : "text-slate-400"}`}>
-                              {championRow.handle} • {championRow.callsCount} real sessions
+                              {championRow.handle.replace(/\s*•\s*You$/i, "")} • {championRow.callsCount} voice calls
                             </p>
                           </div>
                         </div>
 
-                        {/* 2x2 Champion Telemetry Grid (Zero Blank Voids!) */}
+                        {/* 2x2 Champion Telemetry Grid (Plain Self-Explanatory Labels!) */}
                         <div className="grid grid-cols-2 gap-2.5 relative z-10">
                           <div
                             className={`p-3 rounded-2xl border ${
@@ -12569,7 +12572,7 @@ export default function StudentWebApp() {
                             }`}
                           >
                             <span className={`text-[10px] font-bold uppercase block ${isLight ? "text-blue-700" : "text-cyan-300"}`}>
-                              🎙️ Last 24h Spoken
+                              Today&apos;s Speaking (24h)
                             </span>
                             <span className={`text-base font-black font-mono ${isLight ? "text-slate-900" : "text-white"}`}>
                               {championRow.last24hFormatted}
@@ -12582,7 +12585,7 @@ export default function StudentWebApp() {
                             }`}
                           >
                             <span className={`text-[10px] font-bold uppercase block ${isLight ? "text-amber-700" : "text-amber-300"}`}>
-                              ⏱️ Total Spoken
+                              Total Speaking Time
                             </span>
                             <span className={`text-base font-black font-mono ${isLight ? "text-slate-900" : "text-white"}`}>
                               {championRow.totalFormatted}
@@ -12595,7 +12598,7 @@ export default function StudentWebApp() {
                             }`}
                           >
                             <span className={`text-[10px] font-bold uppercase block ${isLight ? "text-emerald-700" : "text-emerald-300"}`}>
-                              🎯 Avg Fluency
+                              Fluency &amp; Streak
                             </span>
                             <span className={`text-base font-black font-mono ${isLight ? "text-slate-900" : "text-white"}`}>
                               {championRow.fluency}% • 🔥 {championRow.streak}d
@@ -12608,7 +12611,7 @@ export default function StudentWebApp() {
                             }`}
                           >
                             <span className={`text-[10px] font-bold uppercase block ${isLight ? "text-purple-700" : "text-purple-300"}`}>
-                              ⚡ Earned XP
+                              Total Earned XP
                             </span>
                             <span className={`text-base font-black font-mono ${isLight ? "text-slate-900" : "text-white"}`}>
                               {championRow.xp.toLocaleString()} XP
@@ -12622,13 +12625,13 @@ export default function StudentWebApp() {
                             isLight ? "bg-white/95 border-slate-200/90 shadow-sm" : "bg-slate-950/75 border-slate-800"
                           }`}
                         >
-                          {!championRow.isYou && yourRow && (
-                            <div className="flex items-center justify-between text-[11px] pb-1.5 border-b border-dashed border-slate-300/60">
+                          {championRow.uid !== yourRow?.uid && yourRow && (
+                            <div className="flex items-center justify-between text-[11px] pb-1.5 border-b border-dashed border-slate-300/60 gap-2">
                               <span className={isLight ? "text-slate-600 font-semibold" : "text-slate-300 font-semibold"}>
-                                Your Rank: <strong className={isLight ? "text-blue-700" : "text-cyan-300"}>#{yourRow.rank}</strong>
+                                Your Current Rank: <strong className={isLight ? "text-blue-700" : "text-cyan-300"}>#{yourRow.rank}</strong>
                               </span>
                               <span className={`font-mono font-bold ${isLight ? "text-amber-700" : "text-amber-300"}`}>
-                                {xpGapToFirst > 0 ? `${xpGapToFirst.toLocaleString()} XP behind #1` : "Tied XP!"}
+                                {xpGapToFirst > 0 ? `${xpGapToFirst.toLocaleString()} XP behind #1` : "Ahead on XP!"}
                               </span>
                             </div>
                           )}
@@ -12660,28 +12663,35 @@ export default function StudentWebApp() {
                       </div>
                     )}
 
-                    {/* Right (7 cols): Real Firebase Cohort Leaderboard Table */}
+                    {/* Right (7 cols): Crystal-Clear Real Firebase Cohort Leaderboard */}
                     <div
-                      className={`lg:col-span-7 p-6 rounded-3xl border space-y-4 flex flex-col justify-between ${
+                      className={`lg:col-span-7 min-w-0 p-5 sm:p-6 rounded-3xl border space-y-4 flex flex-col justify-between ${
                         isLight
                           ? "bg-white/95 border-blue-200/80 shadow-[0_14px_38px_rgba(15,35,75,0.07)]"
                           : "bg-[#111827] border-slate-800"
                       }`}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div>
+                        <div className="min-w-0">
                           <h3 className={`text-base font-black flex items-center gap-2 ${isLight ? "text-slate-900" : "text-white"}`}>
-                            <Award className={`w-4 h-4 ${isLight ? "text-blue-600" : "text-cyan-400"}`} />
+                            <Award className={`w-4 h-4 shrink-0 ${isLight ? "text-blue-600" : "text-cyan-400"}`} />
                             <span>Global Real Spoken Leaderboard</span>
                           </h3>
                           <p className={`text-[11px] ${isLight ? "text-slate-500" : "text-slate-400"}`}>
-                            Real verified Firebase learners ranked by rolling Last 24h &amp; weekly spoken durations.
+                            Sorted by{" "}
+                            <strong className={isLight ? "text-blue-700" : "text-cyan-300"}>
+                              {leaderboardWindow === "24h"
+                                ? "Today's Speaking (Last 24h)"
+                                : leaderboardWindow === "weekly"
+                                ? "Last 7 Days Speaking"
+                                : "All-Time Earned XP"}
+                            </strong>
                           </p>
                         </div>
 
                         {/* Time Window Filter Switcher (Last 24h | Weekly | All Time) */}
                         <div
-                          className={`flex items-center gap-1 p-1 rounded-xl border self-start sm:self-auto ${
+                          className={`flex items-center gap-1 p-1 rounded-xl border self-start sm:self-auto shrink-0 ${
                             isLight ? "bg-[#EEF4FB] border-blue-200" : "bg-slate-950 border-slate-800"
                           }`}
                         >
@@ -12693,7 +12703,7 @@ export default function StudentWebApp() {
                             <button
                               key={win.id}
                               onClick={() => setLeaderboardWindow(win.id as any)}
-                              className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all ${
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all whitespace-nowrap ${
                                 leaderboardWindow === win.id
                                   ? "bg-blue-600 text-white shadow-sm"
                                   : isLight
@@ -12713,118 +12723,176 @@ export default function StudentWebApp() {
                           <span>Syncing real Firebase cohort...</span>
                         </div>
                       ) : (
-                        <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
-                          {leaderboardRows.slice(0, 12).map((row) => (
-                            <div
-                              key={row.uid}
-                              className={`p-3 rounded-2xl border flex items-center justify-between gap-3 transition-all ${
-                                row.isYou
-                                  ? isLight
-                                    ? "bg-gradient-to-r from-amber-50 via-yellow-50/70 to-sky-50 border-amber-300 shadow-sm"
-                                    : "bg-gradient-to-r from-amber-500/15 via-indigo-950/50 to-slate-900 border-amber-400/50 shadow-md"
-                                  : isLight
-                                  ? "bg-[#F8FAFE] border-slate-200/90 hover:border-blue-300 hover:bg-white"
-                                  : "bg-slate-950/70 border-slate-800/80 hover:border-slate-700"
-                              }`}
-                            >
-                              <div className="flex items-center gap-3 min-w-0">
-                                <span
-                                  className={`w-7 h-7 rounded-lg font-black text-xs flex items-center justify-center shrink-0 ${
-                                    row.rank === 1
-                                      ? "bg-amber-400 text-slate-950 shadow shadow-amber-400/40"
-                                      : row.rank === 2
-                                      ? isLight
-                                        ? "bg-slate-300 text-slate-900"
-                                        : "bg-slate-300 text-slate-950"
-                                      : row.rank === 3
-                                      ? "bg-amber-700 text-white"
-                                      : isLight
-                                      ? "bg-slate-200 text-slate-700"
-                                      : "bg-slate-800 text-slate-400"
-                                  }`}
-                                >
-                                  #{row.rank}
-                                </span>
-
-                                {row.photoUrl ? (
-                                  <img
-                                    src={row.photoUrl}
-                                    alt={row.name}
-                                    className={`w-10 h-10 rounded-xl object-cover shrink-0 border ${
-                                      row.rank === 1
-                                        ? "border-amber-400"
-                                        : isLight
-                                        ? "border-blue-200"
-                                        : "border-slate-700"
-                                    }`}
-                                    onError={(e) => {
-                                      (e.currentTarget as any).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(row.name)}&background=3b82f6&color=fff`;
-                                    }}
-                                  />
-                                ) : (
-                                  <div
-                                    className={`w-10 h-10 rounded-xl bg-gradient-to-br ${row.color} flex items-center justify-center font-black text-xs text-white shrink-0 shadow-sm`}
-                                  >
-                                    {row.initials}
-                                  </div>
-                                )}
-
-                                <div className="min-w-0">
-                                  <div className="flex items-center gap-1.5 flex-wrap">
+                        <div className="space-y-2.5 max-h-[450px] overflow-y-auto pr-1">
+                          {leaderboardRows.slice(0, 12).map((row) => {
+                            const hasRecent24h = row.last24hSeconds > 0;
+                            return (
+                              <div
+                                key={row.uid}
+                                className={`p-3.5 rounded-2xl border space-y-2.5 transition-all ${
+                                  row.isYou
+                                    ? isLight
+                                      ? "bg-gradient-to-r from-amber-50 via-yellow-50/70 to-sky-50 border-amber-300 shadow-sm"
+                                      : "bg-gradient-to-r from-amber-500/15 via-indigo-950/50 to-slate-900 border-amber-400/50 shadow-md"
+                                    : isLight
+                                    ? "bg-[#F8FAFE] border-slate-200/90 hover:border-blue-300 hover:bg-white"
+                                    : "bg-slate-950/70 border-slate-800/80 hover:border-slate-700"
+                                }`}
+                              >
+                                {/* Row Top: Rank + Avatar + Name + Fluency & XP */}
+                                <div className="flex items-center justify-between gap-2.5">
+                                  <div className="flex items-center gap-2.5 min-w-0">
                                     <span
-                                      className={`text-xs font-black truncate ${
-                                        row.isYou
+                                      className={`w-7 h-7 rounded-lg font-black text-xs flex items-center justify-center shrink-0 ${
+                                        row.rank === 1
+                                          ? "bg-amber-400 text-slate-950 shadow shadow-amber-400/40"
+                                          : row.rank === 2
                                           ? isLight
-                                            ? "text-amber-800"
-                                            : "text-amber-300"
+                                            ? "bg-slate-300 text-slate-900"
+                                            : "bg-slate-300 text-slate-950"
+                                          : row.rank === 3
+                                          ? "bg-amber-700 text-white"
                                           : isLight
-                                          ? "text-slate-900"
-                                          : "text-white"
+                                          ? "bg-slate-200 text-slate-700"
+                                          : "bg-slate-800 text-slate-400"
                                       }`}
                                     >
-                                      {row.name}
+                                      #{row.rank}
+                                    </span>
+
+                                    {row.photoUrl ? (
+                                      <img
+                                        src={row.photoUrl}
+                                        alt={row.name}
+                                        className={`w-10 h-10 rounded-xl object-cover shrink-0 border ${
+                                          row.rank === 1
+                                            ? "border-amber-400"
+                                            : isLight
+                                            ? "border-blue-200"
+                                            : "border-slate-700"
+                                        }`}
+                                        onError={(e) => {
+                                          (e.currentTarget as any).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(row.name)}&background=3b82f6&color=fff`;
+                                        }}
+                                      />
+                                    ) : (
+                                      <div
+                                        className={`w-10 h-10 rounded-xl bg-gradient-to-br ${row.color} flex items-center justify-center font-black text-xs text-white shrink-0 shadow-sm`}
+                                      >
+                                        {row.initials}
+                                      </div>
+                                    )}
+
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span
+                                          className={`text-xs sm:text-sm font-black truncate ${
+                                            row.isYou
+                                              ? isLight
+                                                ? "text-amber-800"
+                                                : "text-amber-300"
+                                              : isLight
+                                              ? "text-slate-900"
+                                              : "text-white"
+                                          }`}
+                                        >
+                                          {row.name}
+                                        </span>
+                                        {row.isYou && (
+                                          <span
+                                            className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${
+                                              isLight ? "bg-blue-600 text-white" : "bg-cyan-500/25 text-cyan-300"
+                                            }`}
+                                          >
+                                            YOU
+                                          </span>
+                                        )}
+                                        <span
+                                          className={`text-[9px] font-mono px-1.5 py-0.5 rounded border shrink-0 font-bold ${
+                                            isLight
+                                              ? "bg-sky-50 text-sky-700 border-sky-200"
+                                              : "bg-cyan-500/15 text-cyan-300 border-cyan-500/30"
+                                          }`}
+                                        >
+                                          {row.cefr}
+                                        </span>
+                                      </div>
+                                      <span className={`text-[10.5px] block truncate ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                                        {row.handle.replace(/\s*•\s*You$/i, "")}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div className="text-right shrink-0">
+                                    <div className={`text-xs sm:text-sm font-black font-mono ${isLight ? "text-amber-700" : "text-amber-300"}`}>
+                                      {row.xp.toLocaleString()} XP
+                                    </div>
+                                    <div className={`text-[10px] font-bold ${isLight ? "text-emerald-700" : "text-emerald-300"}`}>
+                                      Fluency {row.fluency}%
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Row Bottom: Clear Self-Explanatory Speaking Time Badges */}
+                                <div className="grid grid-cols-3 gap-2 pt-1.5 border-t border-dashed border-slate-300/50">
+                                  <div
+                                    className={`px-2.5 py-1.5 rounded-xl border text-left ${
+                                      hasRecent24h
+                                        ? isLight
+                                          ? "bg-blue-50/90 border-blue-200"
+                                          : "bg-cyan-500/10 border-cyan-500/30"
+                                        : isLight
+                                        ? "bg-slate-100/80 border-slate-200"
+                                        : "bg-slate-900/70 border-slate-800"
+                                    }`}
+                                  >
+                                    <span className={`text-[9px] font-bold uppercase block ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                                      Today (24h)
                                     </span>
                                     <span
-                                      className={`text-[9px] font-mono px-1.5 py-0.5 rounded border shrink-0 font-bold ${
-                                        isLight
-                                          ? "bg-sky-50 text-sky-700 border-sky-200"
-                                          : "bg-cyan-500/15 text-cyan-300 border-cyan-500/30"
+                                      className={`text-[11px] font-black font-mono ${
+                                        hasRecent24h
+                                          ? isLight
+                                            ? "text-blue-700"
+                                            : "text-cyan-300"
+                                          : isLight
+                                          ? "text-slate-500"
+                                          : "text-slate-500"
                                       }`}
                                     >
-                                      {row.cefr}
+                                      {hasRecent24h ? row.last24hFormatted : "No calls"}
                                     </span>
                                   </div>
-                                  <span className={`text-[10px] block truncate ${isLight ? "text-slate-500" : "text-slate-400"}`}>
-                                    {row.handle} • <strong className={isLight ? "text-blue-700" : "text-cyan-300"}>24h: {row.last24hFormatted}</strong> • All: {row.totalFormatted} ({row.callsCount} calls)
-                                  </span>
-                                </div>
-                              </div>
 
-                              <div className="flex items-center gap-3 shrink-0">
-                                <div className="hidden sm:block w-24">
-                                  <div className="flex items-center justify-between text-[9.5px] font-mono mb-0.5">
-                                    <span className={isLight ? "text-slate-500" : "text-slate-400"}>Fluency</span>
-                                    <span className={`font-bold ${isLight ? "text-emerald-700" : "text-emerald-300"}`}>
-                                      {row.fluency}%
+                                  <div
+                                    className={`px-2.5 py-1.5 rounded-xl border text-left ${
+                                      isLight ? "bg-white border-slate-200" : "bg-slate-900/70 border-slate-800"
+                                    }`}
+                                  >
+                                    <span className={`text-[9px] font-bold uppercase block ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                                      Total Spoken
+                                    </span>
+                                    <span className={`text-[11px] font-black font-mono ${isLight ? "text-slate-800" : "text-white"}`}>
+                                      {row.totalFormatted}
                                     </span>
                                   </div>
-                                  <div className={`w-full h-1.5 rounded-full overflow-hidden ${isLight ? "bg-slate-200" : "bg-slate-800"}`}>
-                                    <div
-                                      className="h-full bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full"
-                                      style={{ width: `${row.fluency}%` }}
-                                    />
+
+                                  <div
+                                    className={`px-2.5 py-1.5 rounded-xl border text-left ${
+                                      isLight ? "bg-white border-slate-200" : "bg-slate-900/70 border-slate-800"
+                                    }`}
+                                  >
+                                    <span className={`text-[9px] font-bold uppercase block ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                                      Sessions
+                                    </span>
+                                    <span className={`text-[11px] font-black font-mono ${isLight ? "text-slate-800" : "text-white"}`}>
+                                      {row.callsCount} {row.callsCount === 1 ? "call" : "calls"}
+                                    </span>
                                   </div>
                                 </div>
-                                <span
-                                  className={`text-xs font-black font-mono min-w-[68px] text-right ${
-                                    isLight ? "text-amber-700" : "text-amber-300"
-                                  }`}
-                                >
-                                  {row.xp.toLocaleString()} XP
-                                </span>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
 
