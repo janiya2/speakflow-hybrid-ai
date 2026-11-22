@@ -163,7 +163,7 @@ const COACHES: CoachModel[] = [
     avatar: "/images/coaches/oliver.jpg",
     voice: "en-GB-RyanNeural",
     talkingVideo: "/videos/coaches/oliver.mp4",
-    idleVideo: "/videos/coaches/oliver_idle.mp4"
+    idleVideo: ""
   },
   {
     id: "emma",
@@ -1226,6 +1226,7 @@ export default function StudentWebApp() {
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isBotSpeaking, setIsBotSpeaking] = useState(false);
+  const [isVoicePreparing, setIsVoicePreparing] = useState(false);
   const [isUserSpeaking, setIsUserSpeaking] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -2450,6 +2451,8 @@ export default function StudentWebApp() {
   const lastBotFinishTimeRef = useRef<number>(0);
   const isCallActiveRef = useRef(false);
   const isBotSpeakingRef = useRef(false);
+  const isVoicePreparingRef = useRef(false);
+  const isUserSpeakingRef = useRef(false);
   const isProcessingRef = useRef(false);
   const isMutedRef = useRef(false);
   const isListeningIntentRef = useRef(false);
@@ -2472,6 +2475,14 @@ export default function StudentWebApp() {
   useEffect(() => {
     isBotSpeakingRef.current = isBotSpeaking;
   }, [isBotSpeaking]);
+
+  useEffect(() => {
+    isVoicePreparingRef.current = isVoicePreparing;
+  }, [isVoicePreparing]);
+
+  useEffect(() => {
+    isUserSpeakingRef.current = isUserSpeaking;
+  }, [isUserSpeaking]);
 
   useEffect(() => {
     isProcessingRef.current = isProcessing;
@@ -2511,7 +2522,7 @@ export default function StudentWebApp() {
 
       const checkVolume = () => {
         if (!analyserRef.current) return;
-        if (isBotSpeakingRef.current || isProcessingRef.current || isMutedRef.current) {
+        if (isBotSpeakingRef.current || isVoicePreparingRef.current || isProcessingRef.current || isMutedRef.current) {
           setMicVolumeLevel(0);
           animFrameRef.current = requestAnimationFrame(checkVolume);
           return;
@@ -3195,11 +3206,15 @@ export default function StudentWebApp() {
       proactiveNudgeTimerRef.current = null;
     }
 
-    isBotSpeakingRef.current = true;
-    setIsBotSpeaking(true);
+    // Keep coach visually calm/listening while fetching TTS audio (never flap mouth before sound starts!)
+    isVoicePreparingRef.current = true;
+    setIsVoicePreparing(true);
+    isBotSpeakingRef.current = false;
+    setIsBotSpeaking(false);
     stopListening();
     setUserCaption("");
     setIsUserSpeaking(false);
+    isUserSpeakingRef.current = false;
     lastBotSpokenTextRef.current = text;
     setPreviewingCoachVoiceId(null);
 
@@ -3228,6 +3243,8 @@ export default function StudentWebApp() {
     const onVoiceStart = () => {
       if (requestId !== ttsSessionIdRef.current || hasStartedSpeaking) return;
       hasStartedSpeaking = true;
+      isVoicePreparingRef.current = false;
+      setIsVoicePreparing(false);
       isBotSpeakingRef.current = true;
       setIsBotSpeaking(true);
       stopListening();
@@ -3250,10 +3267,14 @@ export default function StudentWebApp() {
     const onVoiceEnd = () => {
       if (requestId !== ttsSessionIdRef.current || hasEndedSpeaking) return;
       hasEndedSpeaking = true;
+      isVoicePreparingRef.current = false;
+      setIsVoicePreparing(false);
       if (speechWatchdogRef.current) {
         clearTimeout(speechWatchdogRef.current);
         speechWatchdogRef.current = null;
       }
+      // Switch coach video back to calm listening IMMEDIATELY as audio stops
+      isBotSpeakingRef.current = false;
       stopCoachTalkingVideo();
       activeAudioRef.current = null;
       if (activeBlobUrlRef.current) {
@@ -3262,13 +3283,10 @@ export default function StudentWebApp() {
       }
       lastBotFinishTimeRef.current = Date.now();
 
-      // Brief 450ms acoustic decay guard, then cleanly unlock microphone & switch coach video to listening
-      isBotSpeakingRef.current = true;
+      // Brief 450ms acoustic decay guard via postSpeechListenTimer before re-arming mic
       if (postSpeechListenTimerRef.current) clearTimeout(postSpeechListenTimerRef.current);
       postSpeechListenTimerRef.current = setTimeout(() => {
         if (requestId !== ttsSessionIdRef.current) return;
-        isBotSpeakingRef.current = false;
-        setIsBotSpeaking(false);
         lastBotFinishTimeRef.current = Date.now();
         setUserCaption("");
         if (isCallActiveRef.current && !isMutedRef.current && !isProcessingRef.current) {
@@ -3356,7 +3374,14 @@ export default function StudentWebApp() {
     // Keep strong ref so Chromium GC cannot drop utterance before onend fires
     activeUtteranceRef.current = utterance;
 
+    let started = false;
     let ended = false;
+    const triggerStartOnce = () => {
+      if (started || (requestId !== undefined && requestId !== ttsSessionIdRef.current)) return;
+      started = true;
+      if (onStartCallback) onStartCallback();
+      else startCoachTalkingVideo();
+    };
     const finishOnce = () => {
       if (ended) return;
       ended = true;
@@ -3365,6 +3390,8 @@ export default function StudentWebApp() {
       else {
         stopCoachTalkingVideo();
         isBotSpeakingRef.current = false;
+        isVoicePreparingRef.current = false;
+        setIsVoicePreparing(false);
         startListening();
         scheduleProactiveNudge();
       }
@@ -3375,15 +3402,21 @@ export default function StudentWebApp() {
         window.speechSynthesis.cancel();
         return;
       }
-      if (onStartCallback) onStartCallback();
-      else startCoachTalkingVideo();
+      triggerStartOnce();
     };
     utterance.onend = () => finishOnce();
     utterance.onerror = () => finishOnce();
 
-    // Ensure captions & video start immediately even if browser speechSynthesis fires silently
-    if (onStartCallback) onStartCallback();
     window.speechSynthesis.speak(utterance);
+
+    // Fallback start trigger only if browser speechSynthesis omits onstart after 350ms while speaking
+    setTimeout(() => {
+      if (!started && !ended && (requestId === undefined || requestId === ttsSessionIdRef.current)) {
+        if (window.speechSynthesis.speaking) {
+          triggerStartOnce();
+        }
+      }
+    }, 350);
 
     // Failsafe poll in case Chromium silently stops speaking without firing onend
     const silentPoll = setInterval(() => {
@@ -3401,7 +3434,15 @@ export default function StudentWebApp() {
   const scheduleProactiveNudge = () => {
     if (proactiveNudgeTimerRef.current) clearTimeout(proactiveNudgeTimerRef.current);
     proactiveNudgeTimerRef.current = setTimeout(() => {
-      if (!isBotSpeakingRef.current && !isProcessingRef.current && !isUserSpeaking && isCallActiveRef.current && activeCallTopic) {
+      // Strictly check live Refs (never stale closure React state!) so coach NEVER interrupts while student speaks
+      if (
+        !isBotSpeakingRef.current &&
+        !isVoicePreparingRef.current &&
+        !isProcessingRef.current &&
+        !isUserSpeakingRef.current &&
+        isCallActiveRef.current &&
+        activeCallTopic
+      ) {
         const lang =
           (activeCallTopic.language && activeCallTopic.language !== "All"
             ? activeCallTopic.language
@@ -3420,7 +3461,7 @@ export default function StudentWebApp() {
 
   // Helper: Detect if recognized microphone audio is actually an acoustic echo of the Coach's own voice
   const isAcousticEchoOfBot = (spoken: string): boolean => {
-    if (isBotSpeakingRef.current) return true;
+    if (isBotSpeakingRef.current || isVoicePreparingRef.current) return true;
     const cleanSpoken = spoken.toLowerCase().replace(/[^\w\s]/g, "").replace(/\s+/g, " ").trim();
     const cleanBot = (lastBotSpokenTextRef.current || "").toLowerCase().replace(/[^\w\s]/g, "").replace(/\s+/g, " ").trim();
     if (!cleanSpoken || !cleanBot) return false;
@@ -3470,7 +3511,7 @@ export default function StudentWebApp() {
 
   // 8. Speech Recognition (STT) - Unbreakable Continuous Recognition Loop with Echo Cancellation
   const startListening = () => {
-    if (isMutedRef.current || !isCallActiveRef.current || isBotSpeakingRef.current || isProcessingRef.current) return;
+    if (isMutedRef.current || !isCallActiveRef.current || isBotSpeakingRef.current || isVoicePreparingRef.current || isProcessingRef.current) return;
     if (typeof window === "undefined") return;
     if (activeAudioRef.current && !activeAudioRef.current.paused) return;
     if ("speechSynthesis" in window && window.speechSynthesis.speaking) return;
@@ -3498,7 +3539,7 @@ export default function StudentWebApp() {
 
     // Brief 120ms stagger after abort() so Chromium reliably acquires mic focus for SpeechRecognition
     setTimeout(() => {
-      if (!isListeningIntentRef.current || !isCallActiveRef.current || isBotSpeakingRef.current || isMutedRef.current || isProcessingRef.current) {
+      if (!isListeningIntentRef.current || !isCallActiveRef.current || isBotSpeakingRef.current || isVoicePreparingRef.current || isMutedRef.current || isProcessingRef.current) {
         return;
       }
       try {
@@ -3520,6 +3561,7 @@ export default function StudentWebApp() {
 
         recognition.onstart = () => {
           setIsUserSpeaking(false);
+          isUserSpeakingRef.current = false;
           setMicPermissionError(false);
         };
 
@@ -3528,6 +3570,7 @@ export default function StudentWebApp() {
             !isCallActiveRef.current ||
             !isListeningIntentRef.current ||
             isBotSpeakingRef.current ||
+            isVoicePreparingRef.current ||
             isProcessingRef.current ||
             isMutedRef.current ||
             (activeAudioRef.current && !activeAudioRef.current.paused) ||
@@ -3558,11 +3601,18 @@ export default function StudentWebApp() {
             }
             setUserCaption("");
             setIsUserSpeaking(false);
+            isUserSpeakingRef.current = false;
             return;
           }
 
+          // Student is actively speaking: cancel any pending idle coach nudge so coach NEVER talks over student
+          if (proactiveNudgeTimerRef.current) {
+            clearTimeout(proactiveNudgeTimerRef.current);
+            proactiveNudgeTimerRef.current = null;
+          }
           setUserCaption(liveWords);
           setIsUserSpeaking(true);
+          isUserSpeakingRef.current = true;
 
           const hasFinalPhrase = Boolean(finalText.trim());
           const phraseToSubmit = finalText.trim() || (interimText.trim().length >= 3 ? interimText.trim() : "");
@@ -3574,6 +3624,7 @@ export default function StudentWebApp() {
                 isListeningIntentRef.current &&
                 isCallActiveRef.current &&
                 !isBotSpeakingRef.current &&
+                !isVoicePreparingRef.current &&
                 !isProcessingRef.current &&
                 !isMutedRef.current &&
                 phraseToSubmit.length >= 2 &&
@@ -3592,17 +3643,19 @@ export default function StudentWebApp() {
             return;
           }
           setIsUserSpeaking(false);
+          isUserSpeakingRef.current = false;
           if (
             (event.error === "no-speech" || event.error === "audio-capture") &&
             isListeningIntentRef.current &&
             isCallActiveRef.current &&
             !isBotSpeakingRef.current &&
+            !isVoicePreparingRef.current &&
             !isProcessingRef.current &&
             !isMutedRef.current
           ) {
             setTimeout(() => {
               try {
-                if (isListeningIntentRef.current && !isBotSpeakingRef.current) recognition.start();
+                if (isListeningIntentRef.current && !isBotSpeakingRef.current && !isVoicePreparingRef.current) recognition.start();
               } catch (_) {}
             }, 250);
           }
@@ -3610,16 +3663,18 @@ export default function StudentWebApp() {
 
         recognition.onend = () => {
           setIsUserSpeaking(false);
+          isUserSpeakingRef.current = false;
           if (
             isListeningIntentRef.current &&
             isCallActiveRef.current &&
             !isBotSpeakingRef.current &&
+            !isVoicePreparingRef.current &&
             !isMutedRef.current &&
             !isProcessingRef.current
           ) {
             setTimeout(() => {
               try {
-                if (isListeningIntentRef.current && !isBotSpeakingRef.current) recognition.start();
+                if (isListeningIntentRef.current && !isBotSpeakingRef.current && !isVoicePreparingRef.current) recognition.start();
               } catch (_) {}
             }, 180);
           }
@@ -3882,7 +3937,11 @@ export default function StudentWebApp() {
     ttsSessionIdRef.current++;
     isCallActiveRef.current = false;
     isBotSpeakingRef.current = false;
+    isVoicePreparingRef.current = false;
+    isUserSpeakingRef.current = false;
     setIsBotSpeaking(false);
+    setIsVoicePreparing(false);
+    setIsUserSpeaking(false);
     stopListening();
     stopMicVolumeMonitor();
     if (activeTtsAbortRef.current) {
@@ -6618,6 +6677,11 @@ export default function StudentWebApp() {
                               <Volume2 className="w-4 h-4 animate-pulse" />
                               <span>{selectedCoach.name} is Speaking...</span>
                             </div>
+                          ) : isVoicePreparing ? (
+                            <div className="px-3.5 py-1 rounded-full bg-slate-950/85 border border-cyan-400/50 text-cyan-300 font-bold text-[11px] backdrop-blur-md flex items-center gap-1.5 shadow-lg">
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
+                              <span>Connecting {selectedCoach.name}&apos;s Voice...</span>
+                            </div>
                           ) : isUserSpeaking ? (
                             <div className="px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black text-xs shadow-xl shadow-emerald-500/50 flex items-center gap-2 whitespace-nowrap animate-bounce">
                               <Mic className="w-4 h-4 animate-pulse" />
@@ -6650,24 +6714,26 @@ export default function StudentWebApp() {
                         >
                           <span
                             className={`w-2 h-2 rounded-full ${
-                              isBotSpeaking
+                              isBotSpeaking || isVoicePreparing
                                 ? "bg-cyan-500 animate-pulse"
                                 : micVolumeLevel > 14
                                 ? "bg-emerald-500 animate-ping"
                                 : "bg-emerald-500"
                             }`}
                           />
-                          <Mic className={`w-3.5 h-3.5 ${isBotSpeaking ? "text-cyan-500" : "text-emerald-500"}`} />
+                          <Mic className={`w-3.5 h-3.5 ${isBotSpeaking || isVoicePreparing ? "text-cyan-500" : "text-emerald-500"}`} />
                           {/* Live Decibel Bar */}
                           <div className={`w-24 sm:w-32 h-2 rounded-full overflow-hidden p-0.5 border ${isLight ? "bg-slate-100 border-slate-200" : "bg-slate-800 border-slate-700"}`}>
                             <div
                               className="h-full bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-full transition-all duration-75"
-                              style={{ width: `${isBotSpeaking ? 6 : Math.max(8, micVolumeLevel)}%` }}
+                              style={{ width: `${isBotSpeaking || isVoicePreparing ? 6 : Math.max(8, micVolumeLevel)}%` }}
                             />
                           </div>
                           <span className={`text-[10px] font-mono font-bold ${isLight ? "text-slate-700" : "text-emerald-300"}`}>
                             {isBotSpeaking
                               ? "Coach Speaking • Echo Guard ON"
+                              : isVoicePreparing
+                              ? "Synthesizing Coach Voice..."
                               : micVolumeLevel > 14
                               ? `Hearing Voice: ${micVolumeLevel}%`
                               : "Mic Live • Speak Now"}
@@ -6675,7 +6741,7 @@ export default function StudentWebApp() {
                         </div>
 
                         {/* One-Tap Restart Mic Recognition if needed */}
-                        {!isBotSpeaking && !isProcessing && !isMuted && (
+                        {!isBotSpeaking && !isVoicePreparing && !isProcessing && !isMuted && (
                           <button
                             type="button"
                             onClick={() => startListening()}
