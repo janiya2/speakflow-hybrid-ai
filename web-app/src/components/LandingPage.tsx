@@ -393,9 +393,9 @@ export default function LandingPage({
         </div>
       </header>
 
-      {/* 3. Hero Section (Modeled after YayTalk Image 1 & Image 2 with Live Animated Mic & Ambient Visual Engine) */}
+      {/* 3. Hero Section (Modeled after YayTalk Image 1 & Image 2 with Dual Radial Aura & Ambient Visual Engine) */}
       <section className={`relative pt-12 sm:pt-16 pb-14 sm:pb-20 overflow-hidden ${
-        isLight ? "bg-gradient-to-b from-[#EBF3FE] via-[#F4F7FF] to-[#F8FAFC] text-slate-900" : "bg-gradient-to-b from-[#070D1E] via-[#050A17] to-[#04060E] text-white"
+        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
         {/* Ambient Dark Mode Animation System: Cosmic Glowing Orbs & Cyber Grid */}
         {!isLight && (
