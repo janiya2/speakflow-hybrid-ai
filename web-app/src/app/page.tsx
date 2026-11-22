@@ -163,7 +163,7 @@ const COACHES: CoachModel[] = [
     avatar: "/images/coaches/oliver.jpg",
     voice: "en-GB-RyanNeural",
     talkingVideo: "/videos/coaches/oliver.mp4",
-    idleVideo: ""
+    idleVideo: "/videos/coaches/oliver_idle.mp4"
   },
   {
     id: "emma",
@@ -3776,6 +3776,13 @@ export default function StudentWebApp() {
     setNextScenarioQuestion("");
     setDrillAttempts(0);
     setShowScoreModal(false);
+    setIsBotSpeaking(false);
+    isBotSpeakingRef.current = false;
+    setHasTalkingVideoError(false);
+    setHasIdleVideoError(false);
+    setIsTalkingVideoReady(false);
+    setIsIdleVideoReady(false);
+    stopCoachTalkingVideo();
 
     if (selectedDurationMinutes !== null) {
       setRemainingSeconds(selectedDurationMinutes * 60);
@@ -6536,7 +6543,7 @@ export default function StudentWebApp() {
                     {/* Full-Bleed Widescreen Coach Video Feed (Zero Ugly Letterbox Voids) */}
                     <div className="w-full flex-1 min-h-[240px] relative rounded-2xl transition-all duration-500 shadow-2xl mx-auto group z-10 flex items-center justify-center keep-dark-hero">
                       <div
-                        className={`w-full h-full rounded-[18px] sm:rounded-[22px] overflow-hidden relative bg-[#080F22] transition-all duration-500 border-2 ${
+                        className={`w-full h-full rounded-[18px] sm:rounded-[22px] overflow-hidden relative transition-all duration-500 border-2 ${
                           isBotSpeaking
                             ? "border-cyan-400 shadow-[0_0_40px_rgba(56,189,248,0.5)]"
                             : isUserSpeaking
@@ -6545,6 +6552,7 @@ export default function StudentWebApp() {
                             ? "border-blue-300/90 shadow-md"
                             : "border-slate-700/80 shadow-2xl"
                         }`}
+                        style={{ backgroundColor: "#060B18" }}
                       >
                         {/* Ambient Soft Portrait Backdrop */}
                         <img
@@ -6566,6 +6574,7 @@ export default function StudentWebApp() {
                             ref={idleVideoRef}
                             key={`${selectedCoach.id}-idle-feed`}
                             src={selectedCoach.idleVideo}
+                            poster={selectedCoach.avatar}
                             preload="auto"
                             autoPlay
                             loop
@@ -6591,8 +6600,8 @@ export default function StudentWebApp() {
                               setIsIdleVideoReady(false);
                               setHasIdleVideoError(true);
                             }}
-                            className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-200 pointer-events-none select-none ${
-                              !isBotSpeaking || !isTalkingVideoReady ? "opacity-100 z-10" : "opacity-0 z-10"
+                            className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-300 pointer-events-none select-none ${
+                              !isBotSpeaking && isIdleVideoReady ? "opacity-100 z-10" : "opacity-0 z-0"
                             }`}
                           />
                         )}
@@ -6603,6 +6612,7 @@ export default function StudentWebApp() {
                             ref={talkingVideoRef}
                             key={`${selectedCoach.id}-talking-feed`}
                             src={selectedCoach.talkingVideo}
+                            poster={selectedCoach.avatar}
                             preload="auto"
                             loop
                             muted
@@ -6636,8 +6646,8 @@ export default function StudentWebApp() {
                               setIsTalkingVideoReady(false);
                               setHasTalkingVideoError(true);
                             }}
-                            className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-200 pointer-events-none select-none ${
-                              isBotSpeaking ? "opacity-100 z-20" : "opacity-0 z-0"
+                            className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-300 pointer-events-none select-none ${
+                              isBotSpeaking && isTalkingVideoReady ? "opacity-100 z-15" : "opacity-0 z-0"
                             }`}
                           />
                         )}
@@ -6649,7 +6659,13 @@ export default function StudentWebApp() {
                         />
 
                         {/* Subtle Edge Contrast Scrim for Video HUD Pills */}
-                        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/45 via-transparent to-slate-950/55 pointer-events-none z-25" />
+                        <div
+                          className="absolute inset-0 pointer-events-none z-20"
+                          style={{
+                            background:
+                              "linear-gradient(to bottom, rgba(2, 6, 23, 0.45) 0%, transparent 24%, transparent 74%, rgba(2, 6, 23, 0.55) 100%)"
+                          }}
+                        />
 
                         {/* Top-Left Floating Coach Badge inside Video */}
                         <div className="absolute top-3 left-3 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/80 border border-slate-700/80 backdrop-blur-md text-xs font-bold text-white shadow-lg pointer-events-none">

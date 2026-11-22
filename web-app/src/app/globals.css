@@ -530,5 +530,18 @@ html.theme-light .keep-dark-hero [class*="bg-white/1"] {
   color: #ffffff !important;
 }
 
+html.theme-light .keep-dark-hero [class*="from-slate-950"],
+html.theme-light .keep-dark-hero [class*="from-slate-900"],
+html.theme-light .keep-dark-hero [class*="bg-gradient-to-"] {
+  background-color: transparent !important;
+  background-image: inherit;
+  box-shadow: none !important;
+}
+
+html.theme-light .keep-dark-hero video,
+html.theme-light .keep-dark-hero img {
+  opacity: 1;
+}
+
 
 
