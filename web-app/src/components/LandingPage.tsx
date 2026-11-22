@@ -37,7 +37,36 @@ export interface LandingPageConfig {
   monthlyPrice?: string;
   yearlyPrice?: string;
   yearlySavings?: string;
+  languagesSliderActive?: boolean;
+  languagesSliderTitle?: string;
+  scenariosHeadingTag?: string;
+  scenariosTitle?: string;
+  scenariosSubtitle?: string;
+  scenariosStripImageUrl?: string;
 }
+
+const LANGUAGES_LIST = [
+  { name: "Sinhala", native: "සිංහල", flag: "🇱🇰" },
+  { name: "English", native: "English", flag: "🇬🇧" },
+  { name: "Tamil", native: "தமிழ்", flag: "🇮🇳" },
+  { name: "Japanese", native: "日本語", flag: "🇯🇵" },
+  { name: "Spanish", native: "Español", flag: "🇪🇸" },
+  { name: "French", native: "Français", flag: "🇫🇷" },
+  { name: "German", native: "Deutsch", flag: "🇩🇪" },
+  { name: "Italian", native: "Italiano", flag: "🇮🇹" },
+  { name: "Korean", native: "한국어", flag: "🇰🇷" },
+  { name: "Chinese", native: "中文", flag: "🇨🇳" },
+  { name: "Russian", native: "Русский", flag: "🇷🇺" },
+  { name: "Arabic", native: "العربية", flag: "🇦🇪" },
+  { name: "Hindi", native: "हिन्दी", flag: "🇮🇳" },
+  { name: "Portuguese", native: "Português", flag: "🇧🇷" },
+  { name: "Turkish", native: "Türkçe", flag: "🇹🇷" },
+  { name: "Dutch", native: "Nederlands", flag: "🇳🇱" },
+  { name: "Swedish", native: "Svenska", flag: "🇸🇪" },
+  { name: "Indonesian", native: "Bahasa", flag: "🇮🇩" },
+  { name: "Thai", native: "ไทย", flag: "🇹🇭" },
+  { name: "Vietnamese", native: "Tiếng Việt", flag: "🇻🇳" },
+];
 
 interface LandingPageProps {
   onStartCall: (topicId?: string) => void;
@@ -337,30 +366,50 @@ export default function LandingPage({
         </div>
       </header>
 
-      {/* 3. Hero Section (Modeled after YayTalk with Photorealistic AI Video Showcase) */}
-      <section className="relative pt-12 pb-24 overflow-hidden">
-        {/* Ambient Glow Backdrops */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[550px] bg-gradient-to-tr from-cyan-600/15 via-indigo-600/20 to-purple-600/15 blur-[140px] pointer-events-none -z-10" />
+      {/* 3. Hero Section (Modeled after YayTalk Image 1 & Image 2 with user's exact character banner) */}
+      <section className={`relative pt-12 sm:pt-16 pb-12 sm:pb-16 overflow-hidden ${
+        isLight ? "bg-gradient-to-b from-[#EFF4FF] via-[#F7FAFF] to-[#FFFFFF]" : "bg-[#060913]"
+      }`}>
+        {/* Ambient Dark Mode Animation System: Cosmic Glowing Orbs */}
+        {!isLight && (
+          <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
+            {/* Glowing Orb 1: Cyan-Blue pulsing */}
+            <div className="dark-glow-orb-1 absolute -top-16 left-1/4 w-[620px] h-[620px] rounded-full bg-gradient-to-tr from-cyan-500/25 via-blue-600/20 to-indigo-600/10 blur-[140px]" />
+            {/* Glowing Orb 2: Purple-Pink pulsing */}
+            <div className="dark-glow-orb-2 absolute top-36 right-1/4 w-[560px] h-[560px] rounded-full bg-gradient-to-bl from-purple-600/25 via-pink-600/15 to-blue-600/15 blur-[150px]" />
+            {/* Center soft backplate glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[450px] bg-indigo-500/10 rounded-full blur-[160px]" />
+            {/* Subtle cyber grid background */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b0f_1px,transparent_1px),linear-gradient(to_bottom,#1e293b0f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-40" />
+          </div>
+        )}
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
+        {/* Ambient Light Mode Background: Soft sky/lavender vignette */}
+        {isLight && (
+          <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
+            <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-gradient-to-b from-[#EAF1FF] via-[#F5F8FF] to-transparent blur-[110px]" />
+          </div>
+        )}
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8">
           {/* Social Proof Pill */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-indigo-400/25 bg-indigo-500/10 backdrop-blur-md text-xs font-bold text-cyan-300 shadow-sm">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-indigo-400/25 bg-indigo-500/10 backdrop-blur-md text-xs font-bold text-cyan-400 shadow-sm">
             <span className="flex text-amber-400 text-xs">★★★★★</span>
-            <span className="text-slate-300 font-medium">4.8/5 Rating</span>
+            <span className="text-slate-400 dark:text-slate-300 font-medium">4.8/5 Rating</span>
             <span className="w-1 h-1 rounded-full bg-slate-500" />
-            <span className="text-white">{config?.heroBadge || "100K+ Active Voice Learners Worldwide"}</span>
+            <span className="text-slate-900 dark:text-white">{config?.heroBadge || "Next-Gen AI Voice Tutor • #BuildHybridAI 2026"}</span>
           </div>
 
-          {/* Master Headline */}
+          {/* Master Headline (Modeled after Image 1) */}
           <div className="space-y-4 max-w-4xl mx-auto">
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.08]">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.08] text-slate-900 dark:text-white">
               {config?.heroHeadline || (
                 <>
-                  Speak 20 World Languages{" "}
+                  Learn to speak 🎙️{" "}
                   <span className="bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
-                    Confidently
+                    20 Languages
                   </span>{" "}
-                  with AI Video Tutors.
+                  confidently with AI Tutors.
                 </>
               )}
             </h1>
@@ -370,193 +419,171 @@ export default function LandingPage({
               }`}
             >
               {config?.heroSubtitle ||
-                "The fastest way to achieve real-world conversational fluency: live video calls with photorealistic AI coaches, sub-20ms instant speech feedback, and a 100% judgment-free space to practice."}
+                "The fastest way to speak any language with confidence: real conversations with AI, instant feedback, and a safe space to practice."}
             </p>
           </div>
 
-          {/* Primary Action Buttons */}
+          {/* App Store & Google Play Badges + Quick Practice Action (Side by side like Image 1) */}
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-            <button
-              onClick={() => onStartCall("sp_si_249")}
-              className="px-8 py-4 rounded-2xl font-black text-sm text-white bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 shadow-xl shadow-cyan-500/35 hover:shadow-cyan-500/55 hover:scale-[1.03] active:scale-[0.98] transition-all flex items-center gap-3 group"
-            >
-              <span className="text-lg">🎙️</span>
-              <span>{config?.primaryCtaText || "Start Free AI Call in Sinhala / English"}</span>
-              <span className="group-hover:translate-x-1 transition-transform text-cyan-200">→</span>
-            </button>
-
-            <button
-              onClick={() => onOpenDashboard()}
-              className={`px-7 py-4 rounded-2xl font-black text-sm border transition-all flex items-center gap-2 ${
-                isLight
-                  ? "bg-white border-slate-300 text-slate-800 hover:bg-slate-100 shadow-sm"
-                  : "bg-slate-900/90 border-indigo-500/30 text-white hover:border-cyan-400/60 shadow-lg"
-              }`}
-            >
-              <span>{config?.secondaryCtaText || "Explore 256 Scenarios"}</span>
-              <span>🌍</span>
-            </button>
-          </div>
-
-          {/* Download App Store & Google Play Badges */}
-          <div className="flex items-center justify-center gap-4 pt-1">
-            <a
-              href={config?.playStoreUrl || "https://play.google.com/store/apps/details?id=com.innoxpert.speakflow"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:scale-105 transition-transform"
-            >
-              <Image
-                src="/images/landing/google_play.webp"
-                alt="Get it on Google Play"
-                width={135}
-                height={40}
-                className="h-10 w-auto rounded-lg shadow-sm"
-              />
-            </a>
             <a
               href={config?.apkDownloadUrl || "https://github.com/janithad2/speakflow-ai/releases/download/v1.0.0/speakflow-ai.apk"}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:scale-105 transition-transform"
+              className="hover:scale-105 active:scale-95 transition-transform"
             >
               <Image
                 src="/images/landing/app_store.webp"
-                alt="Download Android APK"
-                width={135}
-                height={40}
-                className="h-10 w-auto rounded-lg shadow-sm"
+                alt="Download on the App Store / Android APK"
+                width={160}
+                height={48}
+                className="h-12 w-auto rounded-xl shadow-md"
               />
             </a>
+
+            <a
+              href={config?.playStoreUrl || "https://play.google.com/store/apps/details?id=com.innoxpert.speakflow"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:scale-105 active:scale-95 transition-transform"
+            >
+              <Image
+                src="/images/landing/google_play.webp"
+                alt="Get it on Google Play"
+                width={160}
+                height={48}
+                className="h-12 w-auto rounded-xl shadow-md"
+              />
+            </a>
+
+            <button
+              onClick={() => onOpenDashboard()}
+              className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 text-white font-black text-xs shadow-xl shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.03] active:scale-[0.98] transition-all flex items-center gap-2"
+            >
+              <span>Try Live Studio</span>
+              <span>→</span>
+            </button>
           </div>
 
-          {/* Interactive Hero Visual Showcase (YayTalk Inspired Card with Real AI Video Mockup) */}
-          <div className="relative max-w-5xl mx-auto mt-12 rounded-3xl border border-indigo-500/30 p-2 sm:p-4 bg-gradient-to-b from-indigo-950/40 to-slate-950/80 shadow-2xl backdrop-blur-2xl">
-            {/* Visual Top Bar */}
-            <div className="flex items-center justify-between px-4 py-2 border-b border-indigo-500/20 mb-3 text-xs text-slate-400">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-red-500/80" />
-                <span className="w-3 h-3 rounded-full bg-amber-500/80" />
-                <span className="w-3 h-3 rounded-full bg-emerald-500/80" />
-                <span className="ml-2 font-mono text-[11px] text-cyan-400">
-                  SpeakFlow Cloud Neural • 12ms Edge Latency
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">
-                  ● LIVE AI VIDEO CALL
-                </span>
-                <span className="text-slate-300 font-bold">Coach Oliver Wright (British RP)</span>
-              </div>
-            </div>
-
-            {/* Video Call Mockup Container */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
-              {/* Left Video Window with Coach */}
-              <div className="lg:col-span-7 relative rounded-2xl overflow-hidden aspect-video bg-slate-950 border border-indigo-400/20 shadow-inner group">
-                <Image
-                  src="/images/landing/hero_chunk.webp"
-                  alt="SpeakFlow AI Video Coach Demonstration"
-                  fill
-                  className="object-cover group-hover:scale-[1.02] transition-transform duration-700"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent" />
-
-                {/* Live Dialogue Subtitle Card */}
-                <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl bg-slate-950/85 backdrop-blur-md border border-indigo-500/30 text-left">
-                  <div className="flex items-center justify-between text-[10px] text-cyan-300 font-bold mb-1">
-                    <span>Oliver Wright (AI Coach):</span>
-                    <span className="text-amber-300">Speaking Pace: 124 WPM</span>
-                  </div>
-                  <p className="text-xs text-slate-100 font-medium">
-                    &ldquo;Welcome to London! The Thames looks gorgeous at sunset. What would you like to explore first?&rdquo;
-                  </p>
-                </div>
-
-                {/* Floating Waveform Pill */}
-                <div className="absolute top-3 right-3 px-3 py-1.5 rounded-full bg-slate-950/80 border border-cyan-400/40 flex items-center gap-2">
-                  <div className="flex items-center gap-1 h-3">
-                    <span className="w-1 h-3 bg-cyan-400 rounded-full animate-bounce" />
-                    <span className="w-1 h-2 bg-indigo-400 rounded-full animate-pulse" />
-                    <span className="w-1 h-4 bg-cyan-400 rounded-full animate-bounce delay-75" />
-                    <span className="w-1 h-2 bg-purple-400 rounded-full animate-pulse delay-100" />
-                  </div>
-                  <span className="text-[10px] font-mono text-cyan-300 font-bold">Sub-20ms Edge</span>
-                </div>
-              </div>
-
-              {/* Right Diagnostic & Fluency Radar Widget */}
-              <div className="lg:col-span-5 space-y-3 text-left p-2 sm:p-4">
-                <div className="p-3.5 rounded-2xl bg-indigo-950/40 border border-indigo-500/25 space-y-2">
-                  <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-slate-300">Live Speech Diagnosis</span>
-                    <span className="text-emerald-400 font-black text-[11px] bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-400/20">
-                      INSTANT AI FIX
-                    </span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-[11px] text-rose-300 font-mono">
-                    <span className="text-rose-400 font-bold">❌ You said: </span>
-                    &ldquo;I have went to Big Ben yesterday.&rdquo;
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-[11px] text-emerald-300 font-mono">
-                    <span className="text-emerald-400 font-bold">✅ Say naturally: </span>
-                    &ldquo;I went to Big Ben yesterday.&rdquo;
-                  </div>
-                  <p className="text-[10px] text-slate-400 leading-relaxed">
-                    💡 <strong className="text-slate-300">Grammar Rule:</strong> With specific past time markers (&lsquo;yesterday&rsquo;), use the past simple &lsquo;went&rsquo;, not present perfect.
-                  </p>
-                </div>
-
-                {/* Mini Metric Pills */}
-                <div className="grid grid-cols-2 gap-2 text-center text-xs">
-                  <div className="p-3 rounded-xl bg-slate-900/60 border border-indigo-500/20">
-                    <div className="text-xl font-black text-cyan-400">98%</div>
-                    <div className="text-[10px] text-slate-400 uppercase font-bold">Pronunciation</div>
-                  </div>
-                  <div className="p-3 rounded-xl bg-slate-900/60 border border-indigo-500/20">
-                    <div className="text-xl font-black text-amber-400">CEFR B2</div>
-                    <div className="text-[10px] text-slate-400 uppercase font-bold">Fluency Tier</div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => onStartCall("sp_en_1")}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-black text-xs shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2"
-                >
-                  <span>Practice This Live Call Now</span>
-                  <span>⚡</span>
-                </button>
-              </div>
-            </div>
+          {/* Center Cutout Hero Character Banner Image (User's Image 2) */}
+          <div className="relative max-w-4xl mx-auto mt-6 sm:mt-10 px-2 sm:px-4">
+            <Image
+              src={config?.heroBannerUrl || "/images/landing/hero_tutors_banner.png"}
+              alt="SpeakFlow AI Tutors and Learners"
+              width={1024}
+              height={475}
+              className="w-full h-auto object-contain hero-banner-pulse drop-shadow-[0_25px_45px_rgba(0,0,0,0.3)]"
+              priority
+            />
+            {/* Ambient character glow in dark mode */}
+            {!isLight && (
+              <div className="absolute inset-x-8 bottom-0 h-36 bg-blue-600/25 blur-3xl -z-10 rounded-full" />
+            )}
           </div>
         </div>
       </section>
 
-      {/* 4. Proof Strip (4 Pillars) */}
-      <section className={`py-12 border-y ${isLight ? "bg-white border-slate-200" : "bg-[#080E20] border-indigo-900/30"}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-black text-cyan-400">{config?.statLanguages || "20"}</div>
-              <div className="text-xs uppercase font-bold text-slate-400 tracking-wider">World Languages</div>
-              <div className="text-[11px] text-slate-500">English, Sinhala, Japanese & more</div>
+      {/* 3.5. Supported Languages Infinite Marquee Slider (The user asked: "aye pluwn nm meke yatin ape meke support languages slider ekakuth dmu") */}
+      {config?.languagesSliderActive !== false && (
+        <section className={`py-6 border-y relative overflow-hidden ${
+          isLight ? "bg-slate-100/60 border-slate-200" : "bg-[#070C1B]/80 border-indigo-900/40"
+        }`}>
+          {/* Gradient fade edge masks */}
+          <div className={`pointer-events-none absolute left-0 top-0 bottom-0 w-24 z-10 ${
+            isLight ? "bg-gradient-to-r from-[#F8FAFC] to-transparent" : "bg-gradient-to-r from-[#060913] to-transparent"
+          }`} />
+          <div className={`pointer-events-none absolute right-0 top-0 bottom-0 w-24 z-10 ${
+            isLight ? "bg-gradient-to-l from-[#F8FAFC] to-transparent" : "bg-gradient-to-l from-[#060913] to-transparent"
+          }`} />
+
+          <div className="max-w-7xl mx-auto px-4 mb-3 text-center">
+            <div className="text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-cyan-400/90 flex items-center justify-center gap-2">
+              <span>🌍</span>
+              <span>{config?.languagesSliderTitle || "20 Supported World Languages & Native Accents"}</span>
+              <span>•</span>
+              <span className="text-emerald-400 font-bold">Sub-20ms Neural Engine</span>
             </div>
-            <div className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-black text-purple-400">&lt; 20ms</div>
-              <div className="text-xs uppercase font-bold text-slate-400 tracking-wider">Edge Neural Latency</div>
-              <div className="text-[11px] text-slate-500">Zero awkward pauses or delays</div>
+          </div>
+
+          <div className="overflow-hidden whitespace-nowrap">
+            <div className="animate-marquee flex items-center gap-3">
+              {[...LANGUAGES_LIST, ...LANGUAGES_LIST].map((item, idx) => (
+                <button
+                  key={`${item.name}-${idx}`}
+                  onClick={() => onStartCall()}
+                  className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl border text-xs font-bold transition-all shrink-0 ${
+                    isLight
+                      ? "bg-white border-slate-200 text-slate-800 hover:border-indigo-400 hover:shadow-sm"
+                      : "bg-slate-900/80 border-indigo-500/20 text-slate-200 hover:border-cyan-400/50 hover:bg-slate-800"
+                  }`}
+                >
+                  <span className="text-base">{item.flag}</span>
+                  <span className="text-slate-900 dark:text-white font-black">{item.name}</span>
+                  <span className="text-[10.5px] text-slate-400 font-medium">({item.native})</span>
+                  <span className="text-[10px] text-cyan-400 opacity-60">→</span>
+                </button>
+              ))}
             </div>
-            <div className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-black text-emerald-400">{config?.statMinutes || "125,000+"}</div>
-              <div className="text-xs uppercase font-bold text-slate-400 tracking-wider">Minutes Spoken</div>
-              <div className="text-[11px] text-slate-500">Phonetic AI grading & telemetry</div>
+          </div>
+        </section>
+      )}
+
+      {/* 4. Panoramic Scenarios Section (Modeled after User's Image 3 & Image 4) */}
+      <section className={`py-20 sm:py-28 relative overflow-hidden text-center ${
+        isLight ? "bg-white" : "bg-[#060A18]"
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+          <div className="space-y-3 max-w-3xl mx-auto">
+            <div className="text-xs sm:text-sm font-black uppercase tracking-wider text-cyan-400 dark:text-cyan-300 flex items-center justify-center gap-1.5">
+              <span>{config?.scenariosHeadingTag || "Everything you need to speak English 🔮 fluently"}</span>
             </div>
-            <div className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-black text-amber-400">{config?.statStudents || "10,000+"}</div>
-              <div className="text-xs uppercase font-bold text-slate-400 tracking-wider">Active Learners</div>
-              <div className="text-[11px] text-slate-500">50x cheaper than private tutors</div>
-            </div>
+
+            <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-slate-900 dark:text-white">
+              {config?.scenariosTitle || "Practice the conversations you'll actually have"}
+            </h2>
+
+            <p className={`text-sm sm:text-base leading-relaxed max-w-xl mx-auto ${
+              isLight ? "text-slate-600" : "text-slate-400"
+            }`}>
+              {config?.scenariosSubtitle || "Practice English in scenarios that matter — job interviews, travel, daily life, dining, and more."}
+            </p>
+          </div>
+
+          {/* Full-Width Panoramic Strip Image (User's Image 3) */}
+          <div className="relative w-full max-w-6xl mx-auto mt-8 sm:mt-12 px-2 sm:px-4">
+            <Image
+              src={config?.scenariosStripImageUrl || "/images/landing/scenarios_panoramic_strip.png"}
+              alt="Real-world conversations in multiple scenarios"
+              width={1024}
+              height={370}
+              className="w-full h-auto object-contain drop-shadow-[0_20px_45px_rgba(0,0,0,0.25)] hover:scale-[1.01] transition-transform duration-500 rounded-3xl"
+              priority
+            />
+          </div>
+
+          {/* Interactive Role / Scenario Quick Filter Pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-4 max-w-4xl mx-auto">
+            {[
+              { icon: "🦐", label: "Street Food & Dining", topicId: "sp_si_249" },
+              { icon: "🗺️", label: "Travel & Exploration", topicId: "sp_en_1" },
+              { icon: "🛍️", label: "Shopping & Markets", topicId: "sp_si_249" },
+              { icon: "🩺", label: "Medical & Doctor", topicId: "sp_en_1" },
+              { icon: "💼", label: "Job Interview & Tech", topicId: "sp_en_1" },
+              { icon: "🚴", label: "Sports & Fitness", topicId: "sp_1" },
+            ].map((s, idx) => (
+              <button
+                key={idx}
+                onClick={() => onStartCall(s.topicId)}
+                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-bold transition-all ${
+                  isLight
+                    ? "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                    : "bg-slate-900/70 border-indigo-500/20 text-slate-300 hover:border-cyan-400/40 hover:text-white"
+                }`}
+              >
+                <span>{s.icon}</span>
+                <span>{s.label}</span>
+                <span className="text-[10px] text-cyan-400">→</span>
+              </button>
+            ))}
           </div>
         </div>
       </section>

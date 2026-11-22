@@ -437,17 +437,23 @@ interface LandingPageConfig {
   feature4Desc: string;
   announcementText: string;
   announcementActive: boolean;
+  languagesSliderActive: boolean;
+  languagesSliderTitle: string;
+  scenariosHeadingTag: string;
+  scenariosTitle: string;
+  scenariosSubtitle: string;
+  scenariosStripImageUrl: string;
 }
 
 const DEFAULT_LANDING_CONFIG: LandingPageConfig = {
-  heroBadge: "Next-Gen AI Voice Coach • #BuildHybridAI 2026",
-  heroHeadline: "Speak Any Language Like a Native Partner.",
+  heroBadge: "Next-Gen AI Voice Tutor • #BuildHybridAI 2026",
+  heroHeadline: "Learn to speak 🎙️ 20 Languages confidently with AI Tutors.",
   heroSubtitle:
-    "Zero typing, zero flashcards. Practice real-time spoken phone conversations with AI in English, Spanish, Korean, Japanese, and more. Perfect your pronunciation through intelligent on-device repetition loops!",
+    "The fastest way to speak any language with confidence: real conversations with AI, instant feedback, and a safe space to practice.",
   primaryCtaText: "Start Free Practice →",
   secondaryCtaText: "Download Android APK",
   robotImageUrl: "/images/dashboard-robot.png",
-  heroBannerUrl: "/images/dashboard-hero-banner.jpg",
+  heroBannerUrl: "/images/landing/hero_tutors_banner.png",
   flameImageUrl: "/images/flame-streak.png",
   bigBenImageUrl: "/images/lesson-london-travel.jpg",
   dashboardMockupUrl: "/images/dashboard-full-mockup.jpg",
@@ -458,10 +464,10 @@ const DEFAULT_LANDING_CONFIG: LandingPageConfig = {
   statMinutes: "125,000+",
   statStudents: "10,000+",
   statFluency: "98.4%",
-  statLanguages: "6 Languages",
+  statLanguages: "20 Languages",
   feature1Title: "Hybrid On-Device AI Engine",
   feature1Desc: "Zero-latency voice feedback powered by SpeakFlow Neural Engine on-device with smart cloud fallback.",
-  feature2Title: "100+ Real Voice Scenarios",
+  feature2Title: "256+ Real Voice Scenarios",
   feature2Desc: "Immersive simulated phone calls across Food, Travel, Business, Airport, and Sports.",
   feature3Title: "Live Subtitles & Instant Scoring",
   feature3Desc: "0-100 fluency metrics, phonetic precision grading, and active pronunciation drill loops.",
@@ -469,6 +475,12 @@ const DEFAULT_LANDING_CONFIG: LandingPageConfig = {
   feature4Desc: "Unified learning progress across Flutter Mobile (Android/iOS) and Next.js Web Dashboard.",
   announcementText: "🎉 Google Firebase #BuildHybridAI 2026 Hackathon Finalist Edition Live!",
   announcementActive: true,
+  languagesSliderActive: true,
+  languagesSliderTitle: "20 Supported World Languages & Native Accents",
+  scenariosHeadingTag: "Everything you need to speak English 🔮 fluently",
+  scenariosTitle: "Practice the conversations you'll actually have",
+  scenariosSubtitle: "Practice English in scenarios that matter — job interviews, travel, daily life, dining, and more.",
+  scenariosStripImageUrl: "/images/landing/scenarios_panoramic_strip.png",
 };
 
 interface AchievementBadge {
@@ -880,7 +892,7 @@ export default function StudentWebApp() {
   const [adminLandingForm, setAdminLandingForm] = useState<LandingPageConfig>(DEFAULT_LANDING_CONFIG);
   const [adminSubscriptionForm, setAdminSubscriptionForm] = useState(subscriptionConfig);
   const [landingCmsSaving, setLandingCmsSaving] = useState(false);
-  const [landingCmsTab, setLandingCmsTab] = useState<"banner" | "hero" | "stats" | "downloads" | "pricing">("banner");
+  const [landingCmsTab, setLandingCmsTab] = useState<"banner" | "hero" | "scenarios" | "stats" | "downloads" | "pricing">("hero");
 
   const openLandingAdminModal = () => {
     setAdminLandingForm({ ...landingConfig });
@@ -15147,10 +15159,11 @@ export default function StudentWebApp() {
               }`}
             >
               {[
-                { id: "banner", label: "📢 Banner & Notice" },
-                { id: "hero", label: "🚀 Hero & Headline" },
-                { id: "stats", label: "📊 Telemetry & Proof" },
-                { id: "downloads", label: "📦 APK & Store URLs" },
+                { id: "hero", label: "🚀 Hero & Tutors Banner" },
+                { id: "scenarios", label: "🌍 Panoramic Scenarios" },
+                { id: "banner", label: "📢 Top Notice Banner" },
+                { id: "stats", label: "📊 Telemetry & Stats" },
+                { id: "downloads", label: "📦 Store & APK URLs" },
                 { id: "pricing", label: "💎 VIP Pricing" },
               ].map((tab) => (
                 <button
@@ -15313,6 +15326,128 @@ export default function StudentWebApp() {
                           : "bg-slate-950 border-slate-800 text-slate-100"
                       }`}
                     />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Hero Character Banner Image URL (Cutout)
+                    </label>
+                    <input
+                      type="text"
+                      value={adminLandingForm.heroBannerUrl}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, heroBannerUrl: e.target.value }))
+                      }
+                      placeholder="/images/landing/hero_tutors_banner.png"
+                      className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 font-mono ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {landingCmsTab === "scenarios" && (
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Scenarios Section Tag (Top Badge)
+                    </label>
+                    <input
+                      type="text"
+                      value={adminLandingForm.scenariosHeadingTag}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, scenariosHeadingTag: e.target.value }))
+                      }
+                      placeholder="Everything you need to speak English 🔮 fluently"
+                      className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Scenarios Master Title
+                    </label>
+                    <input
+                      type="text"
+                      value={adminLandingForm.scenariosTitle}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, scenariosTitle: e.target.value }))
+                      }
+                      placeholder="Practice the conversations you'll actually have"
+                      className={`w-full p-3 rounded-xl border text-xs font-bold focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Scenarios Subtitle Description
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={adminLandingForm.scenariosSubtitle}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, scenariosSubtitle: e.target.value }))
+                      }
+                      placeholder="Practice English in scenarios that matter — job interviews, travel, daily life, dining, and more."
+                      className={`w-full p-3.5 rounded-xl border text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Panoramic Strip Image URL
+                    </label>
+                    <input
+                      type="text"
+                      value={adminLandingForm.scenariosStripImageUrl}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, scenariosStripImageUrl: e.target.value }))
+                      }
+                      placeholder="/images/landing/scenarios_panoramic_strip.png"
+                      className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 font-mono ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 rounded-2xl border border-indigo-500/20 bg-indigo-500/5 mt-2">
+                    <div>
+                      <div className="font-bold text-sm">20 Languages Infinite Marquee Slider</div>
+                      <div className="text-xs text-slate-400">
+                        Shows the continuous scrolling languages ticker with native scripts directly below the hero.
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={adminLandingForm.languagesSliderActive}
+                        onChange={(e) =>
+                          setAdminLandingForm((prev) => ({
+                            ...prev,
+                            languagesSliderActive: e.target.checked,
+                          }))
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
                   </div>
                 </div>
               )}
