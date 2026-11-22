@@ -671,3 +671,77 @@ html.theme-light .keep-dark-hero img {
 .light-glow-orb-2 {
   animation: lightOrbFloat2 22s ease-in-out infinite;
 }
+
+/* Floating Conversational Hero Cards */
+@keyframes floatCardLeft {
+  0%, 100% { transform: translateY(0px) rotate(-1deg); }
+  50% { transform: translateY(-16px) rotate(1deg); }
+}
+
+@keyframes floatCardRight {
+  0%, 100% { transform: translateY(0px) rotate(1.2deg); }
+  50% { transform: translateY(18px) rotate(-1deg); }
+}
+
+@keyframes floatCardSubtle {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-10px) scale(1.02); }
+}
+
+.animate-float-left {
+  animation: floatCardLeft 7.5s ease-in-out infinite;
+}
+
+.animate-float-right {
+  animation: floatCardRight 9s ease-in-out infinite;
+}
+
+.animate-float-subtle {
+  animation: floatCardSubtle 6s ease-in-out infinite;
+}
+
+/* Floating Ambient Language Drift Keyframes */
+@keyframes floatLanguageDrift {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(1.5deg); }
+}
+
+@keyframes floatLanguageDriftSlow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(16px) rotate(-1.5deg); }
+}
+
+.animate-float-drift {
+  animation: floatLanguageDrift 7s ease-in-out infinite;
+}
+
+.animate-float-drift-slow {
+  animation: floatLanguageDriftSlow 9.5s ease-in-out infinite;
+}
+
+@keyframes textShimmerFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Guaranteed High-Contrast Animated Gradient Typography */
+.hero-gradient-text-light {
+  background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 30%, #6d28d9 65%, #0369a1 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  color: #1d4ed8; /* Solid fallback */
+  animation: textShimmerFlow 6s ease-in-out infinite;
+}
+
+.hero-gradient-text-dark {
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 30%, #c084fc 65%, #f472b6 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  color: #38bdf8; /* Solid fallback */
+  animation: textShimmerFlow 6s ease-in-out infinite;
+}

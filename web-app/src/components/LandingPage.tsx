@@ -416,11 +416,177 @@ export default function LandingPage({
           </div>
         )}
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8">
+        {/* Ambient Sound Wave Horizon Curves in Background */}
+        <div className="absolute inset-x-0 bottom-0 top-1/4 pointer-events-none -z-10 overflow-hidden opacity-35 dark:opacity-25">
+          <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1440 600" fill="none">
+            <path
+              d="M0,320 C320,220 420,420 720,320 C1020,220 1120,420 1440,320 L1440,600 L0,600 Z"
+              fill="url(#soundwave-gradient)"
+            />
+            <defs>
+              <linearGradient id="soundwave-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={isLight ? "#38bdf8" : "#06b6d4"} stopOpacity="0.25" />
+                <stop offset="50%" stopColor={isLight ? "#818cf8" : "#6366f1"} stopOpacity="0.2" />
+                <stop offset="100%" stopColor={isLight ? "#c084fc" : "#a855f7"} stopOpacity="0.15" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
+        {/* Ambient Floating World Language Chips across Canvas (Subtle Depth & Global Energy) */}
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+          {/* Chip 1: Sinhala (Top-Left) */}
+          <div className="hidden sm:flex absolute left-4 sm:left-10 lg:left-14 top-20 items-center gap-2 px-3 py-1.5 rounded-full border shadow-sm backdrop-blur-md opacity-85 animate-float-drift">
+            <div className="w-5 h-3.5 relative overflow-hidden rounded-[2px] shadow-xs border border-black/10 shrink-0">
+              <Image src="/images/flags/lk.png" alt="Sinhala" fill className="object-cover" />
+            </div>
+            <span className={`text-[11px] font-black ${isLight ? "text-slate-800" : "text-slate-200"}`}>සිංහල</span>
+            <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-semibold">&ldquo;ආයුබෝවන්&rdquo;</span>
+          </div>
+
+          {/* Chip 2: Japanese (Mid-Left) */}
+          <div className="hidden md:flex absolute left-6 sm:left-12 lg:left-16 top-72 items-center gap-2 px-3 py-1.5 rounded-full border shadow-sm backdrop-blur-md opacity-75 animate-float-drift-slow">
+            <div className="w-5 h-3.5 relative overflow-hidden rounded-[2px] shadow-xs border border-black/10 shrink-0">
+              <Image src="/images/flags/jp.png" alt="Japanese" fill className="object-cover" />
+            </div>
+            <span className={`text-[11px] font-black ${isLight ? "text-slate-800" : "text-slate-200"}`}>日本語</span>
+            <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">&ldquo;こんにちは&rdquo;</span>
+          </div>
+
+          {/* Chip 3: Spanish (Top-Right) */}
+          <div className="hidden sm:flex absolute right-4 sm:right-10 lg:right-14 top-20 items-center gap-2 px-3 py-1.5 rounded-full border shadow-sm backdrop-blur-md opacity-85 animate-float-drift-slow">
+            <div className="w-5 h-3.5 relative overflow-hidden rounded-[2px] shadow-xs border border-black/10 shrink-0">
+              <Image src="/images/flags/es.png" alt="Spanish" fill className="object-cover" />
+            </div>
+            <span className={`text-[11px] font-black ${isLight ? "text-slate-800" : "text-slate-200"}`}>Español</span>
+            <span className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold">&ldquo;¡Hola!&rdquo;</span>
+          </div>
+
+          {/* Chip 4: French (Mid-Right) */}
+          <div className="hidden md:flex absolute right-6 sm:right-12 lg:right-16 top-72 items-center gap-2 px-3 py-1.5 rounded-full border shadow-sm backdrop-blur-md opacity-75 animate-float-drift">
+            <div className="w-5 h-3.5 relative overflow-hidden rounded-[2px] shadow-xs border border-black/10 shrink-0">
+              <Image src="/images/flags/fr.png" alt="French" fill className="object-cover" />
+            </div>
+            <span className={`text-[11px] font-black ${isLight ? "text-slate-800" : "text-slate-200"}`}>Français</span>
+            <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold">&ldquo;Bonjour&rdquo;</span>
+          </div>
+        </div>
+
+        {/* Left Side Floating Conversational Dialogue Card (Sinhala Street Food Scenario) */}
+        <div className="hidden xl:block absolute left-2 xl:left-4 2xl:left-8 top-32 z-20 w-64 2xl:w-72 pointer-events-none animate-float-left">
+          <div className={`p-4 rounded-3xl border shadow-2xl backdrop-blur-xl space-y-3 ${
+            isLight
+              ? "bg-white/95 border-slate-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.08)] text-slate-800"
+              : "bg-[#091228]/90 border-cyan-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.6)] text-slate-100"
+          }`}>
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-4 relative overflow-hidden rounded-[3px] shadow-sm border border-black/10 shrink-0">
+                  <Image src="/images/flags/lk.png" alt="Sri Lanka" fill className="object-cover" />
+                </div>
+                <div>
+                  <p className="text-xs font-black">Coach Sameera</p>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Live Speaking Call
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-400/20 font-bold">
+                02:14
+              </span>
+            </div>
+
+            {/* Speech dialogue bubbles */}
+            <div className="space-y-1.5 text-left">
+              <div className={`p-2.5 rounded-2xl text-[11px] font-medium leading-relaxed ${
+                isLight ? "bg-slate-100 text-slate-700" : "bg-slate-800/80 text-slate-300"
+              }`}>
+                &ldquo;ගාලු මුවදොර ඉස්සෝ වඩේ කමුද?&rdquo; 🦐
+              </div>
+              <div className="p-2.5 rounded-2xl text-[11px] font-medium leading-relaxed bg-gradient-to-r from-cyan-500/15 via-blue-500/15 to-indigo-500/15 border border-cyan-400/30 text-cyan-900 dark:text-cyan-200">
+                &ldquo;හවසට මුහුදු සුළඟත් එක්ක මාරම රසයි! යමු!&rdquo; ✨
+              </div>
+            </div>
+
+            {/* Waveform footer */}
+            <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1">
+              <span>⚡ Natural Rate: 0.95x</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold">100% Fluency</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Left Side Lower Floating Metric Pill */}
+        <div className="hidden lg:block absolute left-8 2xl:left-20 bottom-24 z-20 pointer-events-none animate-float-subtle">
+          <div className={`px-4 py-2.5 rounded-2xl border text-xs font-bold shadow-lg backdrop-blur-md flex items-center gap-2.5 ${
+            isLight
+              ? "bg-white/95 border-slate-200/90 text-slate-800 shadow-slate-200/50"
+              : "bg-slate-900/90 border-indigo-500/30 text-cyan-300 shadow-indigo-950/40"
+          }`}>
+            <span className="text-base">⚡</span>
+            <span>Edge VAD Active • Sub-20ms Engine</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+          </div>
+        </div>
+
+        {/* Right Side Floating Grammar Repair Card */}
+        <div className="hidden xl:block absolute right-2 xl:right-4 2xl:right-8 top-32 z-20 w-72 2xl:w-80 pointer-events-none animate-float-right">
+          <div className={`p-4 rounded-3xl border shadow-2xl backdrop-blur-xl space-y-3 ${
+            isLight
+              ? "bg-white/95 border-slate-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.08)] text-slate-800"
+              : "bg-[#091228]/90 border-indigo-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.6)] text-slate-100"
+          }`}>
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-4 relative overflow-hidden rounded-[3px] shadow-sm border border-black/10 shrink-0">
+                  <Image src="/images/flags/gb.png" alt="English" fill className="object-cover" />
+                </div>
+                <div>
+                  <p className="text-xs font-black">AI Redline Studio</p>
+                  <p className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold">Real-Time Grammar Repair</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-400/20">
+                98.4% CEFR B2
+              </span>
+            </div>
+
+            {/* Mistake vs Target */}
+            <div className="space-y-1.5 text-left">
+              <div className="p-2.5 rounded-2xl text-[11px] bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-300 font-mono">
+                ✕ &ldquo;I didn&apos;t went there yesterday&rdquo;
+              </div>
+              <div className="p-2.5 rounded-2xl text-[11px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-200 font-mono font-semibold">
+                ✓ &ldquo;I didn&apos;t go there yesterday&rdquo;
+              </div>
+            </div>
+
+            {/* Rule hint */}
+            <p className="text-[10.5px] text-slate-500 dark:text-slate-400 leading-tight text-left">
+              💡 Base verb &lsquo;go&rsquo; always follows auxiliary &lsquo;didn&apos;t&rsquo;.
+            </p>
+          </div>
+        </div>
+
+        {/* Right Side Lower Floating Metric Pill */}
+        <div className="hidden lg:block absolute right-8 2xl:right-20 bottom-24 z-20 pointer-events-none animate-float-subtle">
+          <div className={`px-4 py-2.5 rounded-2xl border text-xs font-bold shadow-lg backdrop-blur-md flex items-center gap-2.5 ${
+            isLight
+              ? "bg-white/95 border-slate-200/90 text-slate-800 shadow-slate-200/50"
+              : "bg-slate-900/90 border-indigo-500/30 text-amber-300 shadow-indigo-950/40"
+          }`}>
+            <span className="text-base">🎯</span>
+            <span>256 Real Voice Scenarios</span>
+            <span className="text-amber-500">★★★★★</span>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8 relative z-10">
           {/* Social Proof Pill with Live Status */}
           <div className={`inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border text-xs font-bold shadow-sm transition-all hover:scale-105 ${
             isLight
-              ? "border-blue-300/80 bg-white/90 text-blue-800 shadow-blue-500/10 backdrop-blur-md"
+              ? "border-blue-300/80 bg-white/95 text-blue-800 shadow-blue-500/10 backdrop-blur-md"
               : "border-indigo-400/25 bg-indigo-500/10 text-cyan-400 backdrop-blur-md"
           }`}>
             <span className="flex text-amber-500 text-xs">★★★★★</span>
@@ -431,44 +597,39 @@ export default function LandingPage({
             </span>
           </div>
 
-          {/* Master Headline with Live Broadcasting Mic & Shimmering Prism Typography */}
+          {/* Master Headline with Sleek 3D Studio Mic Token & Guaranteed High-Contrast Typography */}
           <div className="space-y-4 max-w-4xl mx-auto">
-            <h1 className={`text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.12] ${
+            <h1 className={`text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.15] ${
               isLight ? "text-[#0F172A]" : "text-white"
             }`}>
               {(!config?.heroHeadline || config.heroHeadline.includes("20 Languages") || config.heroHeadline.includes("confidently")) ? (
                 <>
                   Learn to speak{" "}
-                  {/* Live Broadcasting Studio Microphone Widget */}
-                  <span className="inline-flex items-center align-middle mx-1 sm:mx-2 relative group cursor-default">
-                    {/* Radiating soundwave ripples */}
-                    <span className="absolute inset-0 rounded-2xl bg-cyan-400/30 animate-sound-ripple pointer-events-none" />
-                    <span className="absolute inset-0 rounded-2xl bg-blue-500/20 animate-sound-ripple-delayed pointer-events-none" />
+                  {/* Sleek 3D Studio Microphone Token */}
+                  <span className="inline-flex items-center justify-center align-middle mx-1.5 sm:mx-2.5 relative group cursor-pointer" title="SpeakFlow Real-Time Voice Studio">
+                    {/* Concentric sound wave ripples */}
+                    <span className="absolute -inset-1 sm:-inset-1.5 rounded-full bg-cyan-400/35 animate-sound-ripple pointer-events-none" />
+                    <span className="absolute -inset-2.5 sm:-inset-3.5 rounded-full bg-blue-500/20 animate-sound-ripple-delayed pointer-events-none" />
 
-                    {/* Microphone Glass Container */}
-                    <span className={`relative inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-2xl border shadow-lg transition-transform group-hover:scale-105 ${
+                    <span className={`relative w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shadow-lg border transition-all duration-300 group-hover:scale-110 ${
                       isLight
-                        ? "bg-white/90 border-cyan-300/80 text-slate-900 shadow-cyan-500/20 backdrop-blur-md"
-                        : "bg-slate-900/90 border-cyan-400/50 text-white shadow-cyan-500/30 backdrop-blur-md"
+                        ? "bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 border-white text-white shadow-cyan-500/30"
+                        : "bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-600 border-cyan-400/40 text-white shadow-cyan-500/40"
                     }`}>
-                      <span className="text-xl sm:text-2xl animate-pulse">🎙️</span>
-
-                      {/* Mini Live Audio Equalizer Voice Bars */}
-                      <span className="flex items-end gap-0.5 sm:gap-1 h-3.5 sm:h-5 px-0.5">
-                        <span className="w-1 bg-gradient-to-t from-cyan-500 to-blue-600 rounded-full animate-eq-1" />
-                        <span className="w-1 bg-gradient-to-t from-blue-600 to-indigo-600 rounded-full animate-eq-2" />
-                        <span className="w-1 bg-gradient-to-t from-indigo-600 to-purple-600 rounded-full animate-eq-3" />
-                        <span className="w-1 bg-gradient-to-t from-purple-600 to-pink-500 rounded-full animate-eq-4" />
-                      </span>
-
-                      {/* Live On-Air Pill */}
-                      <span className="hidden sm:inline-flex items-center gap-1 pl-1 border-l border-slate-300 dark:border-slate-700">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-                        <span className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">LIVE</span>
+                      <span className="text-xl sm:text-3xl drop-shadow-md">🎙️</span>
+                      {/* Live beacon indicator */}
+                      <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-white dark:border-slate-900"></span>
                       </span>
                     </span>
                   </span>{" "}
-                  <span className="bg-gradient-to-r from-blue-600 via-indigo-600 via-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent animate-gradient-text font-black">
+                  {/* Guaranteed High-Contrast 20 Languages Text */}
+                  <span className={`font-black tracking-tight inline-block ${
+                    isLight
+                      ? "hero-gradient-text-light text-blue-700"
+                      : "hero-gradient-text-dark text-cyan-400"
+                  }`}>
                     20 Languages
                   </span>{" "}
                   confidently with AI Tutors.
@@ -487,8 +648,38 @@ export default function LandingPage({
             </p>
           </div>
 
+          {/* Interactive Live Audio Visualizer Bar */}
+          <div className="flex items-center justify-center pt-1">
+            <div className={`inline-flex items-center gap-3 px-4 py-2 rounded-2xl border text-xs font-bold shadow-md transition-all ${
+              isLight
+                ? "bg-white/95 border-slate-200/90 text-slate-800 shadow-slate-200/50"
+                : "bg-slate-900/90 border-indigo-500/30 text-slate-200 shadow-indigo-950/40"
+            }`}>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className={`text-[11px] font-black uppercase tracking-wider ${
+                  isLight ? "text-emerald-700" : "text-emerald-400"
+                }`}>
+                  Live Voice Studio
+                </span>
+              </div>
+              <span className="w-1 h-3.5 bg-slate-300 dark:bg-slate-700 rounded-full" />
+              {/* Dancing live equalizer wave bars */}
+              <div className="flex items-end gap-1 h-4">
+                <span className="w-1 bg-gradient-to-t from-cyan-500 to-blue-500 rounded-full animate-eq-1" />
+                <span className="w-1 bg-gradient-to-t from-blue-500 to-indigo-500 rounded-full animate-eq-2" />
+                <span className="w-1 bg-gradient-to-t from-indigo-500 to-purple-500 rounded-full animate-eq-3" />
+                <span className="w-1 bg-gradient-to-t from-purple-500 to-pink-500 rounded-full animate-eq-4" />
+                <span className="w-1 bg-gradient-to-t from-cyan-500 to-emerald-500 rounded-full animate-eq-2" />
+              </div>
+              <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                &lt; 20ms Latency
+              </span>
+            </div>
+          </div>
+
           {/* App Store & Google Play Badges + Quick Practice Action (Side by side like Image 1) */}
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-1">
             <a
               href={config?.apkDownloadUrl || "https://github.com/janithad2/speakflow-ai/releases/download/v1.0.0/speakflow-ai.apk"}
               target="_blank"
