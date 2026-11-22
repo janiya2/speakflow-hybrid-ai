@@ -3302,7 +3302,7 @@ export default function StudentWebApp() {
 
       // Safety watchdog: never leave UI stuck in "Coach is Speaking..." if browser/audio event drops
       if (speechWatchdogRef.current) clearTimeout(speechWatchdogRef.current);
-      const watchdogMs = Math.min(26000, Math.max(8500, text.length * 105));
+      const watchdogMs = Math.min(18000, Math.max(3500, Math.round(text.length * 75) + 1200));
       speechWatchdogRef.current = setTimeout(() => {
         onVoiceEnd();
       }, watchdogMs);
@@ -3365,6 +3365,11 @@ export default function StudentWebApp() {
 
           audio.onplaying = () => onVoiceStart();
           audio.onended = () => onVoiceEnd();
+          audio.ontimeupdate = () => {
+            if (audio.duration && audio.currentTime >= audio.duration - 0.08) {
+              onVoiceEnd();
+            }
+          };
           audio.onerror = () => {
             if (requestId !== ttsSessionIdRef.current) return;
             if (!hasStartedSpeaking) {
