@@ -272,7 +272,7 @@ export default function LandingPage({
         </div>
       )}
 
-      {/* 2. Sticky Glassmorphism Header (Sleek SaaS Layout) */}
+      {/* 2. Sticky Glassmorphism Header (FULL WIDTH Edge-to-Edge with Sleek SaaS Layout) */}
       <header
         className={`sticky top-0 z-50 backdrop-blur-xl border-b transition-all duration-200 ${
           isLight
@@ -280,7 +280,7 @@ export default function LandingPage({
             : "bg-[#060B18]/85 border-slate-800/80 shadow-[0_4px_25px_rgba(0,0,0,0.4)]"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[68px] flex items-center justify-between">
+        <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 h-[68px] flex items-center justify-between">
           {/* Brand Logo with Real app_logo.png */}
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => onOpenDashboard()}>
             <div className="w-9 h-9 rounded-xl overflow-hidden shadow-md shadow-blue-500/20 shrink-0 border border-blue-400/25 transition-transform duration-200 group-hover:scale-105">
@@ -297,18 +297,18 @@ export default function LandingPage({
               <span className={`font-black text-xl tracking-tight transition-colors ${isLight ? "text-slate-900" : "text-white"}`}>
                 SpeakFlow<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">.ai</span>
               </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/10 text-blue-700 dark:text-cyan-400 border border-blue-400/25">
-                20 Langs
+              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-black tracking-wide bg-blue-500/10 text-blue-700 dark:text-cyan-400 border border-blue-400/25 shadow-xs">
+                20+ Languages
               </span>
             </div>
           </div>
 
           {/* Desktop Nav Links (Clean, Title Case & Elegant Hover States) */}
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
             {[
               { name: "Scenarios", href: "#scenarios" },
               { name: "Instant Feedback", href: "#features" },
-              { name: "20 Languages", href: "#languages" },
+              { name: "20+ Languages", href: "#languages" },
               { name: "Pricing", href: "#pricing" },
               { name: "Reviews", href: "#reviews" },
               { name: "FAQ", href: "#faq" },
@@ -664,13 +664,13 @@ export default function LandingPage({
                   </span>
                   <br className="hidden md:inline" />
                   {" "}
-                  {/* Guaranteed High-Contrast 20 Languages Text with full descender clearance */}
+                  {/* Guaranteed High-Contrast 20+ Languages Text with full descender clearance */}
                   <span className={`font-black tracking-tight inline-block pb-3 pt-1 px-1 overflow-visible ${
                     isLight
                       ? "hero-gradient-text-light text-blue-700"
                       : "hero-gradient-text-dark text-cyan-400"
                   }`}>
-                    20 Languages
+                    20+ Languages
                   </span>{" "}
                   <span className="inline-block">confidently with AI Tutors.</span>
                 </>
