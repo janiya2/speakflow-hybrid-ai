@@ -1175,6 +1175,8 @@ export default function StudentWebApp() {
         if (blob.size > 0) {
           const url = URL.createObjectURL(blob);
           const audio = new Audio(url);
+          (audio as any).preservesPitch = true;
+          audio.playbackRate = coachSpeechRateRef.current;
           activeAudioRef.current = audio;
           audio.onended = () => {
             URL.revokeObjectURL(url);
@@ -1195,7 +1197,7 @@ export default function StudentWebApp() {
       const utter = new SpeechSynthesisUtterance(sampleText);
       const langTag = resolveLanguageTag(previewLang, coach);
       utter.lang = langTag;
-      utter.rate = 0.95;
+      utter.rate = Math.min(2.0, Math.max(0.5, coachSpeechRateRef.current));
       utter.pitch = coach.gender === "female" ? 1.08 : 0.9;
       const chosen = pickBestBrowserVoice(window.speechSynthesis.getVoices(), langTag, coach);
       if (chosen) utter.voice = chosen;
@@ -1234,6 +1236,8 @@ export default function StudentWebApp() {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [showSubtitles, setShowSubtitles] = useState(true);
   const [isAudioSlowMode, setIsAudioSlowMode] = useState(false);
+  const [coachSpeechRate, setCoachSpeechRate] = useState<number>(1.0);
+  const COACH_SPEED_OPTIONS = [0.75, 0.9, 1.0, 1.15, 1.3] as const;
   const [isIdleVideoReady, setIsIdleVideoReady] = useState(false);
   const [isTalkingVideoReady, setIsTalkingVideoReady] = useState(false);
   const [hasTalkingVideoError, setHasTalkingVideoError] = useState(false);
@@ -2456,6 +2460,43 @@ export default function StudentWebApp() {
   const isProcessingRef = useRef(false);
   const isMutedRef = useRef(false);
   const isListeningIntentRef = useRef(false);
+  const coachSpeechRateRef = useRef<number>(1.0);
+  const handleEndCallRef = useRef<(() => void) | null>(null);
+
+  const handleChangeCoachSpeed = (nextRate: number) => {
+    const safeRate = Math.min(1.5, Math.max(0.6, Number(nextRate)));
+    coachSpeechRateRef.current = safeRate;
+    setCoachSpeechRate(safeRate);
+    setIsAudioSlowMode(safeRate < 0.95);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("speakflow_coach_speed", String(safeRate));
+      } catch (_) {}
+    }
+    if (activeAudioRef.current) {
+      try {
+        (activeAudioRef.current as any).preservesPitch = true;
+        activeAudioRef.current.playbackRate = safeRate;
+      } catch (_) {}
+    }
+    if (talkingVideoRef.current) {
+      try {
+        talkingVideoRef.current.playbackRate = Math.min(1.25, Math.max(0.85, safeRate));
+      } catch (_) {}
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = parseFloat(localStorage.getItem("speakflow_coach_speed") || "");
+      if (Number.isFinite(saved) && saved >= 0.6 && saved <= 1.5) {
+        coachSpeechRateRef.current = saved;
+        setCoachSpeechRate(saved);
+        setIsAudioSlowMode(saved < 0.95);
+      }
+    } catch (_) {}
+  }, []);
 
   // AudioContext Decibel Monitor Refs
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -3137,23 +3178,13 @@ export default function StudentWebApp() {
     }
   };
 
-  // 6. Call Duration Timer
+  // 6. Call Duration Timer & Countdown
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (activeCallTopic) {
       interval = setInterval(() => {
         setCallDuration((prev) => prev + 1);
-
-        if (remainingSeconds !== null) {
-          setRemainingSeconds((prev) => {
-            if (prev === null) return null;
-            if (prev <= 1) {
-              handleEndCall();
-              return 0;
-            }
-            return prev - 1;
-          });
-        }
+        setRemainingSeconds((prev) => (prev === null ? null : Math.max(0, prev - 1)));
       }, 1000);
     } else {
       setCallDuration(0);
@@ -3162,6 +3193,13 @@ export default function StudentWebApp() {
     return () => {
       if (interval) clearInterval(interval);
     };
+  }, [activeCallTopic]);
+
+  // Auto-end call smoothly outside state updater when countdown hits 00:00
+  useEffect(() => {
+    if (activeCallTopic && remainingSeconds === 0) {
+      handleEndCallRef.current?.();
+    }
   }, [activeCallTopic, remainingSeconds]);
 
   // Clean audio on unmount
@@ -3315,7 +3353,8 @@ export default function StudentWebApp() {
           activeBlobUrlRef.current = blobUrl;
           const audio = new Audio(blobUrl);
           audio.volume = 1.0;
-          audio.playbackRate = isAudioSlowMode ? 0.8 : 1.0;
+          (audio as any).preservesPitch = true;
+          audio.playbackRate = coachSpeechRateRef.current;
           activeAudioRef.current = audio;
 
           audio.onplaying = () => onVoiceStart();
@@ -3362,7 +3401,7 @@ export default function StudentWebApp() {
     const utterance = new SpeechSynthesisUtterance(text);
     const targetLangTag = resolveLanguageTag(langName, coachObj);
     utterance.lang = targetLangTag;
-    utterance.rate = isAudioSlowMode ? 0.78 : 0.98;
+    utterance.rate = Math.min(2.0, Math.max(0.5, coachSpeechRateRef.current));
     utterance.pitch = coachObj.gender === "female" ? 1.05 : 0.9;
 
     const voices = window.speechSynthesis.getVoices();
@@ -4171,6 +4210,10 @@ export default function StudentWebApp() {
     setShowScoreModal(true);
     setActiveCallTopic(null);
   };
+
+  useEffect(() => {
+    handleEndCallRef.current = handleEndCall;
+  });
 
   // 13. Auth Handlers
   const handleAuthSubmit = async (e: React.FormEvent) => {
@@ -6402,16 +6445,60 @@ export default function StudentWebApp() {
                     <span>{simulateOffline ? "✈️ Flight Mode: ON" : "✈️ Flight Mode: OFF"}</span>
                   </button>
 
-                  {/* Timer Badge */}
-                  <div
-                    className={`px-3.5 py-1.5 rounded-full border text-xs font-mono font-black flex items-center gap-1.5 ${
-                      isLight
-                        ? "bg-[#EFF4FB] border-blue-200 text-blue-700"
-                        : "bg-slate-950 border-cyan-500/30 text-cyan-400 shadow-inner"
-                    }`}
-                  >
-                    <Clock className={`w-3.5 h-3.5 ${isLight ? "text-blue-600" : "text-cyan-400"}`} />
-                    <span>{formatTimer(callDuration)}</span>
+                  {/* Countdown / Timer Badge */}
+                  <div className="flex items-center gap-1.5">
+                    <div
+                      className={`px-3.5 py-1.5 rounded-full border text-xs font-mono font-black flex items-center gap-1.5 transition-all ${
+                        remainingSeconds !== null && remainingSeconds <= 15
+                          ? isLight
+                            ? "bg-rose-50 border-rose-400 text-rose-700 animate-pulse shadow-sm"
+                            : "bg-rose-950/80 border-rose-500/70 text-rose-300 animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.35)]"
+                          : remainingSeconds !== null && remainingSeconds <= 60
+                          ? isLight
+                            ? "bg-amber-50 border-amber-400 text-amber-800"
+                            : "bg-amber-950/70 border-amber-500/60 text-amber-300"
+                          : isLight
+                          ? "bg-[#EFF4FB] border-blue-200 text-blue-700"
+                          : "bg-slate-950 border-cyan-500/30 text-cyan-400 shadow-inner"
+                      }`}
+                      title={
+                        remainingSeconds !== null
+                          ? `Countdown remaining (${formatTimer(callDuration)} elapsed)`
+                          : `Unlimited call elapsed (${formatTimer(callDuration)})`
+                      }
+                    >
+                      <Clock
+                        className={`w-3.5 h-3.5 ${
+                          remainingSeconds !== null && remainingSeconds <= 15
+                            ? "text-rose-500"
+                            : remainingSeconds !== null && remainingSeconds <= 60
+                            ? "text-amber-500"
+                            : isLight
+                            ? "text-blue-600"
+                            : "text-cyan-400"
+                        }`}
+                      />
+                      <span>
+                        {remainingSeconds !== null
+                          ? `${formatTimer(remainingSeconds)} left`
+                          : `${formatTimer(callDuration)} • ∞`}
+                      </span>
+                    </div>
+                    {remainingSeconds !== null && (
+                      <button
+                        onClick={() =>
+                          setRemainingSeconds((prev) => (prev === null ? null : prev + 60))
+                        }
+                        className={`px-2 py-1.5 rounded-full border text-[10px] font-black transition-all ${
+                          isLight
+                            ? "bg-[#EFF4FB] hover:bg-blue-100 border-blue-200 text-blue-700"
+                            : "bg-slate-900 hover:bg-slate-800 border-slate-700 text-cyan-300 hover:border-cyan-500/50"
+                        }`}
+                        title="Add 1 extra minute to remaining call time"
+                      >
+                        +1m
+                      </button>
+                    )}
                   </div>
 
                   {/* Quick End Call Button */}
@@ -6638,10 +6725,15 @@ export default function StudentWebApp() {
                           <div className="p-2 rounded-xl bg-slate-950/80 border border-slate-800/80 backdrop-blur-md space-y-1.5 text-left">
                             <div className="flex items-center justify-between text-[9px] text-slate-300 gap-2">
                               <span>Speaking Pace</span>
-                              <span className="font-mono text-cyan-300 font-bold">132 WPM</span>
+                              <span className="font-mono text-cyan-300 font-bold">
+                                {Math.round(132 * coachSpeechRate)} WPM ({coachSpeechRate}x)
+                              </span>
                             </div>
                             <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                              <div className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full w-[78%]" />
+                              <div
+                                className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full transition-all duration-300"
+                                style={{ width: `${Math.min(100, Math.round(72 * coachSpeechRate))}%` }}
+                              />
                             </div>
                             <div className="flex items-center justify-between text-[9px] text-slate-300 pt-0.5 gap-2">
                               <span>Clarity &amp; Tone</span>
@@ -7198,6 +7290,64 @@ export default function StudentWebApp() {
                   >
                     <RotateCcw className="w-4 h-4 text-indigo-500" />
                     <span className="text-xs font-bold hidden sm:inline">Repeat</span>
+                  </button>
+
+                  {/* AI Coach Speaking Speed Selector (Desktop Segmented + Mobile Cycler) */}
+                  <div
+                    className={`hidden md:flex items-center gap-1 p-1 rounded-2xl border ${
+                      isLight
+                        ? "bg-[#EFF4FB] border-blue-200"
+                        : "bg-slate-800/90 border-slate-700"
+                    }`}
+                    title="Adjust AI Coach Speaking Speed"
+                  >
+                    <span
+                      className={`px-1.5 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 ${
+                        isLight ? "text-slate-600" : "text-slate-400"
+                      }`}
+                    >
+                      <Volume2 className="w-3.5 h-3.5 text-cyan-500" />
+                      <span>Speed</span>
+                    </span>
+                    {COACH_SPEED_OPTIONS.map((rate) => {
+                      const isActive = Math.abs(coachSpeechRate - rate) < 0.01;
+                      return (
+                        <button
+                          key={rate}
+                          onClick={() => handleChangeCoachSpeed(rate)}
+                          className={`px-2 py-1 rounded-xl text-[11px] font-mono font-bold transition-all ${
+                            isActive
+                              ? isLight
+                                ? "bg-blue-600 text-white shadow-sm"
+                                : "bg-cyan-500 text-slate-950 shadow-sm shadow-cyan-500/30"
+                              : isLight
+                              ? "text-slate-700 hover:bg-blue-100"
+                              : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                          }`}
+                          title={`Set coach voice speed to ${rate}x`}
+                        >
+                          {rate === 1.0 ? "1x" : `${rate}x`}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Mobile Compact Speed Cycler */}
+                  <button
+                    onClick={() => {
+                      const idx = COACH_SPEED_OPTIONS.findIndex((r) => Math.abs(r - coachSpeechRate) < 0.01);
+                      const nextRate = COACH_SPEED_OPTIONS[(idx + 1) % COACH_SPEED_OPTIONS.length];
+                      handleChangeCoachSpeed(nextRate);
+                    }}
+                    className={`md:hidden p-2.5 rounded-2xl border transition-all flex items-center gap-1.5 ${
+                      isLight
+                        ? "bg-[#EFF4FB] hover:bg-blue-100 border-blue-200 text-slate-800"
+                        : "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200"
+                    }`}
+                    title="Tap to cycle AI Coach speaking speed"
+                  >
+                    <Volume2 className="w-4 h-4 text-cyan-500" />
+                    <span className="text-xs font-mono font-bold">{coachSpeechRate}x</span>
                   </button>
                 </div>
 
