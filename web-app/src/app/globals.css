@@ -725,7 +725,7 @@ html.theme-light .keep-dark-hero img {
   100% { background-position: 0% 50%; }
 }
 
-/* Guaranteed High-Contrast Animated Gradient Typography */
+/* Guaranteed High-Contrast Animated Gradient Typography (With descender padding to prevent text clipping) */
 .hero-gradient-text-light {
   background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 30%, #6d28d9 65%, #0369a1 100%);
   background-size: 200% auto;
@@ -733,6 +733,10 @@ html.theme-light .keep-dark-hero img {
   -webkit-text-fill-color: transparent;
   display: inline-block;
   color: #1d4ed8; /* Solid fallback */
+  padding-bottom: 0.22em;
+  margin-bottom: -0.22em;
+  padding-top: 0.05em;
+  overflow: visible;
   animation: textShimmerFlow 6s ease-in-out infinite;
 }
 
@@ -743,5 +747,50 @@ html.theme-light .keep-dark-hero img {
   -webkit-text-fill-color: transparent;
   display: inline-block;
   color: #38bdf8; /* Solid fallback */
+  padding-bottom: 0.22em;
+  margin-bottom: -0.22em;
+  padding-top: 0.05em;
+  overflow: visible;
   animation: textShimmerFlow 6s ease-in-out infinite;
+}
+
+/* Subtle Background Color Highlight Pulse & Aurora Sweep */
+@keyframes subtleHighlightSweep {
+  0% {
+    transform: translate(-15%, -10%) scale(1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate(15%, 12%) scale(1.15);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-15%, -10%) scale(1);
+    opacity: 0.35;
+  }
+}
+
+@keyframes lightGleamHorizontal {
+  0% {
+    transform: translateX(-120%) skewX(-20deg);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.35;
+  }
+  75% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateX(120%) skewX(-20deg);
+    opacity: 0;
+  }
+}
+
+.animate-highlight-sweep {
+  animation: subtleHighlightSweep 18s ease-in-out infinite;
+}
+
+.animate-light-gleam {
+  animation: lightGleamHorizontal 14s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
