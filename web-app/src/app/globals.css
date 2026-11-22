@@ -530,12 +530,17 @@ html.theme-light .keep-dark-hero [class*="bg-white/1"] {
   color: #ffffff !important;
 }
 
-html.theme-light .keep-dark-hero [class*="from-slate-950"],
-html.theme-light .keep-dark-hero [class*="from-slate-900"],
-html.theme-light .keep-dark-hero [class*="bg-gradient-to-"] {
+html.theme-light .keep-dark-hero div[class*="from-slate-950"],
+html.theme-light .keep-dark-hero div[class*="from-slate-900"] {
   background-color: transparent !important;
-  background-image: inherit;
-  box-shadow: none !important;
+}
+
+/* Ensure Quick Call CTA gradient button inside hero card always retains its vibrant cyber gradient */
+html.theme-light .keep-dark-hero button[class*="from-blue-600"],
+html.theme-light .keep-dark-hero [class*="from-blue-600"][class*="to-cyan-500"] {
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #06b6d4 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.5) !important;
 }
 
 html.theme-light .keep-dark-hero video,

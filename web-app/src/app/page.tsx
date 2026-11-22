@@ -7518,7 +7518,7 @@ export default function StudentWebApp() {
                     <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
                       <button
                         onClick={() => launchTopicByKeyword("random")}
-                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold text-xs shadow-xl shadow-blue-500/40 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                        className="px-6 py-2.5 rounded-xl !bg-gradient-to-r !from-blue-600 !via-indigo-600 !to-cyan-500 hover:from-blue-500 hover:to-cyan-400 !text-white font-bold text-xs shadow-xl shadow-blue-500/40 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
                       >
                         <PhoneCall className="w-3.5 h-3.5 fill-white" />
                         <span>Quick Call ({selectedLanguage}) →</span>
