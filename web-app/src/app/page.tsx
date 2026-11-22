@@ -1079,27 +1079,132 @@ export default function StudentWebApp() {
   // AI Voice Coach Persona Selection
   const [selectedCoach, setSelectedCoach] = useState<CoachModel>(COACHES[0]);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
+  const activeBlobUrlRef = useRef<string | null>(null);
+  const activeTtsAbortRef = useRef<AbortController | null>(null);
+  const activeUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const speechWatchdogRef = useRef<NodeJS.Timeout | null>(null);
   const [previewingCoachVoiceId, setPreviewingCoachVoiceId] = useState<string | null>(null);
 
-  const handlePreviewCoachVoice = (e: React.MouseEvent, coach: CoachModel) => {
+  // Resolve strict BCP-47 voice language & gender-aware browser fallback voice
+  const resolveLanguageTag = (langName: string, coachObj: CoachModel = selectedCoach) => {
+    const l = (langName || "English").toLowerCase().trim();
+    if (l.includes("japan") || l === "ja") return "ja-JP";
+    if (l.includes("korea") || l === "ko") return "ko-KR";
+    if (l.includes("span") || l.includes("espa") || l === "es") return "es-ES";
+    if (l.includes("arab") || l === "ar") return "ar-EG";
+    if (l.includes("tamil") || l === "ta") return "ta-IN";
+    if (l.includes("french") || l.includes("fran") || l === "fr") return "fr-FR";
+    return coachObj.accent.toLowerCase().includes("british") ? "en-GB" : "en-US";
+  };
+
+  const pickBestBrowserVoice = (voices: SpeechSynthesisVoice[], targetLangTag: string, coachObj: CoachModel) => {
+    if (!voices || voices.length === 0) return null;
+    const prefix = targetLangTag.split("-")[0].toLowerCase();
+    const isMale = coachObj.gender === "male";
+    const maleNames = ["ryan", "guy", "christopher", "george", "daniel", "david", "mark", "andrew", "brian", "steffan", "eric", "roger", "keita", "injoon", "alvaro", "shakir", "valluvar", "male"];
+    const femaleNames = ["jenny", "aria", "sonia", "hazel", "libby", "susan", "zira", "ava", "emma", "nanami", "sunhi", "elvira", "salma", "pallavi", "female"];
+
+    const langVoices = voices.filter((v) => v.lang.toLowerCase().startsWith(prefix));
+    const pool = langVoices.length > 0 ? langVoices : voices;
+
+    // 1. Prefer exact locale (e.g. en-GB vs en-US) AND strict gender match
+    const exactGenderLocale = pool.find((v) => {
+      const n = v.name.toLowerCase();
+      const sameLocale = v.lang.toLowerCase().startsWith(targetLangTag.toLowerCase());
+      const matchesGender = isMale
+        ? maleNames.some((m) => n.includes(m)) && !femaleNames.some((f) => n.includes(f))
+        : femaleNames.some((f) => n.includes(f)) && !maleNames.some((m) => n.includes(m));
+      return sameLocale && matchesGender;
+    });
+    if (exactGenderLocale) return exactGenderLocale;
+
+    // 2. Any voice in target language prefix matching gender
+    const anyGenderMatch = pool.find((v) => {
+      const n = v.name.toLowerCase();
+      return isMale
+        ? maleNames.some((m) => n.includes(m)) && !femaleNames.some((f) => n.includes(f))
+        : femaleNames.some((f) => n.includes(f)) && !maleNames.some((m) => n.includes(m));
+    });
+    if (anyGenderMatch) return anyGenderMatch;
+
+    // 3. Exact locale Natural/Online fallback (still staying inside target language, never crossing into ja-JP for English!)
+    const localeMatch = pool.find((v) => v.lang.toLowerCase().startsWith(targetLangTag.toLowerCase()));
+    return localeMatch || pool[0];
+  };
+
+  const handlePreviewCoachVoice = async (e: React.MouseEvent, coach: CoachModel) => {
     e.stopPropagation();
     if (previewingCoachVoiceId === coach.id) {
+      if (activeAudioRef.current) {
+        try {
+          activeAudioRef.current.pause();
+          activeAudioRef.current.src = "";
+        } catch (_) {}
+        activeAudioRef.current = null;
+      }
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
       }
       setPreviewingCoachVoiceId(null);
-    } else {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-        const sampleText = `Hello Janitha! I'm ${coach.name}. I'm excited to practice speaking with you today. Let's start!`;
-        const utter = new SpeechSynthesisUtterance(sampleText);
-        utter.rate = 0.95;
-        utter.pitch = coach.gender === "female" ? 1.15 : 0.9;
-        utter.onend = () => setPreviewingCoachVoiceId(null);
-        utter.onerror = () => setPreviewingCoachVoiceId(null);
-        window.speechSynthesis.speak(utter);
-        setPreviewingCoachVoiceId(coach.id);
+      return;
+    }
+
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    if (activeAudioRef.current) {
+      try {
+        activeAudioRef.current.pause();
+        activeAudioRef.current.src = "";
+      } catch (_) {}
+      activeAudioRef.current = null;
+    }
+
+    const previewLang = selectedLanguage !== "All" ? selectedLanguage : "English";
+    const sampleText = `Hello! I'm ${coach.name}. Let's practice speaking ${previewLang} together with natural confidence!`;
+    setPreviewingCoachVoiceId(coach.id);
+
+    try {
+      const ttsUrl = `/api/tts?text=${encodeURIComponent(sampleText)}&coach=${coach.id}&gender=${coach.gender}&language=${encodeURIComponent(previewLang)}`;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 5000);
+      const res = await fetch(ttsUrl, { signal: controller.signal });
+      clearTimeout(timer);
+      if (res.ok) {
+        const blob = await res.blob();
+        if (blob.size > 0) {
+          const url = URL.createObjectURL(blob);
+          const audio = new Audio(url);
+          activeAudioRef.current = audio;
+          audio.onended = () => {
+            URL.revokeObjectURL(url);
+            setPreviewingCoachVoiceId(null);
+          };
+          audio.onerror = () => {
+            URL.revokeObjectURL(url);
+            setPreviewingCoachVoiceId(null);
+          };
+          await audio.play();
+          return;
+        }
       }
+    } catch (_) {}
+
+    // Gender-strict browser speechSynthesis fallback
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      const utter = new SpeechSynthesisUtterance(sampleText);
+      const langTag = resolveLanguageTag(previewLang, coach);
+      utter.lang = langTag;
+      utter.rate = 0.95;
+      utter.pitch = coach.gender === "female" ? 1.08 : 0.9;
+      const chosen = pickBestBrowserVoice(window.speechSynthesis.getVoices(), langTag, coach);
+      if (chosen) utter.voice = chosen;
+      activeUtteranceRef.current = utter;
+      utter.onend = () => setPreviewingCoachVoiceId(null);
+      utter.onerror = () => setPreviewingCoachVoiceId(null);
+      window.speechSynthesis.speak(utter);
+    } else {
+      setPreviewingCoachVoiceId(null);
     }
   };
 
@@ -3063,11 +3168,20 @@ export default function StudentWebApp() {
     };
   }, []);
 
-  // 7. Text-To-Speech (TTS) Engine — Strict Single-Voice Mutex & Acoustic Echo Guard
+  // 7. Text-To-Speech (TTS) Engine — Edge Neural Fetch + Gender-Strict Fallback + Watchdog Unlock
   const speakText = async (text: string, langName: string) => {
     const requestId = ++ttsSessionIdRef.current;
+    const activeCoachSnap = selectedCoach;
 
-    // Immediately lock out microphone & cancel any pending listen/debounce timers
+    // Abort any in-flight TTS fetch or watchdog timer from prior turn
+    if (activeTtsAbortRef.current) {
+      try { activeTtsAbortRef.current.abort(); } catch (_) {}
+      activeTtsAbortRef.current = null;
+    }
+    if (speechWatchdogRef.current) {
+      clearTimeout(speechWatchdogRef.current);
+      speechWatchdogRef.current = null;
+    }
     if (postSpeechListenTimerRef.current) {
       clearTimeout(postSpeechListenTimerRef.current);
       postSpeechListenTimerRef.current = null;
@@ -3087,11 +3201,8 @@ export default function StudentWebApp() {
     setUserCaption("");
     setIsUserSpeaking(false);
     lastBotSpokenTextRef.current = text;
-
-    // Reset any coach preview state if active
     setPreviewingCoachVoiceId(null);
 
-    // Completely detach & tear down any previous HTMLAudioElement so it can never play in parallel
     if (activeAudioRef.current) {
       try {
         activeAudioRef.current.onplaying = null;
@@ -3103,13 +3214,16 @@ export default function StudentWebApp() {
       } catch (_) {}
       activeAudioRef.current = null;
     }
+    if (activeBlobUrlRef.current) {
+      try { URL.revokeObjectURL(activeBlobUrlRef.current); } catch (_) {}
+      activeBlobUrlRef.current = null;
+    }
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
 
     let hasStartedSpeaking = false;
     let hasEndedSpeaking = false;
-    let fallbackTriggered = false;
 
     const onVoiceStart = () => {
       if (requestId !== ttsSessionIdRef.current || hasStartedSpeaking) return;
@@ -3124,16 +3238,31 @@ export default function StudentWebApp() {
         { sender: "bot", text, timestamp: new Date() }
       ]);
       startCoachTalkingVideo();
+
+      // Safety watchdog: never leave UI stuck in "Coach is Speaking..." if browser/audio event drops
+      if (speechWatchdogRef.current) clearTimeout(speechWatchdogRef.current);
+      const watchdogMs = Math.min(26000, Math.max(8500, text.length * 105));
+      speechWatchdogRef.current = setTimeout(() => {
+        onVoiceEnd();
+      }, watchdogMs);
     };
 
     const onVoiceEnd = () => {
       if (requestId !== ttsSessionIdRef.current || hasEndedSpeaking) return;
       hasEndedSpeaking = true;
+      if (speechWatchdogRef.current) {
+        clearTimeout(speechWatchdogRef.current);
+        speechWatchdogRef.current = null;
+      }
       stopCoachTalkingVideo();
       activeAudioRef.current = null;
+      if (activeBlobUrlRef.current) {
+        try { URL.revokeObjectURL(activeBlobUrlRef.current); } catch (_) {}
+        activeBlobUrlRef.current = null;
+      }
       lastBotFinishTimeRef.current = Date.now();
 
-      // Keep isBotSpeakingRef locked during a 650ms acoustic decay window so speaker reverb cannot enter the mic
+      // Brief 450ms acoustic decay guard, then cleanly unlock microphone & switch coach video to listening
       isBotSpeakingRef.current = true;
       if (postSpeechListenTimerRef.current) clearTimeout(postSpeechListenTimerRef.current);
       postSpeechListenTimerRef.current = setTimeout(() => {
@@ -3146,86 +3275,51 @@ export default function StudentWebApp() {
           startListening();
           scheduleProactiveNudge();
         }
-      }, 650);
+      }, 450);
     };
-
-    let fallbackTimer: NodeJS.Timeout | null = null;
-
-    const triggerFallbackOnce = () => {
-      if (requestId !== ttsSessionIdRef.current || hasStartedSpeaking || fallbackTriggered) return;
-      fallbackTriggered = true;
-      if (fallbackTimer) {
-        clearTimeout(fallbackTimer);
-        fallbackTimer = null;
-      }
-      if (activeAudioRef.current) {
-        try {
-          activeAudioRef.current.onplaying = null;
-          activeAudioRef.current.onended = null;
-          activeAudioRef.current.onerror = null;
-          activeAudioRef.current.onpause = null;
-          activeAudioRef.current.pause();
-          activeAudioRef.current.src = "";
-        } catch (_) {}
-        activeAudioRef.current = null;
-      }
-      fallbackBrowserTts(text, langName, onVoiceStart, onVoiceEnd, requestId);
-    };
-
-    // Allow 2200ms for Edge-TTS neural stream before falling back to on-device SpeechSynthesis (prevents dual-voice overlap)
-    fallbackTimer = setTimeout(() => {
-      triggerFallbackOnce();
-    }, 2200);
 
     try {
-      const ttsUrl = `/api/tts?text=${encodeURIComponent(text)}&coach=${selectedCoach.id}&gender=${selectedCoach.gender}&language=${encodeURIComponent(langName)}`;
-      const audio = new Audio(ttsUrl);
-      audio.volume = 1.0;
-      activeAudioRef.current = audio;
+      const ttsUrl = `/api/tts?text=${encodeURIComponent(text)}&coach=${activeCoachSnap.id}&gender=${activeCoachSnap.gender}&language=${encodeURIComponent(langName)}`;
+      const controller = new AbortController();
+      activeTtsAbortRef.current = controller;
+      const fetchTimer = setTimeout(() => controller.abort(), 5500);
 
-      audio.onplaying = () => {
-        if (requestId !== ttsSessionIdRef.current || fallbackTriggered) {
-          try {
-            audio.pause();
-            audio.src = "";
-          } catch (_) {}
+      const response = await fetch(ttsUrl, { signal: controller.signal });
+      clearTimeout(fetchTimer);
+
+      if (requestId !== ttsSessionIdRef.current) return;
+
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        if (requestId !== ttsSessionIdRef.current) return;
+        if (audioBlob.size > 0) {
+          const blobUrl = URL.createObjectURL(audioBlob);
+          activeBlobUrlRef.current = blobUrl;
+          const audio = new Audio(blobUrl);
+          audio.volume = 1.0;
+          audio.playbackRate = isAudioSlowMode ? 0.8 : 1.0;
+          activeAudioRef.current = audio;
+
+          audio.onplaying = () => onVoiceStart();
+          audio.onended = () => onVoiceEnd();
+          audio.onerror = () => {
+            if (requestId !== ttsSessionIdRef.current) return;
+            if (!hasStartedSpeaking) {
+              fallbackBrowserTts(text, langName, onVoiceStart, onVoiceEnd, requestId, activeCoachSnap);
+            } else {
+              onVoiceEnd();
+            }
+          };
+
+          await audio.play();
           return;
         }
-        if (fallbackTimer) {
-          clearTimeout(fallbackTimer);
-          fallbackTimer = null;
-        }
-        if (typeof window !== "undefined" && "speechSynthesis" in window) {
-          window.speechSynthesis.cancel();
-        }
-        onVoiceStart();
-      };
-
-      audio.onended = () => {
-        if (requestId !== ttsSessionIdRef.current) return;
-        onVoiceEnd();
-      };
-
-      audio.onpause = () => {
-        if (requestId !== ttsSessionIdRef.current) return;
-        if (audio.ended) return;
-        stopCoachTalkingVideo();
-      };
-
-      audio.onerror = () => {
-        triggerFallbackOnce();
-      };
-
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          triggerFallbackOnce();
-        });
       }
-      return;
-    } catch (e) {
-      triggerFallbackOnce();
+    } catch (_) {
+      if (requestId !== ttsSessionIdRef.current) return;
     }
+
+    fallbackBrowserTts(text, langName, onVoiceStart, onVoiceEnd, requestId, activeCoachSnap);
   };
 
   const fallbackBrowserTts = (
@@ -3233,55 +3327,39 @@ export default function StudentWebApp() {
     langName: string,
     onStartCallback?: () => void,
     onEndCallback?: () => void,
-    requestId?: number
+    requestId?: number,
+    coachObj: CoachModel = selectedCoach
   ) => {
     if (requestId !== undefined && requestId !== ttsSessionIdRef.current) return;
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      if (onEndCallback) onEndCallback();
+      if (onStartCallback) onStartCallback();
+      setTimeout(() => { if (onEndCallback) onEndCallback(); }, 1800);
       return;
     }
     window.speechSynthesis.cancel();
     if (window.speechSynthesis.paused) {
       window.speechSynthesis.resume();
     }
+
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = isAudioSlowMode ? 0.75 : 0.98;
-    utterance.pitch = selectedCoach.gender === "female" ? 1.05 : 0.95;
+    const targetLangTag = resolveLanguageTag(langName, coachObj);
+    utterance.lang = targetLangTag;
+    utterance.rate = isAudioSlowMode ? 0.78 : 0.98;
+    utterance.pitch = coachObj.gender === "female" ? 1.05 : 0.9;
 
     const voices = window.speechSynthesis.getVoices();
-    if (voices.length > 0) {
-      if (selectedCoach.accent.includes("British")) {
-        const gbVoice = voices.find((v) => (v.lang.includes("GB") || v.lang.includes("en-GB")) && (v.name.includes("Online") || v.name.includes("Natural") || v.name.includes("Sonia") || v.name.includes("Ryan")));
-        if (gbVoice) utterance.voice = gbVoice;
-      } else if (selectedCoach.accent.includes("French")) {
-        const frVoice = voices.find((v) => v.lang.includes("fr") || v.lang.includes("FR"));
-        if (frVoice) utterance.voice = frVoice;
-      } else if (selectedCoach.accent.includes("Japanese")) {
-        const jaVoice = voices.find((v) => v.lang.includes("ja") || v.lang.includes("JP"));
-        if (jaVoice) utterance.voice = jaVoice;
-      } else {
-        const usVoice = voices.find((v) => (v.lang.includes("US") || v.lang.includes("en-US")) && (v.name.includes("Online") || v.name.includes("Natural") || v.name.includes("Jenny") || v.name.includes("Guy") || v.name.includes("Google")));
-        if (usVoice) utterance.voice = usVoice;
-      }
+    const matchedVoice = pickBestBrowserVoice(voices, targetLangTag, coachObj);
+    if (matchedVoice) {
+      utterance.voice = matchedVoice;
     }
 
-    let targetLang = "en-US";
-    if (langName === "Japanese") targetLang = "ja-JP";
-    else if (langName === "Korean") targetLang = "ko-KR";
-    else if (langName === "Spanish") targetLang = "es-ES";
-    else if (langName === "Arabic") targetLang = "ar-SA";
-    else if (langName === "Tamil") targetLang = "ta-IN";
-    utterance.lang = targetLang;
+    // Keep strong ref so Chromium GC cannot drop utterance before onend fires
+    activeUtteranceRef.current = utterance;
 
-    utterance.onstart = () => {
-      if (requestId !== undefined && requestId !== ttsSessionIdRef.current) {
-        window.speechSynthesis.cancel();
-        return;
-      }
-      if (onStartCallback) onStartCallback();
-      else startCoachTalkingVideo();
-    };
-    utterance.onend = () => {
+    let ended = false;
+    const finishOnce = () => {
+      if (ended) return;
+      ended = true;
       if (requestId !== undefined && requestId !== ttsSessionIdRef.current) return;
       if (onEndCallback) onEndCallback();
       else {
@@ -3291,23 +3369,45 @@ export default function StudentWebApp() {
         scheduleProactiveNudge();
       }
     };
-    utterance.onerror = () => {
-      if (requestId !== undefined && requestId !== ttsSessionIdRef.current) return;
-      if (onEndCallback) onEndCallback();
-      else {
-        stopCoachTalkingVideo();
-        isBotSpeakingRef.current = false;
-        startListening();
+
+    utterance.onstart = () => {
+      if (requestId !== undefined && requestId !== ttsSessionIdRef.current) {
+        window.speechSynthesis.cancel();
+        return;
       }
+      if (onStartCallback) onStartCallback();
+      else startCoachTalkingVideo();
     };
+    utterance.onend = () => finishOnce();
+    utterance.onerror = () => finishOnce();
+
+    // Ensure captions & video start immediately even if browser speechSynthesis fires silently
+    if (onStartCallback) onStartCallback();
     window.speechSynthesis.speak(utterance);
+
+    // Failsafe poll in case Chromium silently stops speaking without firing onend
+    const silentPoll = setInterval(() => {
+      if (ended || (requestId !== undefined && requestId !== ttsSessionIdRef.current)) {
+        clearInterval(silentPoll);
+        return;
+      }
+      if (!window.speechSynthesis.speaking && !window.speechSynthesis.pending) {
+        clearInterval(silentPoll);
+        finishOnce();
+      }
+    }, 600);
   };
 
   const scheduleProactiveNudge = () => {
     if (proactiveNudgeTimerRef.current) clearTimeout(proactiveNudgeTimerRef.current);
     proactiveNudgeTimerRef.current = setTimeout(() => {
       if (!isBotSpeakingRef.current && !isProcessingRef.current && !isUserSpeaking && isCallActiveRef.current && activeCallTopic) {
-        const lang = (selectedLanguage !== "All" ? selectedLanguage : activeCallTopic.language) || "English";
+        const lang =
+          (activeCallTopic.language && activeCallTopic.language !== "All"
+            ? activeCallTopic.language
+            : selectedLanguage !== "All"
+            ? selectedLanguage
+            : "English") || "English";
         let nudge = "I'm listening! Take your time and share your thoughts whenever you're ready.";
         if (lang === "Japanese") nudge = "聞いていますよ！どう思いますか？";
         else if (lang === "Korean") nudge = "듣고 있어요! 어떻게 생각하세요?";
@@ -3386,143 +3486,151 @@ export default function StudentWebApp() {
     isListeningIntentRef.current = true;
     startMicVolumeMonitor();
 
-    try {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.onresult = null;
-          recognitionRef.current.onend = null;
-          recognitionRef.current.onerror = null;
-          recognitionRef.current.abort();
-        } catch (_) {}
-        recognitionRef.current = null;
-      }
-
-      const recognition = new SpeechRecognition();
-      recognitionRef.current = recognition;
-      recognition.continuous = true;
-      recognition.interimResults = true;
-
-      const langName = (selectedLanguage !== "All" ? selectedLanguage : activeCallTopic?.language) || "English";
-      let targetLang = "en-US";
-      if (langName === "Japanese") targetLang = "ja-JP";
-      else if (langName === "Korean") targetLang = "ko-KR";
-      else if (langName === "Spanish") targetLang = "es-ES";
-      else if (langName === "Arabic") targetLang = "ar-SA";
-      else if (langName === "Tamil") targetLang = "ta-IN";
-      recognition.lang = targetLang;
-
-      recognition.onstart = () => {
-        setIsUserSpeaking(false);
-        setMicPermissionError(false);
-      };
-
-      recognition.onresult = (event: any) => {
-        // Hard guard: ignore all mic events while Coach is speaking or AI is processing
-        if (
-          !isCallActiveRef.current ||
-          !isListeningIntentRef.current ||
-          isBotSpeakingRef.current ||
-          isProcessingRef.current ||
-          isMutedRef.current ||
-          (activeAudioRef.current && !activeAudioRef.current.paused) ||
-          (typeof window !== "undefined" && "speechSynthesis" in window && window.speechSynthesis.speaking)
-        ) {
-          return;
-        }
-
-        let interimText = "";
-        let finalText = "";
-
-        for (let i = 0; i < event.results.length; i++) {
-          const result = event.results[i];
-          if (result.isFinal) {
-            finalText += result[0].transcript + " ";
-          } else {
-            interimText += result[0].transcript;
-          }
-        }
-
-        const liveWords = (finalText + interimText).trim();
-        if (!liveWords) return;
-
-        // Acoustic Echo Filter: Discard any transcript that is the Coach's own voice coming from the speakers
-        if (isAcousticEchoOfBot(liveWords)) {
-          if (speechDebounceTimerRef.current) {
-            clearTimeout(speechDebounceTimerRef.current);
-            speechDebounceTimerRef.current = null;
-          }
-          setUserCaption("");
-          setIsUserSpeaking(false);
-          return;
-        }
-
-        setUserCaption(liveWords);
-        setIsUserSpeaking(true);
-
-        // When user finishes a phrase, debounce comfortably before sending to AI
-        const hasFinalPhrase = Boolean(finalText.trim());
-        const phraseToSubmit = finalText.trim() || (interimText.trim().length > 14 ? interimText.trim() : "");
-        if (phraseToSubmit) {
-          if (speechDebounceTimerRef.current) clearTimeout(speechDebounceTimerRef.current);
-          const debounceMs = hasFinalPhrase ? 1150 : 1750;
-          speechDebounceTimerRef.current = setTimeout(() => {
-            if (
-              isListeningIntentRef.current &&
-              isCallActiveRef.current &&
-              !isBotSpeakingRef.current &&
-              !isProcessingRef.current &&
-              !isMutedRef.current &&
-              phraseToSubmit.length >= 2 &&
-              !isAcousticEchoOfBot(phraseToSubmit)
-            ) {
-              handleUserSpeech(phraseToSubmit);
-            }
-          }, debounceMs);
-        }
-      };
-
-      recognition.onerror = (event: any) => {
-        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-          setMicPermissionError(true);
-        }
-        setIsUserSpeaking(false);
-
-        // Auto-resurrect on no-speech only when Coach is NOT speaking
-        if (
-          event.error === "no-speech" &&
-          isListeningIntentRef.current &&
-          isCallActiveRef.current &&
-          !isBotSpeakingRef.current &&
-          !isProcessingRef.current &&
-          !isMutedRef.current
-        ) {
-          try {
-            recognition.start();
-          } catch (_) {}
-        }
-      };
-
-      recognition.onend = () => {
-        setIsUserSpeaking(false);
-        // Automatic resurrection loop only when Coach is silent and we intend to listen
-        if (
-          isListeningIntentRef.current &&
-          isCallActiveRef.current &&
-          !isBotSpeakingRef.current &&
-          !isMutedRef.current &&
-          !isProcessingRef.current
-        ) {
-          try {
-            recognition.start();
-          } catch (_) {}
-        }
-      };
-
-      recognition.start();
-    } catch (e: any) {
-      console.warn("Failed to start speech recognition:", e);
-      setIsUserSpeaking(false);
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.abort();
+      } catch (_) {}
+      recognitionRef.current = null;
     }
+
+    // Brief 120ms stagger after abort() so Chromium reliably acquires mic focus for SpeechRecognition
+    setTimeout(() => {
+      if (!isListeningIntentRef.current || !isCallActiveRef.current || isBotSpeakingRef.current || isMutedRef.current || isProcessingRef.current) {
+        return;
+      }
+      try {
+        const recognition = new SpeechRecognition();
+        recognitionRef.current = recognition;
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+
+        // Strict priority: active call topic's language FIRST so English calls never speak/listen in another header language
+        const langName =
+          (activeCallTopic?.language && activeCallTopic.language !== "All"
+            ? activeCallTopic.language
+            : selectedLanguage !== "All"
+            ? selectedLanguage
+            : "English") || "English";
+        const targetLang = resolveLanguageTag(langName, selectedCoach);
+        recognition.lang = targetLang;
+
+        recognition.onstart = () => {
+          setIsUserSpeaking(false);
+          setMicPermissionError(false);
+        };
+
+        recognition.onresult = (event: any) => {
+          if (
+            !isCallActiveRef.current ||
+            !isListeningIntentRef.current ||
+            isBotSpeakingRef.current ||
+            isProcessingRef.current ||
+            isMutedRef.current ||
+            (activeAudioRef.current && !activeAudioRef.current.paused) ||
+            (typeof window !== "undefined" && "speechSynthesis" in window && window.speechSynthesis.speaking)
+          ) {
+            return;
+          }
+
+          let interimText = "";
+          let finalText = "";
+
+          for (let i = 0; i < event.results.length; i++) {
+            const result = event.results[i];
+            if (result.isFinal) {
+              finalText += result[0].transcript + " ";
+            } else {
+              interimText += result[0].transcript;
+            }
+          }
+
+          const liveWords = (finalText + interimText).trim();
+          if (!liveWords) return;
+
+          if (isAcousticEchoOfBot(liveWords)) {
+            if (speechDebounceTimerRef.current) {
+              clearTimeout(speechDebounceTimerRef.current);
+              speechDebounceTimerRef.current = null;
+            }
+            setUserCaption("");
+            setIsUserSpeaking(false);
+            return;
+          }
+
+          setUserCaption(liveWords);
+          setIsUserSpeaking(true);
+
+          const hasFinalPhrase = Boolean(finalText.trim());
+          const phraseToSubmit = finalText.trim() || (interimText.trim().length >= 3 ? interimText.trim() : "");
+          if (phraseToSubmit) {
+            if (speechDebounceTimerRef.current) clearTimeout(speechDebounceTimerRef.current);
+            const debounceMs = hasFinalPhrase ? 850 : 1450;
+            speechDebounceTimerRef.current = setTimeout(() => {
+              if (
+                isListeningIntentRef.current &&
+                isCallActiveRef.current &&
+                !isBotSpeakingRef.current &&
+                !isProcessingRef.current &&
+                !isMutedRef.current &&
+                phraseToSubmit.length >= 2 &&
+                !isAcousticEchoOfBot(phraseToSubmit)
+              ) {
+                handleUserSpeech(phraseToSubmit);
+              }
+            }, debounceMs);
+          }
+        };
+
+        recognition.onerror = (event: any) => {
+          if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+            setMicPermissionError(true);
+            isListeningIntentRef.current = false;
+            return;
+          }
+          setIsUserSpeaking(false);
+          if (
+            (event.error === "no-speech" || event.error === "audio-capture") &&
+            isListeningIntentRef.current &&
+            isCallActiveRef.current &&
+            !isBotSpeakingRef.current &&
+            !isProcessingRef.current &&
+            !isMutedRef.current
+          ) {
+            setTimeout(() => {
+              try {
+                if (isListeningIntentRef.current && !isBotSpeakingRef.current) recognition.start();
+              } catch (_) {}
+            }, 250);
+          }
+        };
+
+        recognition.onend = () => {
+          setIsUserSpeaking(false);
+          if (
+            isListeningIntentRef.current &&
+            isCallActiveRef.current &&
+            !isBotSpeakingRef.current &&
+            !isMutedRef.current &&
+            !isProcessingRef.current
+          ) {
+            setTimeout(() => {
+              try {
+                if (isListeningIntentRef.current && !isBotSpeakingRef.current) recognition.start();
+              } catch (_) {}
+            }, 180);
+          }
+        };
+
+        recognition.start();
+      } catch (e: any) {
+        console.warn("Failed to start speech recognition:", e);
+        setIsUserSpeaking(false);
+      }
+    }, 120);
   };
 
   const stopListening = () => {
@@ -3581,7 +3689,12 @@ export default function StudentWebApp() {
       setRemainingSeconds(null);
     }
 
-    const langToUse = (selectedLanguage !== "All" ? selectedLanguage : topic.language) || "English";
+    const langToUse =
+      (topic.language && topic.language !== "All"
+        ? topic.language
+        : selectedLanguage !== "All"
+        ? selectedLanguage
+        : "English") || "English";
     speakText(topic.starterPrompt, langToUse);
   };
 
@@ -3620,7 +3733,12 @@ export default function StudentWebApp() {
     ]);
     setUserCaption(spokenText);
 
-    const lang = (selectedLanguage !== "All" ? selectedLanguage : activeCallTopic?.language) || "English";
+    const lang =
+      (activeCallTopic?.language && activeCallTopic.language !== "All"
+        ? activeCallTopic.language
+        : selectedLanguage !== "All"
+        ? selectedLanguage
+        : "English") || "English";
 
     // Active Drill Repetition Loop
     if (isDrillMode && targetPhraseToRepeat) {
@@ -3767,9 +3885,21 @@ export default function StudentWebApp() {
     setIsBotSpeaking(false);
     stopListening();
     stopMicVolumeMonitor();
+    if (activeTtsAbortRef.current) {
+      try { activeTtsAbortRef.current.abort(); } catch (_) {}
+      activeTtsAbortRef.current = null;
+    }
+    if (speechWatchdogRef.current) {
+      clearTimeout(speechWatchdogRef.current);
+      speechWatchdogRef.current = null;
+    }
     if (postSpeechListenTimerRef.current) {
       clearTimeout(postSpeechListenTimerRef.current);
       postSpeechListenTimerRef.current = null;
+    }
+    if (activeBlobUrlRef.current) {
+      try { URL.revokeObjectURL(activeBlobUrlRef.current); } catch (_) {}
+      activeBlobUrlRef.current = null;
     }
     if (userVideoRef.current && userVideoRef.current.srcObject) {
       const stream = userVideoRef.current.srcObject as MediaStream;
@@ -6105,50 +6235,92 @@ export default function StudentWebApp() {
         })()}
 
         {/* MAIN BODY CONTENT */}
-        <main className={activeCallTopic ? "w-full h-screen overflow-hidden p-0 bg-[#030612] flex flex-col justify-center" : "p-4 sm:p-6 lg:p-8 pb-28 md:pb-8 space-y-6 w-full max-w-[1680px] mx-auto"}>
+        <main className={activeCallTopic ? `w-full h-screen overflow-hidden p-0 flex flex-col justify-center ${isLight ? "bg-[#DCE8F8]" : "bg-[#030612]"}` : "p-4 sm:p-6 lg:p-8 pb-28 md:pb-8 space-y-6 w-full max-w-[1680px] mx-auto"}>
           {/* IF ACTIVE CALL IS RUNNING: FULL SCREEN LIVE AI VIDEO CALL STUDIO */}
           {activeCallTopic ? (
-            <div className="fixed inset-0 z-50 bg-[#030612] w-screen h-screen max-h-screen overflow-hidden p-2 sm:p-3 flex flex-col justify-between select-none">
-              <div className="w-full h-full max-w-[1720px] mx-auto bg-gradient-to-b from-[#0e1628] via-[#090d18] to-[#04060c] border border-cyan-500/40 rounded-2xl sm:rounded-3xl p-2.5 sm:p-3.5 shadow-[0_20px_70px_rgba(0,0,0,0.85)] relative overflow-hidden flex flex-col justify-between min-h-0">
+            <div
+              className={`fixed inset-0 z-50 w-screen h-screen max-h-screen overflow-hidden p-2 sm:p-3 flex flex-col justify-between select-none ${
+                isLight
+                  ? "bg-gradient-to-br from-[#D7E4F6] via-[#E5EEF9] to-[#DCE6F5]"
+                  : "bg-[#030612]"
+              }`}
+            >
+              <div
+                className={`w-full h-full max-w-[1720px] mx-auto rounded-2xl sm:rounded-3xl p-2.5 sm:p-3.5 relative overflow-hidden flex flex-col justify-between min-h-0 border ${
+                  isLight
+                    ? "bg-white/95 border-blue-200/90 shadow-[0_20px_60px_rgba(37,99,235,0.14)]"
+                    : "bg-gradient-to-b from-[#0e1628] via-[#090d18] to-[#04060c] border-cyan-500/40 shadow-[0_20px_70px_rgba(0,0,0,0.85)]"
+                }`}
+              >
               {/* Top ambient lights */}
-              <div className="absolute -top-16 -left-16 w-60 h-60 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-16 -right-16 w-60 h-60 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+              <div className={`absolute -top-16 -left-16 w-60 h-60 rounded-full blur-3xl pointer-events-none ${isLight ? "bg-sky-300/25" : "bg-cyan-500/15"}`} />
+              <div className={`absolute -bottom-16 -right-16 w-60 h-60 rounded-full blur-3xl pointer-events-none ${isLight ? "bg-indigo-300/20" : "bg-indigo-500/15"}`} />
               <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/80 to-transparent" />
 
               {/* 1. TOP BROADCAST & HYBRID TELEMETRY BAR */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-800/80 relative z-10 shrink-0">
+              <div className={`flex flex-col md:flex-row md:items-center justify-between gap-2.5 pb-2.5 border-b relative z-10 shrink-0 ${isLight ? "border-blue-100" : "border-slate-800/80"}`}>
                 {/* Topic Info & Live Status */}
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/25 to-blue-600/30 border border-cyan-400/50 text-cyan-300 flex items-center justify-center font-bold text-2xl shadow-lg shadow-cyan-950/50 shrink-0">
+                  <div
+                    className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl border flex items-center justify-center font-bold text-2xl shrink-0 ${
+                      isLight
+                        ? "bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200 text-blue-700 shadow-sm"
+                        : "bg-gradient-to-br from-cyan-500/25 to-blue-600/30 border-cyan-400/50 text-cyan-300 shadow-lg shadow-cyan-950/50"
+                    }`}
+                  >
                     {activeCallTopic.icon}
                   </div>
                   <div className="truncate">
                     <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[10px] font-black uppercase tracking-wider animate-pulse">
+                      <span
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-black uppercase tracking-wider animate-pulse ${
+                          isLight
+                            ? "bg-rose-50 border-rose-200 text-rose-700"
+                            : "bg-rose-500/20 border-rose-500/40 text-rose-300"
+                        }`}
+                      >
                         <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
                         LIVE AI VIDEO CALL
                       </span>
-                      <span className="px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 text-[10px] font-bold">
+                      <span
+                        className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${
+                          isLight
+                            ? "bg-sky-50 border-sky-200 text-sky-700"
+                            : "bg-cyan-500/15 border-cyan-400/30 text-cyan-300"
+                        }`}
+                      >
                         {activeCallTopic.language} • {activeCallTopic.level}
                       </span>
                     </div>
-                    <h3 className="font-black text-base sm:text-lg text-white truncate mt-1">
+                    <h3 className={`font-black text-base sm:text-lg truncate mt-1 ${isLight ? "text-slate-900" : "text-white"}`}>
                       {activeCallTopic.title}
                     </h3>
                   </div>
                 </div>
 
                 {/* Hybrid Engine Telemetry HUD + Call Timer */}
-                <div className="flex items-center gap-2.5 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
                   {/* Real-Time Engine Indicator */}
                   {simulateOffline || hybridEngine === "ON_DEVICE_NANO" ? (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400 text-emerald-300 text-xs font-mono font-bold shadow-md shadow-emerald-500/30">
-                      <Zap className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400 animate-bounce" />
+                    <div
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono font-bold ${
+                        isLight
+                          ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                          : "bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-md shadow-emerald-500/30"
+                      }`}
+                    >
+                      <Zap className={`w-3.5 h-3.5 animate-bounce ${isLight ? "text-emerald-600 fill-emerald-600" : "text-emerald-400 fill-emerald-400"}`} />
                       <span>⚡ SpeakFlow Edge Neural ({hybridLatency || 12}ms • On-Device)</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-xs font-mono font-bold shadow-md shadow-cyan-500/30">
-                      <Activity className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                    <div
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono font-bold ${
+                        isLight
+                          ? "bg-sky-50 border-sky-200 text-sky-700"
+                          : "bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-md shadow-cyan-500/30"
+                      }`}
+                    >
+                      <Activity className={`w-3.5 h-3.5 animate-pulse ${isLight ? "text-sky-600" : "text-cyan-400"}`} />
                       <span>☁️ SpeakFlow Cloud Neural ({hybridLatency || 140}ms)</span>
                     </div>
                   )}
@@ -6158,7 +6330,11 @@ export default function StudentWebApp() {
                     onClick={() => setSimulateOffline(!simulateOffline)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
                       simulateOffline
-                        ? "bg-amber-500/20 border-amber-400 text-amber-300 shadow-md shadow-amber-500/30"
+                        ? isLight
+                          ? "bg-amber-100 border-amber-300 text-amber-800"
+                          : "bg-amber-500/20 border-amber-400 text-amber-300 shadow-md shadow-amber-500/30"
+                        : isLight
+                        ? "bg-[#EFF4FB] hover:bg-blue-100 border-blue-200 text-slate-700"
                         : "bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-300 hover:text-white"
                     }`}
                     title="Simulate offline flight mode to demo instant On-Device SpeakFlow Neural takeover"
@@ -6168,15 +6344,21 @@ export default function StudentWebApp() {
                   </button>
 
                   {/* Timer Badge */}
-                  <div className="px-3.5 py-1.5 rounded-full bg-slate-950 border border-cyan-500/30 text-xs font-mono font-black text-cyan-400 shadow-inner flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                  <div
+                    className={`px-3.5 py-1.5 rounded-full border text-xs font-mono font-black flex items-center gap-1.5 ${
+                      isLight
+                        ? "bg-[#EFF4FB] border-blue-200 text-blue-700"
+                        : "bg-slate-950 border-cyan-500/30 text-cyan-400 shadow-inner"
+                    }`}
+                  >
+                    <Clock className={`w-3.5 h-3.5 ${isLight ? "text-blue-600" : "text-cyan-400"}`} />
                     <span>{formatTimer(callDuration)}</span>
                   </div>
 
                   {/* Quick End Call Button */}
                   <button
                     onClick={handleEndCall}
-                    className="p-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/40 transition-all shrink-0"
+                    className="p-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/35 transition-all shrink-0"
                     title="End Call & Generate CEFR Scorecard"
                   >
                     <PhoneOff className="w-4 h-4" />
@@ -6187,57 +6369,43 @@ export default function StudentWebApp() {
               {/* 2. MAIN CALL STAGE: CINEMATIC AI VIDEO FEED & LIVE RADAR */}
               <div className="flex-1 min-h-0 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-3 my-1.5 items-stretch relative z-10">
                 {/* Left/Center: High-Definition AI Video Call Screen (8 cols) */}
-                <div className="lg:col-span-8 flex flex-col justify-between rounded-2xl sm:rounded-3xl bg-gradient-to-tr from-[#050914] via-[#091122] to-[#040710] border-2 border-cyan-500/30 shadow-[0_0_50px_rgba(56,189,248,0.2)] p-2 sm:p-3 relative overflow-hidden h-full min-h-0">
-                  {/* Central Coach Presence & Dynamic Video Animation */}
-                  <div className="flex-1 min-h-0 flex flex-col items-center justify-center my-0.5 relative w-full overflow-hidden rounded-2xl bg-[#050914] keep-dark-hero">
-                    {/* Ambient Blurred Studio Video Backdrop */}
-                    {selectedCoach.idleVideo ? (
-                      <video
-                        key={`${selectedCoach.id}-backdrop`}
-                        src={isBotSpeaking ? selectedCoach.talkingVideo : selectedCoach.idleVideo}
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        disablePictureInPicture
-                        {...({ "disablepictureinpicture": "true", "x-webkit-airplay": "deny" } as any)}
-                        controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
-                        className="absolute inset-0 w-full h-full object-cover blur-3xl scale-110 opacity-25 pointer-events-none select-none transition-opacity duration-700"
-                      />
-                    ) : (
-                      <img
-                        key={`${selectedCoach.id}-backdrop-img`}
-                        src={selectedCoach.avatar}
-                        alt=""
-                        className="absolute inset-0 w-full h-full object-cover blur-3xl scale-110 opacity-20 pointer-events-none select-none"
-                      />
-                    )}
+                <div
+                  className={`lg:col-span-8 flex flex-col justify-between rounded-2xl sm:rounded-3xl border-2 p-2 sm:p-3 relative overflow-hidden h-full min-h-0 ${
+                    isLight
+                      ? "bg-gradient-to-b from-[#F4F8FF] to-[#E6EFFC] border-blue-200/90 shadow-lg"
+                      : "bg-gradient-to-tr from-[#050914] via-[#091122] to-[#040710] border-cyan-500/30 shadow-[0_0_50px_rgba(56,189,248,0.2)]"
+                  }`}
+                >
+                  {/* Central Coach Presence & Full-Stage Video Frame */}
+                  <div className="flex-1 min-h-0 flex flex-col items-center justify-between gap-2 relative w-full overflow-hidden rounded-2xl">
+                    {/* Full-Bleed Widescreen Coach Video Feed (Zero Ugly Letterbox Voids) */}
+                    <div className="w-full flex-1 min-h-[240px] relative rounded-2xl transition-all duration-500 shadow-2xl mx-auto group z-10 flex items-center justify-center keep-dark-hero">
+                      <div
+                        className={`w-full h-full rounded-[18px] sm:rounded-[22px] overflow-hidden relative bg-[#080F22] transition-all duration-500 border-2 ${
+                          isBotSpeaking
+                            ? "border-cyan-400 shadow-[0_0_40px_rgba(56,189,248,0.5)]"
+                            : isUserSpeaking
+                            ? "border-emerald-400 shadow-[0_0_36px_rgba(16,185,129,0.45)]"
+                            : isLight
+                            ? "border-blue-300/90 shadow-md"
+                            : "border-slate-700/80 shadow-2xl"
+                        }`}
+                      >
+                        {/* Ambient Soft Portrait Backdrop */}
+                        <img
+                          src={selectedCoach.avatar}
+                          alt=""
+                          className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-35 pointer-events-none select-none z-0"
+                        />
 
-                    {/* Concentric Audio Pulse Rings when Speaking */}
-                    {isBotSpeaking && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="w-[85%] max-w-xl aspect-video rounded-3xl border-2 border-cyan-400/30 animate-ping opacity-20" />
-                        <div className="absolute w-[95%] max-w-2xl aspect-video rounded-3xl border border-blue-500/25 animate-pulse opacity-20" />
-                      </div>
-                    )}
-
-                    {/* Widescreen Cinematic Coach Video Feed + Dynamic Interactive Flanks */}
-                    <div className="w-full relative h-full max-h-[38vh] sm:max-h-[42vh] xl:max-h-[45vh] aspect-video rounded-2xl p-0.5 sm:p-1 transition-all duration-500 shadow-2xl mx-auto group z-10 flex items-center justify-center">
-                      <div className={`w-full h-full rounded-[18px] sm:rounded-[22px] overflow-hidden relative bg-slate-950 transition-all duration-500 border-2 ${
-                        isBotSpeaking
-                          ? "border-cyan-400 shadow-[0_0_50px_rgba(56,189,248,0.6)]"
-                          : isUserSpeaking
-                          ? "border-emerald-400 shadow-[0_0_40px_rgba(16,185,129,0.5)]"
-                          : "border-slate-700/80 shadow-2xl"
-                      }`}>
-                        {/* Fallback Portrait Image - ALWAYS rendered underneath so screen is NEVER black */}
+                        {/* Fallback Crisp Portrait Image - ALWAYS rendered underneath so frame is NEVER black */}
                         <img
                           src={selectedCoach.avatar}
                           alt={selectedCoach.name}
-                          className="absolute inset-0 w-full h-full object-contain object-center z-0 pointer-events-none select-none"
+                          className="absolute inset-0 w-full h-full object-cover object-top z-0 pointer-events-none select-none"
                         />
 
-                        {/* Idle / Listening Video Loop */}
+                        {/* Idle / Listening Video Loop (Active whenever Coach is NOT speaking) */}
                         {selectedCoach.idleVideo && !hasIdleVideoError && (
                           <video
                             ref={idleVideoRef}
@@ -6268,20 +6436,19 @@ export default function StudentWebApp() {
                               setIsIdleVideoReady(false);
                               setHasIdleVideoError(true);
                             }}
-                            className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-200 pointer-events-none select-none ${
+                            className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-200 pointer-events-none select-none ${
                               !isBotSpeaking || !isTalkingVideoReady ? "opacity-100 z-10" : "opacity-0 z-10"
                             }`}
                           />
                         )}
 
-                        {/* Talking / Speaking Video Feed (Preloaded & Imperatively Synced with Voice) */}
+                        {/* Talking / Speaking Video Feed (Explicitly controlled, no autoPlay while listening!) */}
                         {!hasTalkingVideoError && (
                           <video
                             ref={talkingVideoRef}
                             key={`${selectedCoach.id}-talking-feed`}
                             src={selectedCoach.talkingVideo}
                             preload="auto"
-                            autoPlay
                             loop
                             muted
                             playsInline
@@ -6314,17 +6481,20 @@ export default function StudentWebApp() {
                               setIsTalkingVideoReady(false);
                               setHasTalkingVideoError(true);
                             }}
-                            className={`absolute inset-0 w-full h-full object-contain object-center transition-opacity duration-200 pointer-events-none select-none ${
+                            className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-200 pointer-events-none select-none ${
                               isBotSpeaking ? "opacity-100 z-20" : "opacity-0 z-0"
                             }`}
                           />
                         )}
 
-                        {/* Edge PIP Invisible Hover Shield (Stops browser floating overlay icons) */}
+                        {/* Edge PIP Invisible Hover Shield */}
                         <div
                           className="absolute inset-0 z-25 pointer-events-auto bg-transparent select-none"
                           onContextMenu={(e) => e.preventDefault()}
                         />
+
+                        {/* Subtle Edge Contrast Scrim for Video HUD Pills */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/45 via-transparent to-slate-950/55 pointer-events-none z-25" />
 
                         {/* Top-Left Floating Coach Badge inside Video */}
                         <div className="absolute top-3 left-3 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/80 border border-slate-700/80 backdrop-blur-md text-xs font-bold text-white shadow-lg pointer-events-none">
@@ -6333,7 +6503,7 @@ export default function StudentWebApp() {
                           <span className="text-[10px] text-cyan-300 font-normal hidden sm:inline">• {selectedCoach.accent}</span>
                         </div>
 
-                        {/* Left Flank HUD: Grammar Target Radar (when in Grammar Call) OR Power Words */}
+                        {/* Left Flank HUD: Grammar Target Radar OR Power Words */}
                         {activeGrammarDrillMeta ? (
                           <div className="absolute top-14 left-3 z-30 hidden md:flex flex-col gap-1.5 max-w-[195px] pointer-events-auto animate-in fade-in duration-300">
                             <div className="px-2.5 py-1 rounded-xl bg-purple-950/90 border border-purple-400/50 backdrop-blur-md shadow-lg text-[10px] font-black uppercase tracking-wider text-purple-200 flex items-center justify-between gap-2">
@@ -6354,7 +6524,7 @@ export default function StudentWebApp() {
                               className="p-2 rounded-xl bg-emerald-950/85 hover:bg-emerald-900/90 border border-emerald-400/50 text-[9.5px] text-left backdrop-blur-md transition-all group/gt disabled:opacity-50"
                               title="Click to test speaking this native fix aloud"
                             >
-                              <span className="text-emerald-300 font-black uppercase flex items-center justify-between text-[8.5px]">
+                              <span className="text-emerald-300 font-black uppercase flex items-center justify-between gap-2 text-[8.5px]">
                                 <span>✅ Target Pattern</span>
                                 <span className="text-[8px] font-mono text-cyan-300 group-hover/gt:underline">Try</span>
                               </span>
@@ -6362,13 +6532,13 @@ export default function StudentWebApp() {
                             </button>
                           </div>
                         ) : (
-                          <div className="absolute top-14 left-3 z-30 hidden md:flex flex-col gap-1.5 max-w-[170px] pointer-events-auto animate-in fade-in duration-300">
-                            <div className="px-2.5 py-1 rounded-xl bg-slate-950/85 border border-cyan-500/40 backdrop-blur-md shadow-lg text-[10px] font-black uppercase tracking-wider text-cyan-300 flex items-center justify-between">
-                              <span className="flex items-center gap-1">
-                                <Sparkles className="w-3 h-3 text-cyan-400" />
-                                Power Words
+                          <div className="absolute top-14 left-3 z-30 hidden md:flex flex-col gap-1.5 w-[180px] pointer-events-auto animate-in fade-in duration-300">
+                            <div className="px-2.5 py-1 rounded-xl bg-slate-950/85 border border-cyan-500/40 backdrop-blur-md shadow-lg text-[10px] font-black uppercase tracking-wider text-cyan-300 flex items-center justify-between gap-2">
+                              <span className="flex items-center gap-1 whitespace-nowrap">
+                                <Sparkles className="w-3 h-3 text-cyan-400 shrink-0" />
+                                <span>Power Words</span>
                               </span>
-                              <span className="text-[9px] font-mono text-emerald-400 font-bold">
+                              <span className="text-[9px] font-mono text-emerald-400 font-bold shrink-0">
                                 {completedWordsCount}/{currentPowerWords.length}
                               </span>
                             </div>
@@ -6379,7 +6549,7 @@ export default function StudentWebApp() {
                                   key={pwIdx}
                                   disabled={isBotSpeaking || isProcessing}
                                   onClick={() => handleUserSpeech(pw.prompt)}
-                                  className={`px-2.5 py-1 rounded-xl text-[10px] font-bold text-left transition-all border backdrop-blur-md flex items-center justify-between group/pw disabled:opacity-50 ${
+                                  className={`px-2.5 py-1 rounded-xl text-[10px] font-bold text-left transition-all border backdrop-blur-md flex items-center justify-between gap-2 group/pw disabled:opacity-50 ${
                                     isUsed
                                       ? "bg-emerald-500/25 border-emerald-400/60 text-emerald-300 shadow-md shadow-emerald-500/20"
                                       : "bg-slate-950/80 border-slate-800 text-slate-300 hover:border-cyan-400/50 hover:text-white"
@@ -6390,7 +6560,7 @@ export default function StudentWebApp() {
                                   {isUsed ? (
                                     <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
                                   ) : (
-                                    <span className="text-[8px] text-slate-500 font-mono group-hover/pw:text-cyan-300">
+                                    <span className="text-[8px] text-slate-400 font-mono group-hover/pw:text-cyan-300 shrink-0">
                                       +{pw.xp}XP
                                     </span>
                                   )}
@@ -6401,21 +6571,21 @@ export default function StudentWebApp() {
                         )}
 
                         {/* Right Flank HUD: Real-Time Acoustic & Cadence Telemetry */}
-                        <div className="absolute top-14 right-3 z-30 hidden md:flex flex-col gap-1.5 max-w-[160px] pointer-events-auto animate-in fade-in duration-300">
+                        <div className="absolute top-14 right-3 z-30 hidden md:flex flex-col gap-1.5 max-w-[165px] pointer-events-auto animate-in fade-in duration-300">
                           <div className="px-2.5 py-1 rounded-xl bg-slate-950/85 border border-purple-500/40 backdrop-blur-md shadow-lg text-[10px] font-black uppercase tracking-wider text-purple-300 flex items-center gap-1">
                             <Activity className="w-3 h-3 text-purple-400 animate-pulse" />
                             <span>Cadence Flow</span>
                           </div>
                           <div className="p-2 rounded-xl bg-slate-950/80 border border-slate-800/80 backdrop-blur-md space-y-1.5 text-left">
-                            <div className="flex items-center justify-between text-[9px] text-slate-400">
+                            <div className="flex items-center justify-between text-[9px] text-slate-300 gap-2">
                               <span>Speaking Pace</span>
                               <span className="font-mono text-cyan-300 font-bold">132 WPM</span>
                             </div>
                             <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
                               <div className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full w-[78%]" />
                             </div>
-                            <div className="flex items-center justify-between text-[9px] text-slate-400 pt-0.5">
-                              <span>Clarity & Tone</span>
+                            <div className="flex items-center justify-between text-[9px] text-slate-300 pt-0.5 gap-2">
+                              <span>Clarity &amp; Tone</span>
                               <span className="font-mono text-emerald-400 font-bold">98% Crisp</span>
                             </div>
                             <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
@@ -6441,27 +6611,6 @@ export default function StudentWebApp() {
                           </button>
                         </div>
 
-                        {/* Live Dynamic Audio Frequency Spectrum Bars (Dancing Waveform) */}
-                        {(isBotSpeaking || isUserSpeaking) && (
-                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex items-end gap-1 px-3 py-1 rounded-full bg-slate-950/85 backdrop-blur-md border border-cyan-500/30 shadow-lg pointer-events-none">
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping mr-1" />
-                            {[12, 18, 26, 14, 22, 30, 20, 16, 28, 24, 18, 32, 22, 16, 28, 14, 20, 26, 18, 12].map((baseH, bIdx) => (
-                              <span
-                                key={bIdx}
-                                className={`w-1 rounded-full transition-all duration-100 ${
-                                  isBotSpeaking
-                                    ? "bg-cyan-400 shadow-[0_0_6px_#38bdf8]"
-                                    : "bg-emerald-400 shadow-[0_0_6px_#34d399]"
-                                }`}
-                                style={{
-                                  height: `${Math.max(4, (baseH * (micVolumeLevel > 10 ? micVolumeLevel / 50 : 0.8)) % 28 + 4)}px`,
-                                  animation: `pulse ${0.6 + (bIdx % 5) * 0.15}s ease-in-out infinite`
-                                }}
-                              />
-                            ))}
-                          </div>
-                        )}
-
                         {/* Bottom Center Mutually Exclusive Dynamic Live State Pill */}
                         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
                           {isBotSpeaking ? (
@@ -6480,8 +6629,8 @@ export default function StudentWebApp() {
                               <span>SpeakFlow AI Thinking...</span>
                             </div>
                           ) : (
-                            <div className="px-3.5 py-1 rounded-full bg-slate-950/75 border border-slate-700/80 text-slate-300 font-semibold text-[11px] backdrop-blur-md flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                            <div className="px-3.5 py-1 rounded-full bg-slate-950/85 border border-emerald-400/50 text-emerald-300 font-bold text-[11px] backdrop-blur-md flex items-center gap-1.5 shadow-lg">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                               <span>Your Turn to Speak</span>
                             </div>
                           )}
@@ -6489,58 +6638,83 @@ export default function StudentWebApp() {
                       </div>
                     </div>
 
-                    {/* LIVE MICROPHONE INPUT & DECIBEL LEVEL HUD */}
-                    <div className="flex flex-col items-center gap-1.5 mt-2 z-20 shrink-0">
-                      <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-950/90 border border-emerald-500/40 backdrop-blur-md shadow-lg">
-                        <span
-                          className={`w-2 h-2 rounded-full ${
-                            isBotSpeaking
-                              ? "bg-cyan-400 animate-pulse"
-                              : micVolumeLevel > 14
-                              ? "bg-emerald-400 animate-ping"
-                              : "bg-emerald-500"
+                    {/* LIVE MICROPHONE INPUT, DECIBEL LEVEL & QUICK VOICE RETRY HUD */}
+                    <div className="flex flex-col items-center gap-1.5 z-20 shrink-0 w-full">
+                      <div className="flex items-center justify-center gap-2 flex-wrap">
+                        <div
+                          className={`flex items-center gap-2 px-3.5 py-1 rounded-full border backdrop-blur-md shadow-sm ${
+                            isLight
+                              ? "bg-white border-emerald-200 text-slate-800"
+                              : "bg-slate-950/90 border-emerald-500/40 text-emerald-300"
                           }`}
-                        />
-                        <Mic className={`w-3.5 h-3.5 ${isBotSpeaking ? "text-cyan-400" : "text-emerald-400"}`} />
-                        {/* Live Decibel Bar */}
-                        <div className="w-24 sm:w-32 h-2 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
-                          <div
-                            className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full transition-all duration-75"
-                            style={{ width: `${isBotSpeaking ? 6 : Math.max(6, micVolumeLevel)}%` }}
+                        >
+                          <span
+                            className={`w-2 h-2 rounded-full ${
+                              isBotSpeaking
+                                ? "bg-cyan-500 animate-pulse"
+                                : micVolumeLevel > 14
+                                ? "bg-emerald-500 animate-ping"
+                                : "bg-emerald-500"
+                            }`}
                           />
+                          <Mic className={`w-3.5 h-3.5 ${isBotSpeaking ? "text-cyan-500" : "text-emerald-500"}`} />
+                          {/* Live Decibel Bar */}
+                          <div className={`w-24 sm:w-32 h-2 rounded-full overflow-hidden p-0.5 border ${isLight ? "bg-slate-100 border-slate-200" : "bg-slate-800 border-slate-700"}`}>
+                            <div
+                              className="h-full bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-full transition-all duration-75"
+                              style={{ width: `${isBotSpeaking ? 6 : Math.max(8, micVolumeLevel)}%` }}
+                            />
+                          </div>
+                          <span className={`text-[10px] font-mono font-bold ${isLight ? "text-slate-700" : "text-emerald-300"}`}>
+                            {isBotSpeaking
+                              ? "Coach Speaking • Echo Guard ON"
+                              : micVolumeLevel > 14
+                              ? `Hearing Voice: ${micVolumeLevel}%`
+                              : "Mic Live • Speak Now"}
+                          </span>
                         </div>
-                        <span className="text-[10px] font-mono text-emerald-300 font-bold">
-                          {isBotSpeaking
-                            ? "Coach Speaking • Echo Guard ON"
-                            : micVolumeLevel > 14
-                            ? `Hearing Voice: ${micVolumeLevel}%`
-                            : "Mic Live • Speak Now"}
-                        </span>
+
+                        {/* One-Tap Restart Mic Recognition if needed */}
+                        {!isBotSpeaking && !isProcessing && !isMuted && (
+                          <button
+                            type="button"
+                            onClick={() => startListening()}
+                            className={`px-2.5 py-1 rounded-full border text-[10px] font-bold flex items-center gap-1 transition-all ${
+                              isLight
+                                ? "bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700"
+                                : "bg-cyan-500/15 hover:bg-cyan-500/25 border-cyan-500/35 text-cyan-300"
+                            }`}
+                            title="Restart speech recognition listener"
+                          >
+                            <RefreshCw className="w-3 h-3" />
+                            <span>Refresh Mic</span>
+                          </button>
+                        )}
                       </div>
 
                       {/* Manual Submit Button if user spoke something */}
                       {userCaption && !isBotSpeaking && !isProcessing && (
                         <button
                           onClick={() => handleUserSpeech(userCaption)}
-                          className="mt-0.5 px-4 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/50 flex items-center gap-1.5 transition-all animate-bounce"
+                          className="mt-0.5 px-4 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/40 flex items-center gap-1.5 transition-all"
                         >
                           <Send className="w-3 h-3" />
-                          <span>Send Speech: "{userCaption.slice(0, 32)}..." →</span>
+                          <span>Send Speech: &ldquo;{userCaption.slice(0, 32)}...&rdquo; →</span>
                         </button>
                       )}
 
                       {/* Microphone Permission Blocked Warning */}
                       {micPermissionError && (
-                        <div className="mt-0.5 px-3 py-1 rounded-xl bg-rose-500/20 border border-rose-500/50 text-rose-300 text-[10px] font-bold flex items-center gap-1.5">
+                        <div className="mt-0.5 px-3 py-1 rounded-xl bg-rose-500/20 border border-rose-500/50 text-rose-400 text-[10px] font-bold flex items-center gap-1.5">
                           <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                           <span>Microphone blocked! Click the lock icon 🔒 in browser address bar to Allow.</span>
                         </div>
                       )}
 
                       {/* Dynamic Context-Aware Quick Response Chips */}
-                      <div className="flex items-center gap-1.5 flex-wrap justify-center mt-0.5 px-2 max-w-2xl">
+                      <div className="flex items-center gap-1.5 flex-wrap justify-center px-2 max-w-2xl">
                         {(activeCallTopic?.starterQuestions && activeCallTopic.starterQuestions.length > 0
-                          ? activeCallTopic.starterQuestions.slice(0, 3).map((q, idx) => {
+                          ? activeCallTopic.starterQuestions.slice(0, 3).map((q) => {
                               const cleaned = q.replace(/^(Repeat after me:|Try saying or answering with this pattern:|Practice [^:]+:)\s*/i, "").replace(/^"|"$/g, "").trim();
                               return {
                                 text: cleaned,
@@ -6557,7 +6731,11 @@ export default function StudentWebApp() {
                             key={cIdx}
                             disabled={isBotSpeaking || isProcessing}
                             onClick={() => handleUserSpeech(chip.text)}
-                            className="px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-cyan-600/30 disabled:opacity-45 text-slate-300 hover:text-cyan-200 border border-slate-700/80 text-[10px] font-semibold transition-all hover:scale-105 active:scale-95"
+                            className={`px-2.5 py-1 rounded-lg disabled:opacity-45 border text-[10px] font-semibold transition-all hover:scale-105 active:scale-95 ${
+                              isLight
+                                ? "bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 border-blue-200 shadow-sm"
+                                : "bg-slate-900/90 hover:bg-cyan-600/30 text-slate-300 hover:text-cyan-200 border-slate-700/80"
+                            }`}
                           >
                             {chip.label}
                           </button>
@@ -6567,45 +6745,67 @@ export default function StudentWebApp() {
                   </div>
 
                   {/* Clean Aligned Bottom Dock: Live Subtitles (Left/Center) + User PIP Cam (Right) */}
-                  <div className="relative z-20 w-full flex flex-col sm:flex-row sm:items-end justify-between gap-3 pt-2 mt-1 border-t border-slate-800/70 shrink-0">
+                  <div className={`relative z-20 w-full flex flex-col sm:flex-row sm:items-end justify-between gap-3 pt-2 mt-1 border-t shrink-0 ${isLight ? "border-blue-200/80" : "border-slate-800/70"}`}>
                     {/* Closed Captions Subtitle Box */}
                     <div className="flex-1 min-w-0">
                       {showSubtitles && (botCaption || userCaption) ? (
                         <div className="space-y-1.5 max-h-24 overflow-y-auto pr-1 custom-scrollbar">
                           {botCaption && (
-                            <div className="p-2.5 rounded-2xl bg-slate-950/90 border border-cyan-500/45 text-xs text-cyan-100 leading-relaxed backdrop-blur-md shadow-xl flex items-start gap-2.5 text-left animate-in fade-in duration-200">
+                            <div
+                              className={`p-2.5 rounded-2xl border text-xs leading-relaxed backdrop-blur-md shadow-sm flex items-start gap-2.5 text-left animate-in fade-in duration-200 ${
+                                isLight
+                                  ? "bg-white border-blue-200 text-slate-800"
+                                  : "bg-slate-950/90 border-cyan-500/45 text-cyan-100"
+                              }`}
+                            >
                               <img
                                 src={selectedCoach.avatar}
                                 alt={selectedCoach.name}
                                 className="w-6 h-6 rounded-full object-cover border border-cyan-400 shrink-0 mt-0.5 shadow-sm"
                               />
                               <div className="min-w-0 flex-1">
-                                <strong className="text-cyan-400 text-[11px] block font-black">
+                                <strong className={`text-[11px] block font-black ${isLight ? "text-blue-700" : "text-cyan-400"}`}>
                                   {selectedCoach.name} (Coach):
                                 </strong>
-                                <span className="text-slate-100 font-medium break-words">&ldquo;{botCaption}&rdquo;</span>
+                                <span className={`font-medium break-words ${isLight ? "text-slate-700" : "text-slate-100"}`}>
+                                  &ldquo;{botCaption}&rdquo;
+                                </span>
                               </div>
                             </div>
                           )}
                           {userCaption && (
-                            <div className="p-2.5 rounded-2xl bg-[#051c14]/90 border border-emerald-500/45 text-xs text-emerald-100 leading-relaxed backdrop-blur-md shadow-xl flex items-start gap-2.5 text-left animate-in fade-in duration-200">
+                            <div
+                              className={`p-2.5 rounded-2xl border text-xs leading-relaxed backdrop-blur-md shadow-sm flex items-start gap-2.5 text-left animate-in fade-in duration-200 ${
+                                isLight
+                                  ? "bg-emerald-50 border-emerald-200 text-emerald-950"
+                                  : "bg-[#051c14]/90 border-emerald-500/45 text-emerald-100"
+                              }`}
+                            >
                               <img
                                 src={resolvedProfileAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=10b981&color=fff`}
                                 alt={profileDisplayName}
                                 className="w-6 h-6 rounded-full object-cover border border-emerald-400 shrink-0 mt-0.5 shadow-sm"
                               />
                               <div className="min-w-0 flex-1">
-                                <strong className="text-emerald-400 text-[11px] block font-black">
+                                <strong className={`text-[11px] block font-black ${isLight ? "text-emerald-700" : "text-emerald-400"}`}>
                                   You ({profileDisplayName.split(" ")[0]}):
                                 </strong>
-                                <span className="text-emerald-100 font-medium break-words">&ldquo;{userCaption}&rdquo;</span>
+                                <span className={`font-medium break-words ${isLight ? "text-emerald-900" : "text-emerald-100"}`}>
+                                  &ldquo;{userCaption}&rdquo;
+                                </span>
                               </div>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <div className="p-2.5 rounded-2xl bg-slate-950/50 border border-slate-800/70 text-[11px] text-slate-400 flex items-center gap-2">
-                          <Sparkles className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <div
+                          className={`p-2.5 rounded-2xl border text-[11px] flex items-center gap-2 ${
+                            isLight
+                              ? "bg-white/90 border-blue-200 text-slate-600"
+                              : "bg-slate-950/50 border-slate-800/70 text-slate-400"
+                          }`}
+                        >
+                          <Sparkles className={`w-3.5 h-3.5 shrink-0 ${isLight ? "text-blue-600" : "text-cyan-400"}`} />
                           <span>
                             {showSubtitles
                               ? "Live captions will synchronize automatically as you and your AI Coach speak."
@@ -6615,103 +6815,139 @@ export default function StudentWebApp() {
                       )}
                     </div>
 
-                    {/* Docked Picture-In-Picture (PIP) Webcam Preview (Right-Aligned, Zero Overlap!) */}
-                    <div className="w-36 sm:w-40 aspect-video rounded-2xl bg-slate-950/95 border-2 border-cyan-500/50 shadow-2xl overflow-hidden group/pip relative shrink-0 self-end">
-                    {/* Live User Webcam Video */}
-                    <video
-                      ref={userVideoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      disablePictureInPicture
-                      {...({ "disablepictureinpicture": "true", "x-webkit-airplay": "deny" } as any)}
-                      controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
-                      onContextMenu={(e) => e.preventDefault()}
-                      className={`w-full h-full object-cover pointer-events-none select-none ${isCameraActive ? "block" : "hidden"}`}
-                    />
-
-                    {/* Camera Off Avatar Fallback */}
-                    {!isCameraActive && (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-1.5 text-center bg-gradient-to-br from-slate-900 to-[#0c1424]">
-                        <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-700 mb-0.5">
-                          <img src={resolvedProfileAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=3b82f6&color=fff`} alt={profileDisplayName} className="w-full h-full object-cover" />
-                        </div>
-                        <span className="text-[9px] font-bold text-slate-300 truncate">You ({profileDisplayName.split(" ")[0]})</span>
-                        <span className="text-[8px] text-slate-500">Camera Off</span>
-                      </div>
-                    )}
-
-                    {/* PIP Overlay Badge */}
-                    <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/70 text-[8px] font-mono text-emerald-400 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>{isCameraActive ? "Live Cam" : "Mic Only"}</span>
-                    </div>
-
-                    {/* Quick Camera Toggle Button */}
-                    <button
-                      onClick={toggleCamera}
-                      className="absolute bottom-1 right-1 p-1 rounded-md bg-black/70 hover:bg-cyan-500 text-white text-[8px] transition-all"
-                      title={isCameraActive ? "Turn Off Camera" : "Turn On Camera"}
+                    {/* Docked Picture-In-Picture (PIP) Webcam Preview (Zero Corner Overlap) */}
+                    <div
+                      className={`w-40 sm:w-44 aspect-video rounded-2xl border-2 shadow-xl overflow-hidden group/pip relative shrink-0 self-end ${
+                        isLight ? "bg-white border-blue-300" : "bg-slate-950/95 border-cyan-500/50"
+                      }`}
                     >
-                      {isCameraActive ? <CameraOff className="w-3 h-3" /> : <Camera className="w-3 h-3" />}
-                    </button>
-                  </div>
+                      {/* Live User Webcam Video */}
+                      <video
+                        ref={userVideoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        disablePictureInPicture
+                        {...({ "disablepictureinpicture": "true", "x-webkit-airplay": "deny" } as any)}
+                        controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
+                        onContextMenu={(e) => e.preventDefault()}
+                        className={`w-full h-full object-cover pointer-events-none select-none ${isCameraActive ? "block" : "hidden"}`}
+                      />
+
+                      {/* Camera Off Avatar Fallback */}
+                      {!isCameraActive && (
+                        <div
+                          className={`w-full h-full flex flex-col items-center justify-center pt-5 pb-3 px-2 text-center ${
+                            isLight
+                              ? "bg-gradient-to-br from-[#F4F8FF] to-[#E6EFFC]"
+                              : "bg-gradient-to-br from-slate-900 to-[#0c1424]"
+                          }`}
+                        >
+                          <div className={`w-8 h-8 rounded-full overflow-hidden border mb-0.5 ${isLight ? "border-blue-300" : "border-slate-700"}`}>
+                            <img src={resolvedProfileAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=3b82f6&color=fff`} alt={profileDisplayName} className="w-full h-full object-cover" />
+                          </div>
+                          <span className={`text-[9px] font-bold truncate max-w-[110px] ${isLight ? "text-slate-800" : "text-slate-300"}`}>
+                            You ({profileDisplayName.split(" ")[0]})
+                          </span>
+                          <span className={`text-[8px] ${isLight ? "text-slate-500" : "text-slate-500"}`}>Camera Off</span>
+                        </div>
+                      )}
+
+                      {/* PIP Overlay Badge */}
+                      <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/70 text-[8px] font-mono text-emerald-400 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span>{isCameraActive ? "Live Cam" : "Mic Only"}</span>
+                      </div>
+
+                      {/* Quick Camera Toggle Button */}
+                      <button
+                        onClick={toggleCamera}
+                        className="absolute bottom-1.5 right-1.5 p-1 rounded-md bg-black/70 hover:bg-cyan-500 text-white text-[8px] transition-all"
+                        title={isCameraActive ? "Turn Off Camera" : "Turn On Camera"}
+                      >
+                        {isCameraActive ? <CameraOff className="w-3 h-3" /> : <Camera className="w-3 h-3" />}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 {/* Right: Live AI Fluency Radar & Dialogue Stream (4 cols) */}
-                <div className="lg:col-span-4 flex flex-col justify-between rounded-2xl sm:rounded-3xl bg-slate-900/85 border border-slate-800 p-3 sm:p-3.5 relative overflow-hidden backdrop-blur-md shadow-2xl h-full min-h-0">
+                <div
+                  className={`lg:col-span-4 flex flex-col justify-between rounded-2xl sm:rounded-3xl border p-3 sm:p-3.5 relative overflow-hidden backdrop-blur-md shadow-xl h-full min-h-0 ${
+                    isLight
+                      ? "bg-[#F7FAFF] border-blue-200/90"
+                      : "bg-slate-900/85 border-slate-800"
+                  }`}
+                >
                   <div className="space-y-2 flex-1 min-h-0 flex flex-col">
                     {/* Radar Header */}
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-800 shrink-0">
+                    <div className={`flex items-center justify-between pb-2 border-b shrink-0 ${isLight ? "border-blue-100" : "border-slate-800"}`}>
                       <div className="flex items-center gap-2">
-                        <Award className="w-4 h-4 text-cyan-400" />
-                        <h4 className="text-xs font-black uppercase tracking-wider text-white">
+                        <Award className={`w-4 h-4 ${isLight ? "text-blue-600" : "text-cyan-400"}`} />
+                        <h4 className={`text-xs font-black uppercase tracking-wider ${isLight ? "text-slate-900" : "text-white"}`}>
                           Live Fluency Radar
                         </h4>
                       </div>
-                      <span className="text-[10px] font-mono text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/30 font-bold">
+                      <span
+                        className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border font-bold ${
+                          isLight
+                            ? "text-blue-700 bg-sky-50 border-sky-200"
+                            : "text-cyan-400 bg-cyan-500/10 border-cyan-500/30"
+                        }`}
+                      >
                         Score: 94% (B2)
                       </span>
                     </div>
 
                     {/* AI SPEECH CORRECTION & NATURAL PHRASING DIAGNOSIS CARD */}
                     {activeCorrection && (
-                      <div className="p-2.5 rounded-2xl bg-gradient-to-br from-rose-950/40 via-slate-900/90 to-emerald-950/40 border border-amber-500/50 shadow-xl shadow-amber-950/30 text-left space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300 shrink-0">
+                      <div
+                        className={`p-2.5 rounded-2xl border shadow-md text-left space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300 shrink-0 ${
+                          isLight
+                            ? "bg-white border-amber-300"
+                            : "bg-gradient-to-br from-rose-950/40 via-slate-900/90 to-emerald-950/40 border-amber-500/50"
+                        }`}
+                      >
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5 text-xs font-black text-amber-300">
-                            <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                            <span>Speech Diagnosis & Correction</span>
+                          <div className={`flex items-center gap-1.5 text-xs font-black ${isLight ? "text-amber-700" : "text-amber-300"}`}>
+                            <Sparkles className={`w-3.5 h-3.5 animate-pulse ${isLight ? "text-amber-600" : "text-amber-400"}`} />
+                            <span>Speech Diagnosis &amp; Correction</span>
                           </div>
-                          <span className="text-[8.5px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase tracking-wider">
+                          <span
+                            className={`text-[8.5px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider ${
+                              isLight
+                                ? "bg-amber-50 text-amber-800 border-amber-200"
+                                : "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                            }`}
+                          >
                             Instant AI Fix
                           </span>
                         </div>
 
                         {/* ❌ What you said */}
-                        <div className="p-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30">
-                          <div className="text-[8.5px] font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1 mb-0.5">
+                        <div className={`p-1.5 rounded-xl border ${isLight ? "bg-rose-50 border-rose-200" : "bg-rose-500/10 border-rose-500/30"}`}>
+                          <div className={`text-[8.5px] font-bold uppercase tracking-wider flex items-center gap-1 mb-0.5 ${isLight ? "text-rose-700" : "text-rose-400"}`}>
                             <span>❌ What you said:</span>
                           </div>
-                          <p className="text-xs text-rose-200 line-through font-mono">
-                            "{activeCorrection.original}"
+                          <p className={`text-xs line-through font-mono ${isLight ? "text-rose-800" : "text-rose-200"}`}>
+                            &ldquo;{activeCorrection.original}&rdquo;
                           </p>
                         </div>
 
                         {/* ✅ Say it naturally */}
-                        <div className="p-1.5 rounded-xl bg-emerald-500/15 border border-emerald-400/40 shadow-sm shadow-emerald-500/20">
-                          <div className="text-[8.5px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1 mb-0.5">
+                        <div className={`p-1.5 rounded-xl border ${isLight ? "bg-emerald-50 border-emerald-200" : "bg-emerald-500/15 border-emerald-400/40"}`}>
+                          <div className={`text-[8.5px] font-bold uppercase tracking-wider flex items-center gap-1 mb-0.5 ${isLight ? "text-emerald-700" : "text-emerald-400"}`}>
                             <span>✅ Say it naturally:</span>
                           </div>
-                          <p className="text-xs font-black text-emerald-100">
-                            "{activeCorrection.correction}"
+                          <p className={`text-xs font-black ${isLight ? "text-emerald-900" : "text-emerald-100"}`}>
+                            &ldquo;{activeCorrection.correction}&rdquo;
                           </p>
                         </div>
 
                         {/* 💡 Grammar Rule / Explanation */}
                         {activeCorrection.explanation && (
-                          <div className="text-[9.5px] text-cyan-200/90 italic flex items-start gap-1 px-1">
-                            <span className="font-bold text-cyan-400 not-italic shrink-0">💡 Rule:</span>
+                          <div className={`text-[9.5px] italic flex items-start gap-1 px-1 ${isLight ? "text-slate-700" : "text-cyan-200/90"}`}>
+                            <span className={`font-bold not-italic shrink-0 ${isLight ? "text-blue-700" : "text-cyan-400"}`}>💡 Rule:</span>
                             <span>{activeCorrection.explanation}</span>
                           </div>
                         )}
@@ -6723,7 +6959,7 @@ export default function StudentWebApp() {
                             setTargetPhraseToRepeat(activeCorrection.correction);
                             speakText(`Let's practice saying: '${activeCorrection.correction}'. Try repeating it!`, activeCallTopic?.language || "English");
                           }}
-                          className="w-full mt-1 py-1.5 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-black text-[11px] shadow-md shadow-emerald-500/30 flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01]"
+                          className="w-full mt-1 py-1.5 px-3 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-black text-[11px] shadow-md flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01]"
                         >
                           <Volume2 className="w-3.5 h-3.5" />
                           <span>Practice Pronouncing This →</span>
@@ -6731,33 +6967,39 @@ export default function StudentWebApp() {
                       </div>
                     )}
 
-                    {/* Active Repetition Drill Banner (When in drill mode) */}
+                    {/* Active Repetition Drill Banner */}
                     {isDrillMode && targetPhraseToRepeat && !activeCorrection && (
-                      <div className="p-2.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-200 animate-pulse text-left space-y-1 shadow-lg shrink-0">
-                        <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300">
+                      <div
+                        className={`p-2.5 rounded-2xl border animate-pulse text-left space-y-1 shadow-sm shrink-0 ${
+                          isLight
+                            ? "bg-amber-50 border-amber-300 text-amber-900"
+                            : "bg-amber-500/15 border-amber-500/40 text-amber-200"
+                        }`}
+                      >
+                        <div className={`flex items-center gap-1.5 text-xs font-bold ${isLight ? "text-amber-700" : "text-amber-300"}`}>
                           <Target className="w-3.5 h-3.5" />
                           <span>Pronunciation Drill:</span>
                         </div>
-                        <p className="text-xs font-black text-white underline">
-                          "{targetPhraseToRepeat}"
+                        <p className={`text-xs font-black underline ${isLight ? "text-slate-900" : "text-white"}`}>
+                          &ldquo;{targetPhraseToRepeat}&rdquo;
                         </p>
-                        <p className="text-[10px] text-amber-300/80">
+                        <p className={`text-[10px] ${isLight ? "text-amber-800" : "text-amber-300/80"}`}>
                           Say this phrase aloud now to master the phoneme cadence.
                         </p>
                       </div>
                     )}
 
-                    {/* LIVE DIALOGUE STREAM (Luxury Cyber Chat Messenger) */}
+                    {/* LIVE DIALOGUE STREAM (Chat Messenger) */}
                     <div className="space-y-1.5 flex-1 min-h-0 flex flex-col pt-1">
-                      <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-800/80 shrink-0">
+                      <div className={`flex items-center justify-between text-[10px] font-bold uppercase tracking-wider pb-1 border-b shrink-0 ${isLight ? "text-slate-500 border-blue-100" : "text-slate-400 border-slate-800/80"}`}>
                         <span>Dialogue Transcript ({conversationTurns.length})</span>
-                        <span className="text-[9px] font-mono text-cyan-400 flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                        <span className={`text-[9px] font-mono flex items-center gap-1 ${isLight ? "text-blue-600" : "text-cyan-400"}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full animate-ping ${isLight ? "bg-blue-600" : "bg-cyan-400"}`} />
                           Live Sync
                         </span>
                       </div>
 
-                      <div className="space-y-2 flex-1 min-h-0 overflow-y-auto max-h-[190px] xl:max-h-[250px] pr-1 text-xs">
+                      <div className="space-y-2 flex-1 min-h-0 overflow-y-auto pr-1 text-xs">
                         {conversationTurns.length === 0 ? (
                           <div className="text-center py-6 text-slate-500 text-xs italic">
                             Speak into your microphone to start the live conversation...
@@ -6779,15 +7021,19 @@ export default function StudentWebApp() {
                                 )}
 
                                 <div
-                                  className={`max-w-[85%] p-2 rounded-2xl text-[11px] leading-relaxed shadow-md ${
+                                  className={`max-w-[85%] p-2.5 rounded-2xl text-[11px] leading-relaxed shadow-sm border ${
                                     isBot
-                                      ? "bg-gradient-to-br from-[#0e1c33] to-[#0a1424] border border-cyan-500/30 text-cyan-100 rounded-tl-sm"
-                                      : "bg-gradient-to-br from-[#06291c] to-[#041a12] border border-emerald-500/40 text-emerald-100 rounded-tr-sm ml-auto"
+                                      ? isLight
+                                        ? "bg-white border-blue-200 text-slate-800 rounded-tl-sm"
+                                        : "bg-gradient-to-br from-[#0e1c33] to-[#0a1424] border-cyan-500/30 text-cyan-100 rounded-tl-sm"
+                                      : isLight
+                                      ? "bg-emerald-50 border-emerald-200 text-emerald-950 rounded-tr-sm ml-auto"
+                                      : "bg-gradient-to-br from-[#06291c] to-[#041a12] border-emerald-500/40 text-emerald-100 rounded-tr-sm ml-auto"
                                   }`}
                                 >
                                   <div className="flex items-center justify-between gap-2 mb-0.5">
-                                    <span className={`font-black text-[10px] ${isBot ? "text-cyan-300" : "text-emerald-300"}`}>
-                                      {isBot ? selectedCoach.name : "You (Janitha)"}
+                                    <span className={`font-black text-[10px] ${isBot ? (isLight ? "text-blue-700" : "text-cyan-300") : (isLight ? "text-emerald-700" : "text-emerald-300")}`}>
+                                      {isBot ? selectedCoach.name : `You (${profileDisplayName.split(" ")[0]})`}
                                     </span>
                                     <span className="text-[8.5px] font-mono text-slate-500">
                                       {turn.timestamp ? new Date(turn.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Now"}
@@ -6812,33 +7058,43 @@ export default function StudentWebApp() {
                   </div>
 
                   {/* Coach Advice Footnote */}
-                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-[10px] text-slate-400 space-y-0.5 shrink-0 mt-2">
-                    <div className="flex items-center gap-1 text-cyan-400 font-bold">
+                  <div
+                    className={`p-2.5 rounded-xl border text-[10px] space-y-0.5 shrink-0 mt-2 ${
+                      isLight
+                        ? "bg-white border-blue-200 text-slate-600"
+                        : "bg-slate-950/60 border-slate-800 text-slate-400"
+                    }`}
+                  >
+                    <div className={`flex items-center gap-1 font-bold ${isLight ? "text-blue-700" : "text-cyan-400"}`}>
                       <Sparkles className="w-3 h-3" />
-                      <span>{selectedCoach.name}'s Real-Time Tip:</span>
+                      <span>{selectedCoach.name}&apos;s Real-Time Tip:</span>
                     </div>
-                    <p className="text-slate-300 text-left">
-                      Focus on speaking in full sentences. SpeakFlow Voice AI evaluates cadence & grammar automatically.
+                    <p className={`text-left ${isLight ? "text-slate-700" : "text-slate-300"}`}>
+                      Focus on speaking in full sentences. SpeakFlow Voice AI evaluates cadence &amp; grammar automatically.
                     </p>
                   </div>
                 </div>
               </div>
 
               {/* 3. EXECUTIVE VIDEO CALL CONTROL DOCK */}
-              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-3 relative z-10 shrink-0">
-                {/* Left Controls: Mic, Camera, Slow Audio */}
+              <div className={`pt-2 border-t flex items-center justify-between gap-3 relative z-10 shrink-0 ${isLight ? "border-blue-100" : "border-slate-800/80"}`}>
+                {/* Left Controls: Mic, Camera, Replay */}
                 <div className="flex items-center gap-2">
                   {/* Mic Toggle */}
                   <button
                     onClick={() => setIsMuted(!isMuted)}
                     className={`p-2.5 rounded-2xl border transition-all flex items-center gap-2 ${
                       isMuted
-                        ? "bg-rose-500/20 border-rose-500/40 text-rose-300"
+                        ? isLight
+                          ? "bg-rose-50 border-rose-200 text-rose-700"
+                          : "bg-rose-500/20 border-rose-500/40 text-rose-300"
+                        : isLight
+                        ? "bg-[#EFF4FB] hover:bg-blue-100 border-blue-200 text-slate-800"
                         : "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200"
                     }`}
                     title={isMuted ? "Unmute Microphone" : "Mute Microphone"}
                   >
-                    {isMuted ? <MicOff className="w-4 h-4 text-rose-400" /> : <Mic className="w-4 h-4 text-emerald-400" />}
+                    {isMuted ? <MicOff className="w-4 h-4 text-rose-500" /> : <Mic className="w-4 h-4 text-emerald-500" />}
                     <span className="text-xs font-bold hidden sm:inline">{isMuted ? "Unmute" : "Mute"}</span>
                   </button>
 
@@ -6847,12 +7103,16 @@ export default function StudentWebApp() {
                     onClick={toggleCamera}
                     className={`p-2.5 rounded-2xl border transition-all flex items-center gap-2 ${
                       isCameraActive
-                        ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
+                        ? isLight
+                          ? "bg-sky-100 border-sky-300 text-sky-800"
+                          : "bg-cyan-500/20 border-cyan-400 text-cyan-300"
+                        : isLight
+                        ? "bg-[#EFF4FB] hover:bg-blue-100 border-blue-200 text-slate-800"
                         : "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200"
                     }`}
                     title={isCameraActive ? "Turn Off Video Camera" : "Turn On Video Camera"}
                   >
-                    {isCameraActive ? <Video className="w-4 h-4 text-cyan-400" /> : <VideoOff className="w-4 h-4" />}
+                    {isCameraActive ? <Video className="w-4 h-4 text-cyan-500" /> : <VideoOff className="w-4 h-4" />}
                     <span className="text-xs font-bold hidden sm:inline">{isCameraActive ? "Cam ON" : "Cam OFF"}</span>
                   </button>
 
@@ -6863,24 +7123,28 @@ export default function StudentWebApp() {
                         speakText(botCaption, activeCallTopic.language);
                       }
                     }}
-                    className="p-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition-all flex items-center gap-2"
+                    className={`p-2.5 rounded-2xl border transition-all flex items-center gap-2 ${
+                      isLight
+                        ? "bg-[#EFF4FB] hover:bg-blue-100 border-blue-200 text-slate-800"
+                        : "bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200"
+                    }`}
                     title="Repeat coach's last sentence"
                   >
-                    <RotateCcw className="w-4 h-4 text-indigo-400" />
+                    <RotateCcw className="w-4 h-4 text-indigo-500" />
                     <span className="text-xs font-bold hidden sm:inline">Repeat</span>
                   </button>
                 </div>
 
                 {/* Center Status */}
-                <div className="text-center text-xs text-slate-400">
+                <div className="text-center text-xs text-slate-500">
                   {isProcessing ? (
-                    <span className="text-cyan-400 font-bold animate-pulse flex items-center gap-1.5">
+                    <span className={`font-bold animate-pulse flex items-center gap-1.5 ${isLight ? "text-blue-700" : "text-cyan-400"}`}>
                       <Sparkles className="w-3.5 h-3.5" />
                       SpeakFlow Neural Processing Voice Turn...
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1.5 text-slate-300">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className={`flex items-center gap-1.5 font-semibold ${isLight ? "text-slate-700" : "text-slate-300"}`}>
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                       Speak naturally into your microphone
                     </span>
                   )}
@@ -6889,10 +7153,10 @@ export default function StudentWebApp() {
                 {/* Right: End Call Button */}
                 <button
                   onClick={handleEndCall}
-                  className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-black text-xs sm:text-sm shadow-xl shadow-rose-600/40 hover:shadow-rose-600/60 flex items-center gap-2 transition-all hover:scale-[1.02]"
+                  className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-black text-xs sm:text-sm shadow-xl shadow-rose-600/35 hover:shadow-rose-600/55 flex items-center gap-2 transition-all hover:scale-[1.02]"
                 >
                   <PhoneOff className="w-4 h-4" />
-                  <span>End Call & Generate Scorecard</span>
+                  <span>End Call &amp; Generate Scorecard</span>
                 </button>
               </div>
             </div>

@@ -32,39 +32,44 @@ export const VOICE_MAP: Record<string, string> = {
 
 export function resolveEdgeVoice(coachId: string, gender: string, language: string): string {
   const coachKey = coachId.toLowerCase().trim();
-  const l = language.toLowerCase();
+  const l = language.toLowerCase().trim();
+  const isMale =
+    coachKey === "alex" ||
+    coachKey === "oliver" ||
+    coachKey === "kenji" ||
+    gender.toLowerCase().trim() === "male";
 
-  // If the practice language is non-English, use the native language neural voice
-  const isNonEnglish = l.includes("arab") || l.includes("ar") ||
-                       l.includes("jap") || l.includes("ja") ||
-                       l.includes("kor") || l.includes("ko") ||
-                       l.includes("span") || l.includes("es") ||
-                       l.includes("tamil") || l.includes("ta");
+  // Match explicit target language using safe word/locale boundaries (never match "ar" inside "grammar"/"elementary" or "es" inside other words)
+  let langKey = "en";
+  if (l.includes("japan") || l === "ja" || l.startsWith("ja-") || l.startsWith("ja_")) {
+    langKey = "ja";
+  } else if (l.includes("korea") || l === "ko" || l.startsWith("ko-") || l.startsWith("ko_")) {
+    langKey = "ko";
+  } else if (l.includes("span") || l.includes("espa") || l === "es" || l.startsWith("es-") || l.startsWith("es_")) {
+    langKey = "es";
+  } else if (l.includes("arab") || l === "ar" || l.startsWith("ar-") || l.startsWith("ar_")) {
+    langKey = "ar";
+  } else if (l.includes("tamil") || l === "ta" || l.startsWith("ta-") || l.startsWith("ta_")) {
+    langKey = "ta";
+  } else if (l.includes("french") || l.includes("fran") || l === "fr" || l.startsWith("fr-") || l.startsWith("fr_")) {
+    langKey = "fr";
+  }
 
-  if (isNonEnglish) {
-    let langKey = "en";
-    if (l.includes("jap") || l.includes("ja")) langKey = "ja";
-    else if (l.includes("kor") || l.includes("ko")) langKey = "ko";
-    else if (l.includes("span") || l.includes("es")) langKey = "es";
-    else if (l.includes("arab") || l.includes("ar")) langKey = "ar";
-    else if (l.includes("tamil") || l.includes("ta")) langKey = "ta";
-
-    const isMale = coachKey === "alex" || coachKey === "oliver" || coachKey === "kenji" || gender.toLowerCase() === "male";
+  // If practicing a non-English target language, strictly match coach gender in that language
+  if (langKey !== "en") {
     const g = isMale ? "male" : "female";
-    return VOICE_MAP[`${g}_${langKey}`] || (isMale ? "ar-EG-ShakirNeural" : "ar-EG-SalmaNeural");
+    if (langKey === "fr") return isMale ? "fr-FR-HenriNeural" : "fr-FR-DeniseNeural";
+    return VOICE_MAP[`${g}_${langKey}`] || (isMale ? "en-US-GuyNeural" : "en-US-JennyNeural");
   }
 
-  // If language is English, use the coach's signature studio accent
-  if (coachKey === "kenji") {
-    return "en-US-ChristopherNeural";
-  }
-
-  if (VOICE_MAP[coachKey]) {
+  // English practice: use coach's signature English accent AND guaranteed gender match
+  if (coachKey === "kenji") return "en-US-ChristopherNeural";
+  if (coachKey === "aoi") return "en-US-AriaNeural";
+  if (VOICE_MAP[coachKey] && VOICE_MAP[coachKey].startsWith("en-")) {
     return VOICE_MAP[coachKey];
   }
 
-  const g = gender.toLowerCase() === "male" ? "male" : "female";
-  return VOICE_MAP[`${g}_en`] || "en-US-JennyNeural";
+  return isMale ? "en-US-GuyNeural" : "en-US-JennyNeural";
 }
 
 // In-memory cache for fast serverless responses
