@@ -1257,6 +1257,7 @@ export default function StudentWebApp() {
     }
     if (talkingVideoRef.current) {
       try {
+        talkingVideoRef.current.muted = true;
         if (talkingVideoRef.current.readyState >= 2) {
           setIsTalkingVideoReady(true);
         }
@@ -1270,6 +1271,7 @@ export default function StudentWebApp() {
   };
 
   const stopCoachTalkingVideo = () => {
+    isBotSpeakingRef.current = false;
     setIsBotSpeaking(false);
     if (talkingVideoRef.current) {
       try {
@@ -1278,6 +1280,7 @@ export default function StudentWebApp() {
     }
     if (idleVideoRef.current) {
       try {
+        idleVideoRef.current.muted = true;
         if (idleVideoRef.current.readyState >= 2) {
           setIsIdleVideoReady(true);
         }
@@ -1299,6 +1302,9 @@ export default function StudentWebApp() {
     if (!activeCallTopic) return;
     const talkVid = talkingVideoRef.current;
     const idleVid = idleVideoRef.current;
+
+    if (idleVid) idleVid.muted = true;
+    if (talkVid) talkVid.muted = true;
 
     if (isBotSpeaking) {
       if (idleVid) {
@@ -3780,8 +3786,6 @@ export default function StudentWebApp() {
     isBotSpeakingRef.current = false;
     setHasTalkingVideoError(false);
     setHasIdleVideoError(false);
-    setIsTalkingVideoReady(false);
-    setIsIdleVideoReady(false);
     stopCoachTalkingVideo();
 
     if (selectedDurationMinutes !== null) {
@@ -6571,7 +6575,15 @@ export default function StudentWebApp() {
                         {/* Idle / Listening Video Loop (Active whenever Coach is NOT speaking) */}
                         {selectedCoach.idleVideo && !hasIdleVideoError && (
                           <video
-                            ref={idleVideoRef}
+                            ref={(el) => {
+                              idleVideoRef.current = el;
+                              if (el) {
+                                el.muted = true;
+                                if (!isBotSpeakingRef.current && el.paused) {
+                                  el.play().catch(() => {});
+                                }
+                              }
+                            }}
                             key={`${selectedCoach.id}-idle-feed`}
                             src={selectedCoach.idleVideo}
                             poster={selectedCoach.avatar}
@@ -6579,19 +6591,28 @@ export default function StudentWebApp() {
                             autoPlay
                             loop
                             muted
+                            {...({ "defaultMuted": true } as any)}
                             playsInline
                             disablePictureInPicture
                             {...({ "disablepictureinpicture": "true", "x-webkit-airplay": "deny" } as any)}
                             controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
                             onContextMenu={(e) => e.preventDefault()}
+                            onLoadedMetadata={(e) => {
+                              e.currentTarget.muted = true;
+                              if (!isBotSpeakingRef.current) {
+                                e.currentTarget.play().catch(() => {});
+                              }
+                            }}
                             onLoadedData={(e) => {
                               setIsIdleVideoReady(true);
+                              e.currentTarget.muted = true;
                               if (!isBotSpeakingRef.current) {
                                 e.currentTarget.play().catch(() => {});
                               }
                             }}
                             onCanPlay={(e) => {
                               setIsIdleVideoReady(true);
+                              e.currentTarget.muted = true;
                               if (!isBotSpeakingRef.current) {
                                 e.currentTarget.play().catch(() => {});
                               }
@@ -6601,7 +6622,7 @@ export default function StudentWebApp() {
                               setHasIdleVideoError(true);
                             }}
                             className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-300 pointer-events-none select-none ${
-                              !isBotSpeaking && isIdleVideoReady ? "opacity-100 z-10" : "opacity-0 z-0"
+                              !isBotSpeaking ? "opacity-100 z-10" : "opacity-0 z-0"
                             }`}
                           />
                         )}
@@ -6609,25 +6630,36 @@ export default function StudentWebApp() {
                         {/* Talking / Speaking Video Feed (Explicitly controlled, no autoPlay while listening!) */}
                         {!hasTalkingVideoError && (
                           <video
-                            ref={talkingVideoRef}
+                            ref={(el) => {
+                              talkingVideoRef.current = el;
+                              if (el) {
+                                el.muted = true;
+                                if (isBotSpeakingRef.current && el.paused) {
+                                  el.play().catch(() => {});
+                                }
+                              }
+                            }}
                             key={`${selectedCoach.id}-talking-feed`}
                             src={selectedCoach.talkingVideo}
                             poster={selectedCoach.avatar}
                             preload="auto"
                             loop
                             muted
+                            {...({ "defaultMuted": true } as any)}
                             playsInline
                             disablePictureInPicture
                             {...({ "disablepictureinpicture": "true", "x-webkit-airplay": "deny" } as any)}
                             controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
                             onContextMenu={(e) => e.preventDefault()}
                             onLoadedMetadata={(e) => {
+                              e.currentTarget.muted = true;
                               if (isBotSpeakingRef.current) {
                                 e.currentTarget.play().catch(() => {});
                               }
                             }}
                             onLoadedData={(e) => {
                               setIsTalkingVideoReady(true);
+                              e.currentTarget.muted = true;
                               if (isBotSpeakingRef.current) {
                                 e.currentTarget.play().catch(() => {});
                               } else {
@@ -6636,6 +6668,7 @@ export default function StudentWebApp() {
                             }}
                             onCanPlay={(e) => {
                               setIsTalkingVideoReady(true);
+                              e.currentTarget.muted = true;
                               if (isBotSpeakingRef.current) {
                                 e.currentTarget.play().catch(() => {});
                               } else {
@@ -6647,7 +6680,7 @@ export default function StudentWebApp() {
                               setHasTalkingVideoError(true);
                             }}
                             className={`absolute inset-0 w-full h-full object-cover object-top transition-opacity duration-300 pointer-events-none select-none ${
-                              isBotSpeaking && isTalkingVideoReady ? "opacity-100 z-15" : "opacity-0 z-0"
+                              isBotSpeaking ? "opacity-100 z-20" : "opacity-0 z-0"
                             }`}
                           />
                         )}
