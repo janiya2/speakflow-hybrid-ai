@@ -157,7 +157,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Baseball',
     icon: '⚾',
     scenario: 'You are talking with a Japanese baseball enthusiast at Tokyo Dome.',
-    starterPrompt: '野球はお好きですか？日本のプロ野球でどのチームを応援していますか？ (Yakyuu wa osuki desu ka? Do you like baseball? Which Japanese team do you support?)',
+    starterPrompt: '野球はお好きですか？日本のプロ野球でどのチームを応援していますか？',
     starterQuestions: ['ドームの雰囲気はどうですか？ (How is the stadium atmosphere?)', '野球をしたことがありますか？ (Have you ever played baseball?)'],
   ),
   TopicModel(
@@ -169,7 +169,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Martial Arts',
     icon: '🥋',
     scenario: 'You are talking with a friendly Korean martial arts instructor.',
-    starterPrompt: '안녕하세요! 태권도나 다른 운동을 해보신 적이 있으신가요? (Annyeonghaseyo! Have you ever practiced Taekwondo or any exercise?)',
+    starterPrompt: '안녕하세요! 태권도나 다른 운동을 해보신 적이 있으신가요?',
     starterQuestions: ['어떤 운동을 가장 좋아하세요? (Which exercise do you like most?)', '건강을 위해 무엇을 하시나요? (What do you do for health?)'],
   ),
   TopicModel(
@@ -548,7 +548,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Transport',
     icon: '🚅',
     scenario: 'You are buying a Shinkansen bullet train ticket from a station attendant in Tokyo.',
-    starterPrompt: 'いらっしゃいませ。京都までの新幹線チケットですか？指定席と自由席どちらがよろしいですか？ (Welcome. Shinkansen ticket to Kyoto? Reserved or non-reserved seat?)',
+    starterPrompt: 'いらっしゃいませ。京都までの新幹線チケットですか？指定席と自由席どちらがよろしいですか？',
     starterQuestions: ['何時の電車に乗りますか？ (What time train would you like to take?)', '窓側の席がよろしいですか？ (Would you prefer a window seat?)'],
   ),
   TopicModel(
@@ -560,7 +560,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Hotel',
     icon: '🏯',
     scenario: 'You are arriving at a beautiful traditional Japanese onsen inn.',
-    starterPrompt: 'ようこそお越しくださいました。ご予約のお名前を伺ってもよろしいでしょうか？ (Welcome! May I please have the name on your reservation?)',
+    starterPrompt: 'ようこそお越しくださいました。ご予約のお名前を伺ってもよろしいでしょうか？',
     starterQuestions: ['夕食は何時がご希望ですか？ (What time would you prefer dinner?)', '温泉はもう入られましたか？ (Have you tried the hot springs yet?)'],
   ),
   TopicModel(
@@ -572,7 +572,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Transport',
     icon: '🚕',
     scenario: 'You just stepped into a taxi in downtown Seoul and are telling the driver your destination.',
-    starterPrompt: '어서오세요! 어디로 모실까요? (Welcome! Where can I take you today?)',
+    starterPrompt: '어서오세요! 어디로 모실까요?',
     starterQuestions: ['홍대입구역 어디쯤에 내려드릴까요? (Where around Hongdae Station should I drop you?)', '서울 여행은 처음이세요? (Is this your first trip to Seoul?)'],
   ),
 
@@ -634,7 +634,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Restaurant',
     icon: '🍜',
     scenario: 'You are sitting at the wooden counter of a famous tonkotsu ramen shop in Tokyo.',
-    starterPrompt: 'へい、いらっしゃい！ラーメンのスープの濃さと麺の硬さはどうしますか？ (Welcome! How rich would you like your broth, and how firm your noodles?)',
+    starterPrompt: 'へい、いらっしゃい！ラーメンのスープの濃さと麺の硬さはどうしますか？',
     starterQuestions: ['トッピングに煮玉子はつけますか？ (Would you like a soft-boiled egg topping?)', '替え玉（おかわり）はいかがですか？ (Would you like an extra noodle refill?)'],
   ),
   TopicModel(
@@ -646,7 +646,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Restaurant',
     icon: '🥩',
     scenario: 'You are sitting around a charcoal grill at a popular Seoul K-BBQ restaurant with a hospitable owner.',
-    starterPrompt: '어서오세요! 삼겹살 2인분 드릴까요, 아니면 소고기 갈비가 좋으세요? (Welcome! Shall I bring 2 servings of pork belly, or beef ribs?)',
+    starterPrompt: '어서오세요! 삼겹살 2인분 드릴까요, 아니면 소고기 갈비가 좋으세요?',
     starterQuestions: ['된장찌개나 밥도 같이 준비해 드릴까요? (Shall I prepare soybean stew and rice together?)', '김치도 같이 구워 드릴까요? (Shall I grill the kimchi for you?)'],
   ),
   TopicModel(
@@ -658,7 +658,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Dessert',
     icon: '🍧',
     scenario: 'You are cooling off on a warm afternoon ordering shaved ice dessert at a dessert cafe in Seoul.',
-    starterPrompt: '주문 도와드릴게요! 인절미 빙수랑 망고 빙수 중에 어떤 것으로 하시겠어요? (Can I take your order? Between injeolmi bingsu and mango bingsu, which one?)',
+    starterPrompt: '주문 도와드릴게요! 인절미 빙수랑 망고 빙수 중에 어떤 것으로 하시겠어요?',
     starterQuestions: ['사이즈는 레귤러로 드릴까요? (Regular size?)', '포장이세요, 드시고 가세요? (To go, or having it here?)'],
   ),
 
@@ -720,7 +720,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Business Etiquette',
     icon: '📇',
     scenario: 'You are meeting an important Japanese business client and exchanging meishi (business cards).',
-    starterPrompt: '初めまして。本日はお時間をいただき誠にありがとうございます。名刺を交換させていただけますでしょうか？ (Nice to meet you. Thank you for your time today. May we exchange business cards?)',
+    starterPrompt: '初めまして。本日はお時間をいただき誠にありがとうございます。名刺を交換させていただけますでしょうか？',
     starterQuestions: ['御社の事業について簡単にご紹介いただけますか？ (Could you briefly introduce your company?)', '日本でのビジネス経験はございますか？ (Do you have business experience in Japan?)'],
   ),
   TopicModel(
@@ -732,7 +732,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Interview',
     icon: '🏢',
     scenario: 'You are sitting across from a panel of Korean corporate interviewers at a leading tech firm.',
-    starterPrompt: '지원자님, 먼저 긴장을 푸시고 간단하게 자기소개 부탁드립니다. (Applicant, please relax and give a brief self-introduction.)',
+    starterPrompt: '지원자님, 먼저 긴장을 푸시고 간단하게 자기소개 부탁드립니다.',
     starterQuestions: ['우리 회사에 지원하게 된 특별한 동기가 있나요? (What motivated you to apply to our company?)', '스트레스를 받을 때는 어떻게 해소하시나요? (How do you relieve stress?)'],
   ),
 
@@ -782,7 +782,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Anime',
     icon: '⛩️',
     scenario: 'You are talking with an Akihabara anime fan about legendary anime series and manga.',
-    starterPrompt: '日本のアニメやマンガはお好きですか？一番好きな作品は何ですか？ (Do you like Japanese anime or manga? What is your favorite series?)',
+    starterPrompt: '日本のアニメやマンガはお好きですか？一番好きな作品は何ですか？',
     starterQuestions: ['最近見ているアニメはありますか？ (Is there an anime you are currently watching?)', '秋葉原に行ったことはありますか？ (Have you ever been to Akihabara?)'],
   ),
   TopicModel(
@@ -794,7 +794,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'K-Culture',
     icon: '🎤',
     scenario: 'You are chatting with a university student in Seoul about K-pop idols and trending Korean dramas.',
-    starterPrompt: '혹시 좋아하는 K-POP 아이돌이나 한국 드라마가 있으신가요? (Do you happen to have a favorite K-pop idol or Korean drama?)',
+    starterPrompt: '혹시 좋아하는 K-POP 아이돌이나 한국 드라마가 있으신가요?',
     starterQuestions: ['한국 노래 중에 자주 듣는 곡이 있나요? (Is there a Korean song you listen to often?)', '한국 문화에 관심 갖게 된 계기가 무엇인가요? (How did you get interested in Korean culture?)'],
   ),
 
@@ -856,7 +856,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Shopping',
     icon: '🏪',
     scenario: 'You are paying for bento and drinks at a 7-Eleven or Lawson in Tokyo.',
-    starterPrompt: 'いらっしゃいませ！お弁当は温めますか？ (Welcome! Would you like me to heat up your bento?)',
+    starterPrompt: 'いらっしゃいませ！お弁当は温めますか？',
     starterQuestions: ['お箸は何膳おつけしますか？ (How many pairs of chopsticks would you like?)', 'レジ袋はご利用ですか？ (Would you like a plastic bag?)'],
   ),
   TopicModel(
@@ -868,7 +868,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Shopping',
     icon: '💄',
     scenario: 'You are browsing skincare and face masks with a friendly shop assistant in Seoul.',
-    starterPrompt: '어서오세요 고객님! 요즘 환절기라 수분 크림이랑 마스크팩이 인기인데, 피부 타입이 어떻게 되세요? (Welcome! What is your skin type?)',
+    starterPrompt: '어서오세요 고객님! 요즘 환절기라 수분 크림이랑 마스크팩이 인기인데, 피부 타입이 어떻게 되세요?',
     starterQuestions: ['선물용이신가요, 직접 쓰실 건가요? (Is this a gift, or for yourself?)', '테스트 한번 해보시겠어요? (Would you like to try a sample?)'],
   ),
 
@@ -944,7 +944,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Introduction',
     icon: '🌸',
     scenario: 'You are introducing yourself at a Japanese language conversation club in Tokyo.',
-    starterPrompt: '初めまして！自己紹介をお願いできますか？お名前と、日本語を勉強している理由を教えてください！ (Nice to meet you! Could you please introduce yourself?)',
+    starterPrompt: '初めまして！自己紹介をお願いできますか？お名前と、日本語を勉強している理由を教えてください！',
     starterQuestions: ['日本で一番行きたい場所はどこですか？ (Where in Japan do you want to visit most?)', '普段の休日は何をしていますか？ (What do you usually do on days off?)'],
   ),
   TopicModel(
@@ -956,7 +956,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Introduction',
     icon: '🤝',
     scenario: 'You are chatting with a friendly Korean peer at an international language meetup.',
-    starterPrompt: '반가워요! 한국어 공부한 지 얼마나 되셨어요? (Nice to meet you! How long have you been studying Korean?)',
+    starterPrompt: '반가워요! 한국어 공부한 지 얼마나 되셨어요?',
     starterQuestions: ['취미가 무엇인가요? (What are your hobbies?)', '한국 음식 중에 매운 것도 잘 드세요? (Can you eat spicy Korean food well?)'],
   ),
 
@@ -1328,7 +1328,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'K-Food',
     icon: '🥩',
     scenario: 'You are grilling pork belly (samgyeopsal) with a Korean friend at a lively Seoul BBQ restaurant.',
-    starterPrompt: '어서오세요! 삼겹살 2인분 먼저 올려드릴게요. 쌈장과 마늘 넣어서 쌈 싸 드시는 법 아시나요? (Welcome! I will put on 2 servings of pork belly. Do you know how to wrap it with ssamjang and garlic?)',
+    starterPrompt: '어서오세요! 삼겹살 2인분 먼저 올려드릴게요. 쌈장과 마늘 넣어서 쌈 싸 드시는 법 아시나요?',
     starterQuestions: ['된장찌개나 냉면도 같이 주문할까요?', '한국 음식 중에 가장 좋아하는 게 무엇인가요?'],
   ),
   TopicModel(
@@ -1340,7 +1340,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'KTX',
     icon: '🚅',
     scenario: 'You are boarding the high-speed KTX train at Seoul Station headed for Haeundae Beach in Busan.',
-    starterPrompt: '부산행 KTX 열차에 탑승하셨군요! 창가 쪽 좌석이 편안하신가요? 부산에 도착하면 가장 먼저 어디에 가실 계획이신가요? (You boarded the KTX to Busan! Is your window seat comfortable? Where do you plan to go first when you arrive in Busan?)',
+    starterPrompt: '부산행 KTX 열차에 탑승하셨군요! 창가 쪽 좌석이 편안하신가요? 부산에 도착하면 가장 먼저 어디에 가실 계획이신가요?',
     starterQuestions: ['해운대 해수욕장이나 자갈치 시장에 가보셨나요?', '기차 안에서 먹을 간식을 사셨나요?'],
   ),
   TopicModel(
@@ -1352,7 +1352,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: '면접',
     icon: '💼',
     scenario: 'You are having an interview for an AI software engineering position in South Korea\'s Pangyo Silicon Valley.',
-    starterPrompt: '판교 테크노밸리 면접에 참석해 주셔서 감사합니다. 지원자님께서 최근에 개발하신 인공지능 프로젝트 경험에 대해 말씀해 주시겠어요? (Thank you for attending the Pangyo Techno Valley interview. Could you tell us about your recent AI project experience?)',
+    starterPrompt: '판교 테크노밸리 면접에 참석해 주셔서 감사합니다. 지원자님께서 최근에 개발하신 인공지능 프로젝트 경험에 대해 말씀해 주시겠어요?',
     starterQuestions: ['협업 과정에서 발생한 기술적 문제를 어떻게 해결하셨나요?', '입사 후 어떤 기여를 하고 싶으신가요?'],
   ),
   TopicModel(
@@ -1364,7 +1364,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Cafe',
     icon: '☕',
     scenario: 'You are relaxing in a serene Bukchon Hanok village tea house chatting about Korean culture and architecture.',
-    starterPrompt: '북촌 한옥마을 분위기가 정말 고즈넉하죠? 따뜻한 오미자차 한 잔 어떠세요? 한국 전통 가옥에 대해 어떻게 생각하시나요? (The Bukchon Hanok village atmosphere is so tranquil, right? How about a warm Omija tea? What do you think of traditional Korean houses?)',
+    starterPrompt: '북촌 한옥마을 분위기가 정말 고즈넉하죠? 따뜻한 오미자차 한 잔 어떠세요? 한국 전통 가옥에 대해 어떻게 생각하시나요?',
     starterQuestions: ['한국 전통 다과인 약과나 한과를 드셔보셨나요?', '서울에서 가장 마음에 드는 명소는 어디인가요?'],
   ),
   TopicModel(
@@ -1376,7 +1376,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: '헬스',
     icon: '🏋️',
     scenario: 'You are discussing workout split routines and health goals with a friendly personal trainer in Gangnam.',
-    starterPrompt: '안녕하세요! 강남 피트니스 센터에 오신 것을 환영합니다. 평소에 웨이트 트레이닝과 유산소 운동 중 어떤 것을 즐겨 하시나요? (Hello! Welcome to the Gangnam Fitness Center. Do you usually enjoy weight training or cardio more?)',
+    starterPrompt: '안녕하세요! 강남 피트니스 센터에 오신 것을 환영합니다. 평소에 웨이트 트레이닝과 유산소 운동 중 어떤 것을 즐겨 하시나요?',
     starterQuestions: ['하루에 물과 단백질을 얼마나 섭취하시나요?', '달성하고 싶은 구체적인 체력 목표가 있으신가요?'],
   ),
 
@@ -1722,7 +1722,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: '분식',
     icon: '🍢',
     scenario: 'You are enjoying spicy rice cakes (tteokbokki) and warm fish cake broth at a bustling street food tent in Seoul.',
-    starterPrompt: '어서오세요! 날씨가 쌀쌀한데 따뜻한 어묵 국물 먼저 한 컵 드세요. 매콤한 떡볶이랑 바삭한 튀김 같이 드릴까요? (Welcome! Have a warm cup of fish cake broth. Shall I serve spicy tteokbokki and crispy tempura together?)',
+    starterPrompt: '어서오세요! 날씨가 쌀쌀한데 따뜻한 어묵 국물 먼저 한 컵 드세요. 매콤한 떡볶이랑 바삭한 튀김 같이 드릴까요?',
     starterQuestions: ['매운 음식 잘 드시나요? (Can you handle spicy food?)', '순대나 김밥도 같이 곁들여 드릴까요? (Would you like sundae or kimbap as well?)'],
   ),
   TopicModel(
@@ -1734,7 +1734,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: '치맥',
     icon: '🍗',
     scenario: 'You are enjoying an evening feast of double-fried Korean garlic soy chicken and draft beer with friends along the Han River.',
-    starterPrompt: '한강에서 치맥(치킨과 맥주)하기 딱 좋은 저녁이네요! 바삭한 후라이드와 달콤한 양념 반반으로 주문할까요? (It is a great evening for Chimaek at the Han River! Shall we order half crispy fried and half sweet seasoned chicken?)',
+    starterPrompt: '한강에서 치맥(치킨과 맥주)하기 딱 좋은 저녁이네요! 바삭한 후라이드와 달콤한 양념 반반으로 주문할까요?',
     starterQuestions: ['시원한 생맥주도 같이 주문할까요? (Shall we order cold draft beer together?)', '치킨 무 많이 드릴까요? (Would you like extra pickled radish?)'],
   ),
   TopicModel(
@@ -1746,7 +1746,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: '김치',
     icon: '🥬',
     scenario: 'You are participating in a hands-on cultural workshop seasoning salted napa cabbage with red chili paste and garlic.',
-    starterPrompt: '김장 체험에 오신 것을 환영합니다! 절인 배추 잎 사이사이에 양념 속을 골고루 바르는 것이 핵심이에요. 손맛을 한번 내보실까요? (Welcome to the Kimjang experience! Spreading seasoning between salted cabbage leaves is key. Ready to try with your hands?)',
+    starterPrompt: '김장 체험에 오신 것을 환영합니다! 절인 배추 잎 사이사이에 양념 속을 골고루 바르는 것이 핵심이에요. 손맛을 한번 내보실까요?',
     starterQuestions: ['갓 담근 배추김치 맛이 어떠세요? (How does the freshly made kimchi taste?)', '수육(삶은 돼지고기)과 함께 싸서 드셔보시겠어요? (Would you like to try it wrapped with boiled pork?)'],
   ),
   TopicModel(
@@ -1976,7 +1976,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: '지하철',
     icon: '🚇',
     scenario: 'You are asking station staff at Seoul Station how to reload a T-money transit card and transfer from Line 1 to Line 4.',
-    starterPrompt: '안녕하세요! 지하철 이용에 도움이 필요하신가요? 티머니 교통카드 충전은 저쪽 자동발매기에서 한국어와 영어로 가능합니다. 어디로 가시나요? (Hello! Do you need help using the subway? T-money reloading is available right over there in English and Korean. Where are you heading?)',
+    starterPrompt: '안녕하세요! 지하철 이용에 도움이 필요하신가요? 티머니 교통카드 충전은 저쪽 자동발매기에서 한국어와 영어로 가능합니다. 어디로 가시나요?',
     starterQuestions: ['환승 통로 안내 표지판이 잘 보이시나요? (Can you clearly see the transfer signs?)', '급행열차와 일반열차의 차이를 알고 계신가요? (Do you know the difference between express and local trains?)'],
   ),
   TopicModel(
@@ -1988,7 +1988,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: '한옥숙박',
     icon: '🏮',
     scenario: 'You are checking into an authentic Hanok guesthouse with heated ondol floors in the historic Jeonju Hanok Village.',
-    starterPrompt: '전주 한옥마을 숙소에 도착하셨군요! 바닥에 따뜻한 온돌이 들어와 포근할 거예요. 내일 아침 전주 콩나물국밥이나 비빔밥을 드시겠어요? (Welcome to your Jeonju Hanok stay! The warm ondol floor will make you cozy. Would you like bean sprout soup or bibimbap for breakfast tomorrow?)',
+    starterPrompt: '전주 한옥마을 숙소에 도착하셨군요! 바닥에 따뜻한 온돌이 들어와 포근할 거예요. 내일 아침 전주 콩나물국밥이나 비빔밥을 드시겠어요?',
     starterQuestions: ['온돌방에서 요를 깔고 주무시는 것은 처음이신가요? (Is it your first time sleeping on a futon on an ondol floor?)', '경기전과 한복 체험 거리를 둘러보실 계획인가요? (Do you plan to tour Gyeonggijeon shrine and Hanbok rental street?)'],
   ),
   TopicModel(
@@ -2159,7 +2159,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Shopping',
     icon: '🛍️',
     scenario: 'You are looking for a stylish winter coat in a Marais fashion boutique.',
-    starterPrompt: 'Bonjour ! Est-ce que je peux vous aider à trouver votre taille ou un modèle particulier ? (Hello! Can I help you find your size or a particular style?)',
+    starterPrompt: 'Bonjour ! Est-ce que je peux vous aider à trouver votre taille ou un modèle particulier ?',
     starterQuestions: ['Quelle est votre taille habituelle ?', 'Préférez-vous cette veste en noir ou en bleu marine ?'],
   ),
   TopicModel(
@@ -2171,7 +2171,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Pharmacy',
     icon: '💊',
     scenario: 'You have caught a fever and sore throat while traveling and need relief medicine.',
-    starterPrompt: 'Bonjour ! Quels sont vos symptômes exactement ? Avez-vous de la fièvre ou de la toux ? (Hello! What are your exact symptoms? Do you have fever or a cough?)',
+    starterPrompt: 'Bonjour ! Quels sont vos symptômes exactement ? Avez-vous de la fièvre ou de la toux ?',
     starterQuestions: ['Depuis combien de jours êtes-vous malade ?', 'Êtes-vous allergique à certains médicaments comme l\'aspirine ?'],
   ),
   TopicModel(
@@ -2195,7 +2195,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Cafe',
     icon: '☕',
     scenario: 'You are sitting outside a cozy Prenzlauer Berg cafe ordering specialty coffee and Apfelstrudel.',
-    starterPrompt: 'Hallo! Herzlich willkommen. Was darf ich Ihnen heute bringen? (Hello! Welcome. What can I get for you today?)',
+    starterPrompt: 'Hallo! Herzlich willkommen. Was darf ich Ihnen heute bringen?',
     starterQuestions: ['Möchten Sie den Cappuccino mit Hafermilch oder Kuhmilch?', 'Darf es dazu ein Stück Kuchen sein?'],
   ),
   TopicModel(
@@ -2207,7 +2207,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Train',
     icon: '🚆',
     scenario: 'Your ICE train to Munich is delayed and you must ask Deutsche Bahn service about connections.',
-    starterPrompt: 'Guten Tag, Reisezentrum Deutsche Bahn. Wie kann ich Ihnen bei Ihrer Verbindung helfen? (Good day, DB travel center. How can I help with your connection?)',
+    starterPrompt: 'Guten Tag, Reisezentrum Deutsche Bahn. Wie kann ich Ihnen bei Ihrer Verbindung helfen?',
     starterQuestions: ['Wohin möchten Sie reisen?', 'Haben Sie bereits ein gültiges Ticket oder eine Reservierung?'],
   ),
   TopicModel(
@@ -2219,7 +2219,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Job Interview',
     icon: '💼',
     scenario: 'You are interviewing for an engineering team lead position at an innovative German tech enterprise.',
-    starterPrompt: 'Guten Tag! Schön, dass Sie da sind. Bitte erzählen Sie uns kurz über Ihre bisherigen Erfahrungen im Software-Engineering. (Good day! Please tell us briefly about your software engineering background.)',
+    starterPrompt: 'Guten Tag! Schön, dass Sie da sind. Bitte erzählen Sie uns kurz über Ihre bisherigen Erfahrungen im Software-Engineering.',
     starterQuestions: ['Was war Ihre größte technische Herausforderung?', 'Wie motivieren Sie Ihr Team bei engen Terminen?'],
   ),
   TopicModel(
@@ -2231,7 +2231,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Housing',
     icon: '🔑',
     scenario: 'You are viewing an apartment for rent and speaking with the landlord about lease terms.',
-    starterPrompt: 'Guten Tag! Kommen Sie gerne herein. Was gefällt Ihnen an dieser Wohnung am besten? (Good day! Please come in. What do you like best about this apartment?)',
+    starterPrompt: 'Guten Tag! Kommen Sie gerne herein. Was gefällt Ihnen an dieser Wohnung am besten?',
     starterQuestions: ['Ab wann möchten Sie die Wohnung mieten?', 'Haben Sie Ihre Schufa-Auskunft und Gehaltsnachweise dabei?'],
   ),
   TopicModel(
@@ -2243,7 +2243,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Restaurant',
     icon: '🍽️',
     scenario: 'You are dining with colleagues at a traditional German restaurant ordering schnitzel and regional sides.',
-    starterPrompt: 'Guten Abend! Haben Sie schon einen Blick in die Speisekarte geworfen? Was darf ich Ihnen zu trinken bringen? (Good evening! Have you looked at the menu? What can I get you to drink?)',
+    starterPrompt: 'Guten Abend! Haben Sie schon einen Blick in die Speisekarte geworfen? Was darf ich Ihnen zu trinken bringen?',
     starterQuestions: ['Haben Sie bestimmte Unverträglichkeiten oder Allergien?', 'Möchten Sie das Schnitzel mit Bratkartoffeln oder Pommes?'],
   ),
   TopicModel(
@@ -2255,7 +2255,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Pharmacy',
     icon: '💊',
     scenario: 'You have a painful headache and stomach upset and need over-the-counter medication.',
-    starterPrompt: 'Guten Tag! Wie kann ich Ihnen heute helfen? Haben Sie bestimmte Beschwerden oder Schmerzen? (Good day! How can I help? Do you have specific symptoms or pain?)',
+    starterPrompt: 'Guten Tag! Wie kann ich Ihnen heute helfen? Haben Sie bestimmte Beschwerden oder Schmerzen?',
     starterQuestions: ['Nehmen Sie derzeit bereits andere Medikamente ein?', 'Bevorzugen Sie Tabletten oder einen Saft?'],
   ),
   TopicModel(
@@ -2267,7 +2267,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Football',
     icon: '⚽',
     scenario: 'You are chatting with a local sports fan about Bundesliga teams and the Champions League.',
-    starterPrompt: 'Servus! Hast du das spannende Spiel am Wochenende gesehen? Für welche Mannschaft schlägt dein Herz? (Hello! Did you see the exciting weekend match? Which team do you support?)',
+    starterPrompt: 'Servus! Hast du das spannende Spiel am Wochenende gesehen? Für welche Mannschaft schlägt dein Herz?',
     starterQuestions: ['Wer wird deiner Meinung nach dieses Jahr Meister?', 'Gehst du oft selbst ins Stadion?'],
   ),
   TopicModel(
@@ -2291,7 +2291,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Cafe',
     icon: '☕',
     scenario: 'Standing at a Roman bar counter ordering a morning espresso, cornetto alla crema, and a glass of water.',
-    starterPrompt: 'Buongiorno! Cosa ti preparo di buono stamattina al banco? (Good morning! What can I make for you at the counter this morning?)',
+    starterPrompt: 'Buongiorno! Cosa ti preparo di buono stamattina al banco?',
     starterQuestions: ['Lo preferisci al vetro o in tazza normale?', 'Vuoi un cornetto semplice o al pistacchio?'],
   ),
   TopicModel(
@@ -2303,7 +2303,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Hotel',
     icon: '🏨',
     scenario: 'You are checking into an historic hotel in central Florence overlooking the Duomo.',
-    starterPrompt: 'Benvenuto a Firenze! Ha una prenotazione con noi per questo weekend? (Welcome to Florence! Do you have a reservation with us for this weekend?)',
+    starterPrompt: 'Benvenuto a Firenze! Ha una prenotazione con noi per questo weekend?',
     starterQuestions: ['Mi può mostrare un documento d\'identità?', 'Desidera che le prenoti un taxi per domani mattina?'],
   ),
   TopicModel(
@@ -2315,7 +2315,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Restaurant',
     icon: '🍝',
     scenario: 'You are ordering authentic handmade pasta and asking the waiter for wine recommendations.',
-    starterPrompt: 'Buonasera! Avete già scelto o posso consigliarvi il nostro primo piatto del giorno fatto a mano? (Good evening! Have you chosen or can I recommend our handmade pasta of the day?)',
+    starterPrompt: 'Buonasera! Avete già scelto o posso consigliarvi il nostro primo piatto del giorno fatto a mano?',
     starterQuestions: ['Preferite pasta fresca o carne per secondo?', 'Gradite un vino rosso toscano della casa?'],
   ),
   TopicModel(
@@ -2327,7 +2327,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Job Interview',
     icon: '💼',
     scenario: 'You are interviewing for a digital product design lead in a prestigious Milanese creative studio.',
-    starterPrompt: 'Buongiorno e benvenuto. Ci parli del suo percorso professionale e dei progetti più significativi. (Good morning. Tell us about your career and most significant design projects.)',
+    starterPrompt: 'Buongiorno e benvenuto. Ci parli del suo percorso professionale e dei progetti più significativi.',
     starterQuestions: ['Qual è il suo approccio alla collaborazione di squadra?', 'Come gestisce i feedback complessi dai clienti?'],
   ),
   TopicModel(
@@ -2339,7 +2339,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Directions',
     icon: '🗺️',
     scenario: 'You are navigating through the narrow Venetian calli searching for Piazza San Marco.',
-    starterPrompt: 'Ciao! Ti sei perso tra i canali? Dove stai cercando di arrivare esattamente? (Hello! Are you lost among the canals? Where are you trying to reach exactly?)',
+    starterPrompt: 'Ciao! Ti sei perso tra i canali? Dove stai cercando di arrivare esattamente?',
     starterQuestions: ['Vuoi andare a piedi o prendere il vaporetto?', 'Hai una mappa con te?'],
   ),
   TopicModel(
@@ -2351,7 +2351,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Pharmacy',
     icon: '💊',
     scenario: 'Describing sudden sunburn and a seasonal allergy to a compassionate Italian pharmacist.',
-    starterPrompt: 'Buongiorno, mi dica tutto. Di quali medicinali ha bisogno oggi? (Good morning, tell me everything. What medicines do you need today?)',
+    starterPrompt: 'Buongiorno, mi dica tutto. Di quali medicinali ha bisogno oggi?',
     starterQuestions: ['Ha dolore o solo bruciore sulla pelle?', 'È allergico a farmaci antistaminici?'],
   ),
   TopicModel(
@@ -2363,7 +2363,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Football',
     icon: '⚽',
     scenario: 'Discussing the latest Serie A derby and legendary Italian players over coffee.',
-    starterPrompt: 'Ciao! Hai visto il derby ieri sera? Che partita spettacolare! Per quale squadra fai il tifo? (Hi! Did you watch the derby last night? Which team do you support?)',
+    starterPrompt: 'Ciao! Hai visto il derby ieri sera? Che partita spettacolare! Per quale squadra fai il tifo?',
     starterQuestions: ['Chi pensi che vincerà lo scudetto quest\'anno?', 'Preferisci il calcio offensivo o difensivo?'],
   ),
   TopicModel(
@@ -2387,7 +2387,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Cafe',
     icon: '☕',
     scenario: 'You are ordering freshly baked pão de queijo and a smooth café com leite at a bakery in São Paulo.',
-    starterPrompt: 'Bom dia! Tudo bem com você? O que vai querer pedir hoje na nossa padaria? (Good morning! How are you? What would you like to order today?)',
+    starterPrompt: 'Bom dia! Tudo bem com você? O que vai querer pedir hoje na nossa padaria?',
     starterQuestions: ['Você prefere café puro ou com leite?', 'Vai querer o pão de queijo quentinho para viagem?'],
   ),
   TopicModel(
@@ -2399,7 +2399,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Sightseeing',
     icon: '🏖️',
     scenario: 'You are ordering fresh coconut water on Copacabana beach and renting an umbrella.',
-    starterPrompt: 'E aí, beleza? Quer uma água de coco bem gelada ou uma cadeira para curtir a praia? (Hey there! Would you like cold coconut water or a beach chair to enjoy?)',
+    starterPrompt: 'E aí, beleza? Quer uma água de coco bem gelada ou uma cadeira para curtir a praia?',
     starterQuestions: ['Você prefere coco gelado ou natural?', 'Está gostando do calor do Rio?'],
   ),
   TopicModel(
@@ -2411,7 +2411,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Job Interview',
     icon: '💼',
     scenario: 'You are interviewing for a Software Engineering position at a Brazilian fintech unicorn.',
-    starterPrompt: 'Olá! Seja muito bem-vindo. Conte-me um pouco sobre sua trajetória profissional em tecnologia. (Hello! Welcome. Tell me a bit about your professional journey in tech.)',
+    starterPrompt: 'Olá! Seja muito bem-vindo. Conte-me um pouco sobre sua trajetória profissional em tecnologia.',
     starterQuestions: ['Qual foi o projeto mais desafiador que você liderou?', 'Como você lida com prazos apertados e trabalho remoto?'],
   ),
   TopicModel(
@@ -2423,7 +2423,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Hotel',
     icon: '🏨',
     scenario: 'You arrive at your hotel in Lisbon and inquire about local tram routes and sightseeing.',
-    starterPrompt: 'Boa tarde! Bem-vindo a Lisboa. Tem uma reserva confirmada connosco para hoje? (Good afternoon! Welcome to Lisbon. Do you have a reservation with us today?)',
+    starterPrompt: 'Boa tarde! Bem-vindo a Lisboa. Tem uma reserva confirmada connosco para hoje?',
     starterQuestions: ['Pode facultar o seu passaporte para o registo?', 'Deseja informações sobre o elétrico 28?'],
   ),
   TopicModel(
@@ -2435,7 +2435,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Restaurant',
     icon: '🥩',
     scenario: 'Experiencing an authentic Brazilian steakhouse rodízio with caipirinhas and prime picanha.',
-    starterPrompt: 'Boa noite! É sua primeira vez no nosso rodízio? Como você gosta do ponto da carne? (Good evening! Is it your first time at our rodízio? How do you like your meat cooked?)',
+    starterPrompt: 'Boa noite! É sua primeira vez no nosso rodízio? Como você gosta do ponto da carne?',
     starterQuestions: ['Você aceita uma picanha fatiada agora?', 'Gostaria de experimentar nossa caipirinha tradicional?'],
   ),
   TopicModel(
@@ -2447,7 +2447,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Football',
     icon: '⚽',
     scenario: 'Talking about Brazilian football legends like Pelé, Neymar, and favorite local teams.',
-    starterPrompt: 'E aí, você acompanha futebol? Para qual time brasileiro você torce aqui no campeonato? (Hey, do you follow soccer? Which Brazilian team do you support?)',
+    starterPrompt: 'E aí, você acompanha futebol? Para qual time brasileiro você torce aqui no campeonato?',
     starterQuestions: ['Quem é o melhor jogador do mundo para você?', 'Você já foi ao estádio do Maracanã?'],
   ),
   TopicModel(
@@ -2471,7 +2471,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Restaurant',
     icon: '🥟',
     scenario: 'You are seated in a traditional teahouse ordering Longjing tea and hot soup dumplings.',
-    starterPrompt: '您好！欢迎光临。请问今天几位？想先喝点什么热茶？ (Hello! Welcome. How many people today? What hot tea would you like to start with?)',
+    starterPrompt: '您好！欢迎光临。请问今天几位？想先喝点什么热茶？',
     starterQuestions: ['您喜欢龙井茶还是普洱茶？ (Do you prefer Longjing or Pu-erh?)', '需要尝尝我们招牌的小笼包吗？ (Would you like to try our signature xiaolongbao?)'],
   ),
   TopicModel(
@@ -2483,7 +2483,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Airport',
     icon: '✈️',
     scenario: 'Checking in for an international flight and finding your boarding gate at Beijing Daxing Airport.',
-    starterPrompt: '您好，请出示您的护照和电子机票，我帮您办理登机手续。 (Hello, please show your passport and e-ticket for check-in.)',
+    starterPrompt: '您好，请出示您的护照和电子机票，我帮您办理登机手续。',
     starterQuestions: ['您有需要托运的大件行李吗？ (Do you have luggage to check in?)', '您想要靠窗还是靠过道的座位？ (Do you want a window or aisle seat?)'],
   ),
   TopicModel(
@@ -2495,7 +2495,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Job Interview',
     icon: '💼',
     scenario: 'You are interviewing with a top tech enterprise for an Artificial Intelligence Architect role.',
-    starterPrompt: '您好！请您先用中文做个简单的自我介绍，重点讲讲您的技术背景。 (Hello! Please give a brief self-introduction focusing on your technical background.)',
+    starterPrompt: '您好！请您先用中文做个简单的自我介绍，重点讲讲您的技术背景。',
     starterQuestions: ['您在以往项目中遇到过的最大架构挑战是什么？ (What was your biggest architectural challenge?)', '您如何看待混合AI边缘计算的发展？ (How do you view hybrid edge AI?)'],
   ),
   TopicModel(
@@ -2507,7 +2507,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Shopping',
     icon: '🛍️',
     scenario: 'Shopping for silk scarves and tea sets as souvenirs for friends back home.',
-    starterPrompt: '您好！来看看我们这里的精美丝绸和茶叶，今天有特别折扣！ (Hello! Take a look at our fine silk and tea, special discounts today!)',
+    starterPrompt: '您好！来看看我们这里的精美丝绸和茶叶，今天有特别折扣！',
     starterQuestions: ['您打算买给朋友还是自己用？ (Are you buying for friends or yourself?)', '如果买两件，可以给您优惠一点。 (Can give a discount if you buy two.)'],
   ),
   TopicModel(
@@ -2543,7 +2543,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Cafe',
     icon: '☕',
     scenario: 'You are ordering aromatic Masala Chai and hot samosas at a vibrant Delhi street stall.',
-    starterPrompt: 'नमस्ते जी! आपका स्वागत है। आपके लिए अदरक वाली स्पेशल मसाला चाय बनाएं? (Namaste! Welcome. Shall I prepare special ginger masala chai for you?)',
+    starterPrompt: 'नमस्ते जी! आपका स्वागत है। आपके लिए अदरक वाली स्पेशल मसाला चाय बनाएं?',
     starterQuestions: ['चाय में चीनी कम चाहिए या सामान्य? (Do you want less or normal sugar?)', 'साथ में गरमा-गरम समोसा भी लेंगे? (Will you take a hot samosa as well?)'],
   ),
   TopicModel(
@@ -2555,7 +2555,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Hotel',
     icon: '🏨',
     scenario: 'You arrive at your heritage hotel in Jaipur to check in and ask about local tours.',
-    starterPrompt: 'नमस्ते! हमारे होटल में आपका स्वागत है। क्या आपके नाम से कोई बुकिंग है? (Namaste! Welcome to our hotel. Do you have a reservation under your name?)',
+    starterPrompt: 'नमस्ते! हमारे होटल में आपका स्वागत है। क्या आपके नाम से कोई बुकिंग है?',
     starterQuestions: ['क्या आप अपना पहचान पत्र दिखा सकते हैं? (Can you show your ID?)', 'क्या आपको कल के लिए टूर गाइड चाहिए? (Do you need a tour guide for tomorrow?)'],
   ),
   TopicModel(
@@ -2567,7 +2567,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Job Interview',
     icon: '💼',
     scenario: 'You are interviewing for a Senior AI Software Engineer role in Bengaluru.',
-    starterPrompt: 'नमस्ते! आपसे मिलकर खुशी हुई। कृपया अपने तकनीकी अनुभव और पिछली उपलब्धियों के बारे में बताएं। (Namaste! Pleasure to meet you. Please describe your technical experience.)',
+    starterPrompt: 'नमस्ते! आपसे मिलकर खुशी हुई। कृपया अपने तकनीकी अनुभव और पिछली उपलब्धियों के बारे में बताएं।',
     starterQuestions: ['आप अपनी सबसे बड़ी तकनीकी सफलता किसे मानते हैं? (What is your greatest technical achievement?)', 'कठिन समय-सीमा में आप टीम के साथ कैसे तालमेल बिठाते हैं? (How do you collaborate under tight deadlines?)'],
   ),
   TopicModel(
@@ -2591,7 +2591,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Shopping',
     icon: '🛍️',
     scenario: 'Shopping for handcrafted kurtas and spices in a bustling traditional market.',
-    starterPrompt: 'नमस्ते सर! आइए, देखिए हमारे पास सबसे बेहतरीन हाथ से बने कुर्ते और साड़ियां हैं। क्या पसंद आया? (Namaste! Come look at our handcrafted kurtas. What did you like?)',
+    starterPrompt: 'नमस्ते सर! आइए, देखिए हमारे पास सबसे बेहतरीन हाथ से बने कुर्ते और साड़ियां हैं। क्या पसंद आया?',
     starterQuestions: ['आपको कौन सा रंग और साइज चाहिए? (Which color and size do you need?)', 'अगर आप दो लेंगे तो हम थोड़ा डिस्काउंट कर देंगे। (If you take two we can give a discount.)'],
   ),
   TopicModel(
@@ -2615,7 +2615,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Cafe',
     icon: '☕',
     scenario: 'Sitting in a historic Nevsky Prospect cafe ordering a hot cappuccino and syrniki.',
-    starterPrompt: 'Здравствуйте! Добро пожаловать. Что для вас приготовить сегодня? (Hello! Welcome. What can I prepare for you today?)',
+    starterPrompt: 'Здравствуйте! Добро пожаловать. Что для вас приготовить сегодня?',
     starterQuestions: ['Вам кофе на обычном или на овсяном молоке? (Regular or oat milk?)', 'Будете заказывать сырники со сметаной? (Will you order syrniki with sour cream?)'],
   ),
   TopicModel(
@@ -2627,7 +2627,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Hotel',
     icon: '🏨',
     scenario: 'Checking into your hotel near Red Square and asking about metro navigation.',
-    starterPrompt: 'Добрый день! Рады приветствовать вас в Москве. У вас есть бронирование в нашей гостинице? (Good afternoon! Welcome to Moscow. Do you have a reservation?)',
+    starterPrompt: 'Добрый день! Рады приветствовать вас в Москве. У вас есть бронирование в нашей гостинице?',
     starterQuestions: ['Пожалуйста, покажите ваш паспорт. (Please show your passport.)', 'Вам нужен номер с видом на город? (Do you want a city view room?)'],
   ),
   TopicModel(
@@ -2639,7 +2639,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Job Interview',
     icon: '💼',
     scenario: 'Interviewing for a lead systems architect position with a global engineering company.',
-    starterPrompt: 'Здравствуйте! Приятно познакомиться. Расскажите, пожалуйста, о вашем опыте в разработке распределённых систем. (Hello! Please tell us about your distributed systems background.)',
+    starterPrompt: 'Здравствуйте! Приятно познакомиться. Расскажите, пожалуйста, о вашем опыте в разработке распределённых систем.',
     starterQuestions: ['С какими сложными архитектурными задачами вы сталкивались? (What complex architectural tasks have you faced?)', 'Как вы решаете конфликты в команде? (How do you resolve team conflicts?)'],
   ),
   TopicModel(
@@ -2651,7 +2651,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Pharmacy',
     icon: '💊',
     scenario: 'Describing a sudden fever and cough to a knowledgeable pharmacist in Moscow.',
-    starterPrompt: 'Здравствуйте! На что вы жалуетесь? Какая у вас температура и есть ли кашель? (Hello! What are your symptoms? What is your temperature and do you have a cough?)',
+    starterPrompt: 'Здравствуйте! На что вы жалуетесь? Какая у вас температура и есть ли кашель?',
     starterQuestions: ['Сколько дней вы болеете? (How many days have you been sick?)', 'Есть ли у вас аллергия на антибиотики? (Do you have allergies to antibiotics?)'],
   ),
   TopicModel(
@@ -2663,7 +2663,7 @@ final List<TopicModel> presetTopicCatalog = [
     subCategory: 'Shopping',
     icon: '🛍️',
     scenario: 'Buying classic literature books and traditional wooden souvenirs in Arbat street.',
-    starterPrompt: 'Здравствуйте! Ищете подарок или что-то для себя? У нас большой выбор сувениров. (Hello! Looking for a gift or for yourself? We have a great selection.)',
+    starterPrompt: 'Здравствуйте! Ищете подарок или что-то для себя? У нас большой выбор сувениров.',
     starterQuestions: ['Вам упаковать это в подарочную коробку? (Shall I wrap this in a gift box?)', 'Оплата картой или наличными? (Card or cash?)'],
   ),
   TopicModel(
@@ -2732,7 +2732,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Job Interviews',
       icon: '💻',
       scenario: 'Presenting cloud architecture, system scalability, and leadership experience for a Senior Tech Lead role in Sri Lanka.',
-      starterPrompt: 'සුබ උදෑසනක්! අපගේ තාක්ෂණික සම්මුඛ පරීක්ෂණයට සාදරයෙන් පිළිගන්නවා. ඔබේ පෙර මෘදුකාංග ව්‍යාපෘති සහ cloud architecture අත්දැකීම් ගැන කෙටියෙන් හඳුන්වා දෙන්න පුළුවන්ද? (Good morning! Welcome to our technical interview. Could you introduce your software projects and cloud architecture experience?)',
+      starterPrompt: 'සුබ උදෑසනක්! අපගේ තාක්ෂණික සම්මුඛ පරීක්ෂණයට සාදරයෙන් පිළිගන්නවා. ඔබේ පෙර මෘදුකාංග ව්‍යාපෘති සහ cloud architecture අත්දැකීම් ගැන කෙටියෙන් හඳුන්වා දෙන්න පුළුවන්ද?',
       starterQuestions: [
         'High scalability සහ low latency පද්ධති සැලසුම් කිරීමේදී ඔබ මුහුණ දුන් ලොකුම අභියෝගය කුමක්ද? (What was your biggest challenge designing high scalability and low latency systems?)',
         'කණ්ඩායම් කළමනාකරණය සඳහා ඔබ අනුගමනය කරන Agile ක්‍රමවේදය කුමක්ද? (What Agile methodology do you follow for team leadership?)',
@@ -2747,7 +2747,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Dining Out',
       icon: '☕',
       scenario: 'Stopping at a traditional roadside teashop for breakfast: hot ginger tea, egg hoppers, and lunu miris.',
-      starterPrompt: 'ආයුබෝවන් මුදලාලි! අද උදේට උණු උණු බිත්තර ආප්ප තියෙනවද? කහට තේ එකකුත් එක්ක ලුණු මිරිස් ටිකක් වැඩියෙන් දෙන්න පුළුවන්ද? (Hello sir! Do you have hot egg hoppers this morning? Can you give me hot tea with extra lunu miris?)',
+      starterPrompt: 'ආයුබෝවන් මුදලාලි! අද උදේට උණු උණු බිත්තර ආප්ප තියෙනවද? කහට තේ එකකුත් එක්ක ලුණු මිරිස් ටිකක් වැඩියෙන් දෙන්න පුළුවන්ද?',
       starterQuestions: [
         'පැණි ආප්ප කීයක් හදන්නද? (How many sweet hoppers should I prepare?)',
         'ඉඟුරු දාලා ප්ලේන්ටියක් බොනවද? (Would you like ginger plain tea?)',
@@ -2762,7 +2762,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Hotel & Lodging',
       icon: '🍃',
       scenario: 'Booking a cozy mountain bungalow in Nuwara Eliya and asking about tea tasting tours and weather.',
-      starterPrompt: 'ආයුබෝවන්! අපි ලබන සති අන්තයේ නුවරඑළියට එන්න බලාපොරොත්තු වෙනවා. තේ වත්ත පෙනෙන ලස්සන කාමරයක් තියෙනවද? (Hello! We are planning to visit Nuwara Eliya next weekend. Do you have a scenic room overlooking tea hills?)',
+      starterPrompt: 'ආයුබෝවන්! අපි ලබන සති අන්තයේ නුවරඑළියට එන්න බලාපොරොත්තු වෙනවා. තේ වත්ත පෙනෙන ලස්සන කාමරයක් තියෙනවද?',
       starterQuestions: [
         'දැන් නුවරඑළියේ කාලගුණය ගොඩක් ශීතලද? (Is the weather in Nuwara Eliya very cold right now?)',
         'තේ කර්මාන්තශාලා නිරීක්ෂණ චාරිකාවට වෙලාව වෙන්කරන්න පුළුවන්ද? (Can you arrange a tea factory visit slot?)',
@@ -2807,7 +2807,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'City Biking',
       icon: '🚲',
       scenario: 'Renting an \'omafiets\' near Centraal Station, asking about cycling rules, bike locks, and canal routes.',
-      starterPrompt: 'Hallo! Welkom bij onze fietsverhuur. Zoekt u een stadsfiets voor vandaag? Wilt u een terugtraprem of handremmen? (Hello! Looking for a city bike today? Back-pedal brake or hand brakes?)',
+      starterPrompt: 'Hallo! Welkom bij onze fietsverhuur. Zoekt u een stadsfiets voor vandaag? Wilt u een terugtraprem of handremmen?',
       starterQuestions: [
         'Moet ik op het fietspad blijven of mag ik overal rijden? (Should I stay on bike paths or can I ride anywhere?)',
         'Heeft u een stevig kettingslot tegen diefstal? (Do you have a sturdy chain lock against theft?)',
@@ -2822,7 +2822,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Street Food',
       icon: '🧇',
       scenario: 'Ordering fresh warm caramel stroopwafels and a coffee from a friendly stallholder in De Pijp.',
-      starterPrompt: 'Goedemorgen! Een warme stroopwafel met extra karamel? Ze zijn net vers gebakken! (Good morning! A warm stroopwafel with extra caramel? Freshly baked!)',
+      starterPrompt: 'Goedemorgen! Een warme stroopwafel met extra karamel? Ze zijn net vers gebakken!',
       starterQuestions: [
         'Kan ik pinnen of heeft u liever contant geld? (Can I pay with card or do you prefer cash?)',
         'Mag ik er ook een verse muntthee bij? (May I also have fresh mint tea?)',
@@ -2837,7 +2837,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Job Interviews',
       icon: '💼',
       scenario: 'Explaining full-stack architecture, direct communication culture, and agile teamwork in Amsterdam.',
-      starterPrompt: 'Fijn dat je er bent! Vertel ons eens over je ervaring met schaalbare systemen en cloud engineering. (Glad you are here! Tell us about your experience with scalable systems and cloud engineering.)',
+      starterPrompt: 'Fijn dat je er bent! Vertel ons eens over je ervaring met schaalbare systemen en cloud engineering.',
       starterQuestions: [
         'Hoe ga je om met de directe Nederlandse feedbackcultuur? (How do you handle direct Dutch feedback culture?)',
         'Wat is je ervaring met geautomatiseerde CI/CD pipelines? (What is your experience with automated CI/CD pipelines?)',
@@ -2852,7 +2852,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Housing',
       icon: '🏠',
       scenario: 'Viewing a rental apartment, asking the real estate agent about service costs, registration, and lease terms.',
-      starterPrompt: 'Welkom bij de bezichtiging! Zoals je ziet heeft het appartement veel lichtinval. Heb je al vragen over het huurcontract? (Welcome to the viewing! As you can see, great natural light. Any questions on the lease?)',
+      starterPrompt: 'Welkom bij de bezichtiging! Zoals je ziet heeft het appartement veel lichtinval. Heb je al vragen over het huurcontract?',
       starterQuestions: [
         'Zijn gas, water en elektriciteit inbegrepen in de servicekosten? (Are gas, water and electricity included in service costs?)',
         'Mag ik mij hier inschrijven bij de gemeente? (Can I register here at the municipality?)',
@@ -2867,7 +2867,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Public Transit',
       icon: '🚆',
       scenario: 'Checking in with your OV-chipkaart and asking NS conductor about transfer platforms and Intercity Direct surcharges.',
-      starterPrompt: 'Pardon, weet u vanaf welk spoor de Intercity naar Rotterdam Centraal vertrekt? Moet ik een toeslag betalen? (Excuse me, which track does the Intercity to Rotterdam Central leave from?)',
+      starterPrompt: 'Pardon, weet u vanaf welk spoor de Intercity naar Rotterdam Centraal vertrekt? Moet ik een toeslag betalen?',
       starterQuestions: [
         'Vergeet niet in te checken bij de poortjes! (Don\'t forget to check in at the fare gates!)',
         'Is er vertraging door werkzaamheden op het spoor? (Is there a delay due to track maintenance?)',
@@ -2897,7 +2897,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Bazaar Shopping',
       icon: '☕',
       scenario: 'Sipping hot Turkish black tea while bargaining courteously for handwoven kilims and ceramics in Istanbul.',
-      starterPrompt: 'Hoş geldiniz efendim! Buyrun bir tavşan kanı çayımızı için. Halılarımıza ve seramiklerimize bakmak ister misiniz? (Welcome sir! Please have some hot tea. Would you like to look at our carpets and ceramics?)',
+      starterPrompt: 'Hoş geldiniz efendim! Buyrun bir tavşan kanı çayımızı için. Halılarımıza ve seramiklerimize bakmak ister misiniz?',
       starterQuestions: [
         'Bu el dokuması kilim için en son ne kadar olur? (What is your best price for this handmade kilim?)',
         'Nakit ödersem indirim yapar mısınız? (Do you give a discount if I pay cash?)',
@@ -2912,7 +2912,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Breakfast & Dining',
       icon: '🍳',
       scenario: 'Ordering a rich serpme kahvaltı with menemen, kaymak, honey, olives, and fresh simit along the seaside.',
-      starterPrompt: 'Günaydın! İki kişilik serpme kahvaltı mı arzu edersiniz? Menemeninizi soğanlı mı soğansız mı tercih edersiniz? (Good morning! Would you like breakfast for two? Menemen with or without onions?)',
+      starterPrompt: 'Günaydın! İki kişilik serpme kahvaltı mı arzu edersiniz? Menemeninizi soğanlı mı soğansız mı tercih edersiniz?',
       starterQuestions: [
         'Taze sıkılmış portakal suyu da alabilir miyiz? (Could we also have freshly squeezed orange juice?)',
         'Çay sınırsız mı servis ediliyor? (Is tea served unlimited with breakfast?)',
@@ -2927,7 +2927,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Ferry Commute',
       icon: '⛴️',
       scenario: 'Taking the scenic ferry from Eminönü to Kadıköy, feeding simit to seagulls and enjoying the Bosphorus breeze.',
-      starterPrompt: 'Kadıköy iskelesi hangi tarafta? İstanbulkart ile turnikelerden geçebilir miyim? (Which side is the Kadikoy pier? Can I pass through turnstiles with Istanbulkart?)',
+      starterPrompt: 'Kadıköy iskelesi hangi tarafta? İstanbulkart ile turnikelerden geçebilir miyim?',
       starterQuestions: [
         'Martılara simit atmak için simitçi nerede? (Where is the simit seller to feed the seagulls?)',
         'Son vapur saat kaçta kalkıyor? (What time is the last ferry?)',
@@ -2942,7 +2942,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Job Interviews',
       icon: '💼',
       scenario: 'Discussing distributed microservices, Redis caching, and real-time WebSocket pipelines for an e-commerce giant.',
-      starterPrompt: 'Merhaba, teknik mülakatımıza hoş geldiniz! Bize yüksek trafikli sistemlerdeki tecrübelerinizden bahseder misiniz? (Hello, welcome to our technical interview! Could you discuss your experience in high-traffic systems?)',
+      starterPrompt: 'Merhaba, teknik mülakatımıza hoş geldiniz! Bize yüksek trafikli sistemlerdeki tecrübelerinizden bahseder misiniz?',
       starterQuestions: [
         'Veritabanı darboğazlarını çözerken nasıl bir strateji izliyorsunuz? (What strategy do you follow when resolving database bottlenecks?)',
         'Mikroservis mimarisinde hata toleransını nasıl sağlıyorsunuz? (How do you ensure fault tolerance in microservices?)',
@@ -2957,7 +2957,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Pharmacy',
       icon: '💊',
       scenario: 'Describing throat irritation, dry cough, and mild fever to a knowledgeable local \'Eczane\' pharmacist.',
-      starterPrompt: 'Geçmiş olsun! Boğaz ağrınız ve öksürüğünüz ne zamandır devam ediyor? Ateşinizi ölçtünüz mü? (Get well soon! How long have your sore throat and cough lasted? Have you measured your fever?)',
+      starterPrompt: 'Geçmiş olsun! Boğaz ağrınız ve öksürüğünüz ne zamandır devam ediyor? Ateşinizi ölçtünüz mü?',
       starterQuestions: [
         'Günde kaç defa bu şurubu kullanmalıyım? (How many times a day should I take this syrup?)',
         'Tok karnına mı aç karnına mı içilecek? (Should I take it on a full or empty stomach?)',
@@ -2987,7 +2987,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Street Food',
       icon: '🍜',
       scenario: 'Sitting on small plastic stools in Hanoi Old Quarter, ordering steaming Pho Bo Tai and creamy sweet egg coffee.',
-      starterPrompt: 'Chào bạn! Quán mình có phở bò tái, nạm, gầu. Bạn muốn gọi bát phở như thế nào và uống cà phê trứng nóng hay đá? (Hello! We have rare beef pho, flank, brisket. How would you like your pho, and hot or iced egg coffee?)',
+      starterPrompt: 'Chào bạn! Quán mình có phở bò tái, nạm, gầu. Bạn muốn gọi bát phở như thế nào và uống cà phê trứng nóng hay đá?',
       starterQuestions: [
         'Cho mình xin thêm chanh và ớt tươi được không? (Could I please have extra lime and fresh chili?)',
         'Cà phê trứng ở đây làm theo công thức gia truyền đúng không? (Is the egg coffee here made from a family recipe?)',
@@ -3017,7 +3017,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Job Interviews',
       icon: '💼',
       scenario: 'Presenting system design, Golang microservices, and mobile AI inference for a leading tech unicorn in Ho Chi Minh City.',
-      starterPrompt: 'Chào em, cảm ơn em đã tham gia buổi phỏng vấn hôm nay. Em có thể chia sẻ về kinh nghiệm tối ưu hóa hệ thống microservices của mình không? (Hello, thanks for joining our interview today. Can you share your experience optimizing microservices?)',
+      starterPrompt: 'Chào em, cảm ơn em đã tham gia buổi phỏng vấn hôm nay. Em có thể chia sẻ về kinh nghiệm tối ưu hóa hệ thống microservices của mình không?',
       starterQuestions: [
         'Em xử lý vấn đề data consistency giữa các distributed database như thế nào? (How do you handle data consistency across distributed databases?)',
         'Kỹ năng làm việc nhóm và giải quyết xung đột kỹ thuật của em ra sao? (What is your approach to teamwork and resolving technical disagreements?)',
@@ -3047,7 +3047,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Clinic Visit',
       icon: '🏥',
       scenario: 'Explaining stomach ache, indigestion, and headache symptoms to a doctor at a clinic in Vietnam.',
-      starterPrompt: 'Chào bạn, hôm nay bạn cảm thấy không khỏe ở đâu? Cơn đau bụng bắt đầu từ khi nào và có bị sốt không? (Hello, where do you feel unwell today? When did the stomach ache start and do you have a fever?)',
+      starterPrompt: 'Chào bạn, hôm nay bạn cảm thấy không khỏe ở đâu? Cơn đau bụng bắt đầu từ khi nào và có bị sốt không?',
       starterQuestions: [
         'Bác sĩ có kê đơn thuốc uống trong bao nhiêu ngày? (For how many days has the doctor prescribed this medication?)',
         'Tôi có cần kiêng ăn đồ cay nóng và dầu mỡ không? (Do I need to avoid spicy and greasy food?)',
@@ -3077,7 +3077,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Street Food',
       icon: '🍛',
       scenario: 'Ordering authentic spicy Nasi Goreng Gila and chicken satay with peanut sauce at a buzzing Jakarta roadside warung.',
-      starterPrompt: 'Selamat malam mas! Mau pesan nasi goreng spesial atau sate ayam madura? Pedas sedang atau pedas banget? (Good evening! Would you like special nasi goreng or chicken satay? Medium spicy or extra spicy?)',
+      starterPrompt: 'Selamat malam mas! Mau pesan nasi goreng spesial atau sate ayam madura? Pedas sedang atau pedas banget?',
       starterQuestions: [
         'Tolong jangan pakai terlalu banyak minyak dan tambahkan kerupuk ya! (Please don\'t use too much oil and add extra crackers!)',
         'Berapa lama kira-kira pesanannya siap? (About how long until the order is ready?)',
@@ -3107,7 +3107,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Job Interviews',
       icon: '💼',
       scenario: 'Discussing mobile fintech scalability, offline-first data synchronization, and cross-functional leadership in Indonesia.',
-      starterPrompt: 'Halo, selamat datang di sesi wawancara kami! Bisa ceritakan pengalaman Anda dalam membangun arsitektur aplikasi mobile berskala besar? (Hello, welcome to our interview! Could you discuss your experience building large-scale mobile architectures?)',
+      starterPrompt: 'Halo, selamat datang di sesi wawancara kami! Bisa ceritakan pengalaman Anda dalam membangun arsitektur aplikasi mobile berskala besar?',
       starterQuestions: [
         'Bagaimana strategi Anda memastikan aplikasi tetap responsif saat koneksi internet lambat di daerah terpencil? (What is your strategy to keep apps responsive on slow internet in remote areas?)',
         'Bagaimana gaya kepemimpinan Anda dalam memotivasi tim engineer junior? (What is your leadership style in mentoring junior engineers?)',
@@ -3122,7 +3122,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Textiles & Souvenirs',
       icon: '🧵',
       scenario: 'Appreciating hand-drawn batik tulis vs printed patterns in Yogyakarta, negotiating a respectful cultural price.',
-      starterPrompt: 'Permisi mbak, ini kain batik tulis asli atau cap? Motifnya sangat indah, dari daerah mana ya? (Excuse me miss, is this hand-drawn batik or stamped? The pattern is beautiful, which region is it from?)',
+      starterPrompt: 'Permisi mbak, ini kain batik tulis asli atau cap? Motifnya sangat indah, dari daerah mana ya?',
       starterQuestions: [
         'Apakah warnanya akan luntur saat dicuci pertama kali? (Will the colors fade when washed the first time?)',
         'Kalau saya ambil dua lembar, bisa dapat harga spesial? (If I take two pieces, can I get a special price?)',
@@ -3137,7 +3137,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Pharmacy',
       icon: '💊',
       scenario: 'Explaining mild dehydration, fever, and traveler\'s upset stomach to a licensed pharmacist in Indonesia.',
-      starterPrompt: 'Selamat siang! Saya merasa kurang enak badan sejak kemarin, kepala pusing dan perut kembung. Obat apa yang paling cocok? (Good afternoon! I have felt unwell since yesterday, headache and bloated stomach. What medicine is best?)',
+      starterPrompt: 'Selamat siang! Saya merasa kurang enak badan sejak kemarin, kepala pusing dan perut kembung. Obat apa yang paling cocok?',
       starterQuestions: [
         'Apakah ada obat oralit untuk rehidrasi tubuh? (Do you have oral rehydration salts?)',
         'Berapa tablet yang harus diminum setelah makan? (How many tablets should be taken after meals?)',
@@ -3167,7 +3167,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Street Food',
       icon: '🍲',
       scenario: 'Ordering sizzling shrimp pad thai and fragrant orange iced tea at a bustling Bangkok night bazaar.',
-      starterPrompt: 'สวัสดีครับ! รับผัดไทยกุ้งสดหรือผัดไทยหมูกรอบดีครับ? ใส่พริกเยอะไหม และรับชาไทยหวานน้อยไหมครับ? (Hello! Fresh shrimp or crispy pork pad thai? How spicy, and would you like sweet or less sweet Thai tea?)',
+      starterPrompt: 'สวัสดีครับ! รับผัดไทยกุ้งสดหรือผัดไทยหมูกรอบดีครับ? ใส่พริกเยอะไหม และรับชาไทยหวานน้อยไหมครับ?',
       starterQuestions: [
         'ขอถั่วงอกกับมะนาวเพิ่มอีกนิดได้ไหมครับ? (Could I please have extra bean sprouts and lime?)',
         'ชาไทยโบราณร้านนี้ใช้นมสดหรือนมข้นหวานครับ? (Does this traditional Thai tea use fresh milk or condensed milk?)',
@@ -3182,7 +3182,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'River Transit',
       icon: '🚤',
       scenario: 'Buying a blue flag tourist boat ticket, crossing the Chao Phraya River, and visiting the Temple of Dawn.',
-      starterPrompt: 'ขอโทษนะครับ เรือด่วนธงส้มไปท่าเตียนและวัดอรุณขึ้นที่โป๊ะไหนครับ? ค่าโดยสารคนละเท่าไหร่? (Excuse me, which pier for the orange flag boat to Tha Tien and Wat Arun? How much is the fare?)',
+      starterPrompt: 'ขอโทษนะครับ เรือด่วนธงส้มไปท่าเตียนและวัดอรุณขึ้นที่โป๊ะไหนครับ? ค่าโดยสารคนละเท่าไหร่?',
       starterQuestions: [
         'ต้องแต่งกายสุภาพอย่างไรก่อนเข้าชมพระวิหาร? (What is the dress code before entering the temple hall?)',
         'เรือข้ามฟากแม่น้ำปิดกี่โมงครับ? (What time does the river cross-ferry close?)',
@@ -3197,7 +3197,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Job Interviews',
       icon: '💼',
       scenario: 'Discussing AI models, low-latency microservices, and collaborative engineering culture in Bangkok\'s digital tech hub.',
-      starterPrompt: 'สวัสดีค่ะ ยินดีต้อนรับสู่การสัมภาษณ์งานด้านเทคนิค กรุณาแนะนำตัวและเล่าประสบการณ์การพัฒนาระบบ AI และ Cloud ให้เราฟังได้ไหมคะ? (Hello, welcome to our technical interview. Could you introduce yourself and your AI/Cloud systems engineering experience?)',
+      starterPrompt: 'สวัสดีค่ะ ยินดีต้อนรับสู่การสัมภาษณ์งานด้านเทคนิค กรุณาแนะนำตัวและเล่าประสบการณ์การพัฒนาระบบ AI และ Cloud ให้เราฟังได้ไหมคะ?',
       starterQuestions: [
         'คุณมีวิธีแก้ไขปัญหาเมื่อเกิดระบบขัดข้องฉุกเฉิน (High Severity Incident) อย่างไร? (How do you handle critical high-severity production incidents?)',
         'คุณปรับตัวเข้ากับวัฒนธรรมการทำงานแบบ Agile และการสื่อสารในทีมอย่างไร? (How do you adapt to Agile collaboration and team communication?)',
@@ -3212,7 +3212,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Weekend Market',
       icon: '🛍️',
       scenario: 'Browsing handmade silk scarves and wooden carvings at Chatuchak Market, practicing polite Thai bargaining terms.',
-      starterPrompt: 'ชิ้นนี้สวยมากเลยครับพี่ ทำจากผ้าไหมแท้หรือเปล่าครับ? ถ้าซื้อสามผืนลดราคาให้หน่อยได้ไหมครับ? (This is very beautiful! Is it real silk? If I buy three scarves, can you give me a discount?)',
+      starterPrompt: 'ชิ้นนี้สวยมากเลยครับพี่ ทำจากผ้าไหมแท้หรือเปล่าครับ? ถ้าซื้อสามผืนลดราคาให้หน่อยได้ไหมครับ?',
       starterQuestions: [
         'มีสีอื่นหรือลายอื่นให้ดูอีกไหมครับ? (Do you have other colors or patterns to show?)',
         'สแกนจ่ายผ่าน QR Code พร้อมเพย์ได้ไหมครับ? (Can I scan to pay with PromptPay QR code?)',
@@ -3227,7 +3227,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Pharmacy',
       icon: '💊',
       scenario: 'Describing tropical heat fatigue, runny nose, and dry throat at a licensed pharmacy in Bangkok.',
-      starterPrompt: 'สวัสดีค่ะ มีอาการอย่างไรบ้างคะ? รู้สึกเจ็บคอหรือมีไข้ตัวร้อนตั้งแต่เมื่อไหร่คะ? (Hello! What are your symptoms? When did your sore throat or fever start?)',
+      starterPrompt: 'สวัสดีค่ะ มีอาการอย่างไรบ้างคะ? รู้สึกเจ็บคอหรือมีไข้ตัวร้อนตั้งแต่เมื่อไหร่คะ?',
       starterQuestions: [
         'ยานี้กินแล้วง่วงนอนไหมคะ? (Does this medicine make you drowsy?)',
         'ต้องรับประทานก่อนอาหารหรือหลังอาหารกี่นาที? (How many minutes before or after meals should this be taken?)',
@@ -3257,7 +3257,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Café & Fika',
       icon: '☕',
       scenario: 'Experiencing Swedish \'fika\' culture: ordering brewed coffee (\'bryggkaffe\') and warm cinnamon buns in historical Gamla Stan.',
-      starterPrompt: 'Hej och välkommen! Ska du ha en vanlig bryggkaffe med påtår, eller en havrelatte? Vill du ha en nygräddad kanelbulle till? (Hi and welcome! Regular brewed coffee with free refill or oat latte? Warm cinnamon bun?)',
+      starterPrompt: 'Hej och välkommen! Ska du ha en vanlig bryggkaffe med påtår, eller en havrelatte? Vill du ha en nygräddad kanelbulle till?',
       starterQuestions: [
         'Ingår påtår i kaffepriset här? (Is a refill included in the coffee price here?)',
         'Är kardemummabullarna bakade med äkta smör? (Are the cardamom buns baked with real butter?)',
@@ -3272,7 +3272,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Public Transit',
       icon: '🚇',
       scenario: 'Tapping your contactless card at the SL turnstile, checking the green line towards T-Centralen, and asking transit staff.',
-      starterPrompt: 'Ursäkta mig, går det här tåget mot T-Centralen och Odenplan? Kan jag bara blippa mitt vanliga betalkort i spärren? (Excuse me, does this train go towards T-Centralen? Can I just tap my bank card at the barrier?)',
+      starterPrompt: 'Ursäkta mig, går det här tåget mot T-Centralen och Odenplan? Kan jag bara blippa mitt vanliga betalkort i spärren?',
       starterQuestions: [
         'Hur länge gäller en enkelbiljett i SL-trafiken? (How long is a single ticket valid in SL transit?)',
         'Vilken uppgång ska jag ta för att komma till Drottninggatan? (Which exit should I take for Drottninggatan?)',
@@ -3287,7 +3287,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Job Interviews',
       icon: '💼',
       scenario: 'Discussing horizontal hierarchy, consensus decision-making, and high-performance backend systems in Stockholm.',
-      starterPrompt: 'Välkommen till intervjun! Berätta lite om din bakgrund och hur du arbetar med autonoma team och distribuerade molnsystem. (Welcome! Tell us about your background and how you work with autonomous teams and distributed cloud systems.)',
+      starterPrompt: 'Välkommen till intervjun! Berätta lite om din bakgrund och hur du arbetar med autonoma team och distribuerade molnsystem.',
       starterQuestions: [
         'Hur trivs du med en platt organisationsstruktur utan strikt mikrostyrning? (How do you thrive in a flat organizational structure without micromanagement?)',
         'Vilka teknologier föredrar du för realtidsdataströmmar? (What technologies do you prefer for real-time streaming pipelines?)',
@@ -3302,7 +3302,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Supermarket',
       icon: '🛒',
       scenario: 'Locating local organic products (\'ekologiskt\'), asking staff where oat milk and crispbread (\'knäckebröd\') are shelved.',
-      starterPrompt: 'Hej! Ursäkta, var kan jag hitta havremjölken och det traditionella knäckebrödet? Har ni några lokala ostar? (Hi! Excuse me, where can I find oat milk and crispbread? Do you have local cheeses?)',
+      starterPrompt: 'Hej! Ursäkta, var kan jag hitta havremjölken och det traditionella knäckebrödet? Har ni några lokala ostar?',
       starterQuestions: [
         'Finns det någon självscanningskassa ledig? (Is there a self-checkout scanner available?)',
         'Behöver jag betala extra för papperspåsarna? (Do I need to pay extra for paper bags?)',
@@ -3317,7 +3317,7 @@ final List<TopicModel> presetTopicCatalog = [
       subCategory: 'Clinic Visit',
       icon: '🏥',
       scenario: 'Speaking with a triage nurse at a Swedish Vårdcentral about persistent cough, fever, and scheduling an appointment.',
-      starterPrompt: 'Hej, du har kommit till Vårdcentralen. Vad kan vi hjälpa dig med idag? Hur länge har du haft dessa symptom? (Hello, you have reached the Health Clinic. How can we help you today? How long have you had these symptoms?)',
+      starterPrompt: 'Hej, du har kommit till Vårdcentralen. Vad kan vi hjälpa dig med idag? Hur länge har du haft dessa symptom?',
       starterQuestions: [
         'Har du svårt att andas eller hög feber? (Do you have breathing difficulty or high fever?)',
         'Har du ett svenskt personnummer eller samordningsnummer? (Do you have a Swedish personal number or coordination number?)',

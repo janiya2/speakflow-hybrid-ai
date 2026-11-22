@@ -96,7 +96,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Baseball",
     "icon": "⚾",
     "scenario": "You are talking with a Japanese baseball enthusiast at Tokyo Dome.",
-    "starterPrompt": "野球はお好きですか？日本のプロ野球でどのチームを応援していますか？ (Yakyuu wa osuki desu ka? Do you like baseball? Which Japanese team do you support?)",
+    "starterPrompt": "野球はお好きですか？日本のプロ野球でどのチームを応援していますか？",
     "starterQuestions": [
       "ドームの雰囲気はどうですか？ (How is the stadium atmosphere?)"
     ]
@@ -110,7 +110,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Martial Arts",
     "icon": "🥋",
     "scenario": "You are talking with a friendly Korean martial arts instructor.",
-    "starterPrompt": "안녕하세요! 태권도나 다른 운동을 해보신 적이 있으신가요? (Annyeonghaseyo! Have you ever practiced Taekwondo or any exercise?)",
+    "starterPrompt": "안녕하세요! 태권도나 다른 운동을 해보신 적이 있으신가요?",
     "starterQuestions": [
       "어떤 운동을 가장 좋아하세요? (Which exercise do you like most?)"
     ]
@@ -544,7 +544,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Transport",
     "icon": "🚅",
     "scenario": "You are buying a Shinkansen bullet train ticket from a station attendant in Tokyo.",
-    "starterPrompt": "いらっしゃいませ。京都までの新幹線チケットですか？指定席と自由席どちらがよろしいですか？ (Welcome. Shinkansen ticket to Kyoto? Reserved or non-reserved seat?)",
+    "starterPrompt": "いらっしゃいませ。京都までの新幹線チケットですか？指定席と自由席どちらがよろしいですか？",
     "starterQuestions": [
       "何時の電車に乗りますか？ (What time train would you like to take?)"
     ]
@@ -558,7 +558,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Hotel",
     "icon": "🏯",
     "scenario": "You are arriving at a beautiful traditional Japanese onsen inn.",
-    "starterPrompt": "ようこそお越しくださいました。ご予約のお名前を伺ってもよろしいでしょうか？ (Welcome! May I please have the name on your reservation?)",
+    "starterPrompt": "ようこそお越しくださいました。ご予約のお名前を伺ってもよろしいでしょうか？",
     "starterQuestions": [
       "夕食は何時がご希望ですか？ (What time would you prefer dinner?)"
     ]
@@ -572,7 +572,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Transport",
     "icon": "🚕",
     "scenario": "You just stepped into a taxi in downtown Seoul and are telling the driver your destination.",
-    "starterPrompt": "어서오세요! 어디로 모실까요? (Welcome! Where can I take you today?)",
+    "starterPrompt": "어서오세요! 어디로 모실까요?",
     "starterQuestions": [
       "홍대입구역 어디쯤에 내려드릴까요? (Where around Hongdae Station should I drop you?)"
     ]
@@ -642,7 +642,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Restaurant",
     "icon": "🍜",
     "scenario": "You are sitting at the wooden counter of a famous tonkotsu ramen shop in Tokyo.",
-    "starterPrompt": "へい、いらっしゃい！ラーメンのスープの濃さと麺の硬さはどうしますか？ (Welcome! How rich would you like your broth, and how firm your noodles?)",
+    "starterPrompt": "へい、いらっしゃい！ラーメンのスープの濃さと麺の硬さはどうしますか？",
     "starterQuestions": [
       "トッピングに煮玉子はつけますか？ (Would you like a soft-boiled egg topping?)"
     ]
@@ -656,7 +656,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Restaurant",
     "icon": "🥩",
     "scenario": "You are sitting around a charcoal grill at a popular Seoul K-BBQ restaurant with a hospitable owner.",
-    "starterPrompt": "어서오세요! 삼겹살 2인분 드릴까요, 아니면 소고기 갈비가 좋으세요? (Welcome! Shall I bring 2 servings of pork belly, or beef ribs?)",
+    "starterPrompt": "어서오세요! 삼겹살 2인분 드릴까요, 아니면 소고기 갈비가 좋으세요?",
     "starterQuestions": [
       "된장찌개나 밥도 같이 준비해 드릴까요? (Shall I prepare soybean stew and rice together?)"
     ]
@@ -670,7 +670,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Dessert",
     "icon": "🍧",
     "scenario": "You are cooling off on a warm afternoon ordering shaved ice dessert at a dessert cafe in Seoul.",
-    "starterPrompt": "주문 도와드릴게요! 인절미 빙수랑 망고 빙수 중에 어떤 것으로 하시겠어요? (Can I take your order? Between injeolmi bingsu and mango bingsu, which one?)",
+    "starterPrompt": "주문 도와드릴게요! 인절미 빙수랑 망고 빙수 중에 어떤 것으로 하시겠어요?",
     "starterQuestions": [
       "사이즈는 레귤러로 드릴까요? (Regular size?)"
     ]
@@ -740,7 +740,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Business Etiquette",
     "icon": "📇",
     "scenario": "You are meeting an important Japanese business client and exchanging meishi (business cards).",
-    "starterPrompt": "初めまして。本日はお時間をいただき誠にありがとうございます。名刺を交換させていただけますでしょうか？ (Nice to meet you. Thank you for your time today. May we exchange business cards?)",
+    "starterPrompt": "初めまして。本日はお時間をいただき誠にありがとうございます。名刺を交換させていただけますでしょうか？",
     "starterQuestions": [
       "御社の事業について簡単にご紹介いただけますか？ (Could you briefly introduce your company?)"
     ]
@@ -754,7 +754,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Interview",
     "icon": "🏢",
     "scenario": "You are sitting across from a panel of Korean corporate interviewers at a leading tech firm.",
-    "starterPrompt": "지원자님, 먼저 긴장을 푸시고 간단하게 자기소개 부탁드립니다. (Applicant, please relax and give a brief self-introduction.)",
+    "starterPrompt": "지원자님, 먼저 긴장을 푸시고 간단하게 자기소개 부탁드립니다.",
     "starterQuestions": [
       "우리 회사에 지원하게 된 특별한 동기가 있나요? (What motivated you to apply to our company?)"
     ]
@@ -810,7 +810,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Anime",
     "icon": "⛩️",
     "scenario": "You are talking with an Akihabara anime fan about legendary anime series and manga.",
-    "starterPrompt": "日本のアニメやマンガはお好きですか？一番好きな作品は何ですか？ (Do you like Japanese anime or manga? What is your favorite series?)",
+    "starterPrompt": "日本のアニメやマンガはお好きですか？一番好きな作品は何ですか？",
     "starterQuestions": [
       "最近見ているアニメはありますか？ (Is there an anime you are currently watching?)"
     ]
@@ -824,7 +824,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "K-Culture",
     "icon": "🎤",
     "scenario": "You are chatting with a university student in Seoul about K-pop idols and trending Korean dramas.",
-    "starterPrompt": "혹시 좋아하는 K-POP 아이돌이나 한국 드라마가 있으신가요? (Do you happen to have a favorite K-pop idol or Korean drama?)",
+    "starterPrompt": "혹시 좋아하는 K-POP 아이돌이나 한국 드라마가 있으신가요?",
     "starterQuestions": [
       "한국 노래 중에 자주 듣는 곡이 있나요? (Is there a Korean song you listen to often?)"
     ]
@@ -894,7 +894,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Shopping",
     "icon": "🏪",
     "scenario": "You are paying for bento and drinks at a 7-Eleven or Lawson in Tokyo.",
-    "starterPrompt": "いらっしゃいませ！お弁当は温めますか？ (Welcome! Would you like me to heat up your bento?)",
+    "starterPrompt": "いらっしゃいませ！お弁当は温めますか？",
     "starterQuestions": [
       "お箸は何膳おつけしますか？ (How many pairs of chopsticks would you like?)"
     ]
@@ -908,7 +908,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Shopping",
     "icon": "💄",
     "scenario": "You are browsing skincare and face masks with a friendly shop assistant in Seoul.",
-    "starterPrompt": "어서오세요 고객님! 요즘 환절기라 수분 크림이랑 마스크팩이 인기인데, 피부 타입이 어떻게 되세요? (Welcome! What is your skin type?)",
+    "starterPrompt": "어서오세요 고객님! 요즘 환절기라 수분 크림이랑 마스크팩이 인기인데, 피부 타입이 어떻게 되세요?",
     "starterQuestions": [
       "선물용이신가요, 직접 쓰실 건가요? (Is this a gift, or for yourself?)"
     ]
@@ -992,7 +992,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Introduction",
     "icon": "🌸",
     "scenario": "You are introducing yourself at a Japanese language conversation club in Tokyo.",
-    "starterPrompt": "初めまして！自己紹介をお願いできますか？お名前と、日本語を勉強している理由を教えてください！ (Nice to meet you! Could you please introduce yourself?)",
+    "starterPrompt": "初めまして！自己紹介をお願いできますか？お名前と、日本語を勉強している理由を教えてください！",
     "starterQuestions": [
       "日本で一番行きたい場所はどこですか？ (Where in Japan do you want to visit most?)"
     ]
@@ -1006,7 +1006,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Introduction",
     "icon": "🤝",
     "scenario": "You are chatting with a friendly Korean peer at an international language meetup.",
-    "starterPrompt": "반가워요! 한국어 공부한 지 얼마나 되셨어요? (Nice to meet you! How long have you been studying Korean?)",
+    "starterPrompt": "반가워요! 한국어 공부한 지 얼마나 되셨어요?",
     "starterQuestions": [
       "취미가 무엇인가요? (What are your hobbies?)"
     ]
@@ -1426,7 +1426,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "K-Food",
     "icon": "🥩",
     "scenario": "You are grilling pork belly (samgyeopsal) with a Korean friend at a lively Seoul BBQ restaurant.",
-    "starterPrompt": "어서오세요! 삼겹살 2인분 먼저 올려드릴게요. 쌈장과 마늘 넣어서 쌈 싸 드시는 법 아시나요? (Welcome! I will put on 2 servings of pork belly. Do you know how to wrap it with ssamjang and garlic?)",
+    "starterPrompt": "어서오세요! 삼겹살 2인분 먼저 올려드릴게요. 쌈장과 마늘 넣어서 쌈 싸 드시는 법 아시나요?",
     "starterQuestions": [
       "된장찌개나 냉면도 같이 주문할까요?"
     ]
@@ -1440,7 +1440,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "KTX",
     "icon": "🚅",
     "scenario": "You are boarding the high-speed KTX train at Seoul Station headed for Haeundae Beach in Busan.",
-    "starterPrompt": "부산행 KTX 열차에 탑승하셨군요! 창가 쪽 좌석이 편안하신가요? 부산에 도착하면 가장 먼저 어디에 가실 계획이신가요? (You boarded the KTX to Busan! Is your window seat comfortable? Where do you plan to go first when you arrive in Busan?)",
+    "starterPrompt": "부산행 KTX 열차에 탑승하셨군요! 창가 쪽 좌석이 편안하신가요? 부산에 도착하면 가장 먼저 어디에 가실 계획이신가요?",
     "starterQuestions": [
       "해운대 해수욕장이나 자갈치 시장에 가보셨나요?"
     ]
@@ -1454,7 +1454,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "면접",
     "icon": "💼",
     "scenario": "You are having an interview for an AI software engineering position in South Korea's Pangyo Silicon Valley.",
-    "starterPrompt": "판교 테크노밸리 면접에 참석해 주셔서 감사합니다. 지원자님께서 최근에 개발하신 인공지능 프로젝트 경험에 대해 말씀해 주시겠어요? (Thank you for attending the Pangyo Techno Valley interview. Could you tell us about your recent AI project experience?)",
+    "starterPrompt": "판교 테크노밸리 면접에 참석해 주셔서 감사합니다. 지원자님께서 최근에 개발하신 인공지능 프로젝트 경험에 대해 말씀해 주시겠어요?",
     "starterQuestions": [
       "협업 과정에서 발생한 기술적 문제를 어떻게 해결하셨나요?"
     ]
@@ -1468,7 +1468,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Cafe",
     "icon": "☕",
     "scenario": "You are relaxing in a serene Bukchon Hanok village tea house chatting about Korean culture and architecture.",
-    "starterPrompt": "북촌 한옥마을 분위기가 정말 고즈넉하죠? 따뜻한 오미자차 한 잔 어떠세요? 한국 전통 가옥에 대해 어떻게 생각하시나요? (The Bukchon Hanok village atmosphere is so tranquil, right? How about a warm Omija tea? What do you think of traditional Korean houses?)",
+    "starterPrompt": "북촌 한옥마을 분위기가 정말 고즈넉하죠? 따뜻한 오미자차 한 잔 어떠세요? 한국 전통 가옥에 대해 어떻게 생각하시나요?",
     "starterQuestions": [
       "한국 전통 다과인 약과나 한과를 드셔보셨나요?"
     ]
@@ -1482,7 +1482,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "헬스",
     "icon": "🏋️",
     "scenario": "You are discussing workout split routines and health goals with a friendly personal trainer in Gangnam.",
-    "starterPrompt": "안녕하세요! 강남 피트니스 센터에 오신 것을 환영합니다. 평소에 웨이트 트레이닝과 유산소 운동 중 어떤 것을 즐겨 하시나요? (Hello! Welcome to the Gangnam Fitness Center. Do you usually enjoy weight training or cardio more?)",
+    "starterPrompt": "안녕하세요! 강남 피트니스 센터에 오신 것을 환영합니다. 평소에 웨이트 트레이닝과 유산소 운동 중 어떤 것을 즐겨 하시나요?",
     "starterQuestions": [
       "하루에 물과 단백질을 얼마나 섭취하시나요?"
     ]
@@ -1874,7 +1874,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "분식",
     "icon": "🍢",
     "scenario": "You are enjoying spicy rice cakes (tteokbokki) and warm fish cake broth at a bustling street food tent in Seoul.",
-    "starterPrompt": "어서오세요! 날씨가 쌀쌀한데 따뜻한 어묵 국물 먼저 한 컵 드세요. 매콤한 떡볶이랑 바삭한 튀김 같이 드릴까요? (Welcome! Have a warm cup of fish cake broth. Shall I serve spicy tteokbokki and crispy tempura together?)",
+    "starterPrompt": "어서오세요! 날씨가 쌀쌀한데 따뜻한 어묵 국물 먼저 한 컵 드세요. 매콤한 떡볶이랑 바삭한 튀김 같이 드릴까요?",
     "starterQuestions": [
       "매운 음식 잘 드시나요? (Can you handle spicy food?)"
     ]
@@ -1888,7 +1888,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "치맥",
     "icon": "🍗",
     "scenario": "You are enjoying an evening feast of double-fried Korean garlic soy chicken and draft beer with friends along the Han River.",
-    "starterPrompt": "한강에서 치맥(치킨과 맥주)하기 딱 좋은 저녁이네요! 바삭한 후라이드와 달콤한 양념 반반으로 주문할까요? (It is a great evening for Chimaek at the Han River! Shall we order half crispy fried and half sweet seasoned chicken?)",
+    "starterPrompt": "한강에서 치맥(치킨과 맥주)하기 딱 좋은 저녁이네요! 바삭한 후라이드와 달콤한 양념 반반으로 주문할까요?",
     "starterQuestions": [
       "시원한 생맥주도 같이 주문할까요? (Shall we order cold draft beer together?)"
     ]
@@ -1902,7 +1902,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "김치",
     "icon": "🥬",
     "scenario": "You are participating in a hands-on cultural workshop seasoning salted napa cabbage with red chili paste and garlic.",
-    "starterPrompt": "김장 체험에 오신 것을 환영합니다! 절인 배추 잎 사이사이에 양념 속을 골고루 바르는 것이 핵심이에요. 손맛을 한번 내보실까요? (Welcome to the Kimjang experience! Spreading seasoning between salted cabbage leaves is key. Ready to try with your hands?)",
+    "starterPrompt": "김장 체험에 오신 것을 환영합니다! 절인 배추 잎 사이사이에 양념 속을 골고루 바르는 것이 핵심이에요. 손맛을 한번 내보실까요?",
     "starterQuestions": [
       "갓 담근 배추김치 맛이 어떠세요? (How does the freshly made kimchi taste?)"
     ]
@@ -2152,7 +2152,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "제주도",
     "icon": "🏝️",
     "scenario": "You are planning a scenic coastal hike along the Jeju Olle Trail and watching the sunrise over Seongsan Ilchulbong crater.",
-    "starterPrompt": "제주도에 오신 것을 진심으로 환영합니다! 푸른 바다와 성산일출봉 풍경이 정말 아름답죠? 올레길 코스를 걸어보실 계획인가요? (Welcome to Jeju Island! Isn't the blue sea and Sunrise Peak stunning? Are you planning to hike the Olle trail?)",
+    "starterPrompt": "제주도에 오신 것을 진심으로 환영합니다! 푸른 바다와 성산일출봉 풍경이 정말 아름답죠? 올레길 코스를 걸어보실 계획인가요?",
     "starterQuestions": [
       "제주 흑돼지나 신선한 해산물 드셔보셨나요? (Have you tried Jeju black pork or fresh seafood?)"
     ]
@@ -2166,7 +2166,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "지하철",
     "icon": "🚇",
     "scenario": "You are asking station staff at Seoul Station how to reload a T-money transit card and transfer from Line 1 to Line 4.",
-    "starterPrompt": "안녕하세요! 지하철 이용에 도움이 필요하신가요? 티머니 교통카드 충전은 저쪽 자동발매기에서 한국어와 영어로 가능합니다. 어디로 가시나요? (Hello! Do you need help using the subway? T-money reloading is available right over there in English and Korean. Where are you heading?)",
+    "starterPrompt": "안녕하세요! 지하철 이용에 도움이 필요하신가요? 티머니 교통카드 충전은 저쪽 자동발매기에서 한국어와 영어로 가능합니다. 어디로 가시나요?",
     "starterQuestions": [
       "환승 통로 안내 표지판이 잘 보이시나요? (Can you clearly see the transfer signs?)"
     ]
@@ -2180,7 +2180,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "한옥숙박",
     "icon": "🏮",
     "scenario": "You are checking into an authentic Hanok guesthouse with heated ondol floors in the historic Jeonju Hanok Village.",
-    "starterPrompt": "전주 한옥마을 숙소에 도착하셨군요! 바닥에 따뜻한 온돌이 들어와 포근할 거예요. 내일 아침 전주 콩나물국밥이나 비빔밥을 드시겠어요? (Welcome to your Jeonju Hanok stay! The warm ondol floor will make you cozy. Would you like bean sprout soup or bibimbap for breakfast tomorrow?)",
+    "starterPrompt": "전주 한옥마을 숙소에 도착하셨군요! 바닥에 따뜻한 온돌이 들어와 포근할 거예요. 내일 아침 전주 콩나물국밥이나 비빔밥을 드시겠어요?",
     "starterQuestions": [
       "온돌방에서 요를 깔고 주무시는 것은 처음이신가요? (Is it your first time sleeping on a futon on an ondol floor?)"
     ]
@@ -2306,7 +2306,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Restaurant",
     "icon": "🥐",
     "scenario": "You are seated at an authentic Parisian sidewalk cafe ordering a morning espresso and warm croissant.",
-    "starterPrompt": "Bonjour ! Bienvenue au Café Saint-Germain. Que puis-je vous servir aujourd'hui ? (Welcome to Café Saint-Germain. What can I serve you today?)",
+    "starterPrompt": "Bonjour ! Bienvenue au Café Saint-Germain. Que puis-je vous servir aujourd'hui ?",
     "starterQuestions": [
       "Préférez-vous un café serré ou un café crème ?",
       "Voulez-vous une viennoiserie avec cela ?"
@@ -2321,7 +2321,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Airport",
     "icon": "🧳",
     "scenario": "Your checked luggage didn't arrive on the carousel at CDG Airport and you need to file a claim.",
-    "starterPrompt": "Bonjour, service des litiges bagages. Avez-vous votre reçu d'enregistrement et votre carte d'embarquement ? (Baggage claims desk. Do you have your baggage receipt and boarding pass?)",
+    "starterPrompt": "Bonjour, service des litiges bagages. Avez-vous votre reçu d'enregistrement et votre carte d'embarquement ?",
     "starterQuestions": [
       "Quelle est la couleur et la marque de votre valise ?",
       "Sur quel vol êtes-vous arrivé ?"
@@ -2336,7 +2336,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Job Interview",
     "icon": "💼",
     "scenario": "You are interviewing for a Senior Software Engineer position with a Paris Station F startup.",
-    "starterPrompt": "Bonjour et enchanté ! Pouvez-vous vous présenter et m'expliquer votre parcours dans le développement cloud ? (Hello! Could you introduce yourself and explain your cloud development background?)",
+    "starterPrompt": "Bonjour et enchanté ! Pouvez-vous vous présenter et m'expliquer votre parcours dans le développement cloud ?",
     "starterQuestions": [
       "Quel est le projet dont vous êtes le plus fier ?",
       "Comment gérez-vous le stress des échéances serrées ?"
@@ -2351,7 +2351,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Salary Negotiation",
     "icon": "📈",
     "scenario": "You are negotiating your annual package, remote work flexibility, and stock options with HR.",
-    "starterPrompt": "Nous serions ravis de vous accueillir dans l'équipe. Quelles sont vos prétentions salariales pour ce poste ? (We'd love to welcome you to the team. What are your salary expectations?)",
+    "starterPrompt": "Nous serions ravis de vous accueillir dans l'équipe. Quelles sont vos prétentions salariales pour ce poste ?",
     "starterQuestions": [
       "Quelles sont vos priorités entre fixe, variable et télétravail ?",
       "Quand pourriez-vous débuter ?"
@@ -2366,7 +2366,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Hotel",
     "icon": "🏨",
     "scenario": "You arrive at your boutique hotel in Montmartre to check into your reserved room.",
-    "starterPrompt": "Bonsoir monsieur/madame ! Bienvenue à l'Hôtel des Arts. Avez-vous une réservation à notre réception ? (Good evening! Welcome to Hôtel des Arts. Do you have a reservation?)",
+    "starterPrompt": "Bonsoir monsieur/madame ! Bienvenue à l'Hôtel des Arts. Avez-vous une réservation à notre réception ?",
     "starterQuestions": [
       "Quel est votre nom s'il vous plaît ?",
       "Souhaitez-vous le petit-déjeuner inclus le matin ?"
@@ -2381,7 +2381,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Shopping",
     "icon": "🛍️",
     "scenario": "You are looking for a stylish winter coat in a Marais fashion boutique.",
-    "starterPrompt": "Bonjour ! Est-ce que je peux vous aider à trouver votre taille ou un modèle particulier ? (Hello! Can I help you find your size or a particular style?)",
+    "starterPrompt": "Bonjour ! Est-ce que je peux vous aider à trouver votre taille ou un modèle particulier ?",
     "starterQuestions": [
       "Quelle est votre taille habituelle ?",
       "Préférez-vous cette veste en noir ou en bleu marine ?"
@@ -2396,7 +2396,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Pharmacy",
     "icon": "💊",
     "scenario": "You have caught a fever and sore throat while traveling and need relief medicine.",
-    "starterPrompt": "Bonjour ! Quels sont vos symptômes exactement ? Avez-vous de la fièvre ou de la toux ? (Hello! What are your exact symptoms? Do you have fever or a cough?)",
+    "starterPrompt": "Bonjour ! Quels sont vos symptômes exactement ? Avez-vous de la fièvre ou de la toux ?",
     "starterQuestions": [
       "Depuis combien de jours êtes-vous malade ?",
       "Êtes-vous allergique à certains médicaments comme l'aspirine ?"
@@ -2411,7 +2411,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Grammar Repair",
     "icon": "🎓",
     "scenario": "Mastering the critical distinction between completed past actions (Passé Composé) and ongoing backgrounds (Imparfait).",
-    "starterPrompt": "Pratiquons le passé ! Racontez-moi ce que vous faisiez quand un événement soudain est arrivé hier. (Let's practice past tense! Tell me what you were doing when a sudden event happened yesterday.)",
+    "starterPrompt": "Pratiquons le passé ! Racontez-moi ce que vous faisiez quand un événement soudain est arrivé hier.",
     "starterQuestions": [
       "Quel temps utilisez-vous pour une action terminée ?",
       "Comment accordez-vous le participe passé avec être ?"
@@ -2426,7 +2426,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Cafe",
     "icon": "☕",
     "scenario": "You are sitting outside a cozy Prenzlauer Berg cafe ordering specialty coffee and Apfelstrudel.",
-    "starterPrompt": "Hallo! Herzlich willkommen. Was darf ich Ihnen heute bringen? (Hello! Welcome. What can I get for you today?)",
+    "starterPrompt": "Hallo! Herzlich willkommen. Was darf ich Ihnen heute bringen?",
     "starterQuestions": [
       "Möchten Sie den Cappuccino mit Hafermilch oder Kuhmilch?",
       "Darf es dazu ein Stück Kuchen sein?"
@@ -2441,7 +2441,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Train",
     "icon": "🚆",
     "scenario": "Your ICE train to Munich is delayed and you must ask Deutsche Bahn service about connections.",
-    "starterPrompt": "Guten Tag, Reisezentrum Deutsche Bahn. Wie kann ich Ihnen bei Ihrer Verbindung helfen? (Good day, DB travel center. How can I help with your connection?)",
+    "starterPrompt": "Guten Tag, Reisezentrum Deutsche Bahn. Wie kann ich Ihnen bei Ihrer Verbindung helfen?",
     "starterQuestions": [
       "Wohin möchten Sie reisen?",
       "Haben Sie bereits ein gültiges Ticket oder eine Reservierung?"
@@ -2456,7 +2456,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Job Interview",
     "icon": "💼",
     "scenario": "You are interviewing for an engineering team lead position at an innovative German tech enterprise.",
-    "starterPrompt": "Guten Tag! Schön, dass Sie da sind. Bitte erzählen Sie uns kurz über Ihre bisherigen Erfahrungen im Software-Engineering. (Good day! Please tell us briefly about your software engineering background.)",
+    "starterPrompt": "Guten Tag! Schön, dass Sie da sind. Bitte erzählen Sie uns kurz über Ihre bisherigen Erfahrungen im Software-Engineering.",
     "starterQuestions": [
       "Was war Ihre größte technische Herausforderung?",
       "Wie motivieren Sie Ihr Team bei engen Terminen?"
@@ -2471,7 +2471,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Housing",
     "icon": "🔑",
     "scenario": "You are viewing an apartment for rent and speaking with the landlord about lease terms.",
-    "starterPrompt": "Guten Tag! Kommen Sie gerne herein. Was gefällt Ihnen an dieser Wohnung am besten? (Good day! Please come in. What do you like best about this apartment?)",
+    "starterPrompt": "Guten Tag! Kommen Sie gerne herein. Was gefällt Ihnen an dieser Wohnung am besten?",
     "starterQuestions": [
       "Ab wann möchten Sie die Wohnung mieten?",
       "Haben Sie Ihre Schufa-Auskunft und Gehaltsnachweise dabei?"
@@ -2486,7 +2486,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Restaurant",
     "icon": "🍽️",
     "scenario": "You are dining with colleagues at a traditional German restaurant ordering schnitzel and regional sides.",
-    "starterPrompt": "Guten Abend! Haben Sie schon einen Blick in die Speisekarte geworfen? Was darf ich Ihnen zu trinken bringen? (Good evening! Have you looked at the menu? What can I get you to drink?)",
+    "starterPrompt": "Guten Abend! Haben Sie schon einen Blick in die Speisekarte geworfen? Was darf ich Ihnen zu trinken bringen?",
     "starterQuestions": [
       "Haben Sie bestimmte Unverträglichkeiten oder Allergien?",
       "Möchten Sie das Schnitzel mit Bratkartoffeln oder Pommes?"
@@ -2501,7 +2501,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Pharmacy",
     "icon": "💊",
     "scenario": "You have a painful headache and stomach upset and need over-the-counter medication.",
-    "starterPrompt": "Guten Tag! Wie kann ich Ihnen heute helfen? Haben Sie bestimmte Beschwerden oder Schmerzen? (Good day! How can I help? Do you have specific symptoms or pain?)",
+    "starterPrompt": "Guten Tag! Wie kann ich Ihnen heute helfen? Haben Sie bestimmte Beschwerden oder Schmerzen?",
     "starterQuestions": [
       "Nehmen Sie derzeit bereits andere Medikamente ein?",
       "Bevorzugen Sie Tabletten oder einen Saft?"
@@ -2516,7 +2516,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Football",
     "icon": "⚽",
     "scenario": "You are chatting with a local sports fan about Bundesliga teams and the Champions League.",
-    "starterPrompt": "Servus! Hast du das spannende Spiel am Wochenende gesehen? Für welche Mannschaft schlägt dein Herz? (Hello! Did you see the exciting weekend match? Which team do you support?)",
+    "starterPrompt": "Servus! Hast du das spannende Spiel am Wochenende gesehen? Für welche Mannschaft schlägt dein Herz?",
     "starterQuestions": [
       "Wer wird deiner Meinung nach dieses Jahr Meister?",
       "Gehst du oft selbst ins Stadion?"
@@ -2531,7 +2531,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Grammar Repair",
     "icon": "🎓",
     "scenario": "Mastering two-way prepositions (Wechselpräpositionen) with Dative (location/wo) vs Accusative (motion/wohin).",
-    "starterPrompt": "Lass uns Wechselpräpositionen üben! Wohin hast du dein Buch gelegt und wo liegt es jetzt? (Let's practice two-way prepositions! Where did you put your book and where is it now?)",
+    "starterPrompt": "Lass uns Wechselpräpositionen üben! Wohin hast du dein Buch gelegt und wo liegt es jetzt?",
     "starterQuestions": [
       "Benutzt du Dativ für feste Orte oder Bewegungen?",
       "Welcher Fall folgt auf 'in die Stadt gehen'?"
@@ -2546,7 +2546,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Cafe",
     "icon": "☕",
     "scenario": "Standing at a Roman bar counter ordering a morning espresso, cornetto alla crema, and a glass of water.",
-    "starterPrompt": "Buongiorno! Cosa ti preparo di buono stamattina al banco? (Good morning! What can I make for you at the counter this morning?)",
+    "starterPrompt": "Buongiorno! Cosa ti preparo di buono stamattina al banco?",
     "starterQuestions": [
       "Lo preferisci al vetro o in tazza normale?",
       "Vuoi un cornetto semplice o al pistacchio?"
@@ -2561,7 +2561,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Hotel",
     "icon": "🏨",
     "scenario": "You are checking into an historic hotel in central Florence overlooking the Duomo.",
-    "starterPrompt": "Benvenuto a Firenze! Ha una prenotazione con noi per questo weekend? (Welcome to Florence! Do you have a reservation with us for this weekend?)",
+    "starterPrompt": "Benvenuto a Firenze! Ha una prenotazione con noi per questo weekend?",
     "starterQuestions": [
       "Mi può mostrare un documento d'identità?",
       "Desidera che le prenoti un taxi per domani mattina?"
@@ -2576,7 +2576,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Restaurant",
     "icon": "🍝",
     "scenario": "You are ordering authentic handmade pasta and asking the waiter for wine recommendations.",
-    "starterPrompt": "Buonasera! Avete già scelto o posso consigliarvi il nostro primo piatto del giorno fatto a mano? (Good evening! Have you chosen or can I recommend our handmade pasta of the day?)",
+    "starterPrompt": "Buonasera! Avete già scelto o posso consigliarvi il nostro primo piatto del giorno fatto a mano?",
     "starterQuestions": [
       "Preferite pasta fresca o carne per secondo?",
       "Gradite un vino rosso toscano della casa?"
@@ -2591,7 +2591,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Job Interview",
     "icon": "💼",
     "scenario": "You are interviewing for a digital product design lead in a prestigious Milanese creative studio.",
-    "starterPrompt": "Buongiorno e benvenuto. Ci parli del suo percorso professionale e dei progetti più significativi. (Good morning. Tell us about your career and most significant design projects.)",
+    "starterPrompt": "Buongiorno e benvenuto. Ci parli del suo percorso professionale e dei progetti più significativi.",
     "starterQuestions": [
       "Qual è il suo approccio alla collaborazione di squadra?",
       "Come gestisce i feedback complessi dai clienti?"
@@ -2606,7 +2606,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Directions",
     "icon": "🗺️",
     "scenario": "You are navigating through the narrow Venetian calli searching for Piazza San Marco.",
-    "starterPrompt": "Ciao! Ti sei perso tra i canali? Dove stai cercando di arrivare esattamente? (Hello! Are you lost among the canals? Where are you trying to reach exactly?)",
+    "starterPrompt": "Ciao! Ti sei perso tra i canali? Dove stai cercando di arrivare esattamente?",
     "starterQuestions": [
       "Vuoi andare a piedi o prendere il vaporetto?",
       "Hai una mappa con te?"
@@ -2621,7 +2621,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Pharmacy",
     "icon": "💊",
     "scenario": "Describing sudden sunburn and a seasonal allergy to a compassionate Italian pharmacist.",
-    "starterPrompt": "Buongiorno, mi dica tutto. Di quali medicinali ha bisogno oggi? (Good morning, tell me everything. What medicines do you need today?)",
+    "starterPrompt": "Buongiorno, mi dica tutto. Di quali medicinali ha bisogno oggi?",
     "starterQuestions": [
       "Ha dolore o solo bruciore sulla pelle?",
       "È allergico a farmaci antistaminici?"
@@ -2636,7 +2636,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Football",
     "icon": "⚽",
     "scenario": "Discussing the latest Serie A derby and legendary Italian players over coffee.",
-    "starterPrompt": "Ciao! Hai visto il derby ieri sera? Che partita spettacolare! Per quale squadra fai il tifo? (Hi! Did you watch the derby last night? Which team do you support?)",
+    "starterPrompt": "Ciao! Hai visto il derby ieri sera? Che partita spettacolare! Per quale squadra fai il tifo?",
     "starterQuestions": [
       "Chi pensi che vincerà lo scudetto quest'anno?",
       "Preferisci il calcio offensivo o difensivo?"
@@ -2651,7 +2651,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Grammar Repair",
     "icon": "🎓",
     "scenario": "Practicing when to use 'essere' (with agreement in gender/number) vs 'avere' in past tense.",
-    "starterPrompt": "Esercitiamo il passato! Dove sei andato ieri e cosa hai fatto di bello? (Let's practice past tense! Where did you go yesterday and what nice things did you do?)",
+    "starterPrompt": "Esercitiamo il passato! Dove sei andato ieri e cosa hai fatto di bello?",
     "starterQuestions": [
       "Quale ausiliare si usa con i verbi di movimento?",
       "Come cambia la desinenza con il verbo essere?"
@@ -2666,7 +2666,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Cafe",
     "icon": "☕",
     "scenario": "You are ordering freshly baked pão de queijo and a smooth café com leite at a bakery in São Paulo.",
-    "starterPrompt": "Bom dia! Tudo bem com você? O que vai querer pedir hoje na nossa padaria? (Good morning! How are you? What would you like to order today?)",
+    "starterPrompt": "Bom dia! Tudo bem com você? O que vai querer pedir hoje na nossa padaria?",
     "starterQuestions": [
       "Você prefere café puro ou com leite?",
       "Vai querer o pão de queijo quentinho para viagem?"
@@ -2681,7 +2681,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Sightseeing",
     "icon": "🏖️",
     "scenario": "You are ordering fresh coconut water on Copacabana beach and renting an umbrella.",
-    "starterPrompt": "E aí, beleza? Quer uma água de coco bem gelada ou uma cadeira para curtir a praia? (Hey there! Would you like cold coconut water or a beach chair to enjoy?)",
+    "starterPrompt": "E aí, beleza? Quer uma água de coco bem gelada ou uma cadeira para curtir a praia?",
     "starterQuestions": [
       "Você prefere coco gelado ou natural?",
       "Está gostando do calor do Rio?"
@@ -2696,7 +2696,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Job Interview",
     "icon": "💼",
     "scenario": "You are interviewing for a Software Engineering position at a Brazilian fintech unicorn.",
-    "starterPrompt": "Olá! Seja muito bem-vindo. Conte-me um pouco sobre sua trajetória profissional em tecnologia. (Hello! Welcome. Tell me a bit about your professional journey in tech.)",
+    "starterPrompt": "Olá! Seja muito bem-vindo. Conte-me um pouco sobre sua trajetória profissional em tecnologia.",
     "starterQuestions": [
       "Qual foi o projeto mais desafiador que você liderou?",
       "Como você lida com prazos apertados e trabalho remoto?"
@@ -2711,7 +2711,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Hotel",
     "icon": "🏨",
     "scenario": "You arrive at your hotel in Lisbon and inquire about local tram routes and sightseeing.",
-    "starterPrompt": "Boa tarde! Bem-vindo a Lisboa. Tem uma reserva confirmada connosco para hoje? (Good afternoon! Welcome to Lisbon. Do you have a reservation with us today?)",
+    "starterPrompt": "Boa tarde! Bem-vindo a Lisboa. Tem uma reserva confirmada connosco para hoje?",
     "starterQuestions": [
       "Pode facultar o seu passaporte para o registo?",
       "Deseja informações sobre o elétrico 28?"
@@ -2726,7 +2726,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Restaurant",
     "icon": "🥩",
     "scenario": "Experiencing an authentic Brazilian steakhouse rodízio with caipirinhas and prime picanha.",
-    "starterPrompt": "Boa noite! É sua primeira vez no nosso rodízio? Como você gosta do ponto da carne? (Good evening! Is it your first time at our rodízio? How do you like your meat cooked?)",
+    "starterPrompt": "Boa noite! É sua primeira vez no nosso rodízio? Como você gosta do ponto da carne?",
     "starterQuestions": [
       "Você aceita uma picanha fatiada agora?",
       "Gostaria de experimentar nossa caipirinha tradicional?"
@@ -2741,7 +2741,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Football",
     "icon": "⚽",
     "scenario": "Talking about Brazilian football legends like Pelé, Neymar, and favorite local teams.",
-    "starterPrompt": "E aí, você acompanha futebol? Para qual time brasileiro você torce aqui no campeonato? (Hey, do you follow soccer? Which Brazilian team do you support?)",
+    "starterPrompt": "E aí, você acompanha futebol? Para qual time brasileiro você torce aqui no campeonato?",
     "starterQuestions": [
       "Quem é o melhor jogador do mundo para você?",
       "Você já foi ao estádio do Maracanã?"
@@ -2756,7 +2756,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Grammar Repair",
     "icon": "🎓",
     "scenario": "Mastering the crucial difference between 'por' (cause/duration/exchange) and 'para' (destination/purpose).",
-    "starterPrompt": "Vamos praticar 'por' e 'para'! Por que você estuda línguas e para onde quer viajar? (Let's practice 'por' and 'para'! Why do you study languages and where do you want to travel?)",
+    "starterPrompt": "Vamos praticar 'por' e 'para'! Por que você estuda línguas e para onde quer viajar?",
     "starterQuestions": [
       "Quando você usa 'para' em vez de 'por'?",
       "Como você diz 'obrigado por sua ajuda'?"
@@ -2771,7 +2771,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Restaurant",
     "icon": "🥟",
     "scenario": "You are seated in a traditional teahouse ordering Longjing tea and hot soup dumplings.",
-    "starterPrompt": "您好！欢迎光临。请问今天几位？想先喝点什么热茶？ (Hello! Welcome. How many people today? What hot tea would you like to start with?)",
+    "starterPrompt": "您好！欢迎光临。请问今天几位？想先喝点什么热茶？",
     "starterQuestions": [
       "您喜欢龙井茶还是普洱茶？ (Do you prefer Longjing or Pu-erh?)",
       "需要尝尝我们招牌的小笼包吗？ (Would you like to try our signature xiaolongbao?)"
@@ -2786,7 +2786,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Airport",
     "icon": "✈️",
     "scenario": "Checking in for an international flight and finding your boarding gate at Beijing Daxing Airport.",
-    "starterPrompt": "您好，请出示您的护照和电子机票，我帮您办理登机手续。 (Hello, please show your passport and e-ticket for check-in.)",
+    "starterPrompt": "您好，请出示您的护照和电子机票，我帮您办理登机手续。",
     "starterQuestions": [
       "您有需要托运的大件行李吗？ (Do you have luggage to check in?)",
       "您想要靠窗还是靠过道的座位？ (Do you want a window or aisle seat?)"
@@ -2801,7 +2801,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Job Interview",
     "icon": "💼",
     "scenario": "You are interviewing with a top tech enterprise for an Artificial Intelligence Architect role.",
-    "starterPrompt": "您好！请您先用中文做个简单的自我介绍，重点讲讲您的技术背景。 (Hello! Please give a brief self-introduction focusing on your technical background.)",
+    "starterPrompt": "您好！请您先用中文做个简单的自我介绍，重点讲讲您的技术背景。",
     "starterQuestions": [
       "您在以往项目中遇到过的最大架构挑战是什么？ (What was your biggest architectural challenge?)",
       "您如何看待混合AI边缘计算的发展？ (How do you view hybrid edge AI?)"
@@ -2816,7 +2816,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Shopping",
     "icon": "🛍️",
     "scenario": "Shopping for silk scarves and tea sets as souvenirs for friends back home.",
-    "starterPrompt": "您好！来看看我们这里的精美丝绸和茶叶，今天有特别折扣！ (Hello! Take a look at our fine silk and tea, special discounts today!)",
+    "starterPrompt": "您好！来看看我们这里的精美丝绸和茶叶，今天有特别折扣！",
     "starterQuestions": [
       "您打算买给朋友还是自己用？ (Are you buying for friends or yourself?)",
       "如果买两件，可以给您优惠一点。 (Can give a discount if you buy two.)"
@@ -2831,7 +2831,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Pharmacy",
     "icon": "💊",
     "scenario": "Describing fever, headache, and congestion to a helpful neighborhood pharmacist in Shanghai.",
-    "starterPrompt": "您好，看您脸色不太好，请问有什么不舒服的症状吗？ (Hello, you don't look well. What uncomfortable symptoms do you have?)",
+    "starterPrompt": "您好，看您脸色不太好，请问有什么不舒服的症状吗？",
     "starterQuestions": [
       "发烧几天了？测过体温吗？ (How many days of fever? Checked temperature?)",
       "对中药或者西药有任何过敏吗？ (Any allergies to traditional or western medicine?)"
@@ -2846,7 +2846,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Grammar Repair",
     "icon": "🎓",
     "scenario": "Mastering the fundamental Chinese disposal structure '把' (Bǎ) and passive structure '被' (Bèi).",
-    "starterPrompt": "今天我们练习'把'字句！请用'把'字造句，告诉我你把手机放在哪里了？ (Let's practice the 'Bǎ' structure! Where did you put your phone?)",
+    "starterPrompt": "今天我们练习'把'字句！请用'把'字造句，告诉我你把手机放在哪里了？",
     "starterQuestions": [
       "什么时候必须使用'把'字句？ (When must you use 'Bǎ'?)",
       "'被'字句表示什么语态？ (What voice does 'Bèi' express?)"
@@ -2861,7 +2861,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Cafe",
     "icon": "☕",
     "scenario": "You are ordering aromatic Masala Chai and hot samosas at a vibrant Delhi street stall.",
-    "starterPrompt": "नमस्ते जी! आपका स्वागत है। आपके लिए अदरक वाली स्पेशल मसाला चाय बनाएं? (Namaste! Welcome. Shall I prepare special ginger masala chai for you?)",
+    "starterPrompt": "नमस्ते जी! आपका स्वागत है। आपके लिए अदरक वाली स्पेशल मसाला चाय बनाएं?",
     "starterQuestions": [
       "चाय में चीनी कम चाहिए या सामान्य? (Do you want less or normal sugar?)",
       "साथ में गरमा-गरम समोसा भी लेंगे? (Will you take a hot samosa as well?)"
@@ -2876,7 +2876,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Hotel",
     "icon": "🏨",
     "scenario": "You arrive at your heritage hotel in Jaipur to check in and ask about local tours.",
-    "starterPrompt": "नमस्ते! हमारे होटल में आपका स्वागत है। क्या आपके नाम से कोई बुकिंग है? (Namaste! Welcome to our hotel. Do you have a reservation under your name?)",
+    "starterPrompt": "नमस्ते! हमारे होटल में आपका स्वागत है। क्या आपके नाम से कोई बुकिंग है?",
     "starterQuestions": [
       "क्या आप अपना पहचान पत्र दिखा सकते हैं? (Can you show your ID?)",
       "क्या आपको कल के लिए टूर गाइड चाहिए? (Do you need a tour guide for tomorrow?)"
@@ -2891,7 +2891,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Job Interview",
     "icon": "💼",
     "scenario": "You are interviewing for a Senior AI Software Engineer role in Bengaluru.",
-    "starterPrompt": "नमस्ते! आपसे मिलकर खुशी हुई। कृपया अपने तकनीकी अनुभव और पिछली उपलब्धियों के बारे में बताएं। (Namaste! Pleasure to meet you. Please describe your technical experience.)",
+    "starterPrompt": "नमस्ते! आपसे मिलकर खुशी हुई। कृपया अपने तकनीकी अनुभव और पिछली उपलब्धियों के बारे में बताएं।",
     "starterQuestions": [
       "आप अपनी सबसे बड़ी तकनीकी सफलता किसे मानते हैं? (What is your greatest technical achievement?)",
       "कठिन समय-सीमा में आप टीम के साथ कैसे तालमेल बिठाते हैं? (How do you collaborate under tight deadlines?)"
@@ -2906,7 +2906,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Cricket",
     "icon": "🏏",
     "scenario": "Chatting passionately about Indian cricket, Virat Kohli, and IPL team rivalries.",
-    "starterPrompt": "अरे भाई! कल का मैच देखा क्या? क्या रोमांचक मुकाबला था! आपकी पसंदीदा आईपीएल टीम कौन सी है? (Hey! Did you watch yesterday's match? What a thriller! What is your favorite IPL team?)",
+    "starterPrompt": "अरे भाई! कल का मैच देखा क्या? क्या रोमांचक मुकाबला था! आपकी पसंदीदा आईपीएल टीम कौन सी है?",
     "starterQuestions": [
       "आपके अनुसार सबसे बेहतरीन कप्तान कौन है? (Who is the greatest captain in your opinion?)",
       "क्या आप खुद भी क्रिकेट खेलते हैं? (Do you play cricket yourself?)"
@@ -2921,7 +2921,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Shopping",
     "icon": "🛍️",
     "scenario": "Shopping for handcrafted kurtas and spices in a bustling traditional market.",
-    "starterPrompt": "नमस्ते सर! आइए, देखिए हमारे पास सबसे बेहतरीन हाथ से बने कुर्ते और साड़ियां हैं। क्या पसंद आया? (Namaste! Come look at our handcrafted kurtas. What did you like?)",
+    "starterPrompt": "नमस्ते सर! आइए, देखिए हमारे पास सबसे बेहतरीन हाथ से बने कुर्ते और साड़ियां हैं। क्या पसंद आया?",
     "starterQuestions": [
       "आपको कौन सा रंग और साइज चाहिए? (Which color and size do you need?)",
       "अगर आप दो लेंगे तो हम थोड़ा डिस्काउंट कर देंगे। (If you take two we can give a discount.)"
@@ -2936,7 +2936,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Grammar Repair",
     "icon": "🎓",
     "scenario": "Mastering the ergative postposition 'ने' (Ne) in past tense transitive sentences.",
-    "starterPrompt": "आइए भूतकाल में 'ने' का प्रयोग सीखें! बताइए, कल आपने क्या खाया और क्या नया सीखा? (Let's learn 'Ne' in past tense! What did you eat yesterday and what did you learn?)",
+    "starterPrompt": "आइए भूतकाल में 'ने' का प्रयोग सीखें! बताइए, कल आपने क्या खाया और क्या नया सीखा?",
     "starterQuestions": [
       "सकर्मक क्रियाओं में कर्ता के साथ क्या लगता है? (What attaches to the subject with transitive verbs?)",
       "'मैं ने' की जगह सही रूप क्या है? (What is the correct form instead of 'Main ne'?)"
@@ -2951,7 +2951,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Cafe",
     "icon": "☕",
     "scenario": "Sitting in a historic Nevsky Prospect cafe ordering a hot cappuccino and syrniki.",
-    "starterPrompt": "Здравствуйте! Добро пожаловать. Что для вас приготовить сегодня? (Hello! Welcome. What can I prepare for you today?)",
+    "starterPrompt": "Здравствуйте! Добро пожаловать. Что для вас приготовить сегодня?",
     "starterQuestions": [
       "Вам кофе на обычном или на овсяном молоке? (Regular or oat milk?)",
       "Будете заказывать сырники со сметаной? (Will you order syrniki with sour cream?)"
@@ -2966,7 +2966,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Hotel",
     "icon": "🏨",
     "scenario": "Checking into your hotel near Red Square and asking about metro navigation.",
-    "starterPrompt": "Добрый день! Рады приветствовать вас в Москве. У вас есть бронирование в нашей гостинице? (Good afternoon! Welcome to Moscow. Do you have a reservation?)",
+    "starterPrompt": "Добрый день! Рады приветствовать вас в Москве. У вас есть бронирование в нашей гостинице?",
     "starterQuestions": [
       "Пожалуйста, покажите ваш паспорт. (Please show your passport.)",
       "Вам нужен номер с видом на город? (Do you want a city view room?)"
@@ -2981,7 +2981,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Job Interview",
     "icon": "💼",
     "scenario": "Interviewing for a lead systems architect position with a global engineering company.",
-    "starterPrompt": "Здравствуйте! Приятно познакомиться. Расскажите, пожалуйста, о вашем опыте в разработке распределённых систем. (Hello! Please tell us about your distributed systems background.)",
+    "starterPrompt": "Здравствуйте! Приятно познакомиться. Расскажите, пожалуйста, о вашем опыте в разработке распределённых систем.",
     "starterQuestions": [
       "С какими сложными архитектурными задачами вы сталкивались? (What complex architectural tasks have you faced?)",
       "Как вы решаете конфликты в команде? (How do you resolve team conflicts?)"
@@ -2996,7 +2996,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Pharmacy",
     "icon": "💊",
     "scenario": "Describing a sudden fever and cough to a knowledgeable pharmacist in Moscow.",
-    "starterPrompt": "Здравствуйте! На что вы жалуетесь? Какая у вас температура и есть ли кашель? (Hello! What are your symptoms? What is your temperature and do you have a cough?)",
+    "starterPrompt": "Здравствуйте! На что вы жалуетесь? Какая у вас температура и есть ли кашель?",
     "starterQuestions": [
       "Сколько дней вы болеете? (How many days have you been sick?)",
       "Есть ли у вас аллергия на антибиотики? (Do you have allergies to antibiotics?)"
@@ -3011,7 +3011,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Shopping",
     "icon": "🛍️",
     "scenario": "Buying classic literature books and traditional wooden souvenirs in Arbat street.",
-    "starterPrompt": "Здравствуйте! Ищете подарок или что-то для себя? У нас большой выбор сувениров. (Hello! Looking for a gift or for yourself? We have a great selection.)",
+    "starterPrompt": "Здравствуйте! Ищете подарок или что-то для себя? У нас большой выбор сувениров.",
     "starterQuestions": [
       "Вам упаковать это в подарочную коробку? (Shall I wrap this in a gift box?)",
       "Оплата картой или наличными? (Card or cash?)"
@@ -3026,7 +3026,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Grammar Repair",
     "icon": "🎓",
     "scenario": "Mastering multidirectional (ходить/ездить) vs unidirectional (идти/ехать) verbs of motion.",
-    "starterPrompt": "Давайте потренируем глаголы движения! Куда вы обычно ходите по выходным и куда идете прямо сейчас? (Let's practice verbs of motion! Where do you usually go on weekends and where are you going right now?)",
+    "starterPrompt": "Давайте потренируем глаголы движения! Куда вы обычно ходите по выходным и куда идете прямо сейчас?",
     "starterQuestions": [
       "В чем разница между 'идти' и 'ходить'? (Difference between 'idti' and 'khodit'?)",
       "Какой глагол используется для поездки на транспорте? (Which verb is used for transport?)"
@@ -3042,7 +3042,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Street Food",
     "icon": "🦐",
     "scenario": "Ordering fresh crispy isso wade and discussing spicy street snacks at Galle Face Green in Colombo at sunset.",
-    "starterPrompt": "ආයුබෝවන්! ගාලු මුවදොර හවසට හරිම ලස්සනයි නේද? ඔයා ඉස්සෝ වඩේ කන්න කැමතිද? සැරට ඕනෙද අඩු සැරටද? (Welcome! Galle Face is lovely in the evening, isn't it? Would you like isso wade spicy or mild?)",
+    "starterPrompt": "ආයුබෝවන්! ගාලු මුවදොර හවසට හරිම ලස්සනයි නේද? ඔයා ඉස්සෝ වඩේ කන්න කැමතිද? සැරට ඕනෙද අඩු සැරටද?",
     "starterQuestions": [
       "ඔයා වඩාත්ම කැමති ලංකාවේ කෑම මොනවද? (What is your favorite Sri Lankan food?)",
       "කොච්චි සම්බෝල ටිකක් වැඩියෙන් දාන්නද? (Shall I add extra kochchi sambol?)"
@@ -3057,7 +3057,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Local Transit",
     "icon": "🛺",
     "scenario": "Hailing a tuk-tuk in Kollupitiya, verifying the fare meter, and directing the driver through rush hour traffic.",
-    "starterPrompt": "මල්ලි! කොළඹ කොටුවට යන්න කීයක් ගන්නවද? මීටරේ දාලා යමු නේද? (Brother! How much to Colombo Fort? We'll use the meter, right?)",
+    "starterPrompt": "මල්ලි! කොළඹ කොටුවට යන්න කීයක් ගන්නවද? මීටරේ දාලා යමු නේද?",
     "starterQuestions": [
       "කොල්ලුපිටියේ ලොකු ට්‍රැෆික් එකක් තියෙනවද? (Is there heavy traffic in Kollupitiya?)",
       "ගාලු පාරෙන් යනවද මැරින් ඩ්‍රයිව් එකෙන් යනවද? (Will you take Galle Road or Marine Drive?)"
@@ -3072,7 +3072,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Heritage & History",
     "icon": "🏛️",
     "scenario": "Talking with an expert Sri Lankan cultural guide while climbing the 1,200 steps to the Lion Rock summit.",
-    "starterPrompt": "ආයුබෝවන්! සීගිරිය බලකොටුව ලෝක පුදුමයක් විදිහට සලකන්නේ ඇයි කියලා ඔයා දන්නවද? කාශ්‍යප රජුගේ වාස්තු විද්‍යාව ගැන කතා කරමු. (Welcome! Do you know why Sigiriya is considered an architectural wonder? Let's discuss King Kashyapa's fortress.)",
+    "starterPrompt": "ආයුබෝවන්! සීගිරිය බලකොටුව ලෝක පුදුමයක් විදිහට සලකන්නේ ඇයි කියලා ඔයා දන්නවද? කාශ්‍යප රජුගේ වාස්තු විද්‍යාව ගැන කතා කරමු.",
     "starterQuestions": [
       "සීගිරි කුරුටු ගී සහ බිතුසිතුවම් ගැන ඔයාගේ අදහස මොකක්ද? (What do you think of the Sigiriya frescoes and graffiti poems?)",
       "පර්වත මුදුනට නගින්න කොපමණ වෙලාවක් යයිද? (How long does it take to reach the summit?)"
@@ -3087,7 +3087,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Job Interviews",
     "icon": "💻",
     "scenario": "Presenting cloud architecture, system scalability, and leadership experience for a Senior Tech Lead role in Sri Lanka.",
-    "starterPrompt": "සුබ උදෑසනක්! අපගේ තාක්ෂණික සම්මුඛ පරීක්ෂණයට සාදරයෙන් පිළිගන්නවා. ඔබේ පෙර මෘදුකාංග ව්‍යාපෘති සහ cloud architecture අත්දැකීම් ගැන කෙටියෙන් හඳුන්වා දෙන්න පුළුවන්ද? (Good morning! Welcome to our technical interview. Could you introduce your software projects and cloud architecture experience?)",
+    "starterPrompt": "සුබ උදෑසනක්! අපගේ තාක්ෂණික සම්මුඛ පරීක්ෂණයට සාදරයෙන් පිළිගන්නවා. ඔබේ පෙර මෘදුකාංග ව්‍යාපෘති සහ cloud architecture අත්දැකීම් ගැන කෙටියෙන් හඳුන්වා දෙන්න පුළුවන්ද?",
     "starterQuestions": [
       "High scalability සහ low latency පද්ධති සැලසුම් කිරීමේදී ඔබ මුහුණ දුන් ලොකුම අභියෝගය කුමක්ද? (What was your biggest challenge designing high scalability and low latency systems?)",
       "කණ්ඩායම් කළමනාකරණය සඳහා ඔබ අනුගමනය කරන Agile ක්‍රමවේදය කුමක්ද? (What Agile methodology do you follow for team leadership?)"
@@ -3102,7 +3102,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Dining Out",
     "icon": "☕",
     "scenario": "Stopping at a traditional roadside teashop for breakfast: hot ginger tea, egg hoppers, and lunu miris.",
-    "starterPrompt": "ආයුබෝවන් මුදලාලි! අද උදේට උණු උණු බිත්තර ආප්ප තියෙනවද? කහට තේ එකකුත් එක්ක ලුණු මිරිස් ටිකක් වැඩියෙන් දෙන්න පුළුවන්ද? (Hello sir! Do you have hot egg hoppers this morning? Can you give me hot tea with extra lunu miris?)",
+    "starterPrompt": "ආයුබෝවන් මුදලාලි! අද උදේට උණු උණු බිත්තර ආප්ප තියෙනවද? කහට තේ එකකුත් එක්ක ලුණු මිරිස් ටිකක් වැඩියෙන් දෙන්න පුළුවන්ද?",
     "starterQuestions": [
       "පැණි ආප්ප කීයක් හදන්නද? (How many sweet hoppers should I prepare?)",
       "ඉඟුරු දාලා ප්ලේන්ටියක් බොනවද? (Would you like ginger plain tea?)"
@@ -3117,7 +3117,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Hotel & Lodging",
     "icon": "🍃",
     "scenario": "Booking a cozy mountain bungalow in Nuwara Eliya and asking about tea tasting tours and weather.",
-    "starterPrompt": "ආයුබෝවන්! අපි ලබන සති අන්තයේ නුවරඑළියට එන්න බලාපොරොත්තු වෙනවා. තේ වත්ත පෙනෙන ලස්සන කාමරයක් තියෙනවද? (Hello! We are planning to visit Nuwara Eliya next weekend. Do you have a scenic room overlooking tea hills?)",
+    "starterPrompt": "ආයුබෝවන්! අපි ලබන සති අන්තයේ නුවරඑළියට එන්න බලාපොරොත්තු වෙනවා. තේ වත්ත පෙනෙන ලස්සන කාමරයක් තියෙනවද?",
     "starterQuestions": [
       "දැන් නුවරඑළියේ කාලගුණය ගොඩක් ශීතලද? (Is the weather in Nuwara Eliya very cold right now?)",
       "තේ කර්මාන්තශාලා නිරීක්ෂණ චාරිකාවට වෙලාව වෙන්කරන්න පුළුවන්ද? (Can you arrange a tea factory visit slot?)"
@@ -3132,7 +3132,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Cricket",
     "icon": "🏏",
     "scenario": "Debating T20 tactics, explosive spinners, and batting finishes with fellow passionate Sri Lankan fans at R. Premadasa Stadium.",
-    "starterPrompt": "මචං! ඊයේ මැච් එක බැලුවද? අපේ කොල්ලන්ගේ bowling attack එක නම් සුපිරි නේද? (Bro! Did you watch yesterday's match? Our bowling attack was unbelievable, wasn't it?)",
+    "starterPrompt": "මචං! ඊයේ මැච් එක බැලුවද? අපේ කොල්ලන්ගේ bowling attack එක නම් සුපිරි නේද?",
     "starterQuestions": [
       "අවසාන ඕවරේ batting එක ගැන ඔයා මොකද හිතන්නේ? (What do you think about the final over batting?)",
       "ලෝක කුසලානය සඳහා හොඳම playing XI එක කවුද? (Who is in your best playing XI for the World Cup?)"
@@ -3147,7 +3147,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Grammar Repair",
     "icon": "🎓",
     "scenario": "Practicing spoken Sinhala past tense suffixes (-වා, -ලා, ගියා vs යනවා) without mixing formal written forms.",
-    "starterPrompt": "අපි කථන සිංහලෙන් අතීත කාල ක්‍රියා පද පුහුණු වෙමු! ඊයේ ඔයා කොහෙද ගියේ සහ මොනවද කළේ කියලා විස්තර කරන්න පුළුවන්ද? (Let's practice spoken Sinhala past tense verbs! Can you describe where you went and what you did yesterday?)",
+    "starterPrompt": "අපි කථන සිංහලෙන් අතීත කාල ක්‍රියා පද පුහුණු වෙමු! ඊයේ ඔයා කොහෙද ගියේ සහ මොනවද කළේ කියලා විස්තර කරන්න පුළුවන්ද?",
     "starterQuestions": [
       "'මම කනවා' යන්න අතීත කාලයෙන් කියන්නේ කොහොමද? (How do you say 'I eat' in spoken past tense?)",
       "'ගියා' සහ 'ගිහින් තියෙනවා' අතර වෙනස කුමක්ද? (What is the difference between 'went' and 'have gone'?)"
@@ -3162,7 +3162,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "City Biking",
     "icon": "🚲",
     "scenario": "Renting an 'omafiets' near Centraal Station, asking about cycling rules, bike locks, and canal routes.",
-    "starterPrompt": "Hallo! Welkom bij onze fietsverhuur. Zoekt u een stadsfiets voor vandaag? Wilt u een terugtraprem of handremmen? (Hello! Looking for a city bike today? Back-pedal brake or hand brakes?)",
+    "starterPrompt": "Hallo! Welkom bij onze fietsverhuur. Zoekt u een stadsfiets voor vandaag? Wilt u een terugtraprem of handremmen?",
     "starterQuestions": [
       "Moet ik op het fietspad blijven of mag ik overal rijden? (Should I stay on bike paths or can I ride anywhere?)",
       "Heeft u een stevig kettingslot tegen diefstal? (Do you have a sturdy chain lock against theft?)"
@@ -3177,7 +3177,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Street Food",
     "icon": "🧇",
     "scenario": "Ordering fresh warm caramel stroopwafels and a coffee from a friendly stallholder in De Pijp.",
-    "starterPrompt": "Goedemorgen! Een warme stroopwafel met extra karamel? Ze zijn net vers gebakken! (Good morning! A warm stroopwafel with extra caramel? Freshly baked!)",
+    "starterPrompt": "Goedemorgen! Een warme stroopwafel met extra karamel? Ze zijn net vers gebakken!",
     "starterQuestions": [
       "Kan ik pinnen of heeft u liever contant geld? (Can I pay with card or do you prefer cash?)",
       "Mag ik er ook een verse muntthee bij? (May I also have fresh mint tea?)"
@@ -3192,7 +3192,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Job Interviews",
     "icon": "💼",
     "scenario": "Explaining full-stack architecture, direct communication culture, and agile teamwork in Amsterdam.",
-    "starterPrompt": "Fijn dat je er bent! Vertel ons eens over je ervaring met schaalbare systemen en cloud engineering. (Glad you are here! Tell us about your experience with scalable systems and cloud engineering.)",
+    "starterPrompt": "Fijn dat je er bent! Vertel ons eens over je ervaring met schaalbare systemen en cloud engineering.",
     "starterQuestions": [
       "Hoe ga je om met de directe Nederlandse feedbackcultuur? (How do you handle direct Dutch feedback culture?)",
       "Wat is je ervaring met geautomatiseerde CI/CD pipelines? (What is your experience with automated CI/CD pipelines?)"
@@ -3207,7 +3207,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Housing",
     "icon": "🏠",
     "scenario": "Viewing a rental apartment, asking the real estate agent about service costs, registration, and lease terms.",
-    "starterPrompt": "Welkom bij de bezichtiging! Zoals je ziet heeft het appartement veel lichtinval. Heb je al vragen over het huurcontract? (Welcome to the viewing! As you can see, great natural light. Any questions on the lease?)",
+    "starterPrompt": "Welkom bij de bezichtiging! Zoals je ziet heeft het appartement veel lichtinval. Heb je al vragen over het huurcontract?",
     "starterQuestions": [
       "Zijn gas, water en elektriciteit inbegrepen in de servicekosten? (Are gas, water and electricity included in service costs?)",
       "Mag ik mij hier inschrijven bij de gemeente? (Can I register here at the municipality?)"
@@ -3222,7 +3222,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Public Transit",
     "icon": "🚆",
     "scenario": "Checking in with your OV-chipkaart and asking NS conductor about transfer platforms and Intercity Direct surcharges.",
-    "starterPrompt": "Pardon, weet u vanaf welk spoor de Intercity naar Rotterdam Centraal vertrekt? Moet ik een toeslag betalen? (Excuse me, which track does the Intercity to Rotterdam Central leave from?)",
+    "starterPrompt": "Pardon, weet u vanaf welk spoor de Intercity naar Rotterdam Centraal vertrekt? Moet ik een toeslag betalen?",
     "starterQuestions": [
       "Vergeet niet in te checken bij de poortjes! (Don't forget to check in at the fare gates!)",
       "Is er vertraging door werkzaamheden op het spoor? (Is there a delay due to track maintenance?)"
@@ -3237,7 +3237,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Grammar Repair",
     "icon": "🎓",
     "scenario": "Mastering the distinction between 'de' and 'het' words and word order of separable verbs (opbellen, meenemen).",
-    "starterPrompt": "Laten we scheidbare werkwoorden oefenen! Hoe zeg je 'Ik bel je vanavond op' in het verleden en in een bijzin? (Let's practice separable verbs! How do you express this in the past tense and subordinate clause?)",
+    "starterPrompt": "Laten we scheidbare werkwoorden oefenen! Hoe zeg je 'Ik bel je vanavond op' in het verleden en in een bijzin?",
     "starterQuestions": [
       "Waarom is het 'de tafel' maar 'het bureau'? (Why is it 'de tafel' but 'het bureau'?)",
       "Waar komt het voorvoegsel als je 'hebben' gebruikt? (Where does the prefix go with auxiliary 'have'?)"
@@ -3252,7 +3252,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Bazaar Shopping",
     "icon": "☕",
     "scenario": "Sipping hot Turkish black tea while bargaining courteously for handwoven kilims and ceramics in Istanbul.",
-    "starterPrompt": "Hoş geldiniz efendim! Buyrun bir tavşan kanı çayımızı için. Halılarımıza ve seramiklerimize bakmak ister misiniz? (Welcome sir! Please have some hot tea. Would you like to look at our carpets and ceramics?)",
+    "starterPrompt": "Hoş geldiniz efendim! Buyrun bir tavşan kanı çayımızı için. Halılarımıza ve seramiklerimize bakmak ister misiniz?",
     "starterQuestions": [
       "Bu el dokuması kilim için en son ne kadar olur? (What is your best price for this handmade kilim?)",
       "Nakit ödersem indirim yapar mısınız? (Do you give a discount if I pay cash?)"
@@ -3267,7 +3267,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Breakfast & Dining",
     "icon": "🍳",
     "scenario": "Ordering a rich serpme kahvaltı with menemen, kaymak, honey, olives, and fresh simit along the seaside.",
-    "starterPrompt": "Günaydın! İki kişilik serpme kahvaltı mı arzu edersiniz? Menemeninizi soğanlı mı soğansız mı tercih edersiniz? (Good morning! Would you like breakfast for two? Menemen with or without onions?)",
+    "starterPrompt": "Günaydın! İki kişilik serpme kahvaltı mı arzu edersiniz? Menemeninizi soğanlı mı soğansız mı tercih edersiniz?",
     "starterQuestions": [
       "Taze sıkılmış portakal suyu da alabilir miyiz? (Could we also have freshly squeezed orange juice?)",
       "Çay sınırsız mı servis ediliyor? (Is tea served unlimited with breakfast?)"
@@ -3282,7 +3282,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Ferry Commute",
     "icon": "⛴️",
     "scenario": "Taking the scenic ferry from Eminönü to Kadıköy, feeding simit to seagulls and enjoying the Bosphorus breeze.",
-    "starterPrompt": "Kadıköy iskelesi hangi tarafta? İstanbulkart ile turnikelerden geçebilir miyim? (Which side is the Kadikoy pier? Can I pass through turnstiles with Istanbulkart?)",
+    "starterPrompt": "Kadıköy iskelesi hangi tarafta? İstanbulkart ile turnikelerden geçebilir miyim?",
     "starterQuestions": [
       "Martılara simit atmak için simitçi nerede? (Where is the simit seller to feed the seagulls?)",
       "Son vapur saat kaçta kalkıyor? (What time is the last ferry?)"
@@ -3297,7 +3297,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Job Interviews",
     "icon": "💼",
     "scenario": "Discussing distributed microservices, Redis caching, and real-time WebSocket pipelines for an e-commerce giant.",
-    "starterPrompt": "Merhaba, teknik mülakatımıza hoş geldiniz! Bize yüksek trafikli sistemlerdeki tecrübelerinizden bahseder misiniz? (Hello, welcome to our technical interview! Could you discuss your experience in high-traffic systems?)",
+    "starterPrompt": "Merhaba, teknik mülakatımıza hoş geldiniz! Bize yüksek trafikli sistemlerdeki tecrübelerinizden bahseder misiniz?",
     "starterQuestions": [
       "Veritabanı darboğazlarını çözerken nasıl bir strateji izliyorsunuz? (What strategy do you follow when resolving database bottlenecks?)",
       "Mikroservis mimarisinde hata toleransını nasıl sağlıyorsunuz? (How do you ensure fault tolerance in microservices?)"
@@ -3312,7 +3312,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Pharmacy",
     "icon": "💊",
     "scenario": "Describing throat irritation, dry cough, and mild fever to a knowledgeable local 'Eczane' pharmacist.",
-    "starterPrompt": "Geçmiş olsun! Boğaz ağrınız ve öksürüğünüz ne zamandır devam ediyor? Ateşinizi ölçtünüz mü? (Get well soon! How long have your sore throat and cough lasted? Have you measured your fever?)",
+    "starterPrompt": "Geçmiş olsun! Boğaz ağrınız ve öksürüğünüz ne zamandır devam ediyor? Ateşinizi ölçtünüz mü?",
     "starterQuestions": [
       "Günde kaç defa bu şurubu kullanmalıyım? (How many times a day should I take this syrup?)",
       "Tok karnına mı aç karnına mı içilecek? (Should I take it on a full or empty stomach?)"
@@ -3327,7 +3327,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Grammar Repair",
     "icon": "🎓",
     "scenario": "Mastering the evidential/reported past tense (-miş/-mış) versus direct past (-di) and vowel harmony suffixes.",
-    "starterPrompt": "Türkçe dilbilgisinde dolaylı geçmiş zamanı (-miş) çalışalım! Başkasından duyduğunuz bir haberi nasıl anlatırsınız? (Let's practice the reported past tense suffix -miş! How do you recount news heard from someone else?)",
+    "starterPrompt": "Türkçe dilbilgisinde dolaylı geçmiş zamanı (-miş) çalışalım! Başkasından duyduğunuz bir haberi nasıl anlatırsınız?",
     "starterQuestions": [
       "Gördüğünüz bir olayla duyduğunuz olay arasındaki ek farkı nedir? (Difference in suffixes between witnessed vs reported event?)",
       "Büyük ve küçük ünlü uyumu kuralı nasıl işler? (How does major and minor vowel harmony work?)"
@@ -3342,7 +3342,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Street Food",
     "icon": "🍜",
     "scenario": "Sitting on small plastic stools in Hanoi Old Quarter, ordering steaming Pho Bo Tai and creamy sweet egg coffee.",
-    "starterPrompt": "Chào bạn! Quán mình có phở bò tái, nạm, gầu. Bạn muốn gọi bát phở như thế nào và uống cà phê trứng nóng hay đá? (Hello! We have rare beef pho, flank, brisket. How would you like your pho, and hot or iced egg coffee?)",
+    "starterPrompt": "Chào bạn! Quán mình có phở bò tái, nạm, gầu. Bạn muốn gọi bát phở như thế nào và uống cà phê trứng nóng hay đá?",
     "starterQuestions": [
       "Cho mình xin thêm chanh và ớt tươi được không? (Could I please have extra lime and fresh chili?)",
       "Cà phê trứng ở đây làm theo công thức gia truyền đúng không? (Is the egg coffee here made from a family recipe?)"
@@ -3357,7 +3357,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Market Shopping",
     "icon": "🥭",
     "scenario": "Buying ripe mangosteen, dragon fruit, and mangoes, negotiating a polite discount with a cheerful market auntie.",
-    "starterPrompt": "Mua gì đó con ơi! Măng cụt và xoài cát Hòa Lộc hôm nay ngọt lịm luôn nè! Con mua mấy ký? (What would you like to buy! Today's mangosteen and mangoes are so sweet! How many kilos?)",
+    "starterPrompt": "Mua gì đó con ơi! Măng cụt và xoài cát Hòa Lộc hôm nay ngọt lịm luôn nè! Con mua mấy ký?",
     "starterQuestions": [
       "Dạ cô ơi, nếu con mua hai ký thì cô bớt cho con chút đỉnh được không? (Auntie, if I buy two kilos, can you give me a small discount?)",
       "Trái cây này có để được lâu khi đi máy bay không cô? (Will this fruit keep well for an airplane flight?)"
@@ -3372,7 +3372,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Job Interviews",
     "icon": "💼",
     "scenario": "Presenting system design, Golang microservices, and mobile AI inference for a leading tech unicorn in Ho Chi Minh City.",
-    "starterPrompt": "Chào em, cảm ơn em đã tham gia buổi phỏng vấn hôm nay. Em có thể chia sẻ về kinh nghiệm tối ưu hóa hệ thống microservices của mình không? (Hello, thanks for joining our interview today. Can you share your experience optimizing microservices?)",
+    "starterPrompt": "Chào em, cảm ơn em đã tham gia buổi phỏng vấn hôm nay. Em có thể chia sẻ về kinh nghiệm tối ưu hóa hệ thống microservices của mình không?",
     "starterQuestions": [
       "Em xử lý vấn đề data consistency giữa các distributed database như thế nào? (How do you handle data consistency across distributed databases?)",
       "Kỹ năng làm việc nhóm và giải quyết xung đột kỹ thuật của em ra sao? (What is your approach to teamwork and resolving technical disagreements?)"
@@ -3387,7 +3387,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Rideshare",
     "icon": "🛵",
     "scenario": "Navigating through Da Nang to Dragon Bridge on a motorbike taxi, asking about local viewpoints and bridge fire shows.",
-    "starterPrompt": "Alo, bạn đang đứng ở sảnh khách sạn đúng không? Mình mặc áo khoác xanh lá cây, đội mũ bảo hiểm cho bạn nhé! (Hello, are you standing at the hotel lobby? I'm wearing a green jacket, here is your helmet!)",
+    "starterPrompt": "Alo, bạn đang đứng ở sảnh khách sạn đúng không? Mình mặc áo khoác xanh lá cây, đội mũ bảo hiểm cho bạn nhé!",
     "starterQuestions": [
       "Anh ơi, cầu Rồng tối nay mấy giờ phun lửa và phun nước? (Brother, what time does the Dragon Bridge breathe fire and water tonight?)",
       "Đường ven biển Mỹ Khê đoạn này có kẹt xe không anh? (Is the My Khe coastal road congested at this hour?)"
@@ -3402,7 +3402,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Clinic Visit",
     "icon": "🏥",
     "scenario": "Explaining stomach ache, indigestion, and headache symptoms to a doctor at a clinic in Vietnam.",
-    "starterPrompt": "Chào bạn, hôm nay bạn cảm thấy không khỏe ở đâu? Cơn đau bụng bắt đầu từ khi nào và có bị sốt không? (Hello, where do you feel unwell today? When did the stomach ache start and do you have a fever?)",
+    "starterPrompt": "Chào bạn, hôm nay bạn cảm thấy không khỏe ở đâu? Cơn đau bụng bắt đầu từ khi nào và có bị sốt không?",
     "starterQuestions": [
       "Bác sĩ có kê đơn thuốc uống trong bao nhiêu ngày? (For how many days has the doctor prescribed this medication?)",
       "Tôi có cần kiêng ăn đồ cay nóng và dầu mỡ không? (Do I need to avoid spicy and greasy food?)"
@@ -3417,7 +3417,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Grammar Repair",
     "icon": "🎓",
     "scenario": "Mastering Vietnamese social pronouns (anh, chị, em, cô, chú, cháu) and tense/aspect markers (đã, đang, sẽ, rồi).",
-    "starterPrompt": "Hôm nay chúng ta hãy luyện tập hệ thống đại từ xưng hô tôn kính trong tiếng Việt! Khi nói chuyện với người lớn tuổi hơn mình một chút, em nên xưng hô như thế nào? (Let's practice Vietnamese honorific pronouns! When speaking to someone slightly older, how should you address them?)",
+    "starterPrompt": "Hôm nay chúng ta hãy luyện tập hệ thống đại từ xưng hô tôn kính trong tiếng Việt! Khi nói chuyện với người lớn tuổi hơn mình một chút, em nên xưng hô như thế nào?",
     "starterQuestions": [
       "Sự khác biệt giữa 'đã làm' và 'làm rồi' là gì? (What is the difference between 'da lam' and 'lam roi'?)",
       "Khi nào chúng ta dùng từ 'dạ' ở đầu câu? (When do we use 'da' at the beginning of a sentence?)"
@@ -3432,7 +3432,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Street Food",
     "icon": "🍛",
     "scenario": "Ordering authentic spicy Nasi Goreng Gila and chicken satay with peanut sauce at a buzzing Jakarta roadside warung.",
-    "starterPrompt": "Selamat malam mas! Mau pesan nasi goreng spesial atau sate ayam madura? Pedas sedang atau pedas banget? (Good evening! Would you like special nasi goreng or chicken satay? Medium spicy or extra spicy?)",
+    "starterPrompt": "Selamat malam mas! Mau pesan nasi goreng spesial atau sate ayam madura? Pedas sedang atau pedas banget?",
     "starterQuestions": [
       "Tolong jangan pakai terlalu banyak minyak dan tambahkan kerupuk ya! (Please don't use too much oil and add extra crackers!)",
       "Berapa lama kira-kira pesanannya siap? (About how long until the order is ready?)"
@@ -3447,7 +3447,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Scooter Rental",
     "icon": "🛵",
     "scenario": "Renting an automatic scooter, checking helmet safety, fuel type, and asking for directions to the Tegalalang Rice Terrace.",
-    "starterPrompt": "Halo bu! Mau sewa motor matic untuk tiga hari. Berapa tarif per hari termasuk helm dan jas hujan? (Hello ma'am! I'd like to rent an automatic scooter for three days. How much per day including helmet and raincoat?)",
+    "starterPrompt": "Halo bu! Mau sewa motor matic untuk tiga hari. Berapa tarif per hari termasuk helm dan jas hujan?",
     "starterQuestions": [
       "Bensinnya pakai Pertamax atau Pertalite? (Does it take Pertamax or Pertalite gasoline?)",
       "Bisa tolong rekomendasikan rute paling tenang ke sawah bertingkat? (Could you recommend the quietest route to the rice terrace?)"
@@ -3462,7 +3462,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Job Interviews",
     "icon": "💼",
     "scenario": "Discussing mobile fintech scalability, offline-first data synchronization, and cross-functional leadership in Indonesia.",
-    "starterPrompt": "Halo, selamat datang di sesi wawancara kami! Bisa ceritakan pengalaman Anda dalam membangun arsitektur aplikasi mobile berskala besar? (Hello, welcome to our interview! Could you discuss your experience building large-scale mobile architectures?)",
+    "starterPrompt": "Halo, selamat datang di sesi wawancara kami! Bisa ceritakan pengalaman Anda dalam membangun arsitektur aplikasi mobile berskala besar?",
     "starterQuestions": [
       "Bagaimana strategi Anda memastikan aplikasi tetap responsif saat koneksi internet lambat di daerah terpencil? (What is your strategy to keep apps responsive on slow internet in remote areas?)",
       "Bagaimana gaya kepemimpinan Anda dalam memotivasi tim engineer junior? (What is your leadership style in mentoring junior engineers?)"
@@ -3477,7 +3477,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Textiles & Souvenirs",
     "icon": "🧵",
     "scenario": "Appreciating hand-drawn batik tulis vs printed patterns in Yogyakarta, negotiating a respectful cultural price.",
-    "starterPrompt": "Permisi mbak, ini kain batik tulis asli atau cap? Motifnya sangat indah, dari daerah mana ya? (Excuse me miss, is this hand-drawn batik or stamped? The pattern is beautiful, which region is it from?)",
+    "starterPrompt": "Permisi mbak, ini kain batik tulis asli atau cap? Motifnya sangat indah, dari daerah mana ya?",
     "starterQuestions": [
       "Apakah warnanya akan luntur saat dicuci pertama kali? (Will the colors fade when washed the first time?)",
       "Kalau saya ambil dua lembar, bisa dapat harga spesial? (If I take two pieces, can I get a special price?)"
@@ -3492,7 +3492,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Pharmacy",
     "icon": "💊",
     "scenario": "Explaining mild dehydration, fever, and traveler's upset stomach to a licensed pharmacist in Indonesia.",
-    "starterPrompt": "Selamat siang! Saya merasa kurang enak badan sejak kemarin, kepala pusing dan perut kembung. Obat apa yang paling cocok? (Good afternoon! I have felt unwell since yesterday, headache and bloated stomach. What medicine is best?)",
+    "starterPrompt": "Selamat siang! Saya merasa kurang enak badan sejak kemarin, kepala pusing dan perut kembung. Obat apa yang paling cocok?",
     "starterQuestions": [
       "Apakah ada obat oralit untuk rehidrasi tubuh? (Do you have oral rehydration salts?)",
       "Berapa tablet yang harus diminum setelah makan? (How many tablets should be taken after meals?)"
@@ -3507,7 +3507,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Grammar Repair",
     "icon": "🎓",
     "scenario": "Mastering Indonesian verbal affixes (me-, ber-, di-, -kan, -i) to distinguish active, intransitive, and passive verbs.",
-    "starterPrompt": "Mari berlatih imbuhan bahasa Indonesia! Apa perbedaan makna antara 'berjalan' dan 'menjalankan' dalam sebuah kalimat? (Let's practice Indonesian affixes! What is the difference in meaning between 'berjalan' and 'menjalankan'?)",
+    "starterPrompt": "Mari berlatih imbuhan bahasa Indonesia! Apa perbedaan makna antara 'berjalan' dan 'menjalankan' dalam sebuah kalimat?",
     "starterQuestions": [
       "Kapan awalan 'me-' berubah menjadi 'mem-', 'men-', atau 'meng-'? (When does the prefix 'me-' change to 'mem-', 'men-', or 'meng-'?)",
       "Bagaimana cara mengubah kalimat aktif ke bentuk pasif dengan awalan 'di-'? (How do you turn active sentences into passive with 'di-'?)"
@@ -3522,7 +3522,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Street Food",
     "icon": "🍲",
     "scenario": "Ordering sizzling shrimp pad thai and fragrant orange iced tea at a bustling Bangkok night bazaar.",
-    "starterPrompt": "สวัสดีครับ! รับผัดไทยกุ้งสดหรือผัดไทยหมูกรอบดีครับ? ใส่พริกเยอะไหม และรับชาไทยหวานน้อยไหมครับ? (Hello! Fresh shrimp or crispy pork pad thai? How spicy, and would you like sweet or less sweet Thai tea?)",
+    "starterPrompt": "สวัสดีครับ! รับผัดไทยกุ้งสดหรือผัดไทยหมูกรอบดีครับ? ใส่พริกเยอะไหม และรับชาไทยหวานน้อยไหมครับ?",
     "starterQuestions": [
       "ขอถั่วงอกกับมะนาวเพิ่มอีกนิดได้ไหมครับ? (Could I please have extra bean sprouts and lime?)",
       "ชาไทยโบราณร้านนี้ใช้นมสดหรือนมข้นหวานครับ? (Does this traditional Thai tea use fresh milk or condensed milk?)"
@@ -3537,7 +3537,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "River Transit",
     "icon": "🚤",
     "scenario": "Buying a blue flag tourist boat ticket, crossing the Chao Phraya River, and visiting the Temple of Dawn.",
-    "starterPrompt": "ขอโทษนะครับ เรือด่วนธงส้มไปท่าเตียนและวัดอรุณขึ้นที่โป๊ะไหนครับ? ค่าโดยสารคนละเท่าไหร่? (Excuse me, which pier for the orange flag boat to Tha Tien and Wat Arun? How much is the fare?)",
+    "starterPrompt": "ขอโทษนะครับ เรือด่วนธงส้มไปท่าเตียนและวัดอรุณขึ้นที่โป๊ะไหนครับ? ค่าโดยสารคนละเท่าไหร่?",
     "starterQuestions": [
       "ต้องแต่งกายสุภาพอย่างไรก่อนเข้าชมพระวิหาร? (What is the dress code before entering the temple hall?)",
       "เรือข้ามฟากแม่น้ำปิดกี่โมงครับ? (What time does the river cross-ferry close?)"
@@ -3552,7 +3552,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Job Interviews",
     "icon": "💼",
     "scenario": "Discussing AI models, low-latency microservices, and collaborative engineering culture in Bangkok's digital tech hub.",
-    "starterPrompt": "สวัสดีค่ะ ยินดีต้อนรับสู่การสัมภาษณ์งานด้านเทคนิค กรุณาแนะนำตัวและเล่าประสบการณ์การพัฒนาระบบ AI และ Cloud ให้เราฟังได้ไหมคะ? (Hello, welcome to our technical interview. Could you introduce yourself and your AI/Cloud systems engineering experience?)",
+    "starterPrompt": "สวัสดีค่ะ ยินดีต้อนรับสู่การสัมภาษณ์งานด้านเทคนิค กรุณาแนะนำตัวและเล่าประสบการณ์การพัฒนาระบบ AI และ Cloud ให้เราฟังได้ไหมคะ?",
     "starterQuestions": [
       "คุณมีวิธีแก้ไขปัญหาเมื่อเกิดระบบขัดข้องฉุกเฉิน (High Severity Incident) อย่างไร? (How do you handle critical high-severity production incidents?)",
       "คุณปรับตัวเข้ากับวัฒนธรรมการทำงานแบบ Agile และการสื่อสารในทีมอย่างไร? (How do you adapt to Agile collaboration and team communication?)"
@@ -3567,7 +3567,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Weekend Market",
     "icon": "🛍️",
     "scenario": "Browsing handmade silk scarves and wooden carvings at Chatuchak Market, practicing polite Thai bargaining terms.",
-    "starterPrompt": "ชิ้นนี้สวยมากเลยครับพี่ ทำจากผ้าไหมแท้หรือเปล่าครับ? ถ้าซื้อสามผืนลดราคาให้หน่อยได้ไหมครับ? (This is very beautiful! Is it real silk? If I buy three scarves, can you give me a discount?)",
+    "starterPrompt": "ชิ้นนี้สวยมากเลยครับพี่ ทำจากผ้าไหมแท้หรือเปล่าครับ? ถ้าซื้อสามผืนลดราคาให้หน่อยได้ไหมครับ?",
     "starterQuestions": [
       "มีสีอื่นหรือลายอื่นให้ดูอีกไหมครับ? (Do you have other colors or patterns to show?)",
       "สแกนจ่ายผ่าน QR Code พร้อมเพย์ได้ไหมครับ? (Can I scan to pay with PromptPay QR code?)"
@@ -3582,7 +3582,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Pharmacy",
     "icon": "💊",
     "scenario": "Describing tropical heat fatigue, runny nose, and dry throat at a licensed pharmacy in Bangkok.",
-    "starterPrompt": "สวัสดีค่ะ มีอาการอย่างไรบ้างคะ? รู้สึกเจ็บคอหรือมีไข้ตัวร้อนตั้งแต่เมื่อไหร่คะ? (Hello! What are your symptoms? When did your sore throat or fever start?)",
+    "starterPrompt": "สวัสดีค่ะ มีอาการอย่างไรบ้างคะ? รู้สึกเจ็บคอหรือมีไข้ตัวร้อนตั้งแต่เมื่อไหร่คะ?",
     "starterQuestions": [
       "ยานี้กินแล้วง่วงนอนไหมคะ? (Does this medicine make you drowsy?)",
       "ต้องรับประทานก่อนอาหารหรือหลังอาหารกี่นาที? (How many minutes before or after meals should this be taken?)"
@@ -3597,7 +3597,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Grammar Repair",
     "icon": "🎓",
     "scenario": "Mastering polite sentence-ending particles (ครับ/ค่ะ), aspect markers (แล้ว, กำลัง, จะ), and Thai tone rules.",
-    "starterPrompt": "เรามาฝึกการใช้คำช่วยบอกกาลและอนุภาคความสุภาพในภาษาไทยกันครับ! บอกเล่าสิ่งที่ 'กำลังทำ' และสิ่งที่ 'ทำเสร็จแล้ว' ในวันนี้หน่อยครับ (Let's practice Thai aspect markers and politeness particles! Tell me what you are currently doing vs already finished today.)",
+    "starterPrompt": "เรามาฝึกการใช้คำช่วยบอกกาลและอนุภาคความสุภาพในภาษาไทยกันครับ! บอกเล่าสิ่งที่ 'กำลังทำ' และสิ่งที่ 'ทำเสร็จแล้ว' ในวันนี้หน่อยครับ",
     "starterQuestions": [
       "คำว่า 'กำลัง' และ 'อยู่' นำมาใช้วางตรงไหนในประโยค? (Where are 'kamlang' and 'yu' placed in a sentence?)",
       "ทำไมการลงท้ายด้วย 'ครับ/ค่ะ' จึงสำคัญมากในสังคมไทย? (Why are polite endings so crucial in Thai communication?)"
@@ -3612,7 +3612,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Café & Fika",
     "icon": "☕",
     "scenario": "Experiencing Swedish 'fika' culture: ordering brewed coffee ('bryggkaffe') and warm cinnamon buns in historical Gamla Stan.",
-    "starterPrompt": "Hej och välkommen! Ska du ha en vanlig bryggkaffe med påtår, eller en havrelatte? Vill du ha en nygräddad kanelbulle till? (Hi and welcome! Regular brewed coffee with free refill or oat latte? Warm cinnamon bun?)",
+    "starterPrompt": "Hej och välkommen! Ska du ha en vanlig bryggkaffe med påtår, eller en havrelatte? Vill du ha en nygräddad kanelbulle till?",
     "starterQuestions": [
       "Ingår påtår i kaffepriset här? (Is a refill included in the coffee price here?)",
       "Är kardemummabullarna bakade med äkta smör? (Are the cardamom buns baked with real butter?)"
@@ -3627,7 +3627,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Public Transit",
     "icon": "🚇",
     "scenario": "Tapping your contactless card at the SL turnstile, checking the green line towards T-Centralen, and asking transit staff.",
-    "starterPrompt": "Ursäkta mig, går det här tåget mot T-Centralen och Odenplan? Kan jag bara blippa mitt vanliga betalkort i spärren? (Excuse me, does this train go towards T-Centralen? Can I just tap my bank card at the barrier?)",
+    "starterPrompt": "Ursäkta mig, går det här tåget mot T-Centralen och Odenplan? Kan jag bara blippa mitt vanliga betalkort i spärren?",
     "starterQuestions": [
       "Hur länge gäller en enkelbiljett i SL-trafiken? (How long is a single ticket valid in SL transit?)",
       "Vilken uppgång ska jag ta för att komma till Drottninggatan? (Which exit should I take for Drottninggatan?)"
@@ -3642,7 +3642,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Job Interviews",
     "icon": "💼",
     "scenario": "Discussing horizontal hierarchy, consensus decision-making, and high-performance backend systems in Stockholm.",
-    "starterPrompt": "Välkommen till intervjun! Berätta lite om din bakgrund och hur du arbetar med autonoma team och distribuerade molnsystem. (Welcome! Tell us about your background and how you work with autonomous teams and distributed cloud systems.)",
+    "starterPrompt": "Välkommen till intervjun! Berätta lite om din bakgrund och hur du arbetar med autonoma team och distribuerade molnsystem.",
     "starterQuestions": [
       "Hur trivs du med en platt organisationsstruktur utan strikt mikrostyrning? (How do you thrive in a flat organizational structure without micromanagement?)",
       "Vilka teknologier föredrar du för realtidsdataströmmar? (What technologies do you prefer for real-time streaming pipelines?)"
@@ -3657,7 +3657,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Supermarket",
     "icon": "🛒",
     "scenario": "Locating local organic products ('ekologiskt'), asking staff where oat milk and crispbread ('knäckebröd') are shelved.",
-    "starterPrompt": "Hej! Ursäkta, var kan jag hitta havremjölken och det traditionella knäckebrödet? Har ni några lokala ostar? (Hi! Excuse me, where can I find oat milk and crispbread? Do you have local cheeses?)",
+    "starterPrompt": "Hej! Ursäkta, var kan jag hitta havremjölken och det traditionella knäckebrödet? Har ni några lokala ostar?",
     "starterQuestions": [
       "Finns det någon självscanningskassa ledig? (Is there a self-checkout scanner available?)",
       "Behöver jag betala extra för papperspåsarna? (Do I need to pay extra for paper bags?)"
@@ -3672,7 +3672,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Clinic Visit",
     "icon": "🏥",
     "scenario": "Speaking with a triage nurse at a Swedish Vårdcentral about persistent cough, fever, and scheduling an appointment.",
-    "starterPrompt": "Hej, du har kommit till Vårdcentralen. Vad kan vi hjälpa dig med idag? Hur länge har du haft dessa symptom? (Hello, you have reached the Health Clinic. How can we help you today? How long have you had these symptoms?)",
+    "starterPrompt": "Hej, du har kommit till Vårdcentralen. Vad kan vi hjälpa dig med idag? Hur länge har du haft dessa symptom?",
     "starterQuestions": [
       "Har du svårt att andas eller hög feber? (Do you have breathing difficulty or high fever?)",
       "Har du ett svenskt personnummer eller samordningsnummer? (Do you have a Swedish personal number or coordination number?)"
@@ -3687,7 +3687,7 @@ export const MASTER_TOPICS_CATALOG: CatalogTopicModel[] = [
     "subCategory": "Grammar Repair",
     "icon": "🎓",
     "scenario": "Mastering the fundamental Swedish V2 word order rule (verb in second position) and definite noun suffixes (-en, -et).",
-    "starterPrompt": "Idag övar vi på den klassiska V2-regeln på svenska! När du börjar en mening med en tidsangivelse som 'Igår...', var hamnar verbet? (Today we practice Swedish V2 rule! When starting a sentence with a time expression like 'Yesterday...', where does the verb go?)",
+    "starterPrompt": "Idag övar vi på den klassiska V2-regeln på svenska! När du börjar en mening med en tidsangivelse som 'Igår...', var hamnar verbet?",
     "starterQuestions": [
       "Varför heter det 'en hund' men 'hunden'? (Why is it 'en hund' but 'hunden'?)",
       "Vad händer med ordföljden i en bisats med ordet 'inte'? (What happens to word order in a subordinate clause with 'inte'?)"

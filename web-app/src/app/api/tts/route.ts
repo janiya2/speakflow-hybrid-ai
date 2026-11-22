@@ -69,12 +69,26 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Clean text: If practicing a non-English language, strip bracketed English translations
+    // so acoustic neural models (e.g. Sinhala, Japanese) never phonetically butcher Latin English text
+    let cleanText = text;
+    if (language.toLowerCase() !== "english" && language.toLowerCase() !== "all") {
+      const stripped = cleanText
+        .replace(/\([^)]*[a-zA-Z]{2,}[^)]*\)/g, "")
+        .replace(/\[[^\]]*[a-zA-Z]{2,}[^\]]*\]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (stripped.length > 0) {
+        cleanText = stripped;
+      }
+    }
+
     let audioBuffer: Buffer | null = null;
     const targetVoice = resolveEdgeVoice(voiceParam, gender, language);
 
     // Primary Engine: Pure Node.js Edge TTS (Zero Python dependencies for Vercel Serverless)
     try {
-      audioBuffer = await synthesizeEdgeSpeech(text, targetVoice);
+      audioBuffer = await synthesizeEdgeSpeech(cleanText, targetVoice);
     } catch (nodeTtsErr: any) {
       console.error("[TTS API] Pure Node Edge-TTS failed:", nodeTtsErr?.message || nodeTtsErr);
 
@@ -84,7 +98,7 @@ export async function GET(request: NextRequest) {
         try {
           const { stdout } = await execFileAsync("python", [
             scriptPath,
-            text,
+            cleanText,
             targetVoice,
             gender,
             language,

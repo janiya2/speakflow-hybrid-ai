@@ -3313,6 +3313,21 @@ export default function StudentWebApp() {
       proactiveNudgeTimerRef.current = null;
     }
 
+    // Clean speech and subtitle text: For non-English practice, strip bracketed English translations
+    // so coach speaks and displays 100% pure target language without reading English translations aloud
+    const isTargetNonEnglish = langName && langName.toLowerCase() !== "english" && langName.toLowerCase() !== "all";
+    let pureText = text;
+    if (isTargetNonEnglish) {
+      const stripped = text
+        .replace(/\([^)]*[a-zA-Z]{2,}[^)]*\)/g, "")
+        .replace(/\[[^\]]*[a-zA-Z]{2,}[^\]]*\]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (stripped.length > 0) {
+        pureText = stripped;
+      }
+    }
+
     // Keep coach visually calm/listening while fetching TTS audio (never flap mouth before sound starts!)
     isVoicePreparingRef.current = true;
     setIsVoicePreparing(true);
@@ -3322,7 +3337,7 @@ export default function StudentWebApp() {
     setUserCaption("");
     setIsUserSpeaking(false);
     isUserSpeakingRef.current = false;
-    lastBotSpokenTextRef.current = text;
+    lastBotSpokenTextRef.current = pureText;
     setPreviewingCoachVoiceId(null);
 
     if (activeAudioRef.current) {
@@ -3356,16 +3371,16 @@ export default function StudentWebApp() {
       setIsBotSpeaking(true);
       stopListening();
       setUserCaption("");
-      setBotCaption(text);
+      setBotCaption(pureText);
       setConversationTurns((prev) => [
         ...prev,
-        { sender: "bot", text, timestamp: new Date() }
+        { sender: "bot", text: pureText, timestamp: new Date() }
       ]);
       startCoachTalkingVideo();
 
       // Safety watchdog: never leave UI stuck in "Coach is Speaking..." if browser/audio event drops
       if (speechWatchdogRef.current) clearTimeout(speechWatchdogRef.current);
-      const watchdogMs = Math.min(18000, Math.max(3500, Math.round(text.length * 75) + 1200));
+      const watchdogMs = Math.min(18000, Math.max(3500, Math.round(pureText.length * 75) + 1200));
       speechWatchdogRef.current = setTimeout(() => {
         onVoiceEnd();
       }, watchdogMs);
@@ -3404,7 +3419,7 @@ export default function StudentWebApp() {
     };
 
     try {
-      const ttsUrl = `/api/tts?text=${encodeURIComponent(text)}&coach=${activeCoachSnap.id}&gender=${activeCoachSnap.gender}&language=${encodeURIComponent(langName)}`;
+      const ttsUrl = `/api/tts?text=${encodeURIComponent(pureText)}&coach=${activeCoachSnap.id}&gender=${activeCoachSnap.gender}&language=${encodeURIComponent(langName)}`;
       const controller = new AbortController();
       activeTtsAbortRef.current = controller;
       const fetchTimer = setTimeout(() => controller.abort(), 15000);
@@ -3436,7 +3451,7 @@ export default function StudentWebApp() {
           audio.onerror = () => {
             if (requestId !== ttsSessionIdRef.current) return;
             if (!hasStartedSpeaking) {
-              fallbackBrowserTts(text, langName, onVoiceStart, onVoiceEnd, requestId, activeCoachSnap);
+              fallbackBrowserTts(pureText, langName, onVoiceStart, onVoiceEnd, requestId, activeCoachSnap);
             } else {
               onVoiceEnd();
             }
@@ -3450,7 +3465,7 @@ export default function StudentWebApp() {
       if (requestId !== ttsSessionIdRef.current) return;
     }
 
-    fallbackBrowserTts(text, langName, onVoiceStart, onVoiceEnd, requestId, activeCoachSnap);
+    fallbackBrowserTts(pureText, langName, onVoiceStart, onVoiceEnd, requestId, activeCoachSnap);
   };
 
   const fallbackBrowserTts = (
