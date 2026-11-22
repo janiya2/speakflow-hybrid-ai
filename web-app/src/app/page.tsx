@@ -1151,8 +1151,16 @@ export default function StudentWebApp() {
     if (!voices || voices.length === 0) return null;
     const prefix = targetLangTag.split("-")[0].toLowerCase();
     const isMale = coachObj.gender === "male";
-    const maleNames = ["ryan", "guy", "christopher", "george", "daniel", "david", "mark", "andrew", "brian", "steffan", "eric", "roger", "keita", "injoon", "alvaro", "shakir", "valluvar", "male"];
-    const femaleNames = ["jenny", "aria", "sonia", "hazel", "libby", "susan", "zira", "ava", "emma", "nanami", "sunhi", "elvira", "salma", "pallavi", "female"];
+    const maleNames = [
+      "ryan", "guy", "christopher", "george", "daniel", "david", "mark", "andrew", "brian",
+      "steffan", "eric", "roger", "keita", "injoon", "alvaro", "shakir", "valluvar", "sameera",
+      "maarten", "ahmet", "namminh", "ardi", "niwat", "mattias", "male", "man", "homme", "männlich", "masculine"
+    ];
+    const femaleNames = [
+      "jenny", "aria", "sonia", "hazel", "libby", "susan", "zira", "ava", "emma", "nanami",
+      "sunhi", "elvira", "salma", "pallavi", "thilini", "fenna", "emel", "hoaimy", "gadis",
+      "premwadee", "sofie", "female", "woman", "girl", "femme", "frau", "donna", "vrouw"
+    ];
 
     const langVoices = voices.filter((v) => v.lang.toLowerCase().startsWith(prefix));
     const pool = langVoices.length > 0 ? langVoices : voices;
@@ -1169,17 +1177,30 @@ export default function StudentWebApp() {
     if (exactGenderLocale) return exactGenderLocale;
 
     // 2. Any voice in target language prefix matching gender
-    const anyGenderMatch = pool.find((v) => {
+    const anyGenderMatchInLang = langVoices.find((v) => {
       const n = v.name.toLowerCase();
       return isMale
         ? maleNames.some((m) => n.includes(m)) && !femaleNames.some((f) => n.includes(f))
         : femaleNames.some((f) => n.includes(f)) && !maleNames.some((m) => n.includes(m));
     });
-    if (anyGenderMatch) return anyGenderMatch;
+    if (anyGenderMatchInLang) return anyGenderMatchInLang;
 
-    // 3. Exact locale Natural/Online fallback (still staying inside target language, never crossing into ja-JP for English!)
-    const localeMatch = pool.find((v) => v.lang.toLowerCase().startsWith(targetLangTag.toLowerCase()));
-    return localeMatch || pool[0];
+    // 3. Strict gender match across ANY installed browser voice (NEVER cross gender!)
+    const anyGenderMatchGlobal = voices.find((v) => {
+      const n = v.name.toLowerCase();
+      return isMale
+        ? maleNames.some((m) => n.includes(m)) && !femaleNames.some((f) => n.includes(f))
+        : femaleNames.some((f) => n.includes(f)) && !maleNames.some((m) => n.includes(m));
+    });
+    if (anyGenderMatchGlobal) return anyGenderMatchGlobal;
+
+    // 4. If male coach, explicitly reject known female voices
+    if (isMale) {
+      const nonFemale = pool.find((v) => !femaleNames.some((f) => v.name.toLowerCase().includes(f)));
+      if (nonFemale) return nonFemale;
+    }
+
+    return pool[0];
   };
 
   const handlePreviewCoachVoice = async (e: React.MouseEvent, coach: CoachModel) => {
@@ -1217,7 +1238,7 @@ export default function StudentWebApp() {
     try {
       const ttsUrl = `/api/tts?text=${encodeURIComponent(sampleText)}&coach=${coach.id}&gender=${coach.gender}&language=${encodeURIComponent(previewLang)}`;
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 5000);
+      const timer = setTimeout(() => controller.abort(), 15000);
       const res = await fetch(ttsUrl, { signal: controller.signal });
       clearTimeout(timer);
       if (res.ok) {
@@ -3386,7 +3407,7 @@ export default function StudentWebApp() {
       const ttsUrl = `/api/tts?text=${encodeURIComponent(text)}&coach=${activeCoachSnap.id}&gender=${activeCoachSnap.gender}&language=${encodeURIComponent(langName)}`;
       const controller = new AbortController();
       activeTtsAbortRef.current = controller;
-      const fetchTimer = setTimeout(() => controller.abort(), 5500);
+      const fetchTimer = setTimeout(() => controller.abort(), 15000);
 
       const response = await fetch(ttsUrl, { signal: controller.signal });
       clearTimeout(fetchTimer);
@@ -3455,7 +3476,7 @@ export default function StudentWebApp() {
     const targetLangTag = resolveLanguageTag(langName, coachObj);
     utterance.lang = targetLangTag;
     utterance.rate = Math.min(2.0, Math.max(0.5, coachSpeechRateRef.current));
-    utterance.pitch = coachObj.gender === "female" ? 1.05 : 0.9;
+    utterance.pitch = coachObj.gender === "female" ? 1.05 : 0.82;
 
     const voices = window.speechSynthesis.getVoices();
     const matchedVoice = pickBestBrowserVoice(voices, targetLangTag, coachObj);
@@ -4035,6 +4056,22 @@ export default function StudentWebApp() {
         if (lang === "Japanese") drillLeadIn = `練習しましょう:「${hybridResult.targetPhrase}」。リピートしてください！`;
         else if (lang === "Korean") drillLeadIn = `함께 연습해 봐요: '${hybridResult.targetPhrase}'. 따라 말해보세요!`;
         else if (lang === "Sinhala") drillLeadIn = `අපි පුහුණු වෙමු: '${hybridResult.targetPhrase}'. මාත් එක්ක කියන්න!`;
+        else if (lang === "Arabic") drillLeadIn = `دعنا نتدرب معاً: '${hybridResult.targetPhrase}'. حاول تكرارها معي!`;
+        else if (lang === "Spanish") drillLeadIn = `Vamos a practicarlo: '${hybridResult.targetPhrase}'. ¡Repite conmigo!`;
+        else if (lang === "French") drillLeadIn = `Entraînons-nous : '${hybridResult.targetPhrase}'. Répète avec moi !`;
+        else if (lang === "German") drillLeadIn = `Lass uns üben: '${hybridResult.targetPhrase}'. Sprich mir nach!`;
+        else if (lang === "Italian") drillLeadIn = `Esercitiamoci: '${hybridResult.targetPhrase}'. Ripeti con me!`;
+        else if (lang === "Portuguese") drillLeadIn = `Vamos praticar: '${hybridResult.targetPhrase}'. Repita comigo!`;
+        else if (lang === "Russian") drillLeadIn = `Давайте потренируемся: '${hybridResult.targetPhrase}'. Повторите за мной!`;
+        else if (lang === "Chinese") drillLeadIn = `我们一起练习：'${hybridResult.targetPhrase}'。跟我重复一遍！`;
+        else if (lang === "Hindi") drillLeadIn = `आइए अभ्यास करते हैं: '${hybridResult.targetPhrase}'। मेरे साथ दोहराएं!`;
+        else if (lang === "Tamil") drillLeadIn = `பயிற்சி செய்வோம்: '${hybridResult.targetPhrase}'. என்னுடன் திரும்பச் சொல்லுங்கள்!`;
+        else if (lang === "Dutch") drillLeadIn = `Laten we oefenen: '${hybridResult.targetPhrase}'. Herhaal het maar met mij!`;
+        else if (lang === "Turkish") drillLeadIn = `Pratik yapalım: '${hybridResult.targetPhrase}'. Benimle tekrar et!`;
+        else if (lang === "Vietnamese") drillLeadIn = `Chúng ta cùng luyện tập nhé: '${hybridResult.targetPhrase}'. Hãy nhắc lại cùng tôi nào!`;
+        else if (lang === "Indonesian") drillLeadIn = `Mari kita berlatih: '${hybridResult.targetPhrase}'. Coba ulangi bersama saya!`;
+        else if (lang === "Thai") drillLeadIn = `เรามาฝึกกันครับ: '${hybridResult.targetPhrase}'. ลองพูดตามผมนะครับ!`;
+        else if (lang === "Swedish") drillLeadIn = `Låt oss öva: '${hybridResult.targetPhrase}'. Repetera efter mig!`;
 
         speakText(drillLeadIn, lang);
         return;
