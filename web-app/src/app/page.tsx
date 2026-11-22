@@ -914,6 +914,15 @@ export default function StudentWebApp() {
 
   // Top Bar State
   const [selectedLanguage, setSelectedLanguage] = useState<string>("English");
+
+  // Auto-persist active practice language to localStorage so page refresh never resets to English
+  useEffect(() => {
+    if (typeof window !== "undefined" && selectedLanguage) {
+      try {
+        localStorage.setItem("speakflow_selected_language", selectedLanguage);
+      } catch (_) {}
+    }
+  }, [selectedLanguage]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const headerSearchInputRef = useRef<HTMLInputElement | null>(null);
@@ -2716,6 +2725,10 @@ export default function StudentWebApp() {
         const storedTheme = localStorage.getItem("speakflow_theme");
         if (storedTheme === "light" || storedTheme === "dark") {
           setThemeMode(storedTheme);
+        }
+        const storedLang = localStorage.getItem("speakflow_selected_language");
+        if (storedLang && storedLang.trim().length > 0) {
+          setSelectedLanguage(storedLang.trim());
         }
         const storedRead = localStorage.getItem("speakflow_read_notifs");
         if (storedRead) {
