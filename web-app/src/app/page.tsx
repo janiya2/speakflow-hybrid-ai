@@ -860,9 +860,6 @@ export default function StudentWebApp() {
   const [authSubmitting, setAuthSubmitting] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  // Landing Page CMS configuration
-  const [landingConfig, setLandingConfig] = useState<LandingPageConfig>(DEFAULT_LANDING_CONFIG);
-
   // Mobile App & Admin Panel Subscription Plans (Synced from Firestore lang_settings/subscription_plans)
   const [subscriptionConfig, setSubscriptionConfig] = useState({
     trialDays: 3,
@@ -876,6 +873,57 @@ export default function StudentWebApp() {
     paywallTitle: "Unlock Full Access",
     paywallSubtitle: "Unlimited practice with all 6 native AI coaches & SpeakFlow Edge AI"
   });
+
+  // Landing Page CMS configuration
+  const [landingConfig, setLandingConfig] = useState<LandingPageConfig>(DEFAULT_LANDING_CONFIG);
+  const [showLandingAdminModal, setShowLandingAdminModal] = useState(false);
+  const [adminLandingForm, setAdminLandingForm] = useState<LandingPageConfig>(DEFAULT_LANDING_CONFIG);
+  const [adminSubscriptionForm, setAdminSubscriptionForm] = useState(subscriptionConfig);
+  const [landingCmsSaving, setLandingCmsSaving] = useState(false);
+  const [landingCmsTab, setLandingCmsTab] = useState<"banner" | "hero" | "stats" | "downloads" | "pricing">("banner");
+
+  const openLandingAdminModal = () => {
+    setAdminLandingForm({ ...landingConfig });
+    setAdminSubscriptionForm({ ...subscriptionConfig });
+    setShowLandingAdminModal(true);
+  };
+
+  const handleSaveLandingCMS = async () => {
+    setLandingCmsSaving(true);
+    try {
+      await Promise.all([
+        setDoc(doc(db, COLLECTIONS.SETTINGS, "landing_page"), adminLandingForm, { merge: true }),
+        setDoc(doc(db, COLLECTIONS.SETTINGS, "subscription_plans"), adminSubscriptionForm, { merge: true }),
+      ]);
+      setLandingConfig(adminLandingForm);
+      setSubscriptionConfig(adminSubscriptionForm);
+      setCelebrationToast("✅ Landing page CMS saved and synced to Firebase Cloud!");
+      setTimeout(() => setCelebrationToast(null), 4000);
+      setShowLandingAdminModal(false);
+    } catch (err: any) {
+      console.error("Error saving landing CMS to Firestore:", err);
+      setLandingConfig(adminLandingForm);
+      setSubscriptionConfig(adminSubscriptionForm);
+      setCelebrationToast("⚡ Saved locally in session! (Check Firebase permissions for persistence)");
+      setTimeout(() => setCelebrationToast(null), 4000);
+      setShowLandingAdminModal(false);
+    } finally {
+      setLandingCmsSaving(false);
+    }
+  };
+
+  const handlePreviewLandingCMS = () => {
+    setLandingConfig(adminLandingForm);
+    setSubscriptionConfig(adminSubscriptionForm);
+    setViewMode("landing");
+    setShowLandingAdminModal(false);
+  };
+
+  const handleResetLandingCMS = () => {
+    setAdminLandingForm(DEFAULT_LANDING_CONFIG);
+  };
+
+
 
   // Active Navigation Tab
   type MainTab =
@@ -4473,16 +4521,46 @@ export default function StudentWebApp() {
     handleInitiateCallPrompt(chosen);
   };
 
-  if (authLoading) {
+  // =========================================================================
+  // VIEW A: PUBLIC COMMERCIAL LANDING PAGE (YAYTALK-GRADE 10-SECTION SHOWCASE)
+  // Renders instantly (0ms FCP, zero auth blocking) for all visitors & landing view
+  // =========================================================================
+  if (viewMode === "landing" || (!user && !authLoading)) {
     return (
-      <div className="min-h-screen bg-[#0A0F1D] flex items-center justify-center text-white">
-        <div className="w-8 h-8 border-3 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
+      <LandingPage
+        themeMode={themeMode}
+        onToggleTheme={(t) => handleSetTheme(t)}
+        adminNotice={landingConfig.announcementActive ? landingConfig.announcementText : undefined}
+        config={landingConfig}
+        onOpenAdminCMS={openLandingAdminModal}
+        onOpenDashboard={() => setViewMode("app")}
+        onOpenAuth={(mode) => {
+          if (mode === "signup") {
+            window.location.href = "/signup";
+          } else {
+            window.location.href = "/login";
+          }
+        }}
+        onStartCall={(topicId) => {
+          setViewMode("app");
+          if (topicId) {
+            const matched = FULL_MOBILE_TOPICS_CATALOG.find((t) => t.id === topicId);
+            if (matched) {
+              handleInitiateCallPrompt(matched);
+              return;
+            }
+          }
+          const firstSinhala = FULL_MOBILE_TOPICS_CATALOG.find((t) => t.language === "Sinhala");
+          if (firstSinhala) {
+            handleInitiateCallPrompt(firstSinhala);
+          }
+        }}
+      />
     );
   }
 
   // =========================================================================
-  // VIEW 0: AUTH SESSION RESTORE GUARD (Prevents flash/logout on page refresh)
+  // VIEW 0: AUTH SESSION RESTORE GUARD (Only shown when entering App Dashboard)
   // =========================================================================
   if (authLoading) {
     return (
@@ -4509,41 +4587,6 @@ export default function StudentWebApp() {
           <span>Restoring your SpeakFlow session...</span>
         </div>
       </div>
-    );
-  }
-
-  // =========================================================================
-  // VIEW A: PUBLIC COMMERCIAL LANDING PAGE (YAYTALK-GRADE 10-SECTION SHOWCASE)
-  // =========================================================================
-  if (!user || viewMode === "landing") {
-    return (
-      <LandingPage
-        themeMode={themeMode}
-        onToggleTheme={(t) => handleSetTheme(t)}
-        adminNotice={landingConfig.announcementActive ? landingConfig.announcementText : undefined}
-        onOpenDashboard={() => setViewMode("app")}
-        onOpenAuth={(mode) => {
-          if (mode === "signup") {
-            window.location.href = "/signup";
-          } else {
-            window.location.href = "/login";
-          }
-        }}
-        onStartCall={(topicId) => {
-          setViewMode("app");
-          if (topicId) {
-            const matched = FULL_MOBILE_TOPICS_CATALOG.find((t) => t.id === topicId);
-            if (matched) {
-              handleInitiateCallPrompt(matched);
-              return;
-            }
-          }
-          const firstSinhala = FULL_MOBILE_TOPICS_CATALOG.find((t) => t.language === "Sinhala");
-          if (firstSinhala) {
-            handleInitiateCallPrompt(firstSinhala);
-          }
-        }}
-      />
     );
   }
 
@@ -5450,6 +5493,21 @@ export default function StudentWebApp() {
                 >
                   <span>🌐</span>
                   <span className="hidden sm:inline">Landing Page</span>
+                </button>
+
+                {/* Admin Landing CMS Studio Trigger Button */}
+                <button
+                  type="button"
+                  onClick={openLandingAdminModal}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-sm ${
+                    isLight
+                      ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
+                      : "bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20"
+                  }`}
+                  title="Manage Landing Page Announcement, Hero & Telemetry in Admin CMS"
+                >
+                  <span>⚙️</span>
+                  <span className="hidden sm:inline">Landing CMS</span>
                 </button>
 
                 <div
@@ -15043,6 +15101,489 @@ export default function StudentWebApp() {
             </button>
           </div>
         </nav>
+      )}
+
+      {/* 8. COMPREHENSIVE LANDING PAGE ADMIN CMS MODAL */}
+      {showLandingAdminModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
+          <div
+            className={`w-full max-w-4xl max-h-[90vh] flex flex-col rounded-3xl border shadow-2xl overflow-hidden transition-all ${
+              isLight
+                ? "bg-white border-slate-300 text-slate-800 shadow-[0_20px_50px_rgba(0,0,0,0.15)]"
+                : "bg-[#091124] border-indigo-500/40 text-white shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
+            }`}
+          >
+            {/* Modal Header */}
+            <div
+              className={`p-5 sm:p-6 border-b flex items-center justify-between shrink-0 ${
+                isLight ? "bg-slate-50 border-slate-200" : "bg-[#060D1E] border-indigo-500/20"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-indigo-600 flex items-center justify-center text-lg shadow-md">
+                  ⚙️
+                </div>
+                <div>
+                  <h2 className="text-base sm:text-lg font-black tracking-tight flex items-center gap-2">
+                    <span>Landing Page Admin CMS</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-400/30 uppercase tracking-wider">
+                      Live Controls
+                    </span>
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    Real-time customization for announcement banners, hero copy, APK distribution, and VIP pricing.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowLandingAdminModal(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Navigation Tabs */}
+            <div
+              className={`flex items-center gap-1 px-6 py-2.5 border-b overflow-x-auto shrink-0 ${
+                isLight ? "bg-slate-100/60 border-slate-200" : "bg-[#080F22] border-indigo-500/20"
+              }`}
+            >
+              {[
+                { id: "banner", label: "📢 Banner & Notice" },
+                { id: "hero", label: "🚀 Hero & Headline" },
+                { id: "stats", label: "📊 Telemetry & Proof" },
+                { id: "downloads", label: "📦 APK & Store URLs" },
+                { id: "pricing", label: "💎 VIP Pricing" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setLandingCmsTab(tab.id as any)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                    landingCmsTab === tab.id
+                      ? isLight
+                        ? "bg-white text-indigo-600 shadow-sm border border-slate-200"
+                        : "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Modal Body / Tab Content */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+              {landingCmsTab === "banner" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 rounded-2xl border border-indigo-500/20 bg-indigo-500/5">
+                    <div>
+                      <div className="font-bold text-sm">Top Announcement Banner</div>
+                      <div className="text-xs text-slate-400">
+                        Displays a sticky high-priority notification bar across the very top of the landing page.
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={adminLandingForm.announcementActive}
+                        onChange={(e) =>
+                          setAdminLandingForm((prev) => ({
+                            ...prev,
+                            announcementActive: e.target.checked,
+                          }))
+                        }
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Announcement Banner Copy
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={adminLandingForm.announcementText}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({
+                          ...prev,
+                          announcementText: e.target.value,
+                        }))
+                      }
+                      placeholder="e.g. 🎉 Google Firebase #BuildHybridAI 2026 Hackathon Finalist Edition Live!"
+                      className={`w-full p-3.5 rounded-xl border text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {landingCmsTab === "hero" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                        Hero Social Proof Badge
+                      </label>
+                      <input
+                        type="text"
+                        value={adminLandingForm.heroBadge}
+                        onChange={(e) =>
+                          setAdminLandingForm((prev) => ({ ...prev, heroBadge: e.target.value }))
+                        }
+                        className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                          isLight
+                            ? "bg-slate-50 border-slate-300 text-slate-900"
+                            : "bg-slate-950 border-slate-800 text-slate-100"
+                        }`}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                        Primary CTA Button Text
+                      </label>
+                      <input
+                        type="text"
+                        value={adminLandingForm.primaryCtaText}
+                        onChange={(e) =>
+                          setAdminLandingForm((prev) => ({ ...prev, primaryCtaText: e.target.value }))
+                        }
+                        className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                          isLight
+                            ? "bg-slate-50 border-slate-300 text-slate-900"
+                            : "bg-slate-950 border-slate-800 text-slate-100"
+                        }`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Master Hero Headline
+                    </label>
+                    <input
+                      type="text"
+                      value={adminLandingForm.heroHeadline}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, heroHeadline: e.target.value }))
+                      }
+                      className={`w-full p-3 rounded-xl border text-xs font-bold focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Hero Subtitle / Description
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={adminLandingForm.heroSubtitle}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, heroSubtitle: e.target.value }))
+                      }
+                      className={`w-full p-3.5 rounded-xl border text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Secondary CTA Button Text
+                    </label>
+                    <input
+                      type="text"
+                      value={adminLandingForm.secondaryCtaText}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, secondaryCtaText: e.target.value }))
+                      }
+                      className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {landingCmsTab === "stats" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Total Speaking Minutes
+                    </label>
+                    <input
+                      type="text"
+                      value={adminLandingForm.statMinutes}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, statMinutes: e.target.value }))
+                      }
+                      className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Active Voice Learners
+                    </label>
+                    <input
+                      type="text"
+                      value={adminLandingForm.statStudents}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, statStudents: e.target.value }))
+                      }
+                      className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Fluency Accuracy Score
+                    </label>
+                    <input
+                      type="text"
+                      value={adminLandingForm.statFluency}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, statFluency: e.target.value }))
+                      }
+                      className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Supported World Languages
+                    </label>
+                    <input
+                      type="text"
+                      value={adminLandingForm.statLanguages}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, statLanguages: e.target.value }))
+                      }
+                      className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {landingCmsTab === "downloads" && (
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Direct Android APK Download URL
+                    </label>
+                    <input
+                      type="text"
+                      value={adminLandingForm.apkDownloadUrl}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, apkDownloadUrl: e.target.value }))
+                      }
+                      className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 font-mono ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Google Play Store URL
+                    </label>
+                    <input
+                      type="text"
+                      value={adminLandingForm.playStoreUrl}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, playStoreUrl: e.target.value }))
+                      }
+                      className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 font-mono ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Live Video Demo URL (YouTube / Loom)
+                    </label>
+                    <input
+                      type="text"
+                      value={adminLandingForm.demoVideoUrl}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, demoVideoUrl: e.target.value }))
+                      }
+                      className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 font-mono ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {landingCmsTab === "pricing" && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                        Monthly Pro Price
+                      </label>
+                      <input
+                        type="text"
+                        value={adminSubscriptionForm.monthlyPrice}
+                        onChange={(e) =>
+                          setAdminSubscriptionForm((prev) => ({ ...prev, monthlyPrice: e.target.value }))
+                        }
+                        className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                          isLight
+                            ? "bg-slate-50 border-slate-300 text-slate-900"
+                            : "bg-slate-950 border-slate-800 text-slate-100"
+                        }`}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                        Yearly VIP Price
+                      </label>
+                      <input
+                        type="text"
+                        value={adminSubscriptionForm.yearlyPrice}
+                        onChange={(e) =>
+                          setAdminSubscriptionForm((prev) => ({ ...prev, yearlyPrice: e.target.value }))
+                        }
+                        className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                          isLight
+                            ? "bg-slate-50 border-slate-300 text-slate-900"
+                            : "bg-slate-950 border-slate-800 text-slate-100"
+                        }`}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                        Yearly Savings Badge
+                      </label>
+                      <input
+                        type="text"
+                        value={adminSubscriptionForm.yearlySavings}
+                        onChange={(e) =>
+                          setAdminSubscriptionForm((prev) => ({ ...prev, yearlySavings: e.target.value }))
+                        }
+                        className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                          isLight
+                            ? "bg-slate-50 border-slate-300 text-slate-900"
+                            : "bg-slate-950 border-slate-800 text-slate-100"
+                        }`}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                        Free Trial Period (Days)
+                      </label>
+                      <input
+                        type="number"
+                        value={adminSubscriptionForm.trialDays}
+                        onChange={(e) =>
+                          setAdminSubscriptionForm((prev) => ({
+                            ...prev,
+                            trialDays: Number(e.target.value) || 3,
+                          }))
+                        }
+                        className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
+                          isLight
+                            ? "bg-slate-50 border-slate-300 text-slate-900"
+                            : "bg-slate-950 border-slate-800 text-slate-100"
+                        }`}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Actions Footer */}
+            <div
+              className={`p-5 sm:p-6 border-t flex flex-wrap items-center justify-between gap-3 shrink-0 ${
+                isLight ? "bg-slate-50 border-slate-200" : "bg-[#060D1E] border-indigo-500/20"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={handleResetLandingCMS}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all flex items-center gap-1.5"
+              >
+                <span>↺</span>
+                <span>Reset Defaults</span>
+              </button>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handlePreviewLandingCMS}
+                  className="px-5 py-2.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-cyan-300 font-bold text-xs transition-all flex items-center gap-1.5"
+                >
+                  <span>👁️</span>
+                  <span>Live Preview</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSaveLandingCMS}
+                  disabled={landingCmsSaving}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-600 to-cyan-600 text-white font-black text-xs shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 disabled:opacity-50"
+                >
+                  {landingCmsSaving ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Syncing to Cloud...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>💾</span>
+                      <span>Save & Sync to Firebase</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* 7. FLOATING CELEBRATION TOAST */}

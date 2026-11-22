@@ -4,6 +4,41 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+export interface LandingPageConfig {
+  heroBadge?: string;
+  heroHeadline?: string;
+  heroSubtitle?: string;
+  primaryCtaText?: string;
+  secondaryCtaText?: string;
+  robotImageUrl?: string;
+  heroBannerUrl?: string;
+  flameImageUrl?: string;
+  bigBenImageUrl?: string;
+  dashboardMockupUrl?: string;
+  apkDownloadUrl?: string;
+  playStoreUrl?: string;
+  webAppUrl?: string;
+  demoVideoUrl?: string;
+  statMinutes?: string;
+  statStudents?: string;
+  statFluency?: string;
+  statLanguages?: string;
+  feature1Title?: string;
+  feature1Desc?: string;
+  feature2Title?: string;
+  feature2Desc?: string;
+  feature3Title?: string;
+  feature3Desc?: string;
+  feature4Title?: string;
+  feature4Desc?: string;
+  announcementText?: string;
+  announcementActive?: boolean;
+  weeklyPrice?: string;
+  monthlyPrice?: string;
+  yearlyPrice?: string;
+  yearlySavings?: string;
+}
+
 interface LandingPageProps {
   onStartCall: (topicId?: string) => void;
   onOpenDashboard: () => void;
@@ -11,6 +46,8 @@ interface LandingPageProps {
   themeMode?: "dark" | "light";
   onToggleTheme?: (theme: "dark" | "light") => void;
   adminNotice?: string;
+  config?: Partial<LandingPageConfig>;
+  onOpenAdminCMS?: () => void;
 }
 
 export default function LandingPage({
@@ -20,6 +57,8 @@ export default function LandingPage({
   themeMode = "dark",
   onToggleTheme,
   adminNotice,
+  config,
+  onOpenAdminCMS,
 }: LandingPageProps) {
   const [activeTheme, setActiveTheme] = useState<"dark" | "light">(themeMode);
   const [selectedScenarioCategory, setSelectedScenarioCategory] = useState<string>("All");
@@ -181,10 +220,10 @@ export default function LandingPage({
       }`}
     >
       {/* 1. Admin System Notice Banner (If Configured by Admin) */}
-      {adminNotice && (
+      {((config?.announcementActive !== false && config?.announcementText) || adminNotice) && (
         <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white text-xs font-bold py-2 px-4 text-center flex items-center justify-center gap-2 shadow-md">
           <span className="animate-pulse">📢</span>
-          <span>{adminNotice}</span>
+          <span>{config?.announcementText || adminNotice}</span>
           <button
             onClick={() => onStartCall()}
             className="ml-2 underline text-white hover:text-indigo-100 text-[11px]"
@@ -245,6 +284,22 @@ export default function LandingPage({
 
           {/* Header Action Buttons */}
           <div className="flex items-center gap-3">
+            {/* Admin CMS Trigger (If authorized/available) */}
+            {onOpenAdminCMS && (
+              <button
+                onClick={onOpenAdminCMS}
+                className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${
+                  isLight
+                    ? "bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100"
+                    : "bg-indigo-950/60 border-indigo-500/40 text-indigo-300 hover:bg-indigo-900/60"
+                }`}
+                title="Manage Landing Page Content via Live Admin CMS"
+              >
+                <span>⚙️</span>
+                <span>Admin CMS</span>
+              </button>
+            )}
+
             {/* Theme Toggle Button */}
             <button
               onClick={toggleThemeLocal}
@@ -293,24 +348,29 @@ export default function LandingPage({
             <span className="flex text-amber-400 text-xs">★★★★★</span>
             <span className="text-slate-300 font-medium">4.8/5 Rating</span>
             <span className="w-1 h-1 rounded-full bg-slate-500" />
-            <span className="text-white">100K+ Active Voice Learners Worldwide</span>
+            <span className="text-white">{config?.heroBadge || "100K+ Active Voice Learners Worldwide"}</span>
           </div>
 
           {/* Master Headline */}
           <div className="space-y-4 max-w-4xl mx-auto">
             <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.08]">
-              Speak 20 World Languages{" "}
-              <span className="bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
-                Confidently
-              </span>{" "}
-              with AI Video Tutors.
+              {config?.heroHeadline || (
+                <>
+                  Speak 20 World Languages{" "}
+                  <span className="bg-gradient-to-r from-cyan-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">
+                    Confidently
+                  </span>{" "}
+                  with AI Video Tutors.
+                </>
+              )}
             </h1>
             <p
               className={`text-base sm:text-xl font-normal leading-relaxed max-w-2xl mx-auto ${
                 isLight ? "text-slate-600" : "text-slate-300/90"
               }`}
             >
-              The fastest way to achieve real-world conversational fluency: live video calls with photorealistic AI coaches, sub-20ms instant speech feedback, and a 100% judgment-free space to practice.
+              {config?.heroSubtitle ||
+                "The fastest way to achieve real-world conversational fluency: live video calls with photorealistic AI coaches, sub-20ms instant speech feedback, and a 100% judgment-free space to practice."}
             </p>
           </div>
 
@@ -321,7 +381,7 @@ export default function LandingPage({
               className="px-8 py-4 rounded-2xl font-black text-sm text-white bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 shadow-xl shadow-cyan-500/35 hover:shadow-cyan-500/55 hover:scale-[1.03] active:scale-[0.98] transition-all flex items-center gap-3 group"
             >
               <span className="text-lg">🎙️</span>
-              <span>Start Free AI Call in Sinhala / English</span>
+              <span>{config?.primaryCtaText || "Start Free AI Call in Sinhala / English"}</span>
               <span className="group-hover:translate-x-1 transition-transform text-cyan-200">→</span>
             </button>
 
@@ -333,9 +393,41 @@ export default function LandingPage({
                   : "bg-slate-900/90 border-indigo-500/30 text-white hover:border-cyan-400/60 shadow-lg"
               }`}
             >
-              <span>Explore 256 Scenarios</span>
+              <span>{config?.secondaryCtaText || "Explore 256 Scenarios"}</span>
               <span>🌍</span>
             </button>
+          </div>
+
+          {/* Download App Store & Google Play Badges */}
+          <div className="flex items-center justify-center gap-4 pt-1">
+            <a
+              href={config?.playStoreUrl || "https://play.google.com/store/apps/details?id=com.innoxpert.speakflow"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:scale-105 transition-transform"
+            >
+              <Image
+                src="/images/landing/google_play.webp"
+                alt="Get it on Google Play"
+                width={135}
+                height={40}
+                className="h-10 w-auto rounded-lg shadow-sm"
+              />
+            </a>
+            <a
+              href={config?.apkDownloadUrl || "https://github.com/janithad2/speakflow-ai/releases/download/v1.0.0/speakflow-ai.apk"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:scale-105 transition-transform"
+            >
+              <Image
+                src="/images/landing/app_store.webp"
+                alt="Download Android APK"
+                width={135}
+                height={40}
+                className="h-10 w-auto rounded-lg shadow-sm"
+              />
+            </a>
           </div>
 
           {/* Interactive Hero Visual Showcase (YayTalk Inspired Card with Real AI Video Mockup) */}
@@ -446,7 +538,7 @@ export default function LandingPage({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             <div className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-black text-cyan-400">20</div>
+              <div className="text-3xl sm:text-4xl font-black text-cyan-400">{config?.statLanguages || "20"}</div>
               <div className="text-xs uppercase font-bold text-slate-400 tracking-wider">World Languages</div>
               <div className="text-[11px] text-slate-500">English, Sinhala, Japanese & more</div>
             </div>
@@ -456,14 +548,14 @@ export default function LandingPage({
               <div className="text-[11px] text-slate-500">Zero awkward pauses or delays</div>
             </div>
             <div className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-black text-emerald-400">256+</div>
-              <div className="text-xs uppercase font-bold text-slate-400 tracking-wider">Real Scenarios</div>
-              <div className="text-[11px] text-slate-500">From Street Food to Tech Interviews</div>
+              <div className="text-3xl sm:text-4xl font-black text-emerald-400">{config?.statMinutes || "125,000+"}</div>
+              <div className="text-xs uppercase font-bold text-slate-400 tracking-wider">Minutes Spoken</div>
+              <div className="text-[11px] text-slate-500">Phonetic AI grading & telemetry</div>
             </div>
             <div className="space-y-1">
-              <div className="text-3xl sm:text-4xl font-black text-amber-400">50x</div>
-              <div className="text-xs uppercase font-bold text-slate-400 tracking-wider">Cheaper than Tutors</div>
-              <div className="text-[11px] text-slate-500">24/7 unlimited speaking practice</div>
+              <div className="text-3xl sm:text-4xl font-black text-amber-400">{config?.statStudents || "10,000+"}</div>
+              <div className="text-xs uppercase font-bold text-slate-400 tracking-wider">Active Learners</div>
+              <div className="text-[11px] text-slate-500">50x cheaper than private tutors</div>
             </div>
           </div>
         </div>
@@ -759,8 +851,8 @@ export default function LandingPage({
                 <span className="text-xs font-black uppercase tracking-wider text-cyan-400">SpeakFlow AI Pro</span>
                 <h3 className="text-2xl font-black text-white mt-1">Unlimited VIP Pass</h3>
                 <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-white">$9.99</span>
-                  <span className="text-xs text-cyan-300">/ month ($39/year)</span>
+                  <span className="text-4xl font-black text-white">{config?.monthlyPrice || "$9.99"}</span>
+                  <span className="text-xs text-cyan-300">/ month ({config?.yearlyPrice || "$39.00"}/yr • {config?.yearlySavings || "Save 92%"})</span>
                 </div>
               </div>
 
@@ -953,6 +1045,12 @@ export default function LandingPage({
             <button onClick={() => onOpenAuth("login")} className="hover:text-cyan-400 transition-colors">
               Log In
             </button>
+            {onOpenAdminCMS && (
+              <button onClick={onOpenAdminCMS} className="text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1 transition-colors">
+                <span>⚙️</span>
+                <span>Admin CMS</span>
+              </button>
+            )}
           </div>
 
           <p>© 2026 SpeakFlow AI. All rights reserved.</p>
