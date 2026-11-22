@@ -35,6 +35,7 @@ import {
 } from "@/lib/hybrid-ai";
 import { FULL_MOBILE_TOPICS_CATALOG } from "./topicsCatalog";
 import { FULL_VOCABULARY_CATALOG, FULL_GRAMMAR_CATALOG, VocabCatalogItem, GrammarCatalogItem } from "./vocabAndGrammarCatalog";
+import LandingPage from "@/components/LandingPage";
 
 type HybridEngineType = "ON_DEVICE_NANO" | "CLOUD_GEMINI_FLASH";
 type HybridModeSetting = "auto" | "nano_only" | "cloud_only";
@@ -911,6 +912,20 @@ export default function StudentWebApp() {
       document.documentElement.classList.toggle("theme-light", themeMode === "light");
     }
   }, [themeMode]);
+
+  // View Mode: Public Commercial Landing Page vs Protected App Dashboard
+  const [viewMode, setViewMode] = useState<"landing" | "app">("landing");
+
+  // Read view mode from query parameter (e.g. ?view=app or ?view=dashboard)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const urlView = params.get("view");
+      if (urlView === "app" || urlView === "dashboard") {
+        setViewMode("app");
+      }
+    }
+  }, []);
 
   // Top Bar State
   const [selectedLanguage, setSelectedLanguage] = useState<string>("English");
@@ -4498,666 +4513,37 @@ export default function StudentWebApp() {
   }
 
   // =========================================================================
-  // VIEW A: PUBLIC LANDING PAGE (VISITORS / NOT LOGGED IN) - DUAL DARK/LIGHT
+  // VIEW A: PUBLIC COMMERCIAL LANDING PAGE (YAYTALK-GRADE 10-SECTION SHOWCASE)
   // =========================================================================
-  if (!user) {
+  if (!user || viewMode === "landing") {
     return (
-      <div
-        className={`min-h-screen flex flex-col relative overflow-hidden transition-colors duration-300 selection:bg-blue-500 selection:text-white ${
-          isLight
-            ? "bg-gradient-to-b from-[#F5F8FF] via-[#F9FBFF] to-white text-slate-900"
-            : "bg-[#0A0F1D] text-slate-100"
-        }`}
-      >
-        {/* Ambient Glowing Orbs */}
-        <div
-          className={`absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full blur-[150px] pointer-events-none ${
-            isLight ? "bg-blue-400/20" : "bg-blue-600/15"
-          }`}
-        />
-        <div
-          className={`absolute top-1/3 -right-20 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none ${
-            isLight ? "bg-cyan-400/20" : "bg-purple-600/15"
-          }`}
-        />
-
-        {/* Top Announcement Bar (from CMS) */}
-        {landingConfig.announcementActive && (
-          <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 text-white text-xs font-semibold py-2 px-4 text-center border-b border-indigo-500/30 flex items-center justify-center gap-2 relative z-40">
-            <span>{landingConfig.announcementText}</span>
-          </div>
-        )}
-
-        {/* Public Header */}
-        <header
-          className={`border-b backdrop-blur-xl sticky top-0 z-40 transition-colors duration-300 ${
-            isLight
-              ? "border-slate-200/90 bg-white/85 shadow-sm shadow-slate-200/40"
-              : "border-slate-800/80 bg-slate-950/75"
-          }`}
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                <Bot className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <span
-                  className={`font-extrabold text-xl tracking-tight flex items-center gap-2 ${
-                    isLight ? "text-slate-900" : "text-white"
-                  }`}
-                >
-                  SpeakFlow{" "}
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full border font-mono ${
-                      isLight
-                        ? "bg-blue-50 text-blue-600 border-blue-200"
-                        : "bg-blue-500/20 text-cyan-400 border-blue-500/40"
-                    }`}
-                  >
-                    AI
-                  </span>
-                </span>
-                <p className={`text-[10px] hidden sm:block ${isLight ? "text-slate-500" : "text-slate-400"}`}>
-                  Practice • Speak • Grow
-                </p>
-              </div>
-            </div>
-
-            <nav
-              className={`hidden lg:flex items-center gap-6 text-xs font-semibold ${
-                isLight ? "text-slate-600" : "text-slate-300"
-              }`}
-            >
-              <a
-                href="#features"
-                className={`transition-colors ${isLight ? "hover:text-blue-600" : "hover:text-cyan-400"}`}
-              >
-                Features
-              </a>
-              <a
-                href="#demo"
-                className={`transition-colors ${isLight ? "hover:text-blue-600" : "hover:text-cyan-400"}`}
-              >
-                Web Demo
-              </a>
-              <a
-                href="#hybrid"
-                className={`transition-colors ${isLight ? "hover:text-blue-600" : "hover:text-cyan-400"}`}
-              >
-                Hybrid On-Device AI
-              </a>
-              <a
-                href={landingConfig.apkDownloadUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`transition-colors flex items-center gap-1 ${
-                  isLight ? "text-emerald-600 hover:text-emerald-700" : "text-emerald-400 hover:text-cyan-400"
-                }`}
-              >
-                <Smartphone className="w-3.5 h-3.5" />
-                <span>Download APK</span>
-              </a>
-            </nav>
-
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Interactive Light / Dark Theme Segmented Switcher */}
-              <div
-                className={`flex items-center p-1 rounded-xl border transition-colors ${
-                  isLight
-                    ? "bg-slate-100 border-slate-200 shadow-inner"
-                    : "bg-slate-900 border-slate-800"
-                }`}
-                role="group"
-                aria-label="Theme Mode Toggle"
-              >
-                <button
-                  type="button"
-                  onClick={() => handleSetTheme("light")}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                    isLight
-                      ? "bg-white text-amber-600 shadow-sm border border-slate-200/80"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                  title="Switch to Light Mode"
-                >
-                  <Sun className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Light</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSetTheme("dark")}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                    !isLight
-                      ? "bg-slate-800 text-cyan-300 shadow-sm border border-cyan-500/30"
-                      : "text-slate-500 hover:text-slate-900"
-                  }`}
-                  title="Switch to Dark Mode"
-                >
-                  <Moon className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Dark</span>
-                </button>
-              </div>
-
-              <a
-                href={landingConfig.apkDownloadUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-colors ${
-                  isLight
-                    ? "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm"
-                    : "bg-slate-900 border-slate-800 text-slate-300 hover:text-white"
-                }`}
-              >
-                <Download className={`w-3.5 h-3.5 ${isLight ? "text-emerald-600" : "text-emerald-400"}`} />
-                <span>APK v1.0</span>
-              </a>
-
-              <button
-                onClick={() => {
-                  setAuthMode("login");
-                  setShowAuthModal(true);
-                }}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-blue-500/25 flex items-center gap-1.5 transition-all"
-              >
-                <span>Launch Practice</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Hero Section */}
-        <section className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-20 flex flex-col items-center text-center relative z-10">
-          {/* Badge */}
-          <div
-            className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border mb-6 ${
-              isLight
-                ? "bg-blue-50 border-blue-200 shadow-sm"
-                : "bg-blue-500/15 border-blue-500/30"
-            }`}
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            <span className={`text-xs font-bold tracking-wider ${isLight ? "text-blue-700" : "text-blue-300"}`}>
-              {landingConfig.heroBadge}
-            </span>
-          </div>
-
-          {/* Main Headline */}
-          <h1
-            className={`text-4xl sm:text-6xl font-black tracking-tight leading-[1.1] max-w-4xl mb-6 ${
-              isLight ? "text-slate-900" : "text-white"
-            }`}
-          >
-            Speak Any Language<br />
-            <span
-              className={`bg-gradient-to-r bg-clip-text text-transparent ${
-                isLight
-                  ? "from-blue-600 via-cyan-600 to-indigo-600"
-                  : "from-blue-400 via-cyan-300 to-purple-400"
-              }`}
-            >
-              Like a Native Partner.
-            </span>
-          </h1>
-
-          {/* Subtitle */}
-          <p
-            className={`text-base sm:text-lg leading-relaxed max-w-2xl mb-8 ${
-              isLight ? "text-slate-600" : "text-slate-300"
-            }`}
-          >
-            {landingConfig.heroSubtitle}
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center gap-4 mb-14 w-full sm:w-auto">
-            <button
-              onClick={() => {
-                setAuthMode("login");
-                setShowAuthModal(true);
-              }}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold text-sm shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
-            >
-              <span>{landingConfig.primaryCtaText}</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-
-            <a
-              href={landingConfig.apkDownloadUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`w-full sm:w-auto px-6 py-3.5 rounded-2xl border font-semibold text-sm flex items-center justify-center gap-2 transition-all ${
-                isLight
-                  ? "bg-white hover:bg-slate-50 border-slate-200 text-slate-800 shadow-md shadow-slate-200/60"
-                  : "bg-slate-900/90 hover:bg-slate-800 border-slate-700 text-slate-200"
-              }`}
-            >
-              <Smartphone className={`w-4 h-4 ${isLight ? "text-emerald-600" : "text-emerald-400"}`} />
-              <span>{landingConfig.secondaryCtaText}</span>
-            </a>
-          </div>
-
-          {/* Live Proof Counters */}
-          <div
-            className={`grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-3xl p-4 rounded-2xl border backdrop-blur mb-14 transition-colors ${
-              isLight
-                ? "bg-white/95 border-slate-200 shadow-xl shadow-blue-900/5"
-                : "bg-slate-900/60 border-slate-800/80"
-            }`}
-          >
-            <div className="p-3 text-center">
-              <span className={`text-xl sm:text-2xl font-black block ${isLight ? "text-slate-900" : "text-white"}`}>
-                {landingConfig.statMinutes}
-              </span>
-              <span className={`text-xs ${isLight ? "text-slate-500" : "text-slate-400"}`}>Practice Minutes</span>
-            </div>
-            <div className="p-3 text-center">
-              <span className={`text-xl sm:text-2xl font-black block ${isLight ? "text-blue-600" : "text-cyan-400"}`}>
-                {landingConfig.statStudents}
-              </span>
-              <span className={`text-xs ${isLight ? "text-slate-500" : "text-slate-400"}`}>Active Students</span>
-            </div>
-            <div className="p-3 text-center">
-              <span className={`text-xl sm:text-2xl font-black block ${isLight ? "text-emerald-600" : "text-emerald-400"}`}>
-                {landingConfig.statFluency}
-              </span>
-              <span className={`text-xs ${isLight ? "text-slate-500" : "text-slate-400"}`}>Fluency Score</span>
-            </div>
-            <div className="p-3 text-center">
-              <span className={`text-xl sm:text-2xl font-black block ${isLight ? "text-indigo-600" : "text-purple-400"}`}>
-                {landingConfig.statLanguages}
-              </span>
-              <span className={`text-xs ${isLight ? "text-slate-500" : "text-slate-400"}`}>Multi-Language</span>
-            </div>
-          </div>
-
-          {/* Full Dashboard Mockup Showcase */}
-          <div
-            id="demo"
-            className={`w-full max-w-5xl rounded-3xl overflow-hidden border shadow-2xl relative group ${
-              isLight
-                ? "border-slate-200 shadow-blue-900/15 bg-white"
-                : "border-blue-500/30 shadow-blue-500/20 bg-slate-950"
-            }`}
-          >
-            <div
-              className={`absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full border backdrop-blur ${
-                isLight
-                  ? "bg-white/95 border-slate-200 text-slate-800 shadow-md"
-                  : "bg-slate-900/90 border-slate-700/80 text-slate-200"
-              }`}
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="text-xs font-bold">Interactive Student Dashboard 1:1</span>
-            </div>
-            <img
-              src={landingConfig.dashboardMockupUrl}
-              alt="SpeakFlow Student Dashboard"
-              className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-[1.01]"
-            />
-            {/* Overlay click prompt */}
-            <div
-              className={`absolute inset-0 bg-gradient-to-t via-transparent to-transparent flex items-end justify-center p-8 pointer-events-none ${
-                isLight ? "from-slate-900/75" : "from-slate-950"
-              }`}
-            >
-              <button
-                onClick={() => {
-                  setAuthMode("login");
-                  setShowAuthModal(true);
-                }}
-                className="pointer-events-auto px-6 py-3 rounded-2xl bg-blue-600/95 hover:bg-blue-600 text-white font-bold text-xs backdrop-blur shadow-xl flex items-center gap-2 transition-all hover:scale-105"
-              >
-                <Play className="w-4 h-4 fill-white" />
-                <span>Launch Web Experience Now</span>
-              </button>
-            </div>
-          </div>
-
-          {/* 4 Feature Value Pillars */}
-          <div id="features" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 w-full max-w-6xl mt-20 text-left">
-            <div
-              className={`p-6 rounded-2xl border transition-all space-y-3 ${
-                isLight
-                  ? "bg-white border-slate-200 hover:border-blue-400 shadow-lg shadow-slate-200/50"
-                  : "bg-slate-900/60 border-slate-800/80 hover:border-blue-500/40"
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  isLight ? "bg-blue-50 text-blue-600" : "bg-blue-600/20 text-blue-400"
-                }`}
-              >
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <h3 className={`font-bold text-base ${isLight ? "text-slate-900" : "text-white"}`}>
-                {landingConfig.feature1Title}
-              </h3>
-              <p className={`text-xs leading-relaxed ${isLight ? "text-slate-600" : "text-slate-400"}`}>
-                {landingConfig.feature1Desc}
-              </p>
-            </div>
-
-            <div
-              className={`p-6 rounded-2xl border transition-all space-y-3 ${
-                isLight
-                  ? "bg-white border-slate-200 hover:border-purple-400 shadow-lg shadow-slate-200/50"
-                  : "bg-slate-900/60 border-slate-800/80 hover:border-purple-500/40"
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  isLight ? "bg-purple-50 text-purple-600" : "bg-purple-600/20 text-purple-400"
-                }`}
-              >
-                <PhoneCall className="w-5 h-5" />
-              </div>
-              <h3 className={`font-bold text-base ${isLight ? "text-slate-900" : "text-white"}`}>
-                {landingConfig.feature2Title}
-              </h3>
-              <p className={`text-xs leading-relaxed ${isLight ? "text-slate-600" : "text-slate-400"}`}>
-                {landingConfig.feature2Desc}
-              </p>
-            </div>
-
-            <div
-              className={`p-6 rounded-2xl border transition-all space-y-3 ${
-                isLight
-                  ? "bg-white border-slate-200 hover:border-emerald-400 shadow-lg shadow-slate-200/50"
-                  : "bg-slate-900/60 border-slate-800/80 hover:border-emerald-500/40"
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  isLight ? "bg-emerald-50 text-emerald-600" : "bg-emerald-600/20 text-emerald-400"
-                }`}
-              >
-                <Award className="w-5 h-5" />
-              </div>
-              <h3 className={`font-bold text-base ${isLight ? "text-slate-900" : "text-white"}`}>
-                {landingConfig.feature3Title}
-              </h3>
-              <p className={`text-xs leading-relaxed ${isLight ? "text-slate-600" : "text-slate-400"}`}>
-                {landingConfig.feature3Desc}
-              </p>
-            </div>
-
-            <div
-              className={`p-6 rounded-2xl border transition-all space-y-3 ${
-                isLight
-                  ? "bg-white border-slate-200 hover:border-amber-400 shadow-lg shadow-slate-200/50"
-                  : "bg-slate-900/60 border-slate-800/80 hover:border-amber-500/40"
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  isLight ? "bg-amber-50 text-amber-600" : "bg-amber-600/20 text-amber-400"
-                }`}
-              >
-                <Smartphone className="w-5 h-5" />
-              </div>
-              <h3 className={`font-bold text-base ${isLight ? "text-slate-900" : "text-white"}`}>
-                {landingConfig.feature4Title}
-              </h3>
-              <p className={`text-xs leading-relaxed ${isLight ? "text-slate-600" : "text-slate-400"}`}>
-                {landingConfig.feature4Desc}
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Public Footer */}
-        <footer
-          className={`border-t py-8 text-center text-xs transition-colors ${
-            isLight
-              ? "border-slate-200 bg-slate-50 text-slate-500"
-              : "border-slate-800/80 bg-slate-950 text-slate-500"
-          }`}
-        >
-          <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Bot className={`w-4 h-4 ${isLight ? "text-blue-600" : "text-blue-400"}`} />
-              <span className={`font-semibold ${isLight ? "text-slate-800" : "text-slate-300"}`}>SpeakFlow AI</span>
-              <span>— Google Firebase #BuildHybridAI 2026 Hackathon</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <a
-                href={landingConfig.apkDownloadUrl}
-                className={`transition-colors ${isLight ? "hover:text-slate-900" : "hover:text-slate-300"}`}
-              >
-                Download Android App
-              </a>
-              <a
-                href="/login"
-                className={`transition-colors ${isLight ? "hover:text-slate-900" : "hover:text-slate-300"}`}
-              >
-                Admin Panel
-              </a>
-            </div>
-          </div>
-        </footer>
-
-        {/* Auth Modal */}
-        {showAuthModal && (
-          <div
-            className={`fixed inset-0 z-50 backdrop-blur-md flex items-center justify-center p-4 ${
-              isLight ? "bg-slate-900/45" : "bg-black/80"
-            }`}
-          >
-            <div
-              className={`w-full max-w-md border rounded-3xl p-7 shadow-2xl relative space-y-6 transition-colors ${
-                isLight ? "bg-white border-slate-200 text-slate-900" : "bg-slate-900 border-blue-500/30 text-white"
-              }`}
-            >
-              <button
-                onClick={() => setShowAuthModal(false)}
-                className={`absolute top-5 right-5 p-1 rounded-lg ${
-                  isLight ? "text-slate-400 hover:text-slate-800" : "text-slate-400 hover:text-white"
-                }`}
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="text-center space-y-2">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 flex items-center justify-center mx-auto shadow-lg shadow-blue-500/30">
-                  <Bot className="w-6 h-6 text-white" />
-                </div>
-                <h2 className={`text-xl font-bold ${isLight ? "text-slate-900" : "text-white"}`}>Student Portal</h2>
-                <p className={`text-xs ${isLight ? "text-slate-500" : "text-slate-400"}`}>
-                  Sign in to launch your interactive voice dashboard
-                </p>
-              </div>
-
-              {/* Toggle Mode */}
-              <div
-                className={`flex p-1 rounded-xl border text-xs font-semibold ${
-                  isLight ? "bg-slate-100 border-slate-200" : "bg-slate-950 border-slate-800"
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => setAuthMode("login")}
-                  className={`flex-1 py-2 rounded-lg transition-all ${
-                    authMode === "login"
-                      ? "bg-blue-600 text-white shadow"
-                      : isLight
-                      ? "text-slate-600 hover:text-slate-900"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  Sign In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAuthMode("register")}
-                  className={`flex-1 py-2 rounded-lg transition-all ${
-                    authMode === "register"
-                      ? "bg-blue-600 text-white shadow"
-                      : isLight
-                      ? "text-slate-600 hover:text-slate-900"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  Create Account
-                </button>
-              </div>
-
-              {/* Error message */}
-              {authError && (
-                <div
-                  className={`p-3 rounded-xl border text-xs flex items-center gap-2 ${
-                    isLight
-                      ? "bg-rose-50 border-rose-200 text-rose-700"
-                      : "bg-rose-500/10 border-rose-500/30 text-rose-300"
-                  }`}
-                >
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{authError}</span>
-                </div>
-              )}
-
-              {/* Form */}
-              <form onSubmit={handleAuthSubmit} className="space-y-4 text-left">
-                {authMode === "register" && (
-                  <div>
-                    <label
-                      className={`block text-xs font-medium mb-1 ${isLight ? "text-slate-700" : "text-slate-300"}`}
-                    >
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Janitha Dilshan"
-                      value={authName}
-                      onChange={(e) => setAuthName(e.target.value)}
-                      className={`w-full border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-blue-500 ${
-                        isLight
-                          ? "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400"
-                          : "bg-slate-950 border-slate-800 text-white"
-                      }`}
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${isLight ? "text-slate-700" : "text-slate-300"}`}>
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="student@speakflow.ai"
-                    value={authEmail}
-                    onChange={(e) => setAuthEmail(e.target.value)}
-                    className={`w-full border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-blue-500 ${
-                      isLight
-                        ? "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400"
-                        : "bg-slate-950 border-slate-800 text-white"
-                    }`}
-                  />
-                </div>
-
-                <div>
-                  <label className={`block text-xs font-medium mb-1 ${isLight ? "text-slate-700" : "text-slate-300"}`}>
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    value={authPassword}
-                    onChange={(e) => setAuthPassword(e.target.value)}
-                    className={`w-full border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-blue-500 ${
-                      isLight
-                        ? "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400"
-                        : "bg-slate-950 border-slate-800 text-white"
-                    }`}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={authSubmitting}
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-                >
-                  {authSubmitting ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  ) : (
-                    <span>{authMode === "login" ? "Sign In & Launch" : "Create Account"}</span>
-                  )}
-                </button>
-              </form>
-
-              {/* Social Login */}
-              <div className={`relative border-t pt-4 text-center ${isLight ? "border-slate-200" : "border-slate-800"}`}>
-                <span
-                  className={`absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 text-[10px] uppercase ${
-                    isLight ? "bg-white text-slate-400" : "bg-slate-900 text-slate-500"
-                  }`}
-                >
-                  or
-                </span>
-                <button
-                  type="button"
-                  onClick={handleGoogleSignIn}
-                  className={`w-full py-2.5 rounded-xl border font-semibold text-xs flex items-center justify-center gap-2 transition-colors ${
-                    isLight
-                      ? "bg-white hover:bg-slate-50 border-slate-300 text-slate-700 shadow-sm"
-                      : "bg-slate-950 hover:bg-slate-800 border-slate-800 text-slate-200"
-                  }`}
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                  </svg>
-                  <span>Continue with Google</span>
-                </button>
-              </div>
-
-              {/* Demo 1-Click Login for Hackathon Jury */}
-              <div className="pt-2 text-center">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setAuthEmail("student@speakflow.ai");
-                    setAuthPassword("hackathon2026");
-                    try {
-                      setAuthSubmitting(true);
-                      await setPersistence(auth, browserLocalPersistence);
-                      await signInWithEmailAndPassword(auth, "student@speakflow.ai", "hackathon2026");
-                      setShowAuthModal(false);
-                    } catch (e) {
-                      const demoProfile = {
-                        displayName: "Janitha Dilshan",
-                        email: "janithad2@gmail.com",
-                        uid: "demo-jury"
-                      };
-                      if (typeof window !== "undefined") {
-                        try {
-                          localStorage.setItem("speakflow_demo_user", JSON.stringify(demoProfile));
-                        } catch (_) {}
-                      }
-                      setUser(demoProfile as any);
-                      setShowAuthModal(false);
-                    } finally {
-                      setAuthSubmitting(false);
-                    }
-                  }}
-                  className={`text-xs font-semibold underline ${
-                    isLight ? "text-blue-600 hover:text-blue-700" : "text-cyan-400 hover:text-cyan-300"
-                  }`}
-                >
-                  ⚡ 1-Click Instant Demo Access (Janitha Dilshan)
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      <LandingPage
+        themeMode={themeMode}
+        onToggleTheme={(t) => handleSetTheme(t)}
+        adminNotice={landingConfig.announcementActive ? landingConfig.announcementText : undefined}
+        onOpenDashboard={() => setViewMode("app")}
+        onOpenAuth={(mode) => {
+          if (mode === "signup") {
+            window.location.href = "/signup";
+          } else {
+            window.location.href = "/login";
+          }
+        }}
+        onStartCall={(topicId) => {
+          setViewMode("app");
+          if (topicId) {
+            const matched = FULL_MOBILE_TOPICS_CATALOG.find((t) => t.id === topicId);
+            if (matched) {
+              handleInitiateCallPrompt(matched);
+              return;
+            }
+          }
+          const firstSinhala = FULL_MOBILE_TOPICS_CATALOG.find((t) => t.language === "Sinhala");
+          if (firstSinhala) {
+            handleInitiateCallPrompt(firstSinhala);
+          }
+        }}
+      />
     );
   }
 
@@ -6051,6 +5437,21 @@ export default function StudentWebApp() {
               {/* Right Cluster: Unified Executive Telemetry Dock + Dark/Light Switcher */}
               <div className="flex items-center gap-2 shrink-0">
                 {/* Dark / Light Mode Switcher in Logged-In Header */}
+                {/* Switch to Public Commercial Landing Page */}
+                <button
+                  type="button"
+                  onClick={() => setViewMode("landing")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-sm ${
+                    isLight
+                      ? "bg-white border-slate-200 text-slate-700 hover:text-indigo-600 hover:border-indigo-300"
+                      : "bg-indigo-500/10 border-indigo-500/30 text-cyan-300 hover:bg-indigo-500/20 hover:border-cyan-400"
+                  }`}
+                  title="View Public Commercial Landing Page"
+                >
+                  <span>🌐</span>
+                  <span className="hidden sm:inline">Landing Page</span>
+                </button>
+
                 <div
                   className={`flex items-center p-0.5 rounded-xl border transition-colors ${
                     isLight ? "bg-slate-100 border-slate-200" : "bg-slate-900 border-slate-800"
