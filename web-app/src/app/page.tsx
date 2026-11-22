@@ -2464,8 +2464,8 @@ export default function StudentWebApp() {
     const langPool = topics.filter((t) => t.language.toLowerCase() === activeLang.toLowerCase());
     const pool = langPool.length > 0 ? langPool : topics;
     return (
-      pool.find((t) => (t.category || "").toLowerCase() === "career" && t.level === "Advanced") ||
-      pool.find((t) => (t.category || "").toLowerCase() === "career") ||
+      pool.find((t) => (t.category || "").toLowerCase().includes("career") && t.level === "Advanced") ||
+      pool.find((t) => (t.category || "").toLowerCase().includes("career")) ||
       pool[0]
     );
   }, [topics, selectedLanguage]);
@@ -3546,6 +3546,13 @@ export default function StudentWebApp() {
         else if (lang === "Korean") nudge = "듣고 있어요! 어떻게 생각하세요?";
         else if (lang === "Spanish") nudge = "¡Te estoy escuchando! ¿Qué opinas?";
         else if (lang === "French") nudge = "Je vous écoute ! Qu'en pensez-vous ?";
+        else if (lang === "Sinhala") nudge = "මම අහගෙන ඉන්නේ! සන්සුන්ව ඔබේ අදහස කියන්න.";
+        else if (lang === "Dutch") nudge = "Ik luister! Neem gerust de tijd om je gedachten te delen.";
+        else if (lang === "Turkish") nudge = "Sizi dinliyorum! Hazır olduğunuzda fikrinizi paylaşabilirsiniz.";
+        else if (lang === "Vietnamese") nudge = "Tôi đang lắng nghe đây! Bạn hãy cứ thoải mái chia sẻ nhé.";
+        else if (lang === "Indonesian") nudge = "Saya mendengarkan! Silakan santai dan sampaikan pendapat Anda.";
+        else if (lang === "Thai") nudge = "ผมกำลังฟังอยู่นะครับ! สบายๆ แล้วแชร์ความคิดเห็นได้เลยครับ";
+        else if (lang === "Swedish") nudge = "Jag lyssnar! Ta god tid på dig och berätta vad du tycker.";
         speakText(nudge, lang);
       }
     }, 18000);
@@ -3906,6 +3913,9 @@ export default function StudentWebApp() {
         let praise = "Awesome! Perfect pronunciation! 🎉";
         if (lang === "Japanese") praise = "素晴らしい！完璧な発音です！ 🎉";
         else if (lang === "Korean") praise = "아주 좋아요! 완벽한 발음이에요! 🎉";
+        else if (lang === "Sinhala") praise = "ඉතා විශිෂ්ටයි! නිවැරදි උච්චාරණය! 🎉";
+        else if (lang === "Spanish") praise = "¡Excelente! ¡Pronunciación perfecta! 🎉";
+        else if (lang === "French") praise = "Magnifique ! Prononciation parfaite ! 🎉";
 
         const continuation = nextScenarioQuestion
           ? `${praise} ${nextScenarioQuestion}`
@@ -3926,6 +3936,7 @@ export default function StudentWebApp() {
           let grace = "Good effort! Don't worry, you'll master it next time. Let's keep going!";
           if (lang === "Japanese") grace = "よく頑張りました！大丈夫です、続けていきましょう！";
           else if (lang === "Korean") grace = "좋은 시도였어요! 괜찮아요, 계속해서 이야기해 봐요!";
+          else if (lang === "Sinhala") grace = "හොඳ උත්සාහයක්! බයවෙන්න එපා, අපි දිගටම කරමු!";
 
           const continuation = nextScenarioQuestion
             ? `${grace} ${nextScenarioQuestion}`
@@ -3938,6 +3949,7 @@ export default function StudentWebApp() {
           let retry = `Very close! Listen carefully: '${targetPhraseToRepeat}'. Try once more!`;
           if (lang === "Japanese") retry = `惜しいです！よく聞いてもう一度言ってみてください:「${targetPhraseToRepeat}」`;
           else if (lang === "Korean") retry = `아쉬워요! 잘 듣고 한 번 더 말해보세요: '${targetPhraseToRepeat}'`;
+          else if (lang === "Sinhala") retry = `ඉතා ආසන්නයි! හොඳින් අහලා ආයෙත් කියලා බලන්න: '${targetPhraseToRepeat}'`;
 
           speakText(retry, lang);
           return;
@@ -4022,6 +4034,7 @@ export default function StudentWebApp() {
         let drillLeadIn = `${conciseTip}Let's practice saying: '${hybridResult.targetPhrase}'. Try repeating it!`;
         if (lang === "Japanese") drillLeadIn = `練習しましょう:「${hybridResult.targetPhrase}」。リピートしてください！`;
         else if (lang === "Korean") drillLeadIn = `함께 연습해 봐요: '${hybridResult.targetPhrase}'. 따라 말해보세요!`;
+        else if (lang === "Sinhala") drillLeadIn = `අපි පුහුණු වෙමු: '${hybridResult.targetPhrase}'. මාත් එක්ක කියන්න!`;
 
         speakText(drillLeadIn, lang);
         return;

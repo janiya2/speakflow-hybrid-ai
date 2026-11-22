@@ -529,6 +529,96 @@ async function executeOnDeviceInference(
       );
       nextQuestion = "";
     }
+  } else if (langLower.includes("sinhala") || langLower.includes("sinha") || langLower === "si") {
+    spokenReply = pickNonRepeating(
+      [
+        "හොඳයි, මට පැහැදිලිව තේරුණා! අපි සංවාදය ඉදිරියට කරගෙන යමු.",
+        "ස්තූතියි! ඔබේ අදහස පැහැදිලියි. ඊළඟට මොකක්ද ඔබ කරන්න කැමති?",
+        "හරිම පැහැදිලියි! මේ ගැන තව ටිකක් විස්තර කරන්න පුළුවන්ද?"
+      ],
+      recentBotTexts
+    );
+    nextQuestion = "";
+  } else if (langLower.includes("span") || langLower.includes("espa") || langLower === "es") {
+    spokenReply = pickNonRepeating(
+      [
+        "¡Muy bien! Te he entendido perfectamente. Continuemos con la conversación.",
+        "¡Excelente! Suena muy natural. ¿Qué más te gustaría añadir?",
+        "Entendido. Sigamos explorando la situación."
+      ],
+      recentBotTexts
+    );
+    nextQuestion = "";
+  } else if (langLower.includes("french") || langLower.includes("fran") || langLower === "fr") {
+    spokenReply = pickNonRepeating(
+      [
+        "Très bien, j'ai parfaitement compris ! Poursuivons notre échange.",
+        "C'est très clair et naturel ! Que souhaitez-vous faire ensuite ?",
+        "Compris ! Continuons la conversation."
+      ],
+      recentBotTexts
+    );
+    nextQuestion = "";
+  } else if (langLower.includes("dutch") || langLower.includes("nederland") || langLower === "nl") {
+    spokenReply = pickNonRepeating(
+      [
+        "Heel goed, dat klinkt duidelijk! Laten we verdergaan met het gesprek.",
+        "Begrepen! Wat zou je hierna willen doen?",
+        "Duidelijk en natuurlijk! Vertel me daar gerust meer over."
+      ],
+      recentBotTexts
+    );
+    nextQuestion = "";
+  } else if (langLower.includes("turk") || langLower === "tr") {
+    spokenReply = pickNonRepeating(
+      [
+        "Çok iyi, sizi gayet net anladım! Sohbete devam edelim.",
+        "Anlaşıldı! Bundan sonra ne yapmak istersiniz?",
+        "Harika ve çok doğal! Devam edelim."
+      ],
+      recentBotTexts
+    );
+    nextQuestion = "";
+  } else if (langLower.includes("vietnam") || langLower === "vi") {
+    spokenReply = pickNonRepeating(
+      [
+        "Rất tốt, tôi đã hiểu ý bạn! Chúng ta tiếp tục nhé.",
+        "Rất tự nhiên và rõ ràng! Bạn muốn làm gì tiếp theo?",
+        "Tuyệt vời! Hãy cùng chia sẻ thêm nào."
+      ],
+      recentBotTexts
+    );
+    nextQuestion = "";
+  } else if (langLower.includes("indones") || langLower === "id") {
+    spokenReply = pickNonRepeating(
+      [
+        "Bagus sekali, saya paham dengan jelas! Mari kita lanjutkan.",
+        "Sangat natural! Apa yang ingin Anda lakukan selanjutnya?",
+        "Dipahami dengan baik! Ayo kita lanjutkan percakapannya."
+      ],
+      recentBotTexts
+    );
+    nextQuestion = "";
+  } else if (langLower.includes("thai") || langLower === "th") {
+    spokenReply = pickNonRepeating(
+      [
+        "ดีมากเลยครับ เข้าใจชัดเจนเลย! เรามาคุยกันต่อเลยครับ",
+        "เป็นธรรมชาติมากครับ! ต่อไปอยากจะทำอะไรต่อดีครับ?",
+        "เข้าใจแล้วครับ! เล่าเพิ่มเติมให้ฟังหน่อยได้ไหมครับ"
+      ],
+      recentBotTexts
+    );
+    nextQuestion = "";
+  } else if (langLower.includes("swed") || langLower.includes("svensk") || langLower === "sv" || langLower === "se") {
+    spokenReply = pickNonRepeating(
+      [
+        "Jättebra, jag förstod precis vad du menade! Låt oss fortsätta.",
+        "Väldigt naturligt! Vad vill du göra härnäst?",
+        "Uppfattat! Berätta gärna lite mer om det."
+      ],
+      recentBotTexts
+    );
+    nextQuestion = "";
   } else {
     const analyzed = analyzeEnglishLocally(spokenText, scenario, recentBotTexts);
     hasCorrection = analyzed.hasCorrection;
