@@ -45,27 +45,36 @@ export interface LandingPageConfig {
   scenariosStripImageUrl?: string;
 }
 
-const LANGUAGES_LIST = [
-  { name: "Sinhala", native: "සිංහල", flag: "🇱🇰" },
-  { name: "English", native: "English", flag: "🇬🇧" },
-  { name: "Tamil", native: "தமிழ்", flag: "🇮🇳" },
-  { name: "Japanese", native: "日本語", flag: "🇯🇵" },
-  { name: "Spanish", native: "Español", flag: "🇪🇸" },
-  { name: "French", native: "Français", flag: "🇫🇷" },
-  { name: "German", native: "Deutsch", flag: "🇩🇪" },
-  { name: "Italian", native: "Italiano", flag: "🇮🇹" },
-  { name: "Korean", native: "한국어", flag: "🇰🇷" },
-  { name: "Chinese", native: "中文", flag: "🇨🇳" },
-  { name: "Russian", native: "Русский", flag: "🇷🇺" },
-  { name: "Arabic", native: "العربية", flag: "🇦🇪" },
-  { name: "Hindi", native: "हिन्दी", flag: "🇮🇳" },
-  { name: "Portuguese", native: "Português", flag: "🇧🇷" },
-  { name: "Turkish", native: "Türkçe", flag: "🇹🇷" },
-  { name: "Dutch", native: "Nederlands", flag: "🇳🇱" },
-  { name: "Swedish", native: "Svenska", flag: "🇸🇪" },
-  { name: "Indonesian", native: "Bahasa", flag: "🇮🇩" },
-  { name: "Thai", native: "ไทย", flag: "🇹🇭" },
-  { name: "Vietnamese", native: "Tiếng Việt", flag: "🇻🇳" },
+export interface LanguageItem {
+  name: string;
+  countryCode: string;
+  flag: string;
+  native: string;
+  coach: string;
+  sample: string;
+}
+
+const LANGUAGES_LIST: LanguageItem[] = [
+  { name: "English", countryCode: "gb", flag: "🇬🇧", native: "English", coach: "Oliver / Sarah", sample: "Hello Janitha! Ready to speak today?" },
+  { name: "Sinhala", countryCode: "lk", flag: "🇱🇰", native: "සිංහල", coach: "Sameera / Thilini", sample: "ආයුබෝවන්! අද අපි කතාබහ කරමු." },
+  { name: "Spanish", countryCode: "es", flag: "🇪🇸", native: "Español", coach: "Alvaro / Elvira", sample: "¡Hola! ¿Cómo estás hoy?" },
+  { name: "French", countryCode: "fr", flag: "🇫🇷", native: "Français", coach: "Henri / Denise", sample: "Bonjour ! Prêt pour notre conversation ?" },
+  { name: "German", countryCode: "de", flag: "🇩🇪", native: "Deutsch", coach: "Killian / Katja", sample: "Guten Tag! Lass uns Deutsch üben." },
+  { name: "Japanese", countryCode: "jp", flag: "🇯🇵", native: "日本語", coach: "Keita / Nanami", sample: "こんにちは！日本語で楽しく話しましょう。" },
+  { name: "Korean", countryCode: "kr", flag: "🇰🇷", native: "한국어", coach: "InJoon / SunHi", sample: "안녕하세요! 오늘 기분 어떠세요?" },
+  { name: "Italian", countryCode: "it", flag: "🇮🇹", native: "Italiano", coach: "Diego / Elsa", sample: "Ciao! Sei pronto a parlare italiano?" },
+  { name: "Portuguese", countryCode: "br", flag: "🇧🇷", native: "Português", coach: "Antonio / Francisca", sample: "Olá! Vamos praticar português hoje?" },
+  { name: "Chinese", countryCode: "cn", flag: "🇨🇳", native: "中文 (普通话)", coach: "Yunxi / Xiaoxiao", sample: "你好！今天你想聊些什么？" },
+  { name: "Arabic", countryCode: "ae", flag: "🇦🇪", native: "العربية", coach: "Shakir / Salma", sample: "أهلاً وسهلاً بك في سبيك فلو." },
+  { name: "Russian", countryCode: "ru", flag: "🇷🇺", native: "Русский", coach: "Dmitry / Svetlana", sample: "Привет! Давай поговорим сегодня." },
+  { name: "Tamil", countryCode: "in", flag: "🇮🇳", native: "தமிழ்", coach: "Valluvar / Pallavi", sample: "வணக்கம்! இன்று உரையாடலைத் தொடங்குவோம்." },
+  { name: "Hindi", countryCode: "in", flag: "🇮🇳", native: "हिन्दी", coach: "Madhur / Swara", sample: "नमस्ते! आज आप कैसे हैं?" },
+  { name: "Dutch", countryCode: "nl", flag: "🇳🇱", native: "Nederlands", coach: "Maarten / Fenna", sample: "Hallo! Welkom bij onze oefensessie." },
+  { name: "Turkish", countryCode: "tr", flag: "🇹🇷", native: "Türkçe", coach: "Ahmet / Emel", sample: "Merhaba! Bugün nasılsınız?" },
+  { name: "Vietnamese", countryCode: "vn", flag: "🇻🇳", native: "Tiếng Việt", coach: "NamMinh / HoaiMy", sample: "Xin chào! Rất vui được gặp bạn." },
+  { name: "Indonesian", countryCode: "id", flag: "🇮🇩", native: "Bahasa Indonesia", coach: "Ardi / Gadis", sample: "Halo! Mari kita mulai latihan hari ini." },
+  { name: "Thai", countryCode: "th", flag: "🇹🇭", native: "ไทย", coach: "Niwat / Premwadee", sample: "สวัสดีครับ! วันนี้เป็นอย่างไรบ้าง?" },
+  { name: "Swedish", countryCode: "se", flag: "🇸🇪", native: "Svenska", coach: "Mattias / Sofie", sample: "Hej! Välkommen till SpeakFlow." },
 ];
 
 interface LandingPageProps {
@@ -196,30 +205,6 @@ export default function LandingPage({
     selectedScenarioCategory === "All"
       ? SAMPLE_SCENARIOS
       : SAMPLE_SCENARIOS.filter((s) => s.cat === selectedScenarioCategory);
-
-  // 20 World Languages List
-  const LANGUAGES_LIST = [
-    { name: "English", flag: "🇬🇧", native: "English", coach: "Oliver / Sarah", sample: "Hello Janitha! Ready to speak today?" },
-    { name: "Sinhala", flag: "🇱🇰", native: "සිංහල", coach: "Sameera / Thilini", sample: "ආයුබෝවන්! අද අපි කතාබහ කරමු." },
-    { name: "Spanish", flag: "🇪🇸", native: "Español", coach: "Alvaro / Elvira", sample: "¡Hola! ¿Cómo estás hoy?" },
-    { name: "French", flag: "🇫🇷", native: "Français", coach: "Henri / Denise", sample: "Bonjour ! Prêt pour notre conversation ?" },
-    { name: "German", flag: "🇩🇪", native: "Deutsch", coach: "Killian / Katja", sample: "Guten Tag! Lass uns Deutsch üben." },
-    { name: "Japanese", flag: "🇯🇵", native: "日本語", coach: "Keita / Nanami", sample: "こんにちは！日本語で楽しく話しましょう。" },
-    { name: "Korean", flag: "🇰🇷", native: "한국어", coach: "InJoon / SunHi", sample: "안녕하세요! 오늘 기분 어떠세요?" },
-    { name: "Italian", flag: "🇮🇹", native: "Italiano", coach: "Diego / Elsa", sample: "Ciao! Sei pronto a parlare italiano?" },
-    { name: "Portuguese", flag: "🇧🇷", native: "Português", coach: "Antonio / Francisca", sample: "Olá! Vamos praticar português hoje?" },
-    { name: "Chinese", flag: "🇨🇳", native: "中文 (普通话)", coach: "Yunxi / Xiaoxiao", sample: "你好！今天你想聊些什么？" },
-    { name: "Arabic", flag: "🇦🇪", native: "العربية", coach: "Shakir / Salma", sample: "أهلاً وسهلاً بك في سبيك فلو." },
-    { name: "Russian", flag: "🇷🇺", native: "Русский", coach: "Dmitry / Svetlana", sample: "Привет! Давай поговорим сегодня." },
-    { name: "Tamil", flag: "🇮🇳", native: "தமிழ்", coach: "Valluvar / Pallavi", sample: "வணக்கம்! இன்று உரையாடலைத் தொடங்குவோம்." },
-    { name: "Hindi", flag: "🇮🇳", native: "हिन्दी", coach: "Madhur / Swara", sample: "नमस्ते! आज आप कैसे हैं?" },
-    { name: "Dutch", flag: "🇳🇱", native: "Nederlands", coach: "Maarten / Fenna", sample: "Hallo! Welkom bij onze oefensessie." },
-    { name: "Turkish", flag: "🇹🇷", native: "Türkçe", coach: "Ahmet / Emel", sample: "Merhaba! Bugün nasılsınız?" },
-    { name: "Vietnamese", flag: "🇻🇳", native: "Tiếng Việt", coach: "NamMinh / HoaiMy", sample: "Xin chào! Rất vui được gặp bạn." },
-    { name: "Indonesian", flag: "🇮🇩", native: "Bahasa Indonesia", coach: "Ardi / Gadis", sample: "Halo! Mari kita mulai latihan hari ini." },
-    { name: "Thai", flag: "🇹🇭", native: "ไทย", coach: "Niwat / Premwadee", sample: "สวัสดีครับ! วันนี้เป็นอย่างไรบ้าง?" },
-    { name: "Swedish", flag: "🇸🇪", native: "Svenska", coach: "Mattias / Sofie", sample: "Hej! Välkommen till SpeakFlow." },
-  ];
 
   // Play Audio Demo
   const playSampleAudio = (text: string, langName: string) => {
@@ -399,59 +384,97 @@ export default function LandingPage({
         </div>
       </header>
 
-      {/* 3. Hero Section (Modeled after YayTalk Image 1 & Image 2) */}
-      <section className={`relative pt-12 sm:pt-16 pb-12 sm:pb-16 overflow-hidden ${
-        isLight ? "bg-gradient-to-b from-[#EFF4FF] via-[#F7FAFF] to-[#FFFFFF] text-slate-900" : "bg-[#060913] text-white"
+      {/* 3. Hero Section (Modeled after YayTalk Image 1 & Image 2 with Live Animated Mic & Ambient Visual Engine) */}
+      <section className={`relative pt-12 sm:pt-16 pb-14 sm:pb-20 overflow-hidden ${
+        isLight ? "bg-gradient-to-b from-[#EBF3FE] via-[#F4F7FF] to-[#F8FAFC] text-slate-900" : "bg-gradient-to-b from-[#070D1E] via-[#050A17] to-[#04060E] text-white"
       }`}>
-        {/* Ambient Dark Mode Animation System: Cosmic Glowing Orbs */}
+        {/* Ambient Dark Mode Animation System: Cosmic Glowing Orbs & Cyber Grid */}
         {!isLight && (
           <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
             {/* Glowing Orb 1: Cyan-Blue pulsing */}
-            <div className="dark-glow-orb-1 absolute -top-16 left-1/4 w-[620px] h-[620px] rounded-full bg-gradient-to-tr from-cyan-500/25 via-blue-600/20 to-indigo-600/10 blur-[140px]" />
+            <div className="dark-glow-orb-1 absolute -top-20 left-1/4 w-[680px] h-[680px] rounded-full bg-gradient-to-tr from-cyan-500/25 via-blue-600/20 to-indigo-600/15 blur-[150px]" />
             {/* Glowing Orb 2: Purple-Pink pulsing */}
-            <div className="dark-glow-orb-2 absolute top-36 right-1/4 w-[560px] h-[560px] rounded-full bg-gradient-to-bl from-purple-600/25 via-pink-600/15 to-blue-600/15 blur-[150px]" />
+            <div className="dark-glow-orb-2 absolute top-32 right-1/4 w-[620px] h-[620px] rounded-full bg-gradient-to-bl from-purple-600/25 via-pink-600/15 to-blue-600/15 blur-[160px]" />
             {/* Center soft backplate glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[450px] bg-indigo-500/10 rounded-full blur-[160px]" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[480px] bg-indigo-500/15 rounded-full blur-[170px]" />
             {/* Subtle cyber grid background */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b0f_1px,transparent_1px),linear-gradient(to_bottom,#1e293b0f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-40" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#38bdf812_1px,transparent_1px),linear-gradient(to_bottom,#38bdf812_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-50" />
           </div>
         )}
 
-        {/* Ambient Light Mode Background: Soft sky/lavender vignette */}
+        {/* Ambient Light Mode Animation System: Ethereal Floating Mesh Orbs & Tech Matrix */}
         {isLight && (
           <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
-            <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-gradient-to-b from-[#EAF1FF] via-[#F5F8FF] to-transparent blur-[110px]" />
+            {/* Floating Soft Sky-Cyan Orb 1 */}
+            <div className="light-glow-orb-1 absolute -top-24 left-1/4 w-[680px] h-[680px] rounded-full bg-gradient-to-tr from-sky-300/35 via-blue-400/25 to-indigo-300/20 blur-[130px]" />
+            {/* Floating Soft Rose-Lavender Orb 2 */}
+            <div className="light-glow-orb-2 absolute top-24 right-1/4 w-[620px] h-[620px] rounded-full bg-gradient-to-bl from-purple-300/25 via-pink-300/20 to-sky-200/20 blur-[140px]" />
+            {/* Center Warm Ambient Glow behind characters */}
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[850px] h-[400px] bg-gradient-to-t from-cyan-200/30 via-blue-100/25 to-transparent rounded-full blur-[110px]" />
+            {/* High-tech subtle dot matrix overlay */}
+            <div className="absolute inset-0 bg-[radial-gradient(#0284c718_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_75%_65%_at_50%_45%,#000_65%,transparent_100%)] opacity-80" />
           </div>
         )}
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8">
-          {/* Social Proof Pill */}
-          <div className={`inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border text-xs font-bold shadow-sm ${
+          {/* Social Proof Pill with Live Status */}
+          <div className={`inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border text-xs font-bold shadow-sm transition-all hover:scale-105 ${
             isLight
-              ? "border-blue-300 bg-blue-50 text-blue-700"
-              : "border-indigo-400/25 bg-indigo-500/10 text-cyan-400"
+              ? "border-blue-300/80 bg-white/90 text-blue-800 shadow-blue-500/10 backdrop-blur-md"
+              : "border-indigo-400/25 bg-indigo-500/10 text-cyan-400 backdrop-blur-md"
           }`}>
             <span className="flex text-amber-500 text-xs">★★★★★</span>
-            <span className={`${isLight ? "text-slate-600" : "text-slate-300"} font-medium`}>4.8/5 Rating</span>
-            <span className="w-1 h-1 rounded-full bg-slate-400" />
-            <span className={`font-bold ${isLight ? "text-slate-800" : "text-white"}`}>
+            <span className={`${isLight ? "text-slate-700 font-semibold" : "text-slate-300"} font-medium`}>4.8/5 Rating</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className={`font-bold ${isLight ? "text-slate-900" : "text-white"}`}>
               {config?.heroBadge || "Next-Gen AI Voice Tutor • #BuildHybridAI 2026"}
             </span>
           </div>
 
-          {/* Master Headline (Modeled after Image 1 with Guaranteed High Contrast) */}
+          {/* Master Headline with Live Broadcasting Mic & Shimmering Prism Typography */}
           <div className="space-y-4 max-w-4xl mx-auto">
-            <h1 className={`text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.08] ${
+            <h1 className={`text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.12] ${
               isLight ? "text-[#0F172A]" : "text-white"
             }`}>
-              {config?.heroHeadline || (
+              {(!config?.heroHeadline || config.heroHeadline.includes("20 Languages") || config.heroHeadline.includes("confidently")) ? (
                 <>
-                  Learn to speak 🎙️{" "}
-                  <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Learn to speak{" "}
+                  {/* Live Broadcasting Studio Microphone Widget */}
+                  <span className="inline-flex items-center align-middle mx-1 sm:mx-2 relative group cursor-default">
+                    {/* Radiating soundwave ripples */}
+                    <span className="absolute inset-0 rounded-2xl bg-cyan-400/30 animate-sound-ripple pointer-events-none" />
+                    <span className="absolute inset-0 rounded-2xl bg-blue-500/20 animate-sound-ripple-delayed pointer-events-none" />
+
+                    {/* Microphone Glass Container */}
+                    <span className={`relative inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-2xl border shadow-lg transition-transform group-hover:scale-105 ${
+                      isLight
+                        ? "bg-white/90 border-cyan-300/80 text-slate-900 shadow-cyan-500/20 backdrop-blur-md"
+                        : "bg-slate-900/90 border-cyan-400/50 text-white shadow-cyan-500/30 backdrop-blur-md"
+                    }`}>
+                      <span className="text-xl sm:text-2xl animate-pulse">🎙️</span>
+
+                      {/* Mini Live Audio Equalizer Voice Bars */}
+                      <span className="flex items-end gap-0.5 sm:gap-1 h-3.5 sm:h-5 px-0.5">
+                        <span className="w-1 bg-gradient-to-t from-cyan-500 to-blue-600 rounded-full animate-eq-1" />
+                        <span className="w-1 bg-gradient-to-t from-blue-600 to-indigo-600 rounded-full animate-eq-2" />
+                        <span className="w-1 bg-gradient-to-t from-indigo-600 to-purple-600 rounded-full animate-eq-3" />
+                        <span className="w-1 bg-gradient-to-t from-purple-600 to-pink-500 rounded-full animate-eq-4" />
+                      </span>
+
+                      {/* Live On-Air Pill */}
+                      <span className="hidden sm:inline-flex items-center gap-1 pl-1 border-l border-slate-300 dark:border-slate-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                        <span className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">LIVE</span>
+                      </span>
+                    </span>
+                  </span>{" "}
+                  <span className="bg-gradient-to-r from-blue-600 via-indigo-600 via-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent animate-gradient-text font-black">
                     20 Languages
                   </span>{" "}
                   confidently with AI Tutors.
                 </>
+              ) : (
+                config?.heroHeadline
               )}
             </h1>
             <p
@@ -518,14 +541,17 @@ export default function LandingPage({
             {!isLight && (
               <div className="absolute inset-x-8 bottom-0 h-36 bg-blue-600/25 blur-3xl -z-10 rounded-full" />
             )}
+            {isLight && (
+              <div className="absolute inset-x-8 bottom-0 h-28 bg-blue-400/15 blur-2xl -z-10 rounded-full" />
+            )}
           </div>
         </div>
       </section>
 
-      {/* 3.5. Supported Languages Infinite Marquee Slider */}
+      {/* 3.5. Supported Languages Infinite Marquee Slider with Real National Flag Badges */}
       {config?.languagesSliderActive !== false && (
         <section className={`py-6 border-y relative overflow-hidden ${
-          isLight ? "bg-slate-100/70 border-slate-200" : "bg-[#070C1B]/80 border-indigo-900/40"
+          isLight ? "bg-white/80 border-slate-200/90 shadow-sm" : "bg-[#070C1B]/80 border-indigo-900/40"
         }`}>
           {/* Gradient fade edge masks */}
           <div className={`pointer-events-none absolute left-0 top-0 bottom-0 w-24 z-10 ${
@@ -554,14 +580,22 @@ export default function LandingPage({
                   onClick={() => onStartCall()}
                   className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-2xl border text-xs font-bold transition-all shrink-0 ${
                     isLight
-                      ? "bg-white border-slate-300 text-slate-800 hover:border-indigo-500 hover:shadow-md"
+                      ? "bg-slate-50 border-slate-200/90 text-slate-800 hover:border-indigo-500 hover:bg-white hover:shadow-md"
                       : "bg-slate-900/80 border-indigo-500/20 text-slate-200 hover:border-cyan-400/50 hover:bg-slate-800"
                   }`}
                 >
-                  <span className="text-base">{item.flag}</span>
+                  {/* Real HD Country Flag Image Badge */}
+                  <div className="w-5 h-3.5 relative overflow-hidden rounded-[3px] shadow-sm shrink-0 border border-black/10">
+                    <Image
+                      src={`/images/flags/${item.countryCode}.png`}
+                      alt={item.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                   <span className={`font-black ${isLight ? "text-slate-900" : "text-white"}`}>{item.name}</span>
                   <span className={`text-[10.5px] font-medium ${isLight ? "text-slate-500" : "text-slate-400"}`}>({item.native})</span>
-                  <span className={`text-[10px] ${isLight ? "text-blue-600" : "text-cyan-400 opacity-60"}`}>→</span>
+                  <span className={`text-[10px] ${isLight ? "text-blue-600 font-bold" : "text-cyan-400 opacity-60"}`}>→</span>
                 </button>
               ))}
             </div>
@@ -569,14 +603,14 @@ export default function LandingPage({
         </section>
       )}
 
-      {/* 4. Panoramic Scenarios Section (FULL WIDTH - User requested: "me image eka full widght dnn") */}
-      <section className={`py-20 sm:py-28 relative overflow-hidden text-center ${
+      {/* 4. Panoramic Scenarios Section (FULL SCREEN FIT - 4K Cave Style Panorama) */}
+      <section className={`py-16 sm:py-24 relative overflow-hidden text-center ${
         isLight ? "bg-white text-slate-900" : "bg-[#060A18] text-white"
       }`}>
-        <div className="w-full px-4 sm:px-6 lg:px-8 space-y-6">
-          <div className="space-y-3 max-w-4xl mx-auto text-center">
+        <div className="w-full px-2 sm:px-4 lg:px-8 space-y-6">
+          <div className="space-y-3 max-w-4xl mx-auto text-center px-4">
             <div className={`text-xs sm:text-sm font-black uppercase tracking-wider flex items-center justify-center gap-1.5 ${
-              isLight ? "text-blue-600" : "text-cyan-400"
+              isLight ? "text-indigo-600" : "text-cyan-400"
             }`}>
               <span>{config?.scenariosHeadingTag || "Everything you need to speak English 🔮 fluently"}</span>
             </div>
@@ -594,14 +628,19 @@ export default function LandingPage({
             </p>
           </div>
 
-          {/* Full-Width Panoramic Strip Image (Image 3) */}
-          <div className="relative w-full max-w-[1700px] mx-auto mt-8 sm:mt-12 px-0 sm:px-2 md:px-6">
+          {/* Full-Width 4K Panoramic "Cave Style" Curved Strip */}
+          <div className="relative w-full max-w-[1920px] mx-auto mt-6 sm:mt-10 px-0 sm:px-2 md:px-4">
+            {/* Ambient Dark Mode Colorful Horizon Glow */}
+            {!isLight && (
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] h-[350px] bg-gradient-to-r from-pink-500/15 via-blue-500/15 to-amber-500/15 rounded-full blur-[100px] pointer-events-none -z-10" />
+            )}
+
             <Image
-              src={config?.scenariosStripImageUrl || "/images/landing/scenarios_panoramic_strip.png"}
+              src={config?.scenariosStripImageUrl || "/images/landing/scenario_section_hd.webp"}
               alt="Real-world conversations in multiple scenarios"
-              width={1600}
-              height={580}
-              className="w-full h-auto object-contain drop-shadow-[0_20px_45px_rgba(0,0,0,0.25)] hover:scale-[1.01] transition-transform duration-500 rounded-2xl sm:rounded-3xl"
+              width={3840}
+              height={1389}
+              className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.18)] transition-transform duration-500 hover:scale-[1.01]"
               priority
             />
           </div>
@@ -901,7 +940,14 @@ export default function LandingPage({
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-2xl">{lang.flag}</span>
+                    <div className="w-7 h-4.5 relative overflow-hidden rounded-[3px] shadow-sm shrink-0 border border-black/10">
+                      <Image
+                        src={`/images/flags/${lang.countryCode}.png`}
+                        alt={lang.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
                     <span className={`text-[10px] font-mono opacity-0 group-hover:opacity-100 transition-opacity ${
                       isLight ? "text-indigo-600 font-bold" : "text-cyan-400"
                     }`}>

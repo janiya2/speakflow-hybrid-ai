@@ -447,7 +447,7 @@ interface LandingPageConfig {
 
 const DEFAULT_LANDING_CONFIG: LandingPageConfig = {
   heroBadge: "Next-Gen AI Voice Tutor • #BuildHybridAI 2026",
-  heroHeadline: "Learn to speak 🎙️ 20 Languages confidently with AI Tutors.",
+  heroHeadline: "",
   heroSubtitle:
     "The fastest way to speak any language with confidence: real conversations with AI, instant feedback, and a safe space to practice.",
   primaryCtaText: "Start Free Practice →",
@@ -480,7 +480,7 @@ const DEFAULT_LANDING_CONFIG: LandingPageConfig = {
   scenariosHeadingTag: "Everything you need to speak English 🔮 fluently",
   scenariosTitle: "Practice the conversations you'll actually have",
   scenariosSubtitle: "Practice English in scenarios that matter — job interviews, travel, daily life, dining, and more.",
-  scenariosStripImageUrl: "/images/landing/scenarios_panoramic_strip.png",
+  scenariosStripImageUrl: "/images/landing/scenario_section_hd.webp",
 };
 
 interface AchievementBadge {
@@ -15452,7 +15452,7 @@ export default function StudentWebApp() {
                       onChange={(e) =>
                         setAdminLandingForm((prev) => ({ ...prev, scenariosStripImageUrl: e.target.value }))
                       }
-                      placeholder="/images/landing/scenarios_panoramic_strip.png"
+                      placeholder="/images/landing/scenario_section_hd.webp"
                       className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 font-mono ${
                         isLight
                           ? "bg-slate-50 border-slate-300 text-slate-900"
