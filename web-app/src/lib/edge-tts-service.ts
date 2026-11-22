@@ -24,6 +24,13 @@ export const VOICE_MAP: Record<string, string> = {
   female_zh: "zh-CN-XiaoxiaoNeural",
   female_hi: "hi-IN-SwaraNeural",
   female_ru: "ru-RU-SvetlanaNeural",
+  female_si: "si-LK-ThiliniNeural",
+  female_nl: "nl-NL-FennaNeural",
+  female_tr: "tr-TR-EmelNeural",
+  female_vi: "vi-VN-HoaiMyNeural",
+  female_id: "id-ID-GadisNeural",
+  female_th: "th-TH-PremwadeeNeural",
+  female_se: "sv-SE-SofieNeural",
 
   // Male Voices
   alex: "en-US-GuyNeural",
@@ -42,6 +49,13 @@ export const VOICE_MAP: Record<string, string> = {
   male_zh: "zh-CN-YunxiNeural",
   male_hi: "hi-IN-MadhurNeural",
   male_ru: "ru-RU-DmitryNeural",
+  male_si: "si-LK-SameeraNeural",
+  male_nl: "nl-NL-MaartenNeural",
+  male_tr: "tr-TR-AhmetNeural",
+  male_vi: "vi-VN-NamMinhNeural",
+  male_id: "id-ID-ArdiNeural",
+  male_th: "th-TH-NiwatNeural",
+  male_se: "sv-SE-MattiasNeural",
 };
 
 export function resolveEdgeVoice(coachId: string, gender: string, language: string): string {
@@ -79,6 +93,20 @@ export function resolveEdgeVoice(coachId: string, gender: string, language: stri
     langKey = "hi";
   } else if (l.includes("russian") || l === "ru" || l.startsWith("ru-") || l.startsWith("ru_")) {
     langKey = "ru";
+  } else if (l.includes("sinhala") || l.includes("sinha") || l === "si" || l.startsWith("si-") || l.startsWith("si_")) {
+    langKey = "si";
+  } else if (l.includes("dutch") || l.includes("nederland") || l === "nl" || l.startsWith("nl-") || l.startsWith("nl_")) {
+    langKey = "nl";
+  } else if (l.includes("turk") || l === "tr" || l.startsWith("tr-") || l.startsWith("tr_")) {
+    langKey = "tr";
+  } else if (l.includes("vietnam") || l === "vi" || l.startsWith("vi-") || l.startsWith("vi_")) {
+    langKey = "vi";
+  } else if (l.includes("indones") || l === "id" || l.startsWith("id-") || l.startsWith("id_")) {
+    langKey = "id";
+  } else if (l.includes("thai") || l === "th" || l.startsWith("th-") || l.startsWith("th_")) {
+    langKey = "th";
+  } else if (l.includes("swed") || l.includes("svensk") || l === "sv" || l === "se" || l.startsWith("sv-") || l.startsWith("sv_")) {
+    langKey = "se";
   }
 
   // If practicing a non-English target language, strictly match coach gender in that language

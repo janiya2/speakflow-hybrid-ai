@@ -417,6 +417,55 @@ class _HomeScreenState extends State<HomeScreen> {
       'native': 'தமிழ்',
       'desc': 'Daily Conversations & Regional Fluency',
     },
+    {
+      'name': 'Sinhala',
+      'flag': '🇱🇰',
+      'flagAsset': 'assets/images/flag_lk.png',
+      'native': 'සිංහල',
+      'desc': 'Colloquial & Native Sinhala Conversational Mastery',
+    },
+    {
+      'name': 'Dutch',
+      'flag': '🇳🇱',
+      'flagAsset': 'assets/images/flag_nl.png',
+      'native': 'Nederlands',
+      'desc': 'Randstad Dutch for Travel & Daily Life',
+    },
+    {
+      'name': 'Turkish',
+      'flag': '🇹🇷',
+      'flagAsset': 'assets/images/flag_tr.png',
+      'native': 'Türkçe',
+      'desc': 'Istanbul Conversational & Bazaar Fluency',
+    },
+    {
+      'name': 'Vietnamese',
+      'flag': '🇻🇳',
+      'flagAsset': 'assets/images/flag_vi.png',
+      'native': 'Tiếng Việt',
+      'desc': 'Street Food & Modern Vietnamese Fluency',
+    },
+    {
+      'name': 'Indonesian',
+      'flag': '🇮🇩',
+      'flagAsset': 'assets/images/flag_id.png',
+      'native': 'Bahasa Indonesia',
+      'desc': 'Jakarta Everyday & Travel Communication',
+    },
+    {
+      'name': 'Thai',
+      'flag': '🇹🇭',
+      'flagAsset': 'assets/images/flag_th.png',
+      'native': 'ไทย',
+      'desc': 'Bangkok Culture & Everyday Conversational Thai',
+    },
+    {
+      'name': 'Swedish',
+      'flag': '🇸🇪',
+      'flagAsset': 'assets/images/flag_se.png',
+      'native': 'Svenska',
+      'desc': 'Nordic Daily Life & Stockholm Professional Swedish',
+    },
   ];
 
   Timer? _notificationCheckTimer;

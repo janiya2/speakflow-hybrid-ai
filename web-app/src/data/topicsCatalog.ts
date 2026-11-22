@@ -3030,4 +3030,665 @@ export const MASTER_TOPICS_CATALOG: CatalogTopic[] = [
       "Какой глагол используется для поездки на транспорте? (Which verb is used for transport?)"
     ]
   }
+,
+  {
+    "id": "sp_si_249",
+    "title": "ගාලු මුවදොර ඉස්සෝ වඩේ සහ වීදි ආහාර (Galle Face Isso Wade & Street Food)",
+    "language": "Sinhala",
+    "level": "Beginner",
+    "category": "Food & Dining",
+    "subCategory": "Street Food",
+    "icon": "🦐",
+    "scenario": "Ordering fresh crispy isso wade and discussing spicy street snacks at Galle Face Green in Colombo at sunset.",
+    "starterPrompt": "ආයුබෝවන්! ගාලු මුවදොර හවසට හරිම ලස්සනයි නේද? ඔයා ඉස්සෝ වඩේ කන්න කැමතිද? සැරට ඕනෙද අඩු සැරටද? (Welcome! Galle Face is lovely in the evening, isn't it? Would you like isso wade spicy or mild?)",
+    "starterQuestions": [
+      "ඔයා වඩාත්ම කැමති ලංකාවේ කෑම මොනවද? (What is your favorite Sri Lankan food?)",
+      "කොච්චි සම්බෝල ටිකක් වැඩියෙන් දාන්නද? (Shall I add extra kochchi sambol?)"
+    ]
+  },
+  {
+    "id": "sp_si_250",
+    "title": "කොළඹ ත්‍රීවීලර් ගමන සහ මීටරේ කතාබහ (Colombo Tuk-Tuk Ride & Negotiation)",
+    "language": "Sinhala",
+    "level": "Beginner",
+    "category": "Travel & Transportation",
+    "subCategory": "Local Transit",
+    "icon": "🛺",
+    "scenario": "Hailing a tuk-tuk in Kollupitiya, verifying the fare meter, and directing the driver through rush hour traffic.",
+    "starterPrompt": "මල්ලි! කොළඹ කොටුවට යන්න කීයක් ගන්නවද? මීටරේ දාලා යමු නේද? (Brother! How much to Colombo Fort? We'll use the meter, right?)",
+    "starterQuestions": [
+      "කොල්ලුපිටියේ ලොකු ට්‍රැෆික් එකක් තියෙනවද? (Is there heavy traffic in Kollupitiya?)",
+      "ගාලු පාරෙන් යනවද මැරින් ඩ්‍රයිව් එකෙන් යනවද? (Will you take Galle Road or Marine Drive?)"
+    ]
+  },
+  {
+    "id": "sp_si_251",
+    "title": "සීගිරිය පර්වත ගවේෂණය සහ පුරාවිද්‍යා විස්තරය (Sigiriya Rock & Ancient History)",
+    "language": "Sinhala",
+    "level": "Intermediate",
+    "category": "Culture & Arts",
+    "subCategory": "Heritage & History",
+    "icon": "🏛️",
+    "scenario": "Talking with an expert Sri Lankan cultural guide while climbing the 1,200 steps to the Lion Rock summit.",
+    "starterPrompt": "ආයුබෝවන්! සීගිරිය බලකොටුව ලෝක පුදුමයක් විදිහට සලකන්නේ ඇයි කියලා ඔයා දන්නවද? කාශ්‍යප රජුගේ වාස්තු විද්‍යාව ගැන කතා කරමු. (Welcome! Do you know why Sigiriya is considered an architectural wonder? Let's discuss King Kashyapa's fortress.)",
+    "starterQuestions": [
+      "සීගිරි කුරුටු ගී සහ බිතුසිතුවම් ගැන ඔයාගේ අදහස මොකක්ද? (What do you think of the Sigiriya frescoes and graffiti poems?)",
+      "පර්වත මුදුනට නගින්න කොපමණ වෙලාවක් යයිද? (How long does it take to reach the summit?)"
+    ]
+  },
+  {
+    "id": "sp_si_252",
+    "title": "කොළඹ තාක්ෂණික සමාගමක මෘදුකාංග ඉංජිනේරු සම්මුඛ සාකච්ඡාව (Tech Firm Job Interview in Colombo)",
+    "language": "Sinhala",
+    "level": "Advanced",
+    "category": "Career & Business",
+    "subCategory": "Job Interviews",
+    "icon": "💻",
+    "scenario": "Presenting cloud architecture, system scalability, and leadership experience for a Senior Tech Lead role in Sri Lanka.",
+    "starterPrompt": "සුබ උදෑසනක්! අපගේ තාක්ෂණික සම්මුඛ පරීක්ෂණයට සාදරයෙන් පිළිගන්නවා. ඔබේ පෙර මෘදුකාංග ව්‍යාපෘති සහ cloud architecture අත්දැකීම් ගැන කෙටියෙන් හඳුන්වා දෙන්න පුළුවන්ද? (Good morning! Welcome to our technical interview. Could you introduce your software projects and cloud architecture experience?)",
+    "starterQuestions": [
+      "High scalability සහ low latency පද්ධති සැලසුම් කිරීමේදී ඔබ මුහුණ දුන් ලොකුම අභියෝගය කුමක්ද? (What was your biggest challenge designing high scalability and low latency systems?)",
+      "කණ්ඩායම් කළමනාකරණය සඳහා ඔබ අනුගමනය කරන Agile ක්‍රමවේදය කුමක්ද? (What Agile methodology do you follow for team leadership?)"
+    ]
+  },
+  {
+    "id": "sp_si_253",
+    "title": "ගමේ කඩෙන් කහට තේ සහ ආප්ප ඇණවුම් කිරීම (Ordering Hot Tea & Hoppers at a Local Kade)",
+    "language": "Sinhala",
+    "level": "Beginner",
+    "category": "Daily Life",
+    "subCategory": "Dining Out",
+    "icon": "☕",
+    "scenario": "Stopping at a traditional roadside teashop for breakfast: hot ginger tea, egg hoppers, and lunu miris.",
+    "starterPrompt": "ආයුබෝවන් මුදලාලි! අද උදේට උණු උණු බිත්තර ආප්ප තියෙනවද? කහට තේ එකකුත් එක්ක ලුණු මිරිස් ටිකක් වැඩියෙන් දෙන්න පුළුවන්ද? (Hello sir! Do you have hot egg hoppers this morning? Can you give me hot tea with extra lunu miris?)",
+    "starterQuestions": [
+      "පැණි ආප්ප කීයක් හදන්නද? (How many sweet hoppers should I prepare?)",
+      "ඉඟුරු දාලා ප්ලේන්ටියක් බොනවද? (Would you like ginger plain tea?)"
+    ]
+  },
+  {
+    "id": "sp_si_254",
+    "title": "නුවරඑළිය තේ වතු චාරිකාව සහ හෝටල් කාමර වෙන්කරවා ගැනීම (Nuwara Eliya Tea Estate & Hotel Booking)",
+    "language": "Sinhala",
+    "level": "Intermediate",
+    "category": "Travel & Transportation",
+    "subCategory": "Hotel & Lodging",
+    "icon": "🍃",
+    "scenario": "Booking a cozy mountain bungalow in Nuwara Eliya and asking about tea tasting tours and weather.",
+    "starterPrompt": "ආයුබෝවන්! අපි ලබන සති අන්තයේ නුවරඑළියට එන්න බලාපොරොත්තු වෙනවා. තේ වත්ත පෙනෙන ලස්සන කාමරයක් තියෙනවද? (Hello! We are planning to visit Nuwara Eliya next weekend. Do you have a scenic room overlooking tea hills?)",
+    "starterQuestions": [
+      "දැන් නුවරඑළියේ කාලගුණය ගොඩක් ශීතලද? (Is the weather in Nuwara Eliya very cold right now?)",
+      "තේ කර්මාන්තශාලා නිරීක්ෂණ චාරිකාවට වෙලාව වෙන්කරන්න පුළුවන්ද? (Can you arrange a tea factory visit slot?)"
+    ]
+  },
+  {
+    "id": "sp_si_255",
+    "title": "ලංකාවේ ක්‍රිකට් ලෝලීන්ගේ කතාබහ (Cricket Fever: Sri Lanka Lions Match Discussion)",
+    "language": "Sinhala",
+    "level": "Intermediate",
+    "category": "Sports",
+    "subCategory": "Cricket",
+    "icon": "🏏",
+    "scenario": "Debating T20 tactics, explosive spinners, and batting finishes with fellow passionate Sri Lankan fans at R. Premadasa Stadium.",
+    "starterPrompt": "මචං! ඊයේ මැච් එක බැලුවද? අපේ කොල්ලන්ගේ bowling attack එක නම් සුපිරි නේද? (Bro! Did you watch yesterday's match? Our bowling attack was unbelievable, wasn't it?)",
+    "starterQuestions": [
+      "අවසාන ඕවරේ batting එක ගැන ඔයා මොකද හිතන්නේ? (What do you think about the final over batting?)",
+      "ලෝක කුසලානය සඳහා හොඳම playing XI එක කවුද? (Who is in your best playing XI for the World Cup?)"
+    ]
+  },
+  {
+    "id": "sp_si_256",
+    "title": "ඉලක්කගත ව්‍යාකරණ පුහුණුව : කථන සිංහල අතීත කාල ක්‍රියා පද (Targeted Grammar Drill: Spoken Sinhala Past Tense)",
+    "language": "Sinhala",
+    "level": "Intermediate",
+    "category": "Targeted Grammar Drill",
+    "subCategory": "Grammar Repair",
+    "icon": "🎓",
+    "scenario": "Practicing spoken Sinhala past tense suffixes (-වා, -ලා, ගියා vs යනවා) without mixing formal written forms.",
+    "starterPrompt": "අපි කථන සිංහලෙන් අතීත කාල ක්‍රියා පද පුහුණු වෙමු! ඊයේ ඔයා කොහෙද ගියේ සහ මොනවද කළේ කියලා විස්තර කරන්න පුළුවන්ද? (Let's practice spoken Sinhala past tense verbs! Can you describe where you went and what you did yesterday?)",
+    "starterQuestions": [
+      "'මම කනවා' යන්න අතීත කාලයෙන් කියන්නේ කොහොමද? (How do you say 'I eat' in spoken past tense?)",
+      "'ගියා' සහ 'ගිහින් තියෙනවා' අතර වෙනස කුමක්ද? (What is the difference between 'went' and 'have gone'?)"
+    ]
+  },
+  {
+    "id": "sp_nl_257",
+    "title": "Fietsen langs de Grachten van Amsterdam (Cycling Along Amsterdam Canals)",
+    "language": "Dutch",
+    "level": "Beginner",
+    "category": "Travel & Transportation",
+    "subCategory": "City Biking",
+    "icon": "🚲",
+    "scenario": "Renting an 'omafiets' near Centraal Station, asking about cycling rules, bike locks, and canal routes.",
+    "starterPrompt": "Hallo! Welkom bij onze fietsverhuur. Zoekt u een stadsfiets voor vandaag? Wilt u een terugtraprem of handremmen? (Hello! Looking for a city bike today? Back-pedal brake or hand brakes?)",
+    "starterQuestions": [
+      "Moet ik op het fietspad blijven of mag ik overal rijden? (Should I stay on bike paths or can I ride anywhere?)",
+      "Heeft u een stevig kettingslot tegen diefstal? (Do you have a sturdy chain lock against theft?)"
+    ]
+  },
+  {
+    "id": "sp_nl_258",
+    "title": "Koffie en Stroopwafels op de Albert Cuypmarkt (Coffee & Stroopwafels at the Market)",
+    "language": "Dutch",
+    "level": "Beginner",
+    "category": "Food & Dining",
+    "subCategory": "Street Food",
+    "icon": "🧇",
+    "scenario": "Ordering fresh warm caramel stroopwafels and a coffee from a friendly stallholder in De Pijp.",
+    "starterPrompt": "Goedemorgen! Een warme stroopwafel met extra karamel? Ze zijn net vers gebakken! (Good morning! A warm stroopwafel with extra caramel? Freshly baked!)",
+    "starterQuestions": [
+      "Kan ik pinnen of heeft u liever contant geld? (Can I pay with card or do you prefer cash?)",
+      "Mag ik er ook een verse muntthee bij? (May I also have fresh mint tea?)"
+    ]
+  },
+  {
+    "id": "sp_nl_259",
+    "title": "Sollicitatiegesprek bij een Nederlandse Tech Startup (Job Interview at a Dutch Tech Startup)",
+    "language": "Dutch",
+    "level": "Advanced",
+    "category": "Career & Business",
+    "subCategory": "Job Interviews",
+    "icon": "💼",
+    "scenario": "Explaining full-stack architecture, direct communication culture, and agile teamwork in Amsterdam.",
+    "starterPrompt": "Fijn dat je er bent! Vertel ons eens over je ervaring met schaalbare systemen en cloud engineering. (Glad you are here! Tell us about your experience with scalable systems and cloud engineering.)",
+    "starterQuestions": [
+      "Hoe ga je om met de directe Nederlandse feedbackcultuur? (How do you handle direct Dutch feedback culture?)",
+      "Wat is je ervaring met geautomatiseerde CI/CD pipelines? (What is your experience with automated CI/CD pipelines?)"
+    ]
+  },
+  {
+    "id": "sp_nl_260",
+    "title": "Een Woning Bezichtigen en Huren in Utrecht (Viewing an Apartment in Utrecht)",
+    "language": "Dutch",
+    "level": "Intermediate",
+    "category": "Daily Life",
+    "subCategory": "Housing",
+    "icon": "🏠",
+    "scenario": "Viewing a rental apartment, asking the real estate agent about service costs, registration, and lease terms.",
+    "starterPrompt": "Welkom bij de bezichtiging! Zoals je ziet heeft het appartement veel lichtinval. Heb je al vragen over het huurcontract? (Welcome to the viewing! As you can see, great natural light. Any questions on the lease?)",
+    "starterQuestions": [
+      "Zijn gas, water en elektriciteit inbegrepen in de servicekosten? (Are gas, water and electricity included in service costs?)",
+      "Mag ik mij hier inschrijven bij de gemeente? (Can I register here at the municipality?)"
+    ]
+  },
+  {
+    "id": "sp_nl_261",
+    "title": "De Trein Nemen naar Rotterdam Centraal (Taking the Train to Rotterdam Central)",
+    "language": "Dutch",
+    "level": "Beginner",
+    "category": "Travel & Transportation",
+    "subCategory": "Public Transit",
+    "icon": "🚆",
+    "scenario": "Checking in with your OV-chipkaart and asking NS conductor about transfer platforms and Intercity Direct surcharges.",
+    "starterPrompt": "Pardon, weet u vanaf welk spoor de Intercity naar Rotterdam Centraal vertrekt? Moet ik een toeslag betalen? (Excuse me, which track does the Intercity to Rotterdam Central leave from?)",
+    "starterQuestions": [
+      "Vergeet niet in te checken bij de poortjes! (Don't forget to check in at the fare gates!)",
+      "Is er vertraging door werkzaamheden op het spoor? (Is there a delay due to track maintenance?)"
+    ]
+  },
+  {
+    "id": "sp_nl_262",
+    "title": "Gerichte Grammatica Oefening : De vs Het en Scheidbare Werkwoorden (Targeted Grammar Drill)",
+    "language": "Dutch",
+    "level": "Intermediate",
+    "category": "Targeted Grammar Drill",
+    "subCategory": "Grammar Repair",
+    "icon": "🎓",
+    "scenario": "Mastering the distinction between 'de' and 'het' words and word order of separable verbs (opbellen, meenemen).",
+    "starterPrompt": "Laten we scheidbare werkwoorden oefenen! Hoe zeg je 'Ik bel je vanavond op' in het verleden en in een bijzin? (Let's practice separable verbs! How do you express this in the past tense and subordinate clause?)",
+    "starterQuestions": [
+      "Waarom is het 'de tafel' maar 'het bureau'? (Why is it 'de tafel' but 'het bureau'?)",
+      "Waar komt het voorvoegsel als je 'hebben' gebruikt? (Where does the prefix go with auxiliary 'have'?)"
+    ]
+  },
+  {
+    "id": "sp_tr_263",
+    "title": "Kapalıçarşı'da Çay Eşliğinde Pazarlık (Bargaining over Tea at the Grand Bazaar)",
+    "language": "Turkish",
+    "level": "Beginner",
+    "category": "Shopping & City Life",
+    "subCategory": "Bazaar Shopping",
+    "icon": "☕",
+    "scenario": "Sipping hot Turkish black tea while bargaining courteously for handwoven kilims and ceramics in Istanbul.",
+    "starterPrompt": "Hoş geldiniz efendim! Buyrun bir tavşan kanı çayımızı için. Halılarımıza ve seramiklerimize bakmak ister misiniz? (Welcome sir! Please have some hot tea. Would you like to look at our carpets and ceramics?)",
+    "starterQuestions": [
+      "Bu el dokuması kilim için en son ne kadar olur? (What is your best price for this handmade kilim?)",
+      "Nakit ödersem indirim yapar mısınız? (Do you give a discount if I pay cash?)"
+    ]
+  },
+  {
+    "id": "sp_tr_264",
+    "title": "Geleneksel Türk Kahvaltısı Siparişi (Ordering a Traditional Turkish Breakfast)",
+    "language": "Turkish",
+    "level": "Beginner",
+    "category": "Food & Dining",
+    "subCategory": "Breakfast & Dining",
+    "icon": "🍳",
+    "scenario": "Ordering a rich serpme kahvaltı with menemen, kaymak, honey, olives, and fresh simit along the seaside.",
+    "starterPrompt": "Günaydın! İki kişilik serpme kahvaltı mı arzu edersiniz? Menemeninizi soğanlı mı soğansız mı tercih edersiniz? (Good morning! Would you like breakfast for two? Menemen with or without onions?)",
+    "starterQuestions": [
+      "Taze sıkılmış portakal suyu da alabilir miyiz? (Could we also have freshly squeezed orange juice?)",
+      "Çay sınırsız mı servis ediliyor? (Is tea served unlimited with breakfast?)"
+    ]
+  },
+  {
+    "id": "sp_tr_265",
+    "title": "Boğaz Vapuru ile Karşıya Geçiş (Taking the Bosphorus Ferry across Istanbul)",
+    "language": "Turkish",
+    "level": "Beginner",
+    "category": "Travel & Transportation",
+    "subCategory": "Ferry Commute",
+    "icon": "⛴️",
+    "scenario": "Taking the scenic ferry from Eminönü to Kadıköy, feeding simit to seagulls and enjoying the Bosphorus breeze.",
+    "starterPrompt": "Kadıköy iskelesi hangi tarafta? İstanbulkart ile turnikelerden geçebilir miyim? (Which side is the Kadikoy pier? Can I pass through turnstiles with Istanbulkart?)",
+    "starterQuestions": [
+      "Martılara simit atmak için simitçi nerede? (Where is the simit seller to feed the seagulls?)",
+      "Son vapur saat kaçta kalkıyor? (What time is the last ferry?)"
+    ]
+  },
+  {
+    "id": "sp_tr_266",
+    "title": "İstanbul'da Yazılım Mühendisi Mülakatı (Software Engineer Interview in Istanbul)",
+    "language": "Turkish",
+    "level": "Advanced",
+    "category": "Career & Business",
+    "subCategory": "Job Interviews",
+    "icon": "💼",
+    "scenario": "Discussing distributed microservices, Redis caching, and real-time WebSocket pipelines for an e-commerce giant.",
+    "starterPrompt": "Merhaba, teknik mülakatımıza hoş geldiniz! Bize yüksek trafikli sistemlerdeki tecrübelerinizden bahseder misiniz? (Hello, welcome to our technical interview! Could you discuss your experience in high-traffic systems?)",
+    "starterQuestions": [
+      "Veritabanı darboğazlarını çözerken nasıl bir strateji izliyorsunuz? (What strategy do you follow when resolving database bottlenecks?)",
+      "Mikroservis mimarisinde hata toleransını nasıl sağlıyorsunuz? (How do you ensure fault tolerance in microservices?)"
+    ]
+  },
+  {
+    "id": "sp_tr_267",
+    "title": "Eczanede Şikayetlerini Anlatma (Describing Symptoms at a Turkish Pharmacy)",
+    "language": "Turkish",
+    "level": "Intermediate",
+    "category": "Health & Wellness",
+    "subCategory": "Pharmacy",
+    "icon": "💊",
+    "scenario": "Describing throat irritation, dry cough, and mild fever to a knowledgeable local 'Eczane' pharmacist.",
+    "starterPrompt": "Geçmiş olsun! Boğaz ağrınız ve öksürüğünüz ne zamandır devam ediyor? Ateşinizi ölçtünüz mü? (Get well soon! How long have your sore throat and cough lasted? Have you measured your fever?)",
+    "starterQuestions": [
+      "Günde kaç defa bu şurubu kullanmalıyım? (How many times a day should I take this syrup?)",
+      "Tok karnına mı aç karnına mı içilecek? (Should I take it on a full or empty stomach?)"
+    ]
+  },
+  {
+    "id": "sp_tr_268",
+    "title": "Hedefli Dilbilgisi Pratiği : -miş'li Geçmiş Zaman ve İlgi Ekleri (Targeted Grammar Drill)",
+    "language": "Turkish",
+    "level": "Intermediate",
+    "category": "Targeted Grammar Drill",
+    "subCategory": "Grammar Repair",
+    "icon": "🎓",
+    "scenario": "Mastering the evidential/reported past tense (-miş/-mış) versus direct past (-di) and vowel harmony suffixes.",
+    "starterPrompt": "Türkçe dilbilgisinde dolaylı geçmiş zamanı (-miş) çalışalım! Başkasından duyduğunuz bir haberi nasıl anlatırsınız? (Let's practice the reported past tense suffix -miş! How do you recount news heard from someone else?)",
+    "starterQuestions": [
+      "Gördüğünüz bir olayla duyduğunuz olay arasındaki ek farkı nedir? (Difference in suffixes between witnessed vs reported event?)",
+      "Büyük ve küçük ünlü uyumu kuralı nasıl işler? (How does major and minor vowel harmony work?)"
+    ]
+  },
+  {
+    "id": "sp_vi_269",
+    "title": "Gọi Phở Bò và Cà Phê Trứng tại Phố Cổ Hà Nội (Ordering Pho & Egg Coffee in Hanoi)",
+    "language": "Vietnamese",
+    "level": "Beginner",
+    "category": "Food & Dining",
+    "subCategory": "Street Food",
+    "icon": "🍜",
+    "scenario": "Sitting on small plastic stools in Hanoi Old Quarter, ordering steaming Pho Bo Tai and creamy sweet egg coffee.",
+    "starterPrompt": "Chào bạn! Quán mình có phở bò tái, nạm, gầu. Bạn muốn gọi bát phở như thế nào và uống cà phê trứng nóng hay đá? (Hello! We have rare beef pho, flank, brisket. How would you like your pho, and hot or iced egg coffee?)",
+    "starterQuestions": [
+      "Cho mình xin thêm chanh và ớt tươi được không? (Could I please have extra lime and fresh chili?)",
+      "Cà phê trứng ở đây làm theo công thức gia truyền đúng không? (Is the egg coffee here made from a family recipe?)"
+    ]
+  },
+  {
+    "id": "sp_vi_270",
+    "title": "Mặc Cả Mua Trái Cây tại Chợ Bến Thành (Bargaining for Fruit at Ben Thanh Market)",
+    "language": "Vietnamese",
+    "level": "Beginner",
+    "category": "Shopping & City Life",
+    "subCategory": "Market Shopping",
+    "icon": "🥭",
+    "scenario": "Buying ripe mangosteen, dragon fruit, and mangoes, negotiating a polite discount with a cheerful market auntie.",
+    "starterPrompt": "Mua gì đó con ơi! Măng cụt và xoài cát Hòa Lộc hôm nay ngọt lịm luôn nè! Con mua mấy ký? (What would you like to buy! Today's mangosteen and mangoes are so sweet! How many kilos?)",
+    "starterQuestions": [
+      "Dạ cô ơi, nếu con mua hai ký thì cô bớt cho con chút đỉnh được không? (Auntie, if I buy two kilos, can you give me a small discount?)",
+      "Trái cây này có để được lâu khi đi máy bay không cô? (Will this fruit keep well for an airplane flight?)"
+    ]
+  },
+  {
+    "id": "sp_vi_271",
+    "title": "Phỏng Vấn Xin Việc tại Công Ty Công Nghệ Sài Gòn (Tech Job Interview in Saigon)",
+    "language": "Vietnamese",
+    "level": "Advanced",
+    "category": "Career & Business",
+    "subCategory": "Job Interviews",
+    "icon": "💼",
+    "scenario": "Presenting system design, Golang microservices, and mobile AI inference for a leading tech unicorn in Ho Chi Minh City.",
+    "starterPrompt": "Chào em, cảm ơn em đã tham gia buổi phỏng vấn hôm nay. Em có thể chia sẻ về kinh nghiệm tối ưu hóa hệ thống microservices của mình không? (Hello, thanks for joining our interview today. Can you share your experience optimizing microservices?)",
+    "starterQuestions": [
+      "Em xử lý vấn đề data consistency giữa các distributed database như thế nào? (How do you handle data consistency across distributed databases?)",
+      "Kỹ năng làm việc nhóm và giải quyết xung đột kỹ thuật của em ra sao? (What is your approach to teamwork and resolving technical disagreements?)"
+    ]
+  },
+  {
+    "id": "sp_vi_272",
+    "title": "Đi Xe Ôm Công Nghệ và Hỏi Đường ở Đà Nẵng (Hailing a Grab Bike in Da Nang)",
+    "language": "Vietnamese",
+    "level": "Beginner",
+    "category": "Travel & Transportation",
+    "subCategory": "Rideshare",
+    "icon": "🛵",
+    "scenario": "Navigating through Da Nang to Dragon Bridge on a motorbike taxi, asking about local viewpoints and bridge fire shows.",
+    "starterPrompt": "Alo, bạn đang đứng ở sảnh khách sạn đúng không? Mình mặc áo khoác xanh lá cây, đội mũ bảo hiểm cho bạn nhé! (Hello, are you standing at the hotel lobby? I'm wearing a green jacket, here is your helmet!)",
+    "starterQuestions": [
+      "Anh ơi, cầu Rồng tối nay mấy giờ phun lửa và phun nước? (Brother, what time does the Dragon Bridge breathe fire and water tonight?)",
+      "Đường ven biển Mỹ Khê đoạn này có kẹt xe không anh? (Is the My Khe coastal road congested at this hour?)"
+    ]
+  },
+  {
+    "id": "sp_vi_273",
+    "title": "Khám Bệnh tại Phòng Khám Đa Khoa (Describing Symptoms at a Clinic)",
+    "language": "Vietnamese",
+    "level": "Intermediate",
+    "category": "Health & Wellness",
+    "subCategory": "Clinic Visit",
+    "icon": "🏥",
+    "scenario": "Explaining stomach ache, indigestion, and headache symptoms to a doctor at a clinic in Vietnam.",
+    "starterPrompt": "Chào bạn, hôm nay bạn cảm thấy không khỏe ở đâu? Cơn đau bụng bắt đầu từ khi nào và có bị sốt không? (Hello, where do you feel unwell today? When did the stomach ache start and do you have a fever?)",
+    "starterQuestions": [
+      "Bác sĩ có kê đơn thuốc uống trong bao nhiêu ngày? (For how many days has the doctor prescribed this medication?)",
+      "Tôi có cần kiêng ăn đồ cay nóng và dầu mỡ không? (Do I need to avoid spicy and greasy food?)"
+    ]
+  },
+  {
+    "id": "sp_vi_274",
+    "title": "Luyện Tập Ngữ Pháp Mục Tiêu : Đại Từ Xưng Hô và Trợ Từ (Targeted Grammar Drill)",
+    "language": "Vietnamese",
+    "level": "Intermediate",
+    "category": "Targeted Grammar Drill",
+    "subCategory": "Grammar Repair",
+    "icon": "🎓",
+    "scenario": "Mastering Vietnamese social pronouns (anh, chị, em, cô, chú, cháu) and tense/aspect markers (đã, đang, sẽ, rồi).",
+    "starterPrompt": "Hôm nay chúng ta hãy luyện tập hệ thống đại từ xưng hô tôn kính trong tiếng Việt! Khi nói chuyện với người lớn tuổi hơn mình một chút, em nên xưng hô như thế nào? (Let's practice Vietnamese honorific pronouns! When speaking to someone slightly older, how should you address them?)",
+    "starterQuestions": [
+      "Sự khác biệt giữa 'đã làm' và 'làm rồi' là gì? (What is the difference between 'da lam' and 'lam roi'?)",
+      "Khi nào chúng ta dùng từ 'dạ' ở đầu câu? (When do we use 'da' at the beginning of a sentence?)"
+    ]
+  },
+  {
+    "id": "sp_id_275",
+    "title": "Pesan Nasi Goreng dan Sate di Warung (Ordering Nasi Goreng at a Jakarta Warung)",
+    "language": "Indonesian",
+    "level": "Beginner",
+    "category": "Food & Dining",
+    "subCategory": "Street Food",
+    "icon": "🍛",
+    "scenario": "Ordering authentic spicy Nasi Goreng Gila and chicken satay with peanut sauce at a buzzing Jakarta roadside warung.",
+    "starterPrompt": "Selamat malam mas! Mau pesan nasi goreng spesial atau sate ayam madura? Pedas sedang atau pedas banget? (Good evening! Would you like special nasi goreng or chicken satay? Medium spicy or extra spicy?)",
+    "starterQuestions": [
+      "Tolong jangan pakai terlalu banyak minyak dan tambahkan kerupuk ya! (Please don't use too much oil and add extra crackers!)",
+      "Berapa lama kira-kira pesanannya siap? (About how long until the order is ready?)"
+    ]
+  },
+  {
+    "id": "sp_id_276",
+    "title": "Sewa Motor dan Menjelajahi Ubud, Bali (Renting a Scooter in Ubud, Bali)",
+    "language": "Indonesian",
+    "level": "Beginner",
+    "category": "Travel & Transportation",
+    "subCategory": "Scooter Rental",
+    "icon": "🛵",
+    "scenario": "Renting an automatic scooter, checking helmet safety, fuel type, and asking for directions to the Tegalalang Rice Terrace.",
+    "starterPrompt": "Halo bu! Mau sewa motor matic untuk tiga hari. Berapa tarif per hari termasuk helm dan jas hujan? (Hello ma'am! I'd like to rent an automatic scooter for three days. How much per day including helmet and raincoat?)",
+    "starterQuestions": [
+      "Bensinnya pakai Pertamax atau Pertalite? (Does it take Pertamax or Pertalite gasoline?)",
+      "Bisa tolong rekomendasikan rute paling tenang ke sawah bertingkat? (Could you recommend the quietest route to the rice terrace?)"
+    ]
+  },
+  {
+    "id": "sp_id_277",
+    "title": "Wawancara Kerja Startup di Jakarta Selatan (Startup Job Interview in South Jakarta)",
+    "language": "Indonesian",
+    "level": "Advanced",
+    "category": "Career & Business",
+    "subCategory": "Job Interviews",
+    "icon": "💼",
+    "scenario": "Discussing mobile fintech scalability, offline-first data synchronization, and cross-functional leadership in Indonesia.",
+    "starterPrompt": "Halo, selamat datang di sesi wawancara kami! Bisa ceritakan pengalaman Anda dalam membangun arsitektur aplikasi mobile berskala besar? (Hello, welcome to our interview! Could you discuss your experience building large-scale mobile architectures?)",
+    "starterQuestions": [
+      "Bagaimana strategi Anda memastikan aplikasi tetap responsif saat koneksi internet lambat di daerah terpencil? (What is your strategy to keep apps responsive on slow internet in remote areas?)",
+      "Bagaimana gaya kepemimpinan Anda dalam memotivasi tim engineer junior? (What is your leadership style in mentoring junior engineers?)"
+    ]
+  },
+  {
+    "id": "sp_id_278",
+    "title": "Membeli Kain Batik di Pasar Tradisional (Buying Batik at a Traditional Market)",
+    "language": "Indonesian",
+    "level": "Beginner",
+    "category": "Shopping & City Life",
+    "subCategory": "Textiles & Souvenirs",
+    "icon": "🧵",
+    "scenario": "Appreciating hand-drawn batik tulis vs printed patterns in Yogyakarta, negotiating a respectful cultural price.",
+    "starterPrompt": "Permisi mbak, ini kain batik tulis asli atau cap? Motifnya sangat indah, dari daerah mana ya? (Excuse me miss, is this hand-drawn batik or stamped? The pattern is beautiful, which region is it from?)",
+    "starterQuestions": [
+      "Apakah warnanya akan luntur saat dicuci pertama kali? (Will the colors fade when washed the first time?)",
+      "Kalau saya ambil dua lembar, bisa dapat harga spesial? (If I take two pieces, can I get a special price?)"
+    ]
+  },
+  {
+    "id": "sp_id_279",
+    "title": "Konsultasi Kesehatan di Apotek (Consulting a Pharmacist in Indonesia)",
+    "language": "Indonesian",
+    "level": "Intermediate",
+    "category": "Health & Wellness",
+    "subCategory": "Pharmacy",
+    "icon": "💊",
+    "scenario": "Explaining mild dehydration, fever, and traveler's upset stomach to a licensed pharmacist in Indonesia.",
+    "starterPrompt": "Selamat siang! Saya merasa kurang enak badan sejak kemarin, kepala pusing dan perut kembung. Obat apa yang paling cocok? (Good afternoon! I have felt unwell since yesterday, headache and bloated stomach. What medicine is best?)",
+    "starterQuestions": [
+      "Apakah ada obat oralit untuk rehidrasi tubuh? (Do you have oral rehydration salts?)",
+      "Berapa tablet yang harus diminum setelah makan? (How many tablets should be taken after meals?)"
+    ]
+  },
+  {
+    "id": "sp_id_280",
+    "title": "Latihan Tata Bahasa Terarah : Imbuhan Me- dan Ber- (Targeted Grammar Drill)",
+    "language": "Indonesian",
+    "level": "Intermediate",
+    "category": "Targeted Grammar Drill",
+    "subCategory": "Grammar Repair",
+    "icon": "🎓",
+    "scenario": "Mastering Indonesian verbal affixes (me-, ber-, di-, -kan, -i) to distinguish active, intransitive, and passive verbs.",
+    "starterPrompt": "Mari berlatih imbuhan bahasa Indonesia! Apa perbedaan makna antara 'berjalan' dan 'menjalankan' dalam sebuah kalimat? (Let's practice Indonesian affixes! What is the difference in meaning between 'berjalan' and 'menjalankan'?)",
+    "starterQuestions": [
+      "Kapan awalan 'me-' berubah menjadi 'mem-', 'men-', atau 'meng-'? (When does the prefix 'me-' change to 'mem-', 'men-', or 'meng-'?)",
+      "Bagaimana cara mengubah kalimat aktif ke bentuk pasif dengan awalan 'di-'? (How do you turn active sentences into passive with 'di-'?)"
+    ]
+  },
+  {
+    "id": "sp_th_281",
+    "title": "สั่งผัดไทยและชาไทยที่ตลาดนัดกลางคืน (Ordering Pad Thai & Thai Tea at Night Market)",
+    "language": "Thai",
+    "level": "Beginner",
+    "category": "Food & Dining",
+    "subCategory": "Street Food",
+    "icon": "🍲",
+    "scenario": "Ordering sizzling shrimp pad thai and fragrant orange iced tea at a bustling Bangkok night bazaar.",
+    "starterPrompt": "สวัสดีครับ! รับผัดไทยกุ้งสดหรือผัดไทยหมูกรอบดีครับ? ใส่พริกเยอะไหม และรับชาไทยหวานน้อยไหมครับ? (Hello! Fresh shrimp or crispy pork pad thai? How spicy, and would you like sweet or less sweet Thai tea?)",
+    "starterQuestions": [
+      "ขอถั่วงอกกับมะนาวเพิ่มอีกนิดได้ไหมครับ? (Could I please have extra bean sprouts and lime?)",
+      "ชาไทยโบราณร้านนี้ใช้นมสดหรือนมข้นหวานครับ? (Does this traditional Thai tea use fresh milk or condensed milk?)"
+    ]
+  },
+  {
+    "id": "sp_th_282",
+    "title": "นั่งเรือด่วนเจ้าพระยาและเที่ยววัดอรุณ (Chao Phraya Express Boat & Wat Arun)",
+    "language": "Thai",
+    "level": "Beginner",
+    "category": "Travel & Transportation",
+    "subCategory": "River Transit",
+    "icon": "🚤",
+    "scenario": "Buying a blue flag tourist boat ticket, crossing the Chao Phraya River, and visiting the Temple of Dawn.",
+    "starterPrompt": "ขอโทษนะครับ เรือด่วนธงส้มไปท่าเตียนและวัดอรุณขึ้นที่โป๊ะไหนครับ? ค่าโดยสารคนละเท่าไหร่? (Excuse me, which pier for the orange flag boat to Tha Tien and Wat Arun? How much is the fare?)",
+    "starterQuestions": [
+      "ต้องแต่งกายสุภาพอย่างไรก่อนเข้าชมพระวิหาร? (What is the dress code before entering the temple hall?)",
+      "เรือข้ามฟากแม่น้ำปิดกี่โมงครับ? (What time does the river cross-ferry close?)"
+    ]
+  },
+  {
+    "id": "sp_th_283",
+    "title": "การสัมภาษณ์งานวิศวกรซอฟต์แวร์ในกรุงเทพฯ (Tech Job Interview in Bangkok)",
+    "language": "Thai",
+    "level": "Advanced",
+    "category": "Career & Business",
+    "subCategory": "Job Interviews",
+    "icon": "💼",
+    "scenario": "Discussing AI models, low-latency microservices, and collaborative engineering culture in Bangkok's digital tech hub.",
+    "starterPrompt": "สวัสดีค่ะ ยินดีต้อนรับสู่การสัมภาษณ์งานด้านเทคนิค กรุณาแนะนำตัวและเล่าประสบการณ์การพัฒนาระบบ AI และ Cloud ให้เราฟังได้ไหมคะ? (Hello, welcome to our technical interview. Could you introduce yourself and your AI/Cloud systems engineering experience?)",
+    "starterQuestions": [
+      "คุณมีวิธีแก้ไขปัญหาเมื่อเกิดระบบขัดข้องฉุกเฉิน (High Severity Incident) อย่างไร? (How do you handle critical high-severity production incidents?)",
+      "คุณปรับตัวเข้ากับวัฒนธรรมการทำงานแบบ Agile และการสื่อสารในทีมอย่างไร? (How do you adapt to Agile collaboration and team communication?)"
+    ]
+  },
+  {
+    "id": "sp_th_284",
+    "title": "ต่อรองราคาของที่ระลึกที่ตลาดนัดจตุจักร (Bargaining at Chatuchak Weekend Market)",
+    "language": "Thai",
+    "level": "Beginner",
+    "category": "Shopping & City Life",
+    "subCategory": "Weekend Market",
+    "icon": "🛍️",
+    "scenario": "Browsing handmade silk scarves and wooden carvings at Chatuchak Market, practicing polite Thai bargaining terms.",
+    "starterPrompt": "ชิ้นนี้สวยมากเลยครับพี่ ทำจากผ้าไหมแท้หรือเปล่าครับ? ถ้าซื้อสามผืนลดราคาให้หน่อยได้ไหมครับ? (This is very beautiful! Is it real silk? If I buy three scarves, can you give me a discount?)",
+    "starterQuestions": [
+      "มีสีอื่นหรือลายอื่นให้ดูอีกไหมครับ? (Do you have other colors or patterns to show?)",
+      "สแกนจ่ายผ่าน QR Code พร้อมเพย์ได้ไหมครับ? (Can I scan to pay with PromptPay QR code?)"
+    ]
+  },
+  {
+    "id": "sp_th_285",
+    "title": "ปรึกษาเภสัชกรเรื่องยาแก้แพ้และเจ็บคอ (Asking Pharmacist for Medicine in Thailand)",
+    "language": "Thai",
+    "level": "Intermediate",
+    "category": "Health & Wellness",
+    "subCategory": "Pharmacy",
+    "icon": "💊",
+    "scenario": "Describing tropical heat fatigue, runny nose, and dry throat at a licensed pharmacy in Bangkok.",
+    "starterPrompt": "สวัสดีค่ะ มีอาการอย่างไรบ้างคะ? รู้สึกเจ็บคอหรือมีไข้ตัวร้อนตั้งแต่เมื่อไหร่คะ? (Hello! What are your symptoms? When did your sore throat or fever start?)",
+    "starterQuestions": [
+      "ยานี้กินแล้วง่วงนอนไหมคะ? (Does this medicine make you drowsy?)",
+      "ต้องรับประทานก่อนอาหารหรือหลังอาหารกี่นาที? (How many minutes before or after meals should this be taken?)"
+    ]
+  },
+  {
+    "id": "sp_th_286",
+    "title": "ฝึกไวยากรณ์เป้าหมาย : คำลงท้ายสุภาพ (ครับ/ค่ะ) และกริยาช่วยบอกกาล (Targeted Grammar Drill)",
+    "language": "Thai",
+    "level": "Intermediate",
+    "category": "Targeted Grammar Drill",
+    "subCategory": "Grammar Repair",
+    "icon": "🎓",
+    "scenario": "Mastering polite sentence-ending particles (ครับ/ค่ะ), aspect markers (แล้ว, กำลัง, จะ), and Thai tone rules.",
+    "starterPrompt": "เรามาฝึกการใช้คำช่วยบอกกาลและอนุภาคความสุภาพในภาษาไทยกันครับ! บอกเล่าสิ่งที่ 'กำลังทำ' และสิ่งที่ 'ทำเสร็จแล้ว' ในวันนี้หน่อยครับ (Let's practice Thai aspect markers and politeness particles! Tell me what you are currently doing vs already finished today.)",
+    "starterQuestions": [
+      "คำว่า 'กำลัง' และ 'อยู่' นำมาใช้วางตรงไหนในประโยค? (Where are 'kamlang' and 'yu' placed in a sentence?)",
+      "ทำไมการลงท้ายด้วย 'ครับ/ค่ะ' จึงสำคัญมากในสังคมไทย? (Why are polite endings so crucial in Thai communication?)"
+    ]
+  },
+  {
+    "id": "sp_se_287",
+    "title": "Fika med Kanelbulle på ett Café i Gamla Stan (Fika with Cinnamon Bun in Stockholm)",
+    "language": "Swedish",
+    "level": "Beginner",
+    "category": "Food & Dining",
+    "subCategory": "Café & Fika",
+    "icon": "☕",
+    "scenario": "Experiencing Swedish 'fika' culture: ordering brewed coffee ('bryggkaffe') and warm cinnamon buns in historical Gamla Stan.",
+    "starterPrompt": "Hej och välkommen! Ska du ha en vanlig bryggkaffe med påtår, eller en havrelatte? Vill du ha en nygräddad kanelbulle till? (Hi and welcome! Regular brewed coffee with free refill or oat latte? Warm cinnamon bun?)",
+    "starterQuestions": [
+      "Ingår påtår i kaffepriset här? (Is a refill included in the coffee price here?)",
+      "Är kardemummabullarna bakade med äkta smör? (Are the cardamom buns baked with real butter?)"
+    ]
+  },
+  {
+    "id": "sp_se_288",
+    "title": "Köpa SL-biljett och Åka Tunnelbana i Stockholm (Stockholm Metro & Commuting)",
+    "language": "Swedish",
+    "level": "Beginner",
+    "category": "Travel & Transportation",
+    "subCategory": "Public Transit",
+    "icon": "🚇",
+    "scenario": "Tapping your contactless card at the SL turnstile, checking the green line towards T-Centralen, and asking transit staff.",
+    "starterPrompt": "Ursäkta mig, går det här tåget mot T-Centralen och Odenplan? Kan jag bara blippa mitt vanliga betalkort i spärren? (Excuse me, does this train go towards T-Centralen? Can I just tap my bank card at the barrier?)",
+    "starterQuestions": [
+      "Hur länge gäller en enkelbiljett i SL-trafiken? (How long is a single ticket valid in SL transit?)",
+      "Vilken uppgång ska jag ta för att komma till Drottninggatan? (Which exit should I take for Drottninggatan?)"
+    ]
+  },
+  {
+    "id": "sp_se_289",
+    "title": "Anställningsintervju på ett Svenskt Techbolag (Job Interview at a Swedish Tech Enterprise)",
+    "language": "Swedish",
+    "level": "Advanced",
+    "category": "Career & Business",
+    "subCategory": "Job Interviews",
+    "icon": "💼",
+    "scenario": "Discussing horizontal hierarchy, consensus decision-making, and high-performance backend systems in Stockholm.",
+    "starterPrompt": "Välkommen till intervjun! Berätta lite om din bakgrund och hur du arbetar med autonoma team och distribuerade molnsystem. (Welcome! Tell us about your background and how you work with autonomous teams and distributed cloud systems.)",
+    "starterQuestions": [
+      "Hur trivs du med en platt organisationsstruktur utan strikt mikrostyrning? (How do you thrive in a flat organizational structure without micromanagement?)",
+      "Vilka teknologier föredrar du för realtidsdataströmmar? (What technologies do you prefer for real-time streaming pipelines?)"
+    ]
+  },
+  {
+    "id": "sp_se_290",
+    "title": "Handla Mat på ICA och Fråga Personalen (Grocery Shopping at ICA)",
+    "language": "Swedish",
+    "level": "Beginner",
+    "category": "Daily Life",
+    "subCategory": "Supermarket",
+    "icon": "🛒",
+    "scenario": "Locating local organic products ('ekologiskt'), asking staff where oat milk and crispbread ('knäckebröd') are shelved.",
+    "starterPrompt": "Hej! Ursäkta, var kan jag hitta havremjölken och det traditionella knäckebrödet? Har ni några lokala ostar? (Hi! Excuse me, where can I find oat milk and crispbread? Do you have local cheeses?)",
+    "starterQuestions": [
+      "Finns det någon självscanningskassa ledig? (Is there a self-checkout scanner available?)",
+      "Behöver jag betala extra för papperspåsarna? (Do I need to pay extra for paper bags?)"
+    ]
+  },
+  {
+    "id": "sp_se_291",
+    "title": "Boka Läkartid på Vårdcentralen (Booking an Appointment at a Health Clinic)",
+    "language": "Swedish",
+    "level": "Intermediate",
+    "category": "Health & Wellness",
+    "subCategory": "Clinic Visit",
+    "icon": "🏥",
+    "scenario": "Speaking with a triage nurse at a Swedish Vårdcentral about persistent cough, fever, and scheduling an appointment.",
+    "starterPrompt": "Hej, du har kommit till Vårdcentralen. Vad kan vi hjälpa dig med idag? Hur länge har du haft dessa symptom? (Hello, you have reached the Health Clinic. How can we help you today? How long have you had these symptoms?)",
+    "starterQuestions": [
+      "Har du svårt att andas eller hög feber? (Do you have breathing difficulty or high fever?)",
+      "Har du ett svenskt personnummer eller samordningsnummer? (Do you have a Swedish personal number or coordination number?)"
+    ]
+  },
+  {
+    "id": "sp_se_292",
+    "title": "Riktad Grammatikträning : V2-regeln och Bestämd Form (Targeted Grammar Drill)",
+    "language": "Swedish",
+    "level": "Intermediate",
+    "category": "Targeted Grammar Drill",
+    "subCategory": "Grammar Repair",
+    "icon": "🎓",
+    "scenario": "Mastering the fundamental Swedish V2 word order rule (verb in second position) and definite noun suffixes (-en, -et).",
+    "starterPrompt": "Idag övar vi på den klassiska V2-regeln på svenska! När du börjar en mening med en tidsangivelse som 'Igår...', var hamnar verbet? (Today we practice Swedish V2 rule! When starting a sentence with a time expression like 'Yesterday...', where does the verb go?)",
+    "starterQuestions": [
+      "Varför heter det 'en hund' men 'hunden'? (Why is it 'en hund' but 'hunden'?)",
+      "Vad händer med ordföljden i en bisats med ordet 'inte'? (What happens to word order in a subordinate clause with 'inte'?)"
+    ]
+  }
 ];

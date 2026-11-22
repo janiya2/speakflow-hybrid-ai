@@ -42,6 +42,13 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     {'name': 'Hindi', 'flag': 'assets/images/flag_in.png'},
     {'name': 'Russian', 'flag': 'assets/images/flag_ru.png'},
     {'name': 'Tamil', 'flag': 'assets/images/flag_lk.png'},
+    {'name': 'Sinhala', 'flag': 'assets/images/flag_lk.png'},
+    {'name': 'Dutch', 'flag': 'assets/images/flag_nl.png'},
+    {'name': 'Turkish', 'flag': 'assets/images/flag_tr.png'},
+    {'name': 'Vietnamese', 'flag': 'assets/images/flag_vi.png'},
+    {'name': 'Indonesian', 'flag': 'assets/images/flag_id.png'},
+    {'name': 'Thai', 'flag': 'assets/images/flag_th.png'},
+    {'name': 'Swedish', 'flag': 'assets/images/flag_se.png'},
   ];
 
   @override

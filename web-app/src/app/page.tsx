@@ -235,6 +235,13 @@ const AVAILABLE_LANGUAGES: LanguageOption[] = [
   { id: "Hindi", name: "Hindi", native: "हिन्दी", flagUrl: "/images/flag_in.png", emoji: "🇮🇳", cefr: "A1 - B2", accent: "Standard Hindustani" },
   { id: "Russian", name: "Russian", native: "Русский", flagUrl: "/images/flag_ru.png", emoji: "🇷🇺", cefr: "A1 - B2", accent: "Moscow Standard" },
   { id: "Tamil", name: "Tamil", native: "தமிழ்", flagUrl: "/images/flag_lk.png", emoji: "🇱🇰", cefr: "Spoken", accent: "Colloquial Dialect" },
+  { id: "Sinhala", name: "Sinhala", native: "සිංහල", flagUrl: "/images/flag_lk.png", emoji: "🇱🇰", cefr: "Colloquial & Native", accent: "Colombo Standard" },
+  { id: "Dutch", name: "Dutch", native: "Nederlands", flagUrl: "/images/flag_nl.png", emoji: "🇳🇱", cefr: "A1 - C1", accent: "Randstad Standard" },
+  { id: "Turkish", name: "Turkish", native: "Türkçe", flagUrl: "/images/flag_tr.png", emoji: "🇹🇷", cefr: "A1 - B2", accent: "Istanbul Standard" },
+  { id: "Vietnamese", name: "Vietnamese", native: "Tiếng Việt", flagUrl: "/images/flag_vi.png", emoji: "🇻🇳", cefr: "A1 - B2", accent: "Hanoi / Saigon" },
+  { id: "Indonesian", name: "Indonesian", native: "Bahasa Indonesia", flagUrl: "/images/flag_id.png", emoji: "🇮🇩", cefr: "A1 - B2", accent: "Jakarta Standard" },
+  { id: "Thai", name: "Thai", native: "ไทย", flagUrl: "/images/flag_th.png", emoji: "🇹🇭", cefr: "A1 - B2", accent: "Bangkok Standard" },
+  { id: "Swedish", name: "Swedish", native: "Svenska", flagUrl: "/images/flag_se.png", emoji: "🇸🇪", cefr: "A1 - C1", accent: "Stockholm Standard" },
 ];
 
 const GLOBAL_LANG_CODE_MAP: Record<string, string> = {
@@ -251,6 +258,13 @@ const GLOBAL_LANG_CODE_MAP: Record<string, string> = {
   Hindi: "hi-IN",
   Russian: "ru-RU",
   Tamil: "ta-IN",
+  Sinhala: "si-LK",
+  Dutch: "nl-NL",
+  Turkish: "tr-TR",
+  Vietnamese: "vi-VN",
+  Indonesian: "id-ID",
+  Thai: "th-TH",
+  Swedish: "sv-SE",
 };
 
 interface CallSessionRecord {
@@ -1123,6 +1137,13 @@ export default function StudentWebApp() {
     if (l.includes("chinese") || l.includes("mandarin") || l === "zh") return "zh-CN";
     if (l.includes("hindi") || l === "hi") return "hi-IN";
     if (l.includes("russian") || l === "ru") return "ru-RU";
+    if (l.includes("sinhala") || l.includes("sinha") || l === "si") return "si-LK";
+    if (l.includes("dutch") || l.includes("nederland") || l === "nl") return "nl-NL";
+    if (l.includes("turk") || l === "tr") return "tr-TR";
+    if (l.includes("vietnam") || l === "vi") return "vi-VN";
+    if (l.includes("indones") || l === "id") return "id-ID";
+    if (l.includes("thai") || l === "th") return "th-TH";
+    if (l.includes("swed") || l.includes("svensk") || l === "sv" || l === "se") return "sv-SE";
     return coachObj.accent.toLowerCase().includes("british") ? "en-GB" : "en-US";
   };
 

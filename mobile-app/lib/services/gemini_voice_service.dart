@@ -251,6 +251,20 @@ Do not include any explanation or markdown formatting, just the raw JSON.''';
           fallbackPool.add("مرحباً بك! أنا المدرب ${coach.name}. $cleanQ");
         } else if (targetLanguage == 'Tamil') {
           fallbackPool.add("வணக்கம்! நான் உங்கள் பயிற்சியாளர் ${coach.name}. $cleanQ");
+        } else if (targetLanguage == 'Sinhala') {
+          fallbackPool.add("ආයුබෝවන්! මම ඔබේ පුහුණුකරු ${coach.name}. $cleanQ");
+        } else if (targetLanguage == 'Dutch') {
+          fallbackPool.add("Hallo! Ik ben je coach ${coach.name}. $cleanQ");
+        } else if (targetLanguage == 'Turkish') {
+          fallbackPool.add("Merhaba! Ben koçunuz ${coach.name}. $cleanQ");
+        } else if (targetLanguage == 'Vietnamese') {
+          fallbackPool.add("Xin chào! Tôi là huấn luyện viên ${coach.name}. $cleanQ");
+        } else if (targetLanguage == 'Indonesian') {
+          fallbackPool.add("Halo! Saya pelatih Anda ${coach.name}. $cleanQ");
+        } else if (targetLanguage == 'Thai') {
+          fallbackPool.add("สวัสดีครับ! ผมคือโค้ช ${coach.name}. $cleanQ");
+        } else if (targetLanguage == 'Swedish') {
+          fallbackPool.add("Hej! Jag är din coach ${coach.name}. $cleanQ");
         } else {
           fallbackPool.add("Hello! Coach ${coach.name} here. $cleanQ");
           fallbackPool.add("Hi there! Great to chat with you today. $cleanQ");
@@ -405,6 +419,20 @@ CRITICAL RULE: Speak 100% purely in $targetLanguage native script. DO NOT includ
         correctionTemplate = "Хорошая попытка! По-русски мы говорим: '[exact targetPhrase]'. Повтори со мной, пожалуйста?";
       } else if (targetLanguage == 'Tamil') {
         correctionTemplate = "நல்ல முயற்சி! தமிழில் நாம் '[exact targetPhrase]' என்று சொல்வோம். அதைத் திரும்பச் சொல்ல முடியுமா?";
+      } else if (targetLanguage == 'Sinhala') {
+        correctionTemplate = "හොඳ උත්සාහයක්! සිංහලෙන් අපි කියන්නේ: '[exact targetPhrase]'. මාත් එක්ක ආයෙත් කියන්න පුළුවන්ද?";
+      } else if (targetLanguage == 'Dutch') {
+        correctionTemplate = "Goede poging! In het Nederlands zeggen we: '[exact targetPhrase]'. Kun je dat herhalen?";
+      } else if (targetLanguage == 'Turkish') {
+        correctionTemplate = "Güzel deneme! Türkçede şöyle deriz: '[exact targetPhrase]'. Benimle tekrar edebilir misin?";
+      } else if (targetLanguage == 'Vietnamese') {
+        correctionTemplate = "Cố gắng rất tốt! Trong tiếng Việt chúng ta nói: '[exact targetPhrase]'. Bạn có thể nhắc lại cùng tôi không?";
+      } else if (targetLanguage == 'Indonesian') {
+        correctionTemplate = "Usaha yang bagus! Dalam bahasa Indonesia kita bilang: '[exact targetPhrase]'. Bisa ulangi bersama saya?";
+      } else if (targetLanguage == 'Thai') {
+        correctionTemplate = "พยายามได้ดีมาก! ในภาษาไทยเราพูดว่า: '[exact targetPhrase]'. ลองพูดตามอีกครั้งได้ไหม?";
+      } else if (targetLanguage == 'Swedish') {
+        correctionTemplate = "Bra försök! På svenska säger vi: '[exact targetPhrase]'. Kan du upprepa det med mig?";
       }
 
       final prompt = '''
