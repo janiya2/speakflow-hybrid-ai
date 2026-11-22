@@ -142,9 +142,17 @@ function getCacheDir(): string {
 
 export async function synthesizeEdgeSpeech(
   text: string,
-  voice: string
+  voice: string,
+  prosodyOptions: { rate?: string; pitch?: string; volume?: string } = {}
 ): Promise<Buffer> {
-  const hash = crypto.createHash("md5").update(`${text}_${voice}`).digest("hex");
+  // Conversational Prosody Tuning: Sinhala neural voices sound significantly more human and natural
+  // with a relaxed -5% speech rate, preventing machine-gun news bulletin enunciation.
+  const isSinhala = voice.startsWith("si-LK");
+  const rate = prosodyOptions.rate || (isSinhala ? "-5%" : "+0%");
+  const pitch = prosodyOptions.pitch || "+0Hz";
+  const volume = prosodyOptions.volume || "+0%";
+
+  const hash = crypto.createHash("md5").update(`${text}_${voice}_${rate}_${pitch}`).digest("hex");
 
   // 1. Check in-memory RAM cache first (strictly require non-empty buffer)
   if (inMemoryCache.has(hash)) {
@@ -169,10 +177,10 @@ export async function synthesizeEdgeSpeech(
     } catch (_) { }
   }
 
-  // 3. Synthesize via pure Node.js MsEdgeTTS (WebSocket to Microsoft Edge Neural speech)
+  // 3. Synthesize via pure Node.js MsEdgeTTS with calibrated prosody (rate, pitch, volume)
   const tts = new MsEdgeTTS();
   await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
-  const { audioStream } = tts.toStream(text);
+  const { audioStream } = tts.toStream(text, { rate, pitch, volume });
 
   return new Promise<Buffer>((resolve, reject) => {
     const chunks: Buffer[] = [];

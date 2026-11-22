@@ -36,8 +36,8 @@ VOICE_MAP = {
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".tts_cache")
 os.makedirs(CACHE_DIR, exist_ok=True)
 
-async def synthesize(text: str, voice: str, output_path: str):
-    communicate = edge_tts.Communicate(text, voice)
+async def synthesize(text: str, voice: str, output_path: str, rate: str = "+0%"):
+    communicate = edge_tts.Communicate(text, voice, rate=rate)
     await communicate.save(output_path)
 
 def get_voice(coach_id: str, gender: str, language: str) -> str:
@@ -76,13 +76,16 @@ def main():
     else:
         voice = get_voice(voice_arg, gender, language)
 
+    # Conversational rate: Sinhala neural voices sound significantly more human at -5%
+    rate = "-5%" if voice.startswith("si-LK") else "+0%"
+
     # Compute cache key
-    cache_hash = hashlib.md5(f"{text}_{voice}".encode("utf-8")).hexdigest()
+    cache_hash = hashlib.md5(f"{text}_{voice}_{rate}".encode("utf-8")).hexdigest()
     cached_file = os.path.join(CACHE_DIR, f"{cache_hash}.mp3")
 
     if not os.path.exists(cached_file) or os.path.getsize(cached_file) == 0:
         try:
-            asyncio.run(synthesize(text, voice, cached_file))
+            asyncio.run(synthesize(text, voice, cached_file, rate=rate))
         except Exception as e:
             print(f"Error during synthesis: {e}", file=sys.stderr)
             sys.exit(2)
