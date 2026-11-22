@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 export default function StandaloneLandingPage() {
   const router = useRouter();
-  const [themeMode, setThemeMode] = useState<"dark" | "light">("dark");
+  const [themeMode, setThemeMode] = useState<"dark" | "light">("light");
 
   return (
     <LandingPage

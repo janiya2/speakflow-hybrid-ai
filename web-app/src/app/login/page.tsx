@@ -20,7 +20,7 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [themeMode, setThemeMode] = useState<"dark" | "light">("dark");
+  const [themeMode, setThemeMode] = useState<"dark" | "light">("light");
 
   const isLight = themeMode === "light";
 

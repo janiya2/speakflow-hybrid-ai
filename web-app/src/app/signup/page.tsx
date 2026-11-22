@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 
 export default function SignupRedirectPage() {
   const router = useRouter();
-  const [themeMode, setThemeMode] = useState<"dark" | "light">("dark");
+  const [themeMode, setThemeMode] = useState<"dark" | "light">("light");
 
   const isLight = themeMode === "light";
 

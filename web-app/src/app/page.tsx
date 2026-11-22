@@ -952,13 +952,14 @@ export default function StudentWebApp() {
   const [activeTab, setActiveTab] = useState<MainTab>("dashboard");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  // Dual Theme Mode (Dark / Light)
-  const [themeMode, setThemeMode] = useState<"dark" | "light">("dark");
+  // Dual Theme Mode (Default is Light Mode as requested by user)
+  const [themeMode, setThemeMode] = useState<"dark" | "light">("light");
   const isLight = themeMode === "light";
   const handleSetTheme = (nextTheme: "dark" | "light") => {
     setThemeMode(nextTheme);
     if (typeof document !== "undefined") {
       document.documentElement.classList.toggle("theme-light", nextTheme === "light");
+      document.documentElement.classList.toggle("dark", nextTheme === "dark");
     }
     if (typeof window !== "undefined") {
       try {
@@ -967,9 +968,33 @@ export default function StudentWebApp() {
     }
   };
 
+  // Immediate sync from localStorage on mount (defaults to light if not explicitly dark)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const v2 = localStorage.getItem("speakflow_theme_v2");
+        if (!v2) {
+          localStorage.setItem("speakflow_theme_v2", "light");
+          localStorage.setItem("speakflow_theme", "light");
+        }
+        const storedTheme = localStorage.getItem("speakflow_theme");
+        if (storedTheme === "dark") {
+          setThemeMode("dark");
+          document.documentElement.classList.add("dark");
+          document.documentElement.classList.remove("theme-light");
+        } else {
+          setThemeMode("light");
+          document.documentElement.classList.add("theme-light");
+          document.documentElement.classList.remove("dark");
+        }
+      } catch (_) {}
+    }
+  }, []);
+
   useEffect(() => {
     if (typeof document !== "undefined") {
       document.documentElement.classList.toggle("theme-light", themeMode === "light");
+      document.documentElement.classList.toggle("dark", themeMode === "dark");
     }
   }, [themeMode]);
 
@@ -2809,10 +2834,6 @@ export default function StudentWebApp() {
     // Load read notification IDs from localStorage + register Cmd/Ctrl+K search shortcut
     if (typeof window !== "undefined") {
       try {
-        const storedTheme = localStorage.getItem("speakflow_theme");
-        if (storedTheme === "light" || storedTheme === "dark") {
-          setThemeMode(storedTheme);
-        }
         const storedLang = localStorage.getItem("speakflow_selected_language");
         if (storedLang && storedLang.trim().length > 0) {
           setSelectedLanguage(storedLang.trim());
