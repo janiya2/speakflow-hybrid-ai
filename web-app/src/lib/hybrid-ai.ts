@@ -1,9 +1,9 @@
 /**
  * SpeakFlow AI — Hybrid Inference Engine (Web App)
- * 
+ *
  * Satisfies Google Firebase #BuildHybridAI Hackathon Specifications:
  * Dynamically arbitrates between On-Device Gemini Nano (Chrome Prompt API / Local Neural NLP Core)
- * and Cloud Google Gemini 2.5 Flash via secure server-side Next.js route (/api/chat).
+ * and Cloud Google Gemini Flash via secure server-side Next.js route (/api/chat).
  */
 
 export interface GrammarCorrectionResult {
@@ -20,6 +20,11 @@ export interface GrammarCorrectionResult {
   modelIdentifier: string;
 }
 
+export interface ConversationTurnInput {
+  sender: string;
+  text: string;
+}
+
 export interface HybridInferenceOptions {
   spokenText: string;
   language: string;
@@ -29,6 +34,7 @@ export interface HybridInferenceOptions {
   selectedModel: string;
   modeSetting: "auto" | "nano_only" | "cloud_only";
   simulateOffline: boolean;
+  conversationHistory?: ConversationTurnInput[];
 }
 
 /**
@@ -51,6 +57,376 @@ export function checkOnDeviceNanoAvailability(): { available: boolean; source: s
   };
 }
 
+function pickNonRepeating(candidates: string[], recentBotTexts: string[]): string {
+  const fresh = candidates.filter(
+    (c) => !recentBotTexts.some((prev) => prev.includes(c.toLowerCase().slice(0, 28)))
+  );
+  const pool = fresh.length > 0 ? fresh : candidates;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function getScenarioQuestions(scenario: string, lowerText: string): string[] {
+  const s = scenario.toLowerCase();
+  if (s.includes("baggage") || s.includes("airport") || s.includes("flight") || lowerText.includes("bag")) {
+    return [
+      "Could you tell me your flight number and the color or size of your missing suitcase?",
+      "Do you remember where you checked the bag in, and is there a name tag attached to the handle?",
+      "Would you prefer us to deliver the bag directly to your hotel once it arrives on the next flight?",
+      "What essential items were inside your suitcase so I can arrange an immediate amenity kit for you?"
+    ];
+  }
+  if (s.includes("interview") || s.includes("salary") || s.includes("career") || s.includes("job")) {
+    return [
+      "What specific project or accomplishment from your last role are you proudest of?",
+      "How do you usually handle tight deadlines when multiple stakeholders need updates?",
+      "What kind of team culture or growth path are you hoping to find in your next position?",
+      "Could you walk me through a tough technical or communication challenge you helped solve?"
+    ];
+  }
+  if (s.includes("dining") || s.includes("wine") || s.includes("restaurant") || s.includes("cafe")) {
+    return [
+      "Do you prefer something light and crisp, or a richer dish for your main course tonight?",
+      "Would you like me to recommend a pairing for the appetizer or check for any allergies first?",
+      "How would you like that prepared, and can I bring anything else to the table?"
+    ];
+  }
+  if (s.includes("hotel") || s.includes("ski") || s.includes("chalet") || s.includes("check")) {
+    return [
+      "Would you like a high-floor room away from the elevator, and do you need ski passes activated today?",
+      "What time are you planning to check out, and can I reserve a shuttle or breakfast slot for you?",
+      "Have you already arranged your rental gear, or should I connect you with our concierge?"
+    ];
+  }
+  return [
+    "Could you walk me through the details in one or two complete sentences?",
+    "What would be the first thing you say or ask next in this situation?",
+    "How would you explain your preference clearly to someone right in front of you?",
+    "Tell me a bit more about what happened next or why that matters here."
+  ];
+}
+
+/**
+ * Local English grammar & coherence detector for offline/edge resilience
+ */
+function analyzeEnglishLocally(
+  spokenText: string,
+  scenario: string,
+  recentBotTexts: string[]
+): {
+  hasCorrection: boolean;
+  original: string;
+  correction: string;
+  explanation: string;
+  targetPhrase: string;
+  spokenReply: string;
+  nextQuestion: string;
+} {
+  const lower = spokenText.toLowerCase().trim();
+  const cleanWords = lower.replace(/[^\w\s']/g, "").split(/\s+/).filter(Boolean);
+  const scenarioQuestions = getScenarioQuestions(scenario, lower);
+  const nextQ = pickNonRepeating(scenarioQuestions, recentBotTexts);
+
+  // 1. Common missing-verb / broken infinitive fragments like "I like to that." / "I want to that"
+  const brokenInfMatch = lower.match(/\b(i|you|we|they)\s+(like|want|need|love|hate)\s+to\s+(that|this|it)\b/);
+  if (brokenInfMatch) {
+    const verb = brokenInfMatch[2];
+    const fixed = verb === "like" ? "I'd like to do that" : `I ${verb} to do that`;
+    return {
+      hasCorrection: true,
+      original: spokenText.trim(),
+      correction: fixed,
+      explanation: `After '${verb} to', you need an action verb like 'do' (say "${fixed}"), or drop 'to' and say "I ${verb} that".`,
+      targetPhrase: fixed,
+      spokenReply: `Good try, though "${spokenText.trim()}" is missing an action verb — say "${fixed}" or "I ${verb} that".`,
+      nextQuestion: nextQ,
+    };
+  }
+
+  // 2. "to that" / "for that" orphan tail or missing "do" / "is"
+  if (/\b(like|want|need)\s+that\s+to\b/.test(lower) || /^(to that|for that|that to)\.?$/.test(lower)) {
+    return {
+      hasCorrection: true,
+      original: spokenText.trim(),
+      correction: "I would like to do that",
+      explanation: "Add a subject and verb so it forms a complete sentence, like 'I would like to do that'.",
+      targetPhrase: "I would like to do that",
+      spokenReply: "Watch the sentence structure there — try saying 'I would like to do that' as a full sentence.",
+      nextQuestion: nextQ,
+    };
+  }
+
+  // 3. "I am agree" / "you are agree"
+  const amAgreeMatch = lower.match(/\b(i am|i'm|we are|he is|she is|they are|you are)\s+(agree|understand|know|want|need|like)\b/);
+  if (amAgreeMatch) {
+    const verb = amAgreeMatch[2];
+    const subj = amAgreeMatch[1].split(/\s+/)[0];
+    const capSubj = subj === "i" ? "I" : subj.charAt(0).toUpperCase() + subj.slice(1);
+    const fixed = `${capSubj} ${verb}`;
+    return {
+      hasCorrection: true,
+      original: amAgreeMatch[0],
+      correction: fixed,
+      explanation: `'${verb}' is already an action verb, so don't place 'am/is/are' before it.`,
+      targetPhrase: fixed,
+      spokenReply: `Quick grammar note: skip 'am/are' before '${verb}' and simply say '${fixed}'.`,
+      nextQuestion: nextQ,
+    };
+  }
+
+  // 4. "I was enjoy" / "was very enjoy"
+  if (lower.includes("i was enjoy") || lower.includes("was very enjoy") || lower.includes("was enjoy")) {
+    return {
+      hasCorrection: true,
+      original: lower.includes("was very enjoy") ? "I was very enjoy" : "I was enjoy",
+      correction: "I really enjoyed",
+      explanation: "'Enjoy' takes past tense '-ed' ('I really enjoyed + -ing'), never 'was enjoy'.",
+      targetPhrase: "I really enjoyed talking",
+      spokenReply: "Careful with past tense: drop 'was' and say 'I really enjoyed' instead.",
+      nextQuestion: nextQ,
+    };
+  }
+
+  // 5. Missing 'be' verb: "I very tired" / "I from ..." / "It very good"
+  const missingBeMatch = lower.match(/\b(i|he|she|it|we|they)\s+(very|really|so)\s+(good|happy|tired|busy|sorry|excited|hungry|late|ready)\b/);
+  if (missingBeMatch) {
+    const sub = missingBeMatch[1] === "i" ? "I" : missingBeMatch[1];
+    const beVerb = sub === "I" ? "am" : sub === "we" || sub === "they" ? "are" : "is";
+    const fixed = `${sub} ${beVerb} ${missingBeMatch[2]} ${missingBeMatch[3]}`;
+    return {
+      hasCorrection: true,
+      original: missingBeMatch[0],
+      correction: fixed,
+      explanation: `Adjectives like '${missingBeMatch[3]}' need a linking verb ('${beVerb}') in English.`,
+      targetPhrase: fixed,
+      spokenReply: `Don't forget '${beVerb}' before '${missingBeMatch[3]}' — say "${fixed}".`,
+      nextQuestion: nextQ,
+    };
+  }
+
+  const fromMatch = lower.match(/\b(i|we|they)\s+from\s+([a-z]+)\b/);
+  if (fromMatch && !/\b(am|are|'m|'re|come)\s+from\b/.test(lower)) {
+    const sub = fromMatch[1] === "i" ? "I am" : `${fromMatch[1]} are`;
+    const fixed = `${sub} from ${fromMatch[2]}`;
+    return {
+      hasCorrection: true,
+      original: fromMatch[0],
+      correction: fixed,
+      explanation: "Add 'am' or 'are' before 'from' to state where you are from.",
+      targetPhrase: fixed,
+      spokenReply: `Just add the verb here: say "${fixed}".`,
+      nextQuestion: nextQ,
+    };
+  }
+
+  // 6. "explain me" / "discuss about" / "reply me"
+  if (lower.includes("explain me") || lower.includes("explain us") || lower.includes("explain him")) {
+    return {
+      hasCorrection: true,
+      original: "explain me",
+      correction: "explain it to me",
+      explanation: "Always use 'explain [something] to [person]', never 'explain me' directly.",
+      targetPhrase: "explain that to me",
+      spokenReply: "Tiny preposition fix: always say 'explain it to me' with 'to' before the person.",
+      nextQuestion: nextQ,
+    };
+  }
+  if (lower.includes("discuss about")) {
+    return {
+      hasCorrection: true,
+      original: "discuss about",
+      correction: "discuss",
+      explanation: "'Discuss' is followed directly by the topic without 'about'.",
+      targetPhrase: "let's discuss the details",
+      spokenReply: "Natural tip: drop 'about' after 'discuss' — just say 'discuss the details'.",
+      nextQuestion: nextQ,
+    };
+  }
+
+  // 7. "look forward to meet" / "looking forward to meet"
+  if (/looking? forward to (meet|see|hear|work|go)\b/.test(lower)) {
+    return {
+      hasCorrection: true,
+      original: lower.match(/looking? forward to \w+/)?.[0] || "look forward to meet",
+      correction: "looking forward to meeting",
+      explanation: "In 'look forward to', 'to' is a preposition, so add '-ing' to the following verb.",
+      targetPhrase: "looking forward to meeting you",
+      spokenReply: "Almost there! After 'look forward to', use an '-ing' verb like 'looking forward to meeting'.",
+      nextQuestion: nextQ,
+    };
+  }
+
+  // 8. Tense & Agreement slips
+  if (/\b(am|are|is)\s+\w+ing\b.*\bsince\b/.test(lower)) {
+    return {
+      hasCorrection: true,
+      original: "am working ... since",
+      correction: "have been working ... for",
+      explanation: "For actions continuing from the past to now, use 'have been + -ing' instead of 'am + -ing'.",
+      targetPhrase: "I have been waiting for",
+      spokenReply: "Nice phrasing — for an ongoing duration up to now, switch to 'have been + -ing'.",
+      nextQuestion: nextQ,
+    };
+  }
+
+  if (/\b(luggages|baggages|informations|advices|furnitures|equipments)\b/.test(lower)) {
+    const bad = lower.match(/\b(luggages|baggages|informations|advices|furnitures|equipments)\b/)?.[0] || "baggages";
+    const singular = bad.slice(0, -1);
+    return {
+      hasCorrection: true,
+      original: bad,
+      correction: `pieces of ${singular}`,
+      explanation: `'${singular}' is uncountable in English and doesn't take an '-s'.`,
+      targetPhrase: `pieces of ${singular}`,
+      spokenReply: `Careful with uncountable nouns: say 'pieces of ${singular}' instead of '${bad}'.`,
+      nextQuestion: nextQ,
+    };
+  }
+
+  if (lower.includes("he don't") || lower.includes("she don't") || lower.includes("it don't")) {
+    const sub = lower.includes("he") ? "He" : lower.includes("she") ? "She" : "It";
+    return {
+      hasCorrection: true,
+      original: `${sub.toLowerCase()} don't`,
+      correction: `${sub} doesn't`,
+      explanation: `With '${sub}', use 'doesn't' instead of 'don't'.`,
+      targetPhrase: `${sub} doesn't have it`,
+      spokenReply: `Quick subject-verb fix: say '${sub} doesn't' instead of '${sub.toLowerCase()} don't'.`,
+      nextQuestion: nextQ,
+    };
+  }
+
+  if (/\b(yesterday|last\s+(?:week|night|month|year))\b/.test(lower) && /\b(i|we|he|she|they)\s+(go|come|see|eat|buy|take|get)\b/.test(lower)) {
+    return {
+      hasCorrection: true,
+      original: spokenText.trim(),
+      correction: "Use simple past tense (went, came, saw, bought)",
+      explanation: "When talking about a finished time like yesterday or last week, shift the verb to past simple.",
+      targetPhrase: "Yesterday I went there",
+      spokenReply: "Watch the time marker there — use a past-tense verb like 'went', 'saw', or 'checked' for yesterday.",
+      nextQuestion: nextQ,
+    };
+  }
+
+  if (lower.includes("more better") || lower.includes("more easier") || lower.includes("more faster")) {
+    const word = lower.includes("better") ? "better" : lower.includes("easier") ? "easier" : "faster";
+    return {
+      hasCorrection: true,
+      original: `more ${word}`,
+      correction: `much ${word}`,
+      explanation: `'${word}' is already a comparative, so use 'much ${word}' instead of 'more ${word}'.`,
+      targetPhrase: `That would be much ${word}`,
+      spokenReply: `Easy polish: say 'much ${word}' instead of doubling up 'more ${word}'.`,
+      nextQuestion: nextQ,
+    };
+  }
+
+  // 9. Handle direct learner questions to the coach cleanly (e.g. "What do you want to know?")
+  if (
+    lower.includes("what do you want") ||
+    lower.includes("what should i") ||
+    lower.includes("what do you mean") ||
+    lower.includes("what do you need") ||
+    lower.includes("what can i say") ||
+    lower.endsWith("?")
+  ) {
+    const directAnswerPool = scenario.toLowerCase().includes("baggage") || scenario.toLowerCase().includes("airport")
+      ? [
+          "Right now I need your flight number, baggage claim tag, and a quick description of your suitcase so I can locate it.",
+          "Tell me which flight you just landed from and what your bag looks like — color, brand, or hard-shell — so I can check our tracker."
+        ]
+      : scenario.toLowerCase().includes("interview")
+      ? [
+          "I'd love to hear a concrete story about your background — what skills you bring and one achievement you're proud of.",
+          "As the interviewer, I'm curious about your hands-on experience and how you collaborate with a team."
+        ]
+      : [
+          "Great question — try answering as if we're actually in this moment together using specific details.",
+          "Just respond naturally with your real preference or next action for this scenario, and I'll guide you from there!"
+        ];
+    const reply = pickNonRepeating(directAnswerPool, recentBotTexts);
+    return {
+      hasCorrection: false,
+      original: "",
+      correction: "",
+      explanation: "",
+      targetPhrase: "",
+      spokenReply: reply,
+      nextQuestion: "",
+    };
+  }
+
+  // 10. Grammar Drill mastery follow-ups (no repetition)
+  const isGrammarDrill =
+    scenario.includes("TARGETED GRAMMAR DRILL") || scenario.includes("TARGETED CALL GRAMMAR REPAIR");
+  if (isGrammarDrill) {
+    const drillPick = pickNonRepeating(
+      [
+        "Clean structure! You nailed that grammar form cleanly. Give me one more original sentence using that same pattern about your own day.",
+        "Spot-on phrasing — smooth cadence and accurate tense. How would you use that exact structure in a question to a teammate?",
+        "Great accuracy! Now twist the subject slightly and try one fresh sentence with that same rule."
+      ],
+      recentBotTexts
+    );
+    return {
+      hasCorrection: false,
+      original: "",
+      correction: "",
+      explanation: "",
+      targetPhrase: "",
+      spokenReply: drillPick,
+      nextQuestion: "",
+    };
+  }
+
+  // 11. Incomplete ultra-short fragments (1-2 words excluding standard greetings/yes/no)
+  const allowedShort = new Set(["yes", "yeah", "no", "nope", "sure", "okay", "ok", "hello", "hi", "thanks", "thank", "please"]);
+  if (cleanWords.length <= 2 && !cleanWords.some((w) => allowedShort.has(w))) {
+    const encourage = pickNonRepeating(
+      [
+        `I heard "${spokenText.trim()}" — try building that into a full sentence so we can practice your fluency.`,
+        `Nice start with "${spokenText.trim()}"! Can you put that into a complete sentence for this situation?`,
+      ],
+      recentBotTexts
+    );
+    return {
+      hasCorrection: true,
+      original: spokenText.trim(),
+      correction: `Try a complete sentence instead of "${spokenText.trim()}"`,
+      explanation: "Practicing full subject + verb sentences builds real speaking fluency much faster.",
+      targetPhrase: "",
+      spokenReply: encourage,
+      nextQuestion: nextQ,
+    };
+  }
+
+  // 12. Varied natural acknowledgements referencing a keyword from user's speech
+  const keyword = cleanWords.find((w) => w.length >= 4 && !["that", "this", "what", "with", "have", "your", "from", "like", "want", "know"].includes(w));
+  const variedOpeners = keyword
+    ? [
+        `Got it about "${keyword}" — that came across naturally.`,
+        `Thanks for clarifying "${keyword}" — let's keep the scenario moving.`,
+        `Understood regarding "${keyword}".`,
+        `Loud and clear on "${keyword}" — let's continue.`
+      ]
+    : [
+        "Got it, thank you — let's keep moving through the scenario.",
+        "Understood, that came across naturally.",
+        "Thanks for sharing that — let's take the next step.",
+        "Clear and natural! Let's build on that."
+      ];
+
+  const pickedOpener = pickNonRepeating(variedOpeners, recentBotTexts);
+  return {
+    hasCorrection: false,
+    original: "",
+    correction: "",
+    explanation: "",
+    targetPhrase: "",
+    spokenReply: `${pickedOpener} ${nextQ}`,
+    nextQuestion: "",
+  };
+}
+
 /**
  * Executes local On-Device AI inference (Gemini Nano or local client logic)
  */
@@ -60,18 +436,27 @@ async function executeOnDeviceInference(
   scenario: string,
   drillModeEnabled: boolean,
   isFallback: boolean,
-  startTime: number
+  startTime: number,
+  conversationHistory: ConversationTurnInput[] = []
 ): Promise<GrammarCorrectionResult> {
   const win = typeof window !== "undefined" ? (window as any) : null;
   const lower = spokenText.toLowerCase().trim();
+  const recentBotTexts = conversationHistory
+    .filter((t) => String(t.sender || "").toLowerCase() !== "user")
+    .slice(-5)
+    .map((t) => String(t.text || "").toLowerCase());
 
   // 1. Try Chrome Native Prompt API if enabled (window.ai)
   if (win && win.ai && win.ai.languageModel) {
     try {
+      const historySummary = conversationHistory
+        .slice(-6)
+        .map((t) => `${String(t.sender || "").toUpperCase()}: ${t.text}`)
+        .join("\n");
       const session = await win.ai.languageModel.create({
-        systemPrompt: `You are an On-Device AI Language Coach running on Gemini Nano in ${language}. Analyze user grammar and reply ONLY with JSON.`,
+        systemPrompt: `You are a strict, realistic On-Device AI Language Coach running on Gemini Nano in ${language}. Analyze grammar mistakes accurately without generic praise, and never repeat prior phrases.`,
       });
-      const prompt = `User said: "${spokenText}". Target language: ${language}. Scenario: ${scenario}. Return JSON with hasCorrection, original, correction, explanation, spokenReply, targetPhrase, nextQuestion.`;
+      const prompt = `Scenario: ${scenario}.\nHistory:\n${historySummary}\nUser said: "${spokenText}".\nCheck grammar carefully (set hasCorrection=true if broken like "I like to that") and respond naturally in character. Return ONLY JSON with: hasCorrection, original, correction, explanation, spokenReply, targetPhrase, nextQuestion.`;
       const result = await session.prompt(prompt);
       const latency = Math.round(performance.now() - startTime);
       const parsed = JSON.parse(result);
@@ -79,10 +464,10 @@ async function executeOnDeviceInference(
         hasCorrection: Boolean(parsed.hasCorrection),
         original: parsed.original || "",
         correction: parsed.correction || "",
-        explanation: parsed.explanation || "On-Device Gemini Nano correction",
+        explanation: parsed.explanation || "On-Device Gemini Nano analysis",
         targetPhrase: parsed.targetPhrase || parsed.correction || "",
-        spokenReply: parsed.spokenReply || "Well done! Keep practicing.",
-        nextQuestion: parsed.nextQuestion || "What would you like to say next?",
+        spokenReply: parsed.spokenReply || "Got it — let's keep going.",
+        nextQuestion: parsed.nextQuestion || "",
         engineUsed: "ON_DEVICE_NANO",
         latencyMs: latency,
         isOfflineFallback: isFallback,
@@ -93,8 +478,7 @@ async function executeOnDeviceInference(
     }
   }
 
-  // 2. High-speed On-Device Rule & Heuristic Engine (0ms latency, zero network)
-  // Covers English, Japanese, and Korean common learner slips
+  // 2. High-speed On-Device Rule & Heuristic Engine
   let hasCorrection = false;
   let original = "";
   let correction = "";
@@ -115,8 +499,15 @@ async function executeOnDeviceInference(
       spokenReply = "いいですね！丁寧に話す時は「食べました」と言ってみましょう。リピートしてみてください！";
       nextQuestion = "何を食べましたか？";
     } else {
-      spokenReply = "素晴らしいです！とても自然な日本語ですね。次はどうしますか？";
-      nextQuestion = "週末は何をしますか？";
+      spokenReply = pickNonRepeating(
+        [
+          "なるほど！よく伝わりました。次は具体的にどうしますか？",
+          "分かりました！自然な日本語ですね。もう少し詳しく教えていただけますか？",
+          "ありがとうございます。では、次のご希望は何ですか？"
+        ],
+        recentBotTexts
+      );
+      nextQuestion = "";
     }
   } else if (langLower.includes("kor") || langLower.includes("ko")) {
     if (lower.includes("bogo") && !lower.includes("sipoyo")) {
@@ -128,112 +519,25 @@ async function executeOnDeviceInference(
       spokenReply = "좋은 시도였어요! 한국어로는 '보고 싶어요'라고 해요. 다시 따라 해보시겠어요?";
       nextQuestion = "언제 만날까요?";
     } else {
-      spokenReply = "아주 잘하셨어요! 발음이 정말 좋습니다. 다음 질문에 답해 보세요.";
-      nextQuestion = "한국 음식을 좋아하세요?";
+      spokenReply = pickNonRepeating(
+        [
+          "잘 이해했어요! 이어서 조금만 더 자세히 말씀해 주시겠어요?",
+          "자연스럽게 잘 말씀하셨어요. 다음으로는 무엇을 원하시나요?",
+          "네, 알겠습니다! 그 다음 상황은 어떻게 진행할까요?"
+        ],
+        recentBotTexts
+      );
+      nextQuestion = "";
     }
   } else {
-    // English Grammar Nuance Evaluation (including Call-Linked Grammar Vault patterns)
-    const isGrammarDrill =
-      scenario.includes("TARGETED GRAMMAR DRILL") || scenario.includes("TARGETED CALL GRAMMAR REPAIR");
-
-    if (lower.includes("i was enjoy") || lower.includes("i was very enjoy") || lower.includes("was enjoy")) {
-      hasCorrection = true;
-      original = lower.includes("was very enjoy") ? "I was very enjoy" : "I was enjoy";
-      correction = "I really enjoyed";
-      explanation = "'Enjoy' is an action verb. Use past simple 'I really enjoyed + -ing', never 'I was enjoy'.";
-      targetPhrase = "I really enjoyed talking";
-      spokenReply = "Great try! Remember to drop 'was' and say 'I really enjoyed' plus an '-ing' verb.";
-      nextQuestion = "Now try telling me one thing you really enjoyed doing last weekend!";
-    } else if (/\b(i am|i'm|we are|he is|she is|they are)\s+agree\b/.test(lower)) {
-      hasCorrection = true;
-      original = lower.match(/\b(i am|i'm|we are|he is|she is|they are)\s+agree\b/)?.[0] || "am agree";
-      correction = "I completely agree";
-      explanation = "'Agree' is an active verb in English, so never put 'am', 'is', or 'are' before it.";
-      targetPhrase = "I completely agree with you";
-      spokenReply = "Good catch to practice! Drop 'am' and simply use 'agree' as the main verb.";
-      nextQuestion = "So in a team meeting, how would you naturally agree with a coworker's timeline?";
-    } else if (lower.includes("explain me") || lower.includes("explain us") || lower.includes("explain him")) {
-      hasCorrection = true;
-      original = "explain me";
-      correction = "explain it to me";
-      explanation = "Always use 'explain [something] to [person]', never 'explain me' directly.";
-      targetPhrase = "explain the plan to me";
-      spokenReply = "Almost native! Always add 'to' before the person: 'explain it to me'.";
-      nextQuestion = "How would you ask a manager to clarify a project roadmap in a meeting?";
-    } else if (lower.includes("look forward to meet") || lower.includes("looking forward to meet") || lower.includes("look forward to see")) {
-      hasCorrection = true;
-      original = "look forward to meet";
-      correction = "look forward to meeting";
-      explanation = "In 'look forward to', 'to' is a preposition, so the following verb must end in '-ing'.";
-      targetPhrase = "I look forward to meeting you";
-      spokenReply = "So close! Since 'to' is a preposition here, add '-ing' to the verb: 'looking forward to meeting'.";
-      nextQuestion = "What is an upcoming event or call that you are looking forward to attending?";
-    } else if (/\b(am|are|is)\s+\w+ing\b.*\bsince\b/.test(lower)) {
-      hasCorrection = true;
-      original = "am working ... since";
-      correction = "have been working ... for";
-      explanation = "Use Present Perfect Continuous ('have been + -ing') with 'for' (duration) or 'since' (start point).";
-      targetPhrase = "I have been working here for";
-      spokenReply = "Nice sentence! For actions continuing up to now, use 'have been + -ing' instead of 'am + -ing'.";
-      nextQuestion = "How long have you been learning or building your current projects?";
-    } else if (/\b(luggages|baggages|informations|advices)\b/.test(lower)) {
-      const matchedBad = lower.match(/\b(luggages|baggages|informations|advices)\b/)?.[0] || "luggages";
-      const singular = matchedBad.slice(0, -1);
-      hasCorrection = true;
-      original = matchedBad;
-      correction = `pieces of ${singular}`;
-      explanation = `'${singular}' is uncountable in English and never takes '-s'.`;
-      targetPhrase = `two pieces of ${singular}`;
-      spokenReply = `Careful there! '${singular}' is uncountable, so say 'pieces of ${singular}' without the '-s'.`;
-      nextQuestion = `How would you tell an airline agent how many ${singular} items you have?`;
-    } else if (lower.includes("i go yesterday") || lower.includes("i go to yesterday")) {
-      hasCorrection = true;
-      original = "i go yesterday";
-      correction = "I went yesterday";
-      explanation = "Use past tense 'went' instead of present 'go' when speaking about yesterday.";
-      targetPhrase = "I went yesterday";
-      spokenReply = "Good effort! In English, we say: 'I went yesterday'.";
-      nextQuestion = "Where did you go yesterday, and what did you enjoy doing there?";
-    } else if (lower.includes("he don't") || lower.includes("she don't") || lower.includes("it don't")) {
-      hasCorrection = true;
-      const sub = lower.includes("he") ? "He" : lower.includes("she") ? "She" : "It";
-      original = `${sub.toLowerCase()} don't`;
-      correction = `${sub} doesn't`;
-      explanation = `Third-person singular subjects take 'doesn't' instead of 'don't'.`;
-      targetPhrase = `${sub} doesn't like that`;
-      spokenReply = `Almost! We say: '${sub} doesn't'.`;
-      nextQuestion = "What does your friend or teammate usually prefer doing on weekends?";
-    } else if (lower.includes("more better") || lower.includes("more easier")) {
-      hasCorrection = true;
-      const word = lower.includes("better") ? "better" : "easier";
-      original = `more ${word}`;
-      correction = word;
-      explanation = `Double comparatives: '${word}' is already comparative, avoid using 'more' before it.`;
-      targetPhrase = `It is much ${word}`;
-      spokenReply = `Good try! Just say '${word}' or 'much ${word}' without 'more'.`;
-      nextQuestion = "How has your speaking confidence become stronger this week?";
-    } else if (isGrammarDrill) {
-      hasCorrection = false;
-      const drillFollowUps = [
-        "Spot-on grammar! Your sentence structure sounded completely natural. Now try creating a new example using that same pattern about your work or studies — what would you say?",
-        "Nailed it! That phrasing had smooth native cadence. Let's apply that exact structure to a different situation: how would you answer if a client asked you the same question?",
-        "Clean accuracy! You avoided the common slip completely. Give me one more personal example using that same grammar structure!"
-      ];
-      const pick = drillFollowUps[Math.floor(Math.random() * drillFollowUps.length)];
-      spokenReply = pick;
-      nextQuestion = "";
-    } else {
-      hasCorrection = false;
-      const followUps = [
-        "That's great! Could you elaborate a bit more on that?",
-        "Interesting point! What made you choose that?",
-        "Sounds exciting! How did that experience feel?",
-        "Wonderful! What would be your next step?",
-      ];
-      const randomQ = followUps[Math.floor(Math.random() * followUps.length)];
-      spokenReply = `That sounds very clear and well phrased! ${randomQ}`;
-      nextQuestion = randomQ;
-    }
+    const analyzed = analyzeEnglishLocally(spokenText, scenario, recentBotTexts);
+    hasCorrection = analyzed.hasCorrection;
+    original = analyzed.original;
+    correction = analyzed.correction;
+    explanation = analyzed.explanation;
+    targetPhrase = analyzed.targetPhrase;
+    spokenReply = analyzed.spokenReply;
+    nextQuestion = analyzed.nextQuestion;
   }
 
   const latency = Math.round(performance.now() - startTime);
@@ -268,14 +572,17 @@ export async function executeHybridInference(
     language,
     scenario,
     drillModeEnabled,
+    orderedKeyPool,
+    selectedModel,
     modeSetting,
     simulateOffline,
+    conversationHistory = [],
   } = options;
 
   const isPhysicallyOffline = typeof navigator !== "undefined" && !navigator.onLine;
   const isOffline = isPhysicallyOffline || simulateOffline;
 
-  // RULE 1: IF OFFLINE OR USER FORCED ON-DEVICE NANO -> RUN ON-DEVICE DIRECTLY (0ms latency)
+  // RULE 1: IF OFFLINE OR USER FORCED ON-DEVICE NANO -> RUN ON-DEVICE DIRECTLY
   if (isOffline || modeSetting === "nano_only") {
     return await executeOnDeviceInference(
       spokenText,
@@ -283,15 +590,15 @@ export async function executeHybridInference(
       scenario,
       drillModeEnabled,
       isOffline,
-      startTime
+      startTime,
+      conversationHistory
     );
   }
 
   // RULE 2: CLOUD INFERENCE VIA SECURE SERVERLESS ROUTE (/api/chat)
-  // No client-side API key exposure; processed securely on the Next.js server runtime
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const timeoutId = setTimeout(() => controller.abort(), 8500);
 
     const response = await fetch("/api/chat", {
       method: "POST",
@@ -302,6 +609,9 @@ export async function executeHybridInference(
         language,
         scenario,
         drillModeEnabled,
+        conversationHistory,
+        apiKeys: orderedKeyPool,
+        selectedModel,
       }),
     });
     clearTimeout(timeoutId);
@@ -309,6 +619,7 @@ export async function executeHybridInference(
     if (response.ok) {
       const parsed = await response.json();
       const latency = Math.round(performance.now() - startTime);
+      const modelUsed = parsed.modelIdentifier || "gemini-3.5-flash-lite";
 
       return {
         hasCorrection: Boolean(parsed.hasCorrection),
@@ -316,12 +627,12 @@ export async function executeHybridInference(
         correction: parsed.correction || "",
         explanation: parsed.explanation || "",
         targetPhrase: parsed.targetPhrase || parsed.correction || "",
-        spokenReply: parsed.spokenReply || "That sounds great! Keep going.",
-        nextQuestion: parsed.nextQuestion || "What do you think?",
+        spokenReply: parsed.spokenReply || "Got it — let's keep going with the scenario.",
+        nextQuestion: parsed.nextQuestion || "",
         engineUsed: "CLOUD_GEMINI_FLASH",
         latencyMs: latency,
         isOfflineFallback: false,
-        modelIdentifier: "Cloud Gemini 2.5 Flash via Firebase Vertex AI",
+        modelIdentifier: `SpeakFlow Cloud Neural (${modelUsed})`,
       };
     }
   } catch (cloudErr) {
@@ -333,14 +644,15 @@ export async function executeHybridInference(
     throw new Error("Cloud-only inference failed: Cloud servers unreachable.");
   }
 
-  // RULE 3: RESILIENCE FALLBACK: If Cloud was unreachable or timed out, seamlessly fallback to On-Device Nano!
-  console.info("⚡ Cloud unreachable or timed out -> Automatic Seamless Fallback to On-Device Gemini Nano Engine!");
+  // RULE 3: RESILIENCE FALLBACK -> On-Device Engine
+  console.info("⚡ Cloud unreachable or timed out -> Automatic Seamless Fallback to On-Device Engine!");
   return await executeOnDeviceInference(
     spokenText,
     language,
     scenario,
     drillModeEnabled,
-    true, // isFallback = true
-    startTime
+    true,
+    startTime,
+    conversationHistory
   );
 }

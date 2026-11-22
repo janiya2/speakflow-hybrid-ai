@@ -1065,7 +1065,7 @@ export default function StudentWebApp() {
   const [geminiApiKey, setGeminiApiKey] = useState("");
   const [fallbackKeys, setFallbackKeys] = useState<string[]>([]);
   const [keyRotationStrategy, setKeyRotationStrategy] = useState("free-first-then-paid");
-  const [selectedModel, setSelectedModel] = useState("gemini-3.5-flash");
+  const [selectedModel, setSelectedModel] = useState("gemini-3.5-flash-lite");
   const [drillModeEnabled, setDrillModeEnabled] = useState(true);
 
   // Google Firebase #BuildHybridAI 2026: Hybrid Inference State
@@ -3905,10 +3905,9 @@ export default function StudentWebApp() {
       }
     }
 
-    const conversationHistoryText = conversationTurns
-      .slice(-6)
-      .map((t) => `${t.sender.toUpperCase()}: ${t.text}`)
-      .join("\n");
+    const conversationHistoryTurns = conversationTurns
+      .slice(-8)
+      .map((t) => ({ sender: t.sender, text: t.text }));
 
     const hybridResult = await executeHybridInference({
       spokenText: spokenText,
@@ -3919,6 +3918,7 @@ export default function StudentWebApp() {
       selectedModel: selectedModel,
       modeSetting: hybridModeSetting,
       simulateOffline: simulateOffline,
+      conversationHistory: conversationHistoryTurns,
     });
 
     setHybridEngine(hybridResult.engineUsed);
@@ -3926,11 +3926,11 @@ export default function StudentWebApp() {
     setEngineModelLabel(
       hybridResult.modelIdentifier
         ? hybridResult.modelIdentifier.replace(/gemini/gi, "SpeakFlow Neural")
-        : "SpeakFlow Cloud Neural v2.5"
+        : "SpeakFlow Cloud Neural"
     );
     setIsProcessing(false);
 
-    if (hybridResult.hasCorrection && drillModeEnabled) {
+    if (hybridResult.hasCorrection) {
       setActiveCorrection({
         original: hybridResult.original,
         correction: hybridResult.correction,
@@ -3945,7 +3945,7 @@ export default function StudentWebApp() {
         }
       ]);
 
-      if (hybridResult.targetPhrase) {
+      if (drillModeEnabled && hybridResult.targetPhrase) {
         setIsDrillMode(true);
         setTargetPhraseToRepeat(hybridResult.targetPhrase);
         const continuation = hybridResult.nextQuestion && !hybridResult.spokenReply.includes(hybridResult.nextQuestion)
@@ -3954,7 +3954,14 @@ export default function StudentWebApp() {
         setNextScenarioQuestion(continuation);
         setDrillAttempts(0);
 
-        let drillLeadIn = `Let's practice saying: '${hybridResult.targetPhrase}'. Try repeating it!`;
+        const conciseTip =
+          hybridResult.explanation && hybridResult.explanation.length <= 140
+            ? `${hybridResult.explanation} `
+            : hybridResult.correction
+            ? `Try saying "${hybridResult.correction}" instead. `
+            : "";
+
+        let drillLeadIn = `${conciseTip}Let's practice saying: '${hybridResult.targetPhrase}'. Try repeating it!`;
         if (lang === "Japanese") drillLeadIn = `練習しましょう:「${hybridResult.targetPhrase}」。リピートしてください！`;
         else if (lang === "Korean") drillLeadIn = `함께 연습해 봐요: '${hybridResult.targetPhrase}'. 따라 말해보세요!`;
 
@@ -3963,10 +3970,12 @@ export default function StudentWebApp() {
       }
     }
 
-    // Normal turn: ALWAYS combine spokenReply + nextQuestion so the coach actively asks follow-up questions
-    const fullCoachUtterance = hybridResult.nextQuestion && !hybridResult.spokenReply.toLowerCase().includes(hybridResult.nextQuestion.toLowerCase())
-      ? `${hybridResult.spokenReply} ${hybridResult.nextQuestion}`
-      : hybridResult.spokenReply;
+    // Normal turn: combine spokenReply + nextQuestion naturally without duplicating
+    const fullCoachUtterance =
+      hybridResult.nextQuestion &&
+      !hybridResult.spokenReply.toLowerCase().includes(hybridResult.nextQuestion.toLowerCase().slice(0, 20))
+        ? `${hybridResult.spokenReply} ${hybridResult.nextQuestion}`
+        : hybridResult.spokenReply;
 
     speakText(fullCoachUtterance, lang);
   };
