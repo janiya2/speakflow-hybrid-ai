@@ -7450,91 +7450,63 @@ export default function StudentWebApp() {
               <div className="lg:col-span-8 flex flex-col justify-between gap-6">
                 {/* 1. HERO BANNER: Welcome Back Janitha! (Dual Daylight / Dark Panoramic Artwork) */}
                 <div
-                  className={`relative rounded-3xl overflow-hidden border shadow-[0_20px_50px_rgba(30,58,138,0.22)] min-h-[250px] sm:min-h-[275px] lg:min-h-[290px] flex items-center justify-center pt-12 pb-6 px-5 sm:p-8 ${
+                  className={`relative rounded-3xl overflow-hidden border min-h-[250px] sm:min-h-[275px] lg:min-h-[290px] flex items-center justify-center pt-12 pb-6 px-5 sm:p-8 keep-dark-hero ${
                     isLight
-                      ? "border-blue-300/80 bg-[#DCEAFE]"
-                      : "border-blue-500/30 bg-[#0B132B] keep-dark-hero"
+                      ? "border-blue-400/50 bg-[#091124] shadow-[0_20px_50px_rgba(15,35,75,0.28)]"
+                      : "border-blue-500/30 bg-[#0B132B] shadow-[0_20px_50px_rgba(30,58,138,0.35)]"
                   }`}
                 >
-                  {/* High Resolution Background Artwork (Daylight vs Cosmic Night) */}
+                  {/* High Resolution Background Artwork (Crisp Panoramic 3D Robot & Neon Globe - Zero washed out haze!) */}
                   <img
-                    src={isLight ? "/images/hero_banner_light.jpg" : "/images/hero_banner_panoramic_clean.jpg"}
+                    src="/images/hero_banner_panoramic_clean.jpg"
                     alt="SpeakFlow AI Hero"
-                    className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none opacity-95"
+                    className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none opacity-100"
                     onError={(e) => {
                       (e.currentTarget as any).src = "/images/exact_reference_banner.png";
                     }}
                   />
 
-                  {/* Subtle Edge Depth (Zero white block over center artwork!) */}
-                  {!isLight && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-950/30 via-transparent to-blue-950/30 pointer-events-none" />
-                  )}
+                  {/* Subtle Contrast Scrim for Text Pop */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-slate-950/30 via-transparent to-slate-950/30 pointer-events-none" />
 
                   {/* Top-Right Floating Badges */}
                   <div className="absolute top-3.5 right-4 sm:top-4 sm:right-6 flex items-center gap-2 z-20">
-                    <div
-                      className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold backdrop-blur-md shadow-lg ${
-                        isLight
-                          ? "bg-white/85 border-blue-200 text-blue-700 shadow-blue-900/5"
-                          : "bg-slate-950/75 border-cyan-500/40 text-cyan-300 shadow-cyan-950/40"
-                      }`}
-                    >
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full border border-cyan-400/40 text-[11px] font-bold bg-slate-950/75 text-cyan-300 backdrop-blur-md shadow-lg">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                       <span>SpeakFlow Neural Core</span>
                     </div>
                     <button
                       onClick={() => setActiveTab("achievements")}
-                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold backdrop-blur-md shadow-lg transition-all hover:scale-105 active:scale-95 ${
-                        isLight
-                          ? "bg-white/90 hover:bg-white border-amber-300 text-amber-700"
-                          : "bg-slate-950/80 hover:bg-slate-900 border-amber-500/40 text-amber-300"
-                      }`}
+                      className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-amber-400/40 text-[11px] font-bold bg-slate-950/80 hover:bg-slate-900 text-amber-300 backdrop-blur-md shadow-lg transition-all hover:scale-105 active:scale-95"
                       title="View All 20 Achievements"
                     >
-                      <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                      <Trophy className="w-3.5 h-3.5 text-amber-400" />
                       <span>Badges ({achievements.filter(a => a.isUnlocked).length}/20)</span>
                     </button>
                   </div>
 
                   {/* CENTERED CRISP NATIVE VECTOR TYPOGRAPHY */}
                   <div className="relative z-10 max-w-sm sm:max-w-md lg:max-w-lg mx-auto text-center flex flex-col items-center justify-center space-y-2.5">
-                    <h1
-                      className={`text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight flex items-center justify-center gap-2 ${
-                        isLight
-                          ? "text-slate-900 drop-shadow-[0_2px_10px_rgba(255,255,255,0.9)]"
-                          : "text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]"
-                      }`}
-                    >
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight flex items-center justify-center gap-2 text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
                       <span>Welcome back, {user?.displayName?.split(" ")[0] || "Janitha"}!</span>
                       <span className="text-2xl sm:text-3xl animate-bounce">👋</span>
                     </h1>
-                    <p
-                      className={`text-xs sm:text-sm lg:text-base leading-relaxed font-semibold max-w-sm sm:max-w-md ${
-                        isLight
-                          ? "text-slate-700 drop-shadow-[0_1px_6px_rgba(255,255,255,0.9)]"
-                          : "text-blue-100/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
-                      }`}
-                    >
+                    <p className="text-xs sm:text-sm lg:text-base leading-relaxed font-semibold max-w-sm sm:max-w-md text-blue-100/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                       Let&apos;s practice your language skills today and become more fluent!
                     </p>
                     <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
                       <button
                         onClick={() => launchTopicByKeyword("random")}
-                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-xl shadow-blue-500/35 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
+                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold text-xs shadow-xl shadow-blue-500/40 flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
                       >
                         <PhoneCall className="w-3.5 h-3.5 fill-white" />
                         <span>Quick Call ({selectedLanguage}) →</span>
                       </button>
                       <button
                         onClick={() => setActiveTab("practice")}
-                        className={`px-4 py-2.5 rounded-xl font-semibold text-xs border transition-all flex items-center gap-1.5 backdrop-blur-md shadow-md hover:scale-105 ${
-                          isLight
-                            ? "bg-white/85 hover:bg-white text-slate-800 border-blue-200"
-                            : "bg-white/10 hover:bg-white/15 text-white border-white/20"
-                        }`}
+                        className="px-4 py-2.5 rounded-xl font-semibold text-xs border border-white/25 bg-white/10 hover:bg-white/20 text-white backdrop-blur-md shadow-md hover:scale-105 transition-all flex items-center gap-1.5"
                       >
-                        <Compass className={`w-3.5 h-3.5 ${isLight ? "text-blue-600" : "text-cyan-300"}`} />
+                        <Compass className="w-3.5 h-3.5 text-cyan-300" />
                         <span>Browse All {selectedLanguage} Calls</span>
                       </button>
                     </div>
