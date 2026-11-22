@@ -4534,12 +4534,8 @@ export default function StudentWebApp() {
         config={landingConfig}
         onOpenAdminCMS={openLandingAdminModal}
         onOpenDashboard={() => setViewMode("app")}
-        onOpenAuth={(mode) => {
-          if (mode === "signup") {
-            window.location.href = "/signup";
-          } else {
-            window.location.href = "/login";
-          }
+        onOpenAuth={() => {
+          window.location.href = "/login";
         }}
         onStartCall={(topicId) => {
           setViewMode("app");

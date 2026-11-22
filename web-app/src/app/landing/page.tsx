@@ -13,12 +13,8 @@ export default function StandaloneLandingPage() {
       themeMode={themeMode}
       onToggleTheme={(t) => setThemeMode(t)}
       onOpenDashboard={() => router.push("/?view=app")}
-      onOpenAuth={(mode) => {
-        if (mode === "signup") {
-          router.push("/signup");
-        } else {
-          router.push("/login");
-        }
+      onOpenAuth={() => {
+        router.push("/login");
       }}
       onStartCall={(topicId) => {
         if (topicId) {

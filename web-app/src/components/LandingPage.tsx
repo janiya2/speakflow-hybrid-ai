@@ -879,12 +879,14 @@ export default function LandingPage({
                 </div>
               </div>
 
-              <button
-                onClick={() => onOpenAuth("signup")}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 text-white font-black text-sm shadow-xl shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              <a
+                href={config?.apkDownloadUrl || "https://github.com/janithad2/speakflow-ai/releases/download/v1.0.0/speakflow-ai.apk"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 text-white font-black text-sm shadow-xl shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
               >
-                Try Free for 7 Days →
-              </button>
+                <span>Download App to Start Free →</span>
+              </a>
             </div>
           </div>
         </div>
@@ -1012,12 +1014,15 @@ export default function LandingPage({
               >
                 Start Free Voice Call Now →
               </button>
-              <button
-                onClick={() => onOpenAuth("signup")}
-                className="px-7 py-4 rounded-2xl bg-slate-950/40 border border-white/30 text-white font-bold text-sm hover:bg-slate-950/60 transition-all"
+              <a
+                href={config?.apkDownloadUrl || "https://github.com/janithad2/speakflow-ai/releases/download/v1.0.0/speakflow-ai.apk"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-7 py-4 rounded-2xl bg-slate-950/40 border border-white/30 text-white font-bold text-sm hover:bg-slate-950/60 transition-all flex items-center gap-2"
               >
-                Create Free Account
-              </button>
+                <span>Download Android APK</span>
+                <span>↓</span>
+              </a>
             </div>
           </div>
         </div>

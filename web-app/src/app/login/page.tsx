@@ -314,12 +314,40 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Footer Link */}
-        <div className="text-center text-xs text-slate-500">
-          <span>Don&apos;t have an account yet? </span>
-          <Link href="/signup" className="font-bold text-cyan-400 hover:underline">
-            Sign Up for Free
-          </Link>
+        {/* Mobile-Only Account Creation Notice */}
+        <div className={`p-4 rounded-2xl border text-center space-y-2 ${
+          isLight ? "bg-indigo-50/70 border-indigo-200" : "bg-indigo-950/40 border-indigo-500/25"
+        }`}>
+          <div className="text-xs font-bold text-cyan-400 flex items-center justify-center gap-1.5">
+            <span>📱</span>
+            <span>New to SpeakFlow?</span>
+          </div>
+          <p className="text-[11px] text-slate-400 leading-relaxed max-w-xs mx-auto">
+            Accounts are created exclusively through the <strong className="text-slate-200">Android Mobile App</strong>. Download the app to register your profile, then sign in here.
+          </p>
+          <div className="flex items-center justify-center gap-2 pt-1">
+            <a
+              href="https://github.com/janithad2/speakflow-ai/releases/download/v1.0.0/speakflow-ai.apk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 text-white font-black text-[11px] shadow-sm hover:brightness-110 transition-all flex items-center gap-1"
+            >
+              <span>Download APK</span>
+              <span>↓</span>
+            </a>
+            <a
+              href="https://play.google.com/store/apps/details?id=com.innoxpert.speakflow"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all ${
+                isLight
+                  ? "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"
+                  : "bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800"
+              }`}
+            >
+              Google Play
+            </a>
+          </div>
         </div>
       </div>
     </div>
