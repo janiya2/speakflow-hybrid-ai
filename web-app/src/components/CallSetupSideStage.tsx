@@ -115,23 +115,31 @@ export default function CallSetupSideStage({
           />
         </div>
 
-        {/* 3D Robot Mascot Card with Glowing Studio Stand */}
-        <div className="relative group">
+        {/* 3D Robot Mascot Stage with Holographic Audio Pedestal & Circular Studio Aura */}
+        <div className="relative flex flex-col items-center justify-center w-52 2xl:w-60 flex-shrink-0 group">
           {/* Ambient Lighting Glow */}
-          <div className="absolute -inset-2 bg-gradient-to-tr from-cyan-500/30 to-blue-600/30 rounded-full blur-2xl animate-pulse" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-gradient-to-tr from-cyan-500/25 to-blue-600/25 rounded-full blur-2xl animate-pulse -z-10 pointer-events-none" />
 
+          {/* Perfect 100% Geometric Studio Backdrop Circle (Guaranteed aspect-square, flex-shrink-0) */}
           <div
-            className={`w-44 h-44 2xl:w-52 2xl:h-52 rounded-full p-1.5 border relative shadow-2xl flex items-center justify-center overflow-hidden transition-transform duration-500 hover:scale-105 ${
+            className={`absolute top-6 left-1/2 -translate-x-1/2 w-40 h-40 2xl:w-48 2xl:h-48 rounded-full flex-shrink-0 border shadow-xl flex items-center justify-center -z-0 transition-transform duration-500 group-hover:scale-105 ${
               isLight
-                ? "bg-gradient-to-b from-blue-50 via-white to-sky-100 border-blue-200 shadow-[0_20px_50px_rgba(37,99,235,0.18)]"
-                : "bg-gradient-to-b from-[#0F1B38] via-[#091124] to-[#040813] border-cyan-400/40 shadow-[0_20px_60px_rgba(0,0,0,0.85)]"
+                ? "bg-gradient-to-b from-blue-50/90 via-white/80 to-sky-100/90 border-blue-200/90 shadow-[0_12px_35px_rgba(37,99,235,0.14)]"
+                : "bg-gradient-to-b from-[#0F1B38]/90 via-[#091124]/90 to-[#040813]/90 border-cyan-400/40 shadow-[0_12px_45px_rgba(0,0,0,0.8)]"
             }`}
+            style={{ aspectRatio: "1 / 1" }}
           >
-            {/* 3D Robot Image */}
+            {/* High-tech spinning dashed telemetry ring */}
+            <div className="absolute inset-2 rounded-full border border-dashed border-cyan-400/30 animate-spin [animation-duration:24s]" />
+            <div className="absolute inset-5 rounded-full border border-blue-400/20" />
+          </div>
+
+          {/* 3D Robot Mascot Character - Naturally Standing, NO Clipping! */}
+          <div className="relative z-10 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1">
             <img
               src="/images/robot_tutor_3d.png"
               alt="3D AI Robot Tutor"
-              className="w-full h-full object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.25)] transition-all duration-300"
+              className="h-44 2xl:h-52 w-auto object-contain drop-shadow-[0_16px_28px_rgba(0,0,0,0.3)] select-none"
               onError={(e) => {
                 // Fallback to high-definition transparent dashboard robot if bespoke generation is still saving
                 (e.currentTarget as any).src = "/images/dashboard-robot-transparent.png";
@@ -139,16 +147,31 @@ export default function CallSetupSideStage({
             />
           </div>
 
-          {/* Bottom Floating Telemetry Pill */}
-          <div
-            className={`absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full border shadow-lg flex items-center gap-1.5 whitespace-nowrap text-[10px] font-black ${
-              isLight
-                ? "bg-white border-slate-200 text-blue-700 shadow-sm"
-                : "bg-[#0B1226] border-cyan-500/40 text-cyan-300 shadow-md"
-            }`}
-          >
-            <Sparkles className="w-3 h-3 text-cyan-400 animate-spin" style={{ animationDuration: "6s" }} />
-            <span>Sub-15ms Neural VAD</span>
+          {/* Holographic 3D Stage Pedestal beneath Feet */}
+          <div className="relative -mt-3 z-10 flex flex-col items-center">
+            {/* Pedestal Base Oval Disk */}
+            <div
+              className={`w-36 2xl:w-44 h-6 rounded-[100%] border flex items-center justify-center shadow-lg backdrop-blur-sm transition-all duration-300 ${
+                isLight
+                  ? "bg-gradient-to-r from-blue-500/20 via-sky-300/30 to-blue-500/20 border-blue-300/60 shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+                  : "bg-gradient-to-r from-cyan-500/25 via-blue-600/35 to-cyan-500/25 border-cyan-400/50 shadow-[0_0_25px_rgba(34,211,238,0.4)]"
+              }`}
+            >
+              {/* Inner glowing pulse ring */}
+              <div className="w-24 2xl:w-32 h-3 rounded-[100%] bg-cyan-400/30 animate-pulse" />
+            </div>
+
+            {/* Bottom Floating Telemetry Pill */}
+            <div
+              className={`mt-2 px-3 py-1 rounded-full border shadow-md flex items-center gap-1.5 whitespace-nowrap text-[10px] font-black ${
+                isLight
+                  ? "bg-white/95 border-slate-200 text-blue-700 shadow-sm"
+                  : "bg-[#0B1226]/95 border-cyan-500/40 text-cyan-300 shadow-md"
+              }`}
+            >
+              <Sparkles className="w-3 h-3 text-cyan-400 animate-spin" style={{ animationDuration: "6s" }} />
+              <span>Sub-15ms Neural VAD</span>
+            </div>
           </div>
         </div>
       </div>
@@ -221,23 +244,31 @@ export default function CallSetupSideStage({
           />
         </div>
 
-        {/* 3D Student Mascot Card with Glowing Studio Stand */}
-        <div className="relative group">
+        {/* 3D Student Mascot Stage with Holographic Audio Pedestal & Circular Studio Aura */}
+        <div className="relative flex flex-col items-center justify-center w-52 2xl:w-60 flex-shrink-0 group">
           {/* Ambient Lighting Glow */}
-          <div className="absolute -inset-2 bg-gradient-to-tr from-purple-500/30 to-pink-600/30 rounded-full blur-2xl animate-pulse" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-gradient-to-tr from-purple-500/25 to-pink-600/25 rounded-full blur-2xl animate-pulse -z-10 pointer-events-none" />
 
+          {/* Perfect 100% Geometric Studio Backdrop Circle (Guaranteed aspect-square, flex-shrink-0) */}
           <div
-            className={`w-44 h-44 2xl:w-52 2xl:h-52 rounded-full p-1.5 border relative shadow-2xl flex items-center justify-center overflow-hidden transition-transform duration-500 hover:scale-105 ${
+            className={`absolute top-6 left-1/2 -translate-x-1/2 w-40 h-40 2xl:w-48 2xl:h-48 rounded-full flex-shrink-0 border shadow-xl flex items-center justify-center -z-0 transition-transform duration-500 group-hover:scale-105 ${
               isLight
-                ? "bg-gradient-to-b from-indigo-50 via-white to-purple-100 border-indigo-200 shadow-[0_20px_50px_rgba(99,102,241,0.18)]"
-                : "bg-gradient-to-b from-[#1C1033] via-[#100824] to-[#06030F] border-purple-400/40 shadow-[0_20px_60px_rgba(0,0,0,0.85)]"
+                ? "bg-gradient-to-b from-indigo-50/90 via-white/80 to-purple-100/90 border-indigo-200/90 shadow-[0_12px_35px_rgba(99,102,241,0.14)]"
+                : "bg-gradient-to-b from-[#1C1033]/90 via-[#100824]/90 to-[#06030F]/90 border-purple-400/40 shadow-[0_12px_45px_rgba(0,0,0,0.8)]"
             }`}
+            style={{ aspectRatio: "1 / 1" }}
           >
-            {/* 3D Student Image */}
+            {/* High-tech spinning dashed telemetry ring */}
+            <div className="absolute inset-2 rounded-full border border-dashed border-purple-400/30 animate-spin [animation-duration:24s]" />
+            <div className="absolute inset-5 rounded-full border border-indigo-400/20" />
+          </div>
+
+          {/* 3D Student Mascot Character - Naturally Standing, NO Clipping! */}
+          <div className="relative z-10 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1">
             <img
               src="/images/student_learner_3d.png"
               alt="3D Student Learner"
-              className="w-full h-full object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.25)] transition-all duration-300"
+              className="h-44 2xl:h-52 w-auto object-contain drop-shadow-[0_16px_28px_rgba(0,0,0,0.3)] select-none"
               onError={(e) => {
                 // Fallback to student image if bespoke generation is still saving
                 (e.currentTarget as any).src = "/images/student_1.webp";
@@ -245,16 +276,31 @@ export default function CallSetupSideStage({
             />
           </div>
 
-          {/* Bottom Floating Reward Pill */}
-          <div
-            className={`absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full border shadow-lg flex items-center gap-1.5 whitespace-nowrap text-[10px] font-black ${
-              isLight
-                ? "bg-white border-slate-200 text-amber-700 shadow-sm"
-                : "bg-[#180B2B] border-purple-500/40 text-amber-300 shadow-md"
-            }`}
-          >
-            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-            <span>Ready for 1-on-1 Audio</span>
+          {/* Holographic 3D Stage Pedestal beneath Feet */}
+          <div className="relative -mt-3 z-10 flex flex-col items-center">
+            {/* Pedestal Base Oval Disk */}
+            <div
+              className={`w-36 2xl:w-44 h-6 rounded-[100%] border flex items-center justify-center shadow-lg backdrop-blur-sm transition-all duration-300 ${
+                isLight
+                  ? "bg-gradient-to-r from-purple-500/20 via-pink-300/30 to-purple-500/20 border-purple-300/60 shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+                  : "bg-gradient-to-r from-purple-500/25 via-pink-600/35 to-purple-500/25 border-purple-400/50 shadow-[0_0_25px_rgba(168,85,247,0.4)]"
+              }`}
+            >
+              {/* Inner glowing pulse ring */}
+              <div className="w-24 2xl:w-32 h-3 rounded-[100%] bg-purple-400/30 animate-pulse" />
+            </div>
+
+            {/* Bottom Floating Reward Pill */}
+            <div
+              className={`mt-2 px-3 py-1 rounded-full border shadow-md flex items-center gap-1.5 whitespace-nowrap text-[10px] font-black ${
+                isLight
+                  ? "bg-white/95 border-slate-200 text-amber-700 shadow-sm"
+                  : "bg-[#180B2B]/95 border-purple-500/40 text-amber-300 shadow-md"
+              }`}
+            >
+              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+              <span>Ready for 1-on-1 Audio</span>
+            </div>
           </div>
         </div>
       </div>
