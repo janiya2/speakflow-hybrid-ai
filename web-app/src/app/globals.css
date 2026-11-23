@@ -583,6 +583,12 @@ html.theme-light .keep-dark-hero img {
   animation-play-state: paused;
 }
 
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /* Extra Slow Testimonial Marquees (Graceful, Readable, Low Speed) */
 @keyframes marqueeSlow {
   0% { transform: translateX(0%); }
