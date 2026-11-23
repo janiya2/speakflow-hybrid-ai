@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import ScrollReveal from "./ScrollReveal";
 
 export interface LandingPageConfig {
   heroBadge?: string;
@@ -1510,7 +1511,7 @@ export default function LandingPage({
           isLight ? "bg-gradient-to-l from-white to-transparent" : "bg-gradient-to-l from-[#070A14] to-transparent"
         }`} />
 
-        <div className="w-full space-y-8 sm:space-y-12">
+        <ScrollReveal className="w-full space-y-8 sm:space-y-12" distance={32}>
           {/* Section Header */}
           <div className="space-y-3 max-w-4xl mx-auto text-center px-4">
             <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase border shadow-xs ${
@@ -1665,14 +1666,14 @@ export default function LandingPage({
               </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* 4. Panoramic Scenarios Section (FULL SCREEN FIT - 4K Cave Style Panorama with Dual Radial Aura) */}
       <section className={`py-12 sm:py-18 relative overflow-hidden text-center ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
-        <div className="w-full px-2 sm:px-4 lg:px-8 space-y-4 sm:space-y-6">
+        <ScrollReveal className="w-full px-2 sm:px-4 lg:px-8 space-y-4 sm:space-y-6" distance={32}>
           <div className="space-y-3 max-w-4xl mx-auto text-center px-4">
             <div className={`text-xs sm:text-sm font-black uppercase tracking-wider flex items-center justify-center gap-1.5 ${
               isLight ? "text-indigo-600" : "text-cyan-400"
@@ -1896,7 +1897,7 @@ export default function LandingPage({
               </div>
             ))}
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* 5. The Global AI Language & Cultural Exchange Section (Text Left, Image Right) */}
@@ -1905,7 +1906,7 @@ export default function LandingPage({
       }`}>
 
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
+        <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14" distance={32}>
           {/* Top Banner Header */}
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <h2 className={`text-3xl sm:text-5xl font-black tracking-tight leading-tight ${
@@ -1995,14 +1996,14 @@ export default function LandingPage({
               </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* 6. Practice in the Way That Works for You (Image Left, Text Right with Dual Radial Aura) */}
       <section id="practice-modes" className={`py-16 sm:py-24 relative overflow-hidden ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" distance={32}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             {/* Left Column: Image (Phone Mockup with Floating Modes - Floating 3D) */}
             <div className="lg:col-span-6 flex justify-center order-2 lg:order-1">
@@ -2092,7 +2093,7 @@ export default function LandingPage({
               </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* 7. Learn and Share with the Community (Text Left, Image Right) */}
@@ -2101,7 +2102,7 @@ export default function LandingPage({
       }`}>
 
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" distance={32}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             {/* Left Column: Content */}
             <div className="lg:col-span-6 space-y-6">
@@ -2192,14 +2193,14 @@ export default function LandingPage({
               </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* 8. Practice Speaking in Live AI Voicerooms (Image Left, Text Right with Dual Radial Aura) */}
       <section id="voicerooms" className={`py-16 sm:py-24 relative overflow-hidden ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" distance={32}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             {/* Left Column: Image (Voicerooms Stage - Floating 3D Phone) */}
             <div className="lg:col-span-6 flex justify-center order-2 lg:order-1">
@@ -2289,7 +2290,7 @@ export default function LandingPage({
               </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
 
@@ -2305,7 +2306,7 @@ export default function LandingPage({
           isLight ? "bg-gradient-to-l from-white via-white/80 to-transparent" : "bg-gradient-to-l from-[#070A14] via-[#070A14]/80 to-transparent"
         }`} />
 
-        <div className="w-full space-y-10 sm:space-y-12">
+        <ScrollReveal className="w-full space-y-10 sm:space-y-12" distance={32}>
           {/* Section Header */}
           <div className="space-y-4 max-w-4xl mx-auto text-center px-4">
             <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase border shadow-xs ${
@@ -2707,7 +2708,7 @@ export default function LandingPage({
               </span>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Selected Review Full Story Modal */}
         {activeReviewModal && (
