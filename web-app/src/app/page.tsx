@@ -445,6 +445,11 @@ function getInitialsFromName(name: string): string {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
+function getUserAvatarFallbackSvg(name: string): string {
+  const initials = getInitialsFromName(name);
+  return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%233B82F6"/><stop offset="100%" stop-color="%2306B6D4"/></linearGradient></defs><circle cx="48" cy="48" r="48" fill="url(%23g)"/><text x="50%" y="54%" font-family="system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif" font-size="36" font-weight="bold" fill="%23FFFFFF" text-anchor="middle" dominant-baseline="middle">${initials}</text></svg>`;
+}
+
 interface LandingPageConfig {
   heroBadge: string;
   heroHeadline: string;
@@ -1923,9 +1928,7 @@ export default function StudentWebApp() {
       ? profilePhotoUrl
       : user?.photoURL && !user.photoURL.includes("dicebear.com")
       ? user.photoURL
-      : (user?.email === "janithad2@gmail.com" || user?.uid === "demo-jury" || !user)
-      ? DEFAULT_PROFILE_AVATAR
-      : "";
+      : DEFAULT_PROFILE_AVATAR;
 
   // Convert Firestore CallSessionRecord -> Unified SavedSessionItem
   const convertCallRecordToSavedSession = (rec: any, idx: number): SavedSessionItem => {
@@ -6892,19 +6895,26 @@ export default function StudentWebApp() {
                       {/* Camera Off Avatar Fallback */}
                       {!isCameraActive && (
                         <div
-                          className={`w-full h-full flex flex-col items-center justify-center pt-5 pb-3 px-2 text-center ${
+                          className={`w-full h-full flex flex-col items-center justify-center py-2 px-2 text-center ${
                             isLight
                               ? "bg-gradient-to-br from-[#F4F8FF] to-[#E6EFFC]"
                               : "bg-gradient-to-br from-slate-900 to-[#0c1424]"
                           }`}
                         >
-                          <div className={`w-8 h-8 rounded-full overflow-hidden border mb-0.5 ${isLight ? "border-blue-300" : "border-slate-700"}`}>
-                            <img src={resolvedProfileAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=3b82f6&color=fff`} alt={profileDisplayName} className="w-full h-full object-cover" />
+                          <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 mb-1 shadow-md shrink-0 ${isLight ? "border-blue-400/80 shadow-blue-500/15" : "border-cyan-400/80 shadow-cyan-500/25"}`}>
+                            <img
+                              src={resolvedProfileAvatar || DEFAULT_PROFILE_AVATAR}
+                              alt={profileDisplayName}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.currentTarget as any).src = getUserAvatarFallbackSvg(profileDisplayName);
+                              }}
+                            />
                           </div>
-                          <span className={`text-[9px] font-bold truncate max-w-[110px] ${isLight ? "text-slate-800" : "text-slate-300"}`}>
+                          <span className={`text-[10px] font-bold truncate max-w-[120px] ${isLight ? "text-slate-800" : "text-slate-200"}`}>
                             You ({profileDisplayName.split(" ")[0]})
                           </span>
-                          <span className={`text-[8px] ${isLight ? "text-slate-500" : "text-slate-500"}`}>Camera Off</span>
+                          <span className={`text-[8px] font-medium ${isLight ? "text-slate-500" : "text-slate-400"}`}>Camera Off</span>
                         </div>
                       )}
 
@@ -7099,9 +7109,12 @@ export default function StudentWebApp() {
 
                                 {!isBot && (
                                   <img
-                                    src={resolvedProfileAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=10b981&color=fff`}
+                                    src={resolvedProfileAvatar || DEFAULT_PROFILE_AVATAR}
                                     alt={profileDisplayName}
                                     className="w-6 h-6 rounded-full object-cover border border-emerald-400/50 mt-0.5 shrink-0 shadow-sm"
+                                    onError={(e) => {
+                                      (e.currentTarget as any).src = getUserAvatarFallbackSvg(profileDisplayName);
+                                    }}
                                   />
                                 )}
                               </div>
@@ -14783,9 +14796,12 @@ export default function StudentWebApp() {
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <img
-                    src={resolvedProfileAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=3b82f6&color=fff`}
+                    src={resolvedProfileAvatar || DEFAULT_PROFILE_AVATAR}
                     alt={profileDisplayName}
                     className="w-12 h-12 rounded-xl object-cover border border-cyan-400/50 shrink-0"
+                    onError={(e) => {
+                      (e.currentTarget as any).src = getUserAvatarFallbackSvg(profileDisplayName);
+                    }}
                   />
                   <div className="min-w-0">
                     <span className={`text-xs font-bold block ${isLight ? "text-slate-900" : "text-white"}`}>
@@ -15172,9 +15188,12 @@ export default function StudentWebApp() {
 
                           {!isBot && (
                             <img
-                              src={resolvedProfileAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileDisplayName)}&background=10b981&color=fff`}
+                              src={resolvedProfileAvatar || DEFAULT_PROFILE_AVATAR}
                               alt={profileDisplayName}
                               className="w-8 h-8 rounded-full object-cover border border-emerald-400/50 mt-0.5 shrink-0 shadow-sm"
+                              onError={(e) => {
+                                (e.currentTarget as any).src = getUserAvatarFallbackSvg(profileDisplayName);
+                              }}
                             />
                           )}
                         </div>
