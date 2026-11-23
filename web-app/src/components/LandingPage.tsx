@@ -1486,188 +1486,7 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* 3.5. Search the World - Dotted World Map & Bidirectional Coaches Scroller */}
-      <section id="search-the-world" className={`py-16 sm:py-24 relative overflow-hidden text-center ${
-        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
-      }`}>
-        {/* World Map Dotted Matrix Background */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10 overflow-hidden">
-          <div className="relative w-full max-w-[1500px] h-[550px] opacity-35 dark:opacity-20 transition-opacity">
-            <Image
-              src="/images/landing/world_map_dotted.webp"
-              alt="Global Language Network World Map"
-              fill
-              className="object-contain object-center"
-              priority
-            />
-          </div>
-        </div>
 
-        {/* Edge Gradient Fade Masks */}
-        <div className={`pointer-events-none absolute left-0 top-0 bottom-0 w-24 sm:w-44 z-10 ${
-          isLight ? "bg-gradient-to-r from-white to-transparent" : "bg-gradient-to-r from-[#070A14] to-transparent"
-        }`} />
-        <div className={`pointer-events-none absolute right-0 top-0 bottom-0 w-24 sm:w-44 z-10 ${
-          isLight ? "bg-gradient-to-l from-white to-transparent" : "bg-gradient-to-l from-[#070A14] to-transparent"
-        }`} />
-
-        <ScrollReveal className="w-full space-y-8 sm:space-y-12" distance={32}>
-          {/* Section Header */}
-          <div className="space-y-3 max-w-4xl mx-auto text-center px-4">
-            <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase border shadow-xs ${
-              isLight
-                ? "bg-blue-50 border-blue-200 text-blue-700"
-                : "bg-blue-950/40 border-blue-800/40 text-blue-300"
-            }`}>
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-              Global Speaking Network
-            </div>
-
-            <h2 className={`text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight ${
-              isLight ? "text-[#0F172A]" : "text-white"
-            }`}>
-              <span className={isLight ? "text-blue-600 font-extrabold" : "text-blue-400 font-extrabold"}>Search</span> the World
-            </h2>
-
-            <p className={`text-sm sm:text-base leading-relaxed max-w-xl mx-auto font-medium ${
-              isLight ? "text-slate-600" : "text-slate-300"
-            }`}>
-              Search for language partners and native AI tutors by native language, city, and real-world fluency goals.
-            </p>
-          </div>
-
-          {/* Bidirectional Scrolling Coaches Rows */}
-          <div className="space-y-4 sm:space-y-6 overflow-hidden">
-            {/* ROW 1: Scrolling Left (animate-marquee) */}
-            <div className="overflow-hidden whitespace-nowrap">
-              <div className="animate-marquee flex items-center gap-4 sm:gap-6 py-1">
-                {[
-                  { name: "Denise", country: "France", code: "FR", greeting: "Bonjour", img: "/images/coaches/denise.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
-                  { name: "Diego", country: "Spain", code: "ES", greeting: "Hola", img: "/images/coaches/diego.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
-                  { name: "Elena", country: "Russia", code: "RU", greeting: "Привет", img: "/images/coaches/elena.jpg", flag: "/images/flags/ru.png", topicId: "sp_en_1" },
-                  { name: "Lucas", country: "Germany", code: "DE", greeting: "Hallo", img: "/images/coaches/lucas.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
-                  { name: "Oliver", country: "United States", code: "US", greeting: "Hello", img: "/images/coaches/oliver.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
-                  { name: "Mei", country: "China", code: "CN", greeting: "你好!", img: "/images/coaches/mei.jpg", flag: "/images/flags/cn.png", topicId: "sp_en_1" },
-                  { name: "Aoi", country: "Japan", code: "JP", greeting: "こんにちは", img: "/images/coaches/aoi.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
-                  { name: "Minjun", country: "South Korea", code: "KR", greeting: "안녕하세요", img: "/images/coaches/minjun.jpg", flag: "/images/flags/kr.png", topicId: "sp_en_1" },
-                  { name: "Sameera", country: "Sri Lanka", code: "LK", greeting: "ආයුබෝවන්", img: "/images/coaches/sameera.jpg", flag: "/images/flags/lk.png", topicId: "sp_si_249" },
-                  { name: "Denise", country: "France", code: "FR", greeting: "Bonjour", img: "/images/coaches/denise.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
-                  { name: "Diego", country: "Spain", code: "ES", greeting: "Hola", img: "/images/coaches/diego.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
-                  { name: "Elena", country: "Russia", code: "RU", greeting: "Привет", img: "/images/coaches/elena.jpg", flag: "/images/flags/ru.png", topicId: "sp_en_1" },
-                  { name: "Lucas", country: "Germany", code: "DE", greeting: "Hallo", img: "/images/coaches/lucas.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
-                  { name: "Oliver", country: "United States", code: "US", greeting: "Hello", img: "/images/coaches/oliver.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
-                  { name: "Mei", country: "China", code: "CN", greeting: "你好!", img: "/images/coaches/mei.jpg", flag: "/images/flags/cn.png", topicId: "sp_en_1" },
-                  { name: "Aoi", country: "Japan", code: "JP", greeting: "こんにちは", img: "/images/coaches/aoi.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
-                  { name: "Minjun", country: "South Korea", code: "KR", greeting: "안녕하세요", img: "/images/coaches/minjun.jpg", flag: "/images/flags/kr.png", topicId: "sp_en_1" },
-                  { name: "Sameera", country: "Sri Lanka", code: "LK", greeting: "ආයුබෝවන්", img: "/images/coaches/sameera.jpg", flag: "/images/flags/lk.png", topicId: "sp_si_249" },
-                ].map((coach, idx) => (
-                  <button
-                    key={`r1-${coach.name}-${idx}`}
-                    onClick={() => onStartCall(coach.topicId)}
-                    className={`group inline-flex items-center gap-3 px-3.5 py-2 rounded-full border transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-md shrink-0 shadow-sm hover:shadow-lg ${
-                      isLight
-                        ? "bg-white/90 border-slate-200/90 hover:border-blue-400 hover:bg-white text-slate-800"
-                        : "bg-slate-900/90 border-white/10 hover:border-blue-400/50 hover:bg-slate-900 text-white"
-                    }`}
-                  >
-                    {/* Circular Avatar with Flag Badge */}
-                    <div className="relative shrink-0">
-                      <div className="w-12 h-12 rounded-full overflow-hidden relative shadow-md border-2 border-white dark:border-slate-800">
-                        <Image
-                          src={coach.img}
-                          alt={coach.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="absolute -bottom-1 -left-1 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-0.5 text-slate-700 dark:text-slate-300">
-                        <div className="w-3 h-2 relative overflow-hidden rounded-xs shrink-0">
-                          <Image src={coach.flag} alt={coach.code} fill className="object-cover" />
-                        </div>
-                        <span>{coach.code}</span>
-                      </div>
-                    </div>
-
-                    {/* Greeting & Details */}
-                    <div className="text-left pr-2">
-                      <div className={`text-sm sm:text-base font-black tracking-tight ${isLight ? "text-slate-800" : "text-white"}`}>
-                        {coach.greeting}
-                      </div>
-                      <div className={`text-[10px] font-medium ${isLight ? "text-slate-400" : "text-slate-400"}`}>
-                        {coach.name} • {coach.country}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* ROW 2: Scrolling Right (animate-marquee-reverse) */}
-            <div className="overflow-hidden whitespace-nowrap">
-              <div className="animate-marquee-reverse flex items-center gap-4 sm:gap-6 py-1">
-                {[
-                  { name: "Chloe", country: "France", code: "FR", greeting: "Ça va ?", img: "/images/coaches/chloe.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
-                  { name: "Sophia", country: "Spain", code: "ES", greeting: "¿Qué tal?", img: "/images/coaches/sophia.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
-                  { name: "Kenji", country: "Japan", code: "JP", greeting: "もしもし", img: "/images/coaches/kenji.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
-                  { name: "Emma", country: "Germany", code: "DE", greeting: "Guten Tag", img: "/images/coaches/emma.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
-                  { name: "Sarah", country: "United Kingdom", code: "GB", greeting: "Cheerio!", img: "/images/coaches/sarah.jpg", flag: "/images/flags/gb.png", topicId: "sp_en_1" },
-                  { name: "Tiago", country: "Brazil", code: "BR", greeting: "Olá!", img: "/images/coaches/tiago.jpg", flag: "/images/flags/br.png", topicId: "sp_en_1" },
-                  { name: "Matteo", country: "Italy", code: "IT", greeting: "Ciao!", img: "/images/coaches/matteo.jpg", flag: "/images/flags/it.png", topicId: "sp_en_1" },
-                  { name: "Priya", country: "India", code: "IN", greeting: "வணக்கம்", img: "/images/coaches/priya.jpg", flag: "/images/flags/in.png", topicId: "sp_en_1" },
-                  { name: "Alex", country: "United States", code: "US", greeting: "Hey there!", img: "/images/coaches/alex.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
-                  { name: "Chloe", country: "France", code: "FR", greeting: "Ça va ?", img: "/images/coaches/chloe.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
-                  { name: "Sophia", country: "Spain", code: "ES", greeting: "¿Qué tal?", img: "/images/coaches/sophia.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
-                  { name: "Kenji", country: "Japan", code: "JP", greeting: "もしもし", img: "/images/coaches/kenji.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
-                  { name: "Emma", country: "Germany", code: "DE", greeting: "Guten Tag", img: "/images/coaches/emma.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
-                  { name: "Sarah", country: "United Kingdom", code: "GB", greeting: "Cheerio!", img: "/images/coaches/sarah.jpg", flag: "/images/flags/gb.png", topicId: "sp_en_1" },
-                  { name: "Tiago", country: "Brazil", code: "BR", greeting: "Olá!", img: "/images/coaches/tiago.jpg", flag: "/images/flags/br.png", topicId: "sp_en_1" },
-                  { name: "Matteo", country: "Italy", code: "IT", greeting: "Ciao!", img: "/images/coaches/matteo.jpg", flag: "/images/flags/it.png", topicId: "sp_en_1" },
-                  { name: "Priya", country: "India", code: "IN", greeting: "வணக்கம்", img: "/images/coaches/priya.jpg", flag: "/images/flags/in.png", topicId: "sp_en_1" },
-                  { name: "Alex", country: "United States", code: "US", greeting: "Hey there!", img: "/images/coaches/alex.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
-                ].map((coach, idx) => (
-                  <button
-                    key={`r2-${coach.name}-${idx}`}
-                    onClick={() => onStartCall(coach.topicId)}
-                    className={`group inline-flex items-center gap-3 px-3.5 py-2 rounded-full border transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-md shrink-0 shadow-sm hover:shadow-lg ${
-                      isLight
-                        ? "bg-white/90 border-slate-200/90 hover:border-blue-400 hover:bg-white text-slate-800"
-                        : "bg-slate-900/90 border-white/10 hover:border-blue-400/50 hover:bg-slate-900 text-white"
-                    }`}
-                  >
-                    {/* Circular Avatar with Flag Badge */}
-                    <div className="relative shrink-0">
-                      <div className="w-12 h-12 rounded-full overflow-hidden relative shadow-md border-2 border-white dark:border-slate-800">
-                        <Image
-                          src={coach.img}
-                          alt={coach.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="absolute -bottom-1 -left-1 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-0.5 text-slate-700 dark:text-slate-300">
-                        <div className="w-3 h-2 relative overflow-hidden rounded-xs shrink-0">
-                          <Image src={coach.flag} alt={coach.code} fill className="object-cover" />
-                        </div>
-                        <span>{coach.code}</span>
-                      </div>
-                    </div>
-
-                    {/* Greeting & Details */}
-                    <div className="text-left pr-2">
-                      <div className={`text-sm sm:text-base font-black tracking-tight ${isLight ? "text-slate-800" : "text-white"}`}>
-                        {coach.greeting}
-                      </div>
-                      <div className={`text-[10px] font-medium ${isLight ? "text-slate-400" : "text-slate-400"}`}>
-                        {coach.name} • {coach.country}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </ScrollReveal>
-      </section>
 
       {/* 4. Panoramic Scenarios Section (FULL SCREEN FIT - 4K Cave Style Panorama with Dual Radial Aura) */}
       <section className={`py-12 sm:py-18 relative overflow-hidden text-center ${
@@ -2293,6 +2112,189 @@ export default function LandingPage({
         </ScrollReveal>
       </section>
 
+
+      {/* 3.5. Search the World - Dotted World Map & Bidirectional Coaches Scroller */}
+      <section id="search-the-world" className={`py-16 sm:py-24 relative overflow-hidden text-center ${
+        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
+      }`}>
+        {/* World Map Dotted Matrix Background */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10 overflow-hidden">
+          <div className="relative w-full max-w-[1500px] h-[550px] opacity-35 dark:opacity-20 transition-opacity">
+            <Image
+              src="/images/landing/world_map_dotted.webp"
+              alt="Global Language Network World Map"
+              fill
+              className="object-contain object-center"
+              priority
+            />
+          </div>
+        </div>
+
+        {/* Edge Gradient Fade Masks */}
+        <div className={`pointer-events-none absolute left-0 top-0 bottom-0 w-24 sm:w-44 z-10 ${
+          isLight ? "bg-gradient-to-r from-white to-transparent" : "bg-gradient-to-r from-[#070A14] to-transparent"
+        }`} />
+        <div className={`pointer-events-none absolute right-0 top-0 bottom-0 w-24 sm:w-44 z-10 ${
+          isLight ? "bg-gradient-to-l from-white to-transparent" : "bg-gradient-to-l from-[#070A14] to-transparent"
+        }`} />
+
+        <ScrollReveal className="w-full space-y-8 sm:space-y-12" distance={32}>
+          {/* Section Header */}
+          <div className="space-y-3 max-w-4xl mx-auto text-center px-4">
+            <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase border shadow-xs ${
+              isLight
+                ? "bg-blue-50 border-blue-200 text-blue-700"
+                : "bg-blue-950/40 border-blue-800/40 text-blue-300"
+            }`}>
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+              Global Speaking Network
+            </div>
+
+            <h2 className={`text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight ${
+              isLight ? "text-[#0F172A]" : "text-white"
+            }`}>
+              <span className={isLight ? "text-blue-600 font-extrabold" : "text-blue-400 font-extrabold"}>Search</span> the World
+            </h2>
+
+            <p className={`text-sm sm:text-base leading-relaxed max-w-xl mx-auto font-medium ${
+              isLight ? "text-slate-600" : "text-slate-300"
+            }`}>
+              Search for language partners and native AI tutors by native language, city, and real-world fluency goals.
+            </p>
+          </div>
+
+          {/* Bidirectional Scrolling Coaches Rows */}
+          <div className="space-y-4 sm:space-y-6 overflow-hidden">
+            {/* ROW 1: Scrolling Left (animate-marquee) */}
+            <div className="overflow-hidden whitespace-nowrap">
+              <div className="animate-marquee flex items-center gap-4 sm:gap-6 py-1">
+                {[
+                  { name: "Denise", country: "France", code: "FR", greeting: "Bonjour", img: "/images/coaches/denise.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
+                  { name: "Diego", country: "Spain", code: "ES", greeting: "Hola", img: "/images/coaches/diego.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
+                  { name: "Elena", country: "Russia", code: "RU", greeting: "Привет", img: "/images/coaches/elena.jpg", flag: "/images/flags/ru.png", topicId: "sp_en_1" },
+                  { name: "Lucas", country: "Germany", code: "DE", greeting: "Hallo", img: "/images/coaches/lucas.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
+                  { name: "Oliver", country: "United States", code: "US", greeting: "Hello", img: "/images/coaches/oliver.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
+                  { name: "Mei", country: "China", code: "CN", greeting: "你好!", img: "/images/coaches/mei.jpg", flag: "/images/flags/cn.png", topicId: "sp_en_1" },
+                  { name: "Aoi", country: "Japan", code: "JP", greeting: "こんにちは", img: "/images/coaches/aoi.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
+                  { name: "Minjun", country: "South Korea", code: "KR", greeting: "안녕하세요", img: "/images/coaches/minjun.jpg", flag: "/images/flags/kr.png", topicId: "sp_en_1" },
+                  { name: "Sameera", country: "Sri Lanka", code: "LK", greeting: "ආයුබෝවන්", img: "/images/coaches/sameera.jpg", flag: "/images/flags/lk.png", topicId: "sp_si_249" },
+                  { name: "Denise", country: "France", code: "FR", greeting: "Bonjour", img: "/images/coaches/denise.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
+                  { name: "Diego", country: "Spain", code: "ES", greeting: "Hola", img: "/images/coaches/diego.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
+                  { name: "Elena", country: "Russia", code: "RU", greeting: "Привет", img: "/images/coaches/elena.jpg", flag: "/images/flags/ru.png", topicId: "sp_en_1" },
+                  { name: "Lucas", country: "Germany", code: "DE", greeting: "Hallo", img: "/images/coaches/lucas.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
+                  { name: "Oliver", country: "United States", code: "US", greeting: "Hello", img: "/images/coaches/oliver.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
+                  { name: "Mei", country: "China", code: "CN", greeting: "你好!", img: "/images/coaches/mei.jpg", flag: "/images/flags/cn.png", topicId: "sp_en_1" },
+                  { name: "Aoi", country: "Japan", code: "JP", greeting: "こんにちは", img: "/images/coaches/aoi.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
+                  { name: "Minjun", country: "South Korea", code: "KR", greeting: "안녕하세요", img: "/images/coaches/minjun.jpg", flag: "/images/flags/kr.png", topicId: "sp_en_1" },
+                  { name: "Sameera", country: "Sri Lanka", code: "LK", greeting: "ආයුබෝවන්", img: "/images/coaches/sameera.jpg", flag: "/images/flags/lk.png", topicId: "sp_si_249" },
+                ].map((coach, idx) => (
+                  <button
+                    key={`r1-${coach.name}-${idx}`}
+                    onClick={() => onStartCall(coach.topicId)}
+                    className={`group inline-flex items-center gap-3 px-3.5 py-2 rounded-full border transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-md shrink-0 shadow-sm hover:shadow-lg ${
+                      isLight
+                        ? "bg-white/90 border-slate-200/90 hover:border-blue-400 hover:bg-white text-slate-800"
+                        : "bg-slate-900/90 border-white/10 hover:border-blue-400/50 hover:bg-slate-900 text-white"
+                    }`}
+                  >
+                    {/* Circular Avatar with Flag Badge */}
+                    <div className="relative shrink-0">
+                      <div className="w-12 h-12 rounded-full overflow-hidden relative shadow-md border-2 border-white dark:border-slate-800">
+                        <Image
+                          src={coach.img}
+                          alt={coach.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="absolute -bottom-1 -left-1 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-0.5 text-slate-700 dark:text-slate-300">
+                        <div className="w-3 h-2 relative overflow-hidden rounded-xs shrink-0">
+                          <Image src={coach.flag} alt={coach.code} fill className="object-cover" />
+                        </div>
+                        <span>{coach.code}</span>
+                      </div>
+                    </div>
+
+                    {/* Greeting & Details */}
+                    <div className="text-left pr-2">
+                      <div className={`text-sm sm:text-base font-black tracking-tight ${isLight ? "text-slate-800" : "text-white"}`}>
+                        {coach.greeting}
+                      </div>
+                      <div className={`text-[10px] font-medium ${isLight ? "text-slate-400" : "text-slate-400"}`}>
+                        {coach.name} • {coach.country}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* ROW 2: Scrolling Right (animate-marquee-reverse) */}
+            <div className="overflow-hidden whitespace-nowrap">
+              <div className="animate-marquee-reverse flex items-center gap-4 sm:gap-6 py-1">
+                {[
+                  { name: "Chloe", country: "France", code: "FR", greeting: "Ça va ?", img: "/images/coaches/chloe.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
+                  { name: "Sophia", country: "Spain", code: "ES", greeting: "¿Qué tal?", img: "/images/coaches/sophia.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
+                  { name: "Kenji", country: "Japan", code: "JP", greeting: "もしもし", img: "/images/coaches/kenji.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
+                  { name: "Emma", country: "Germany", code: "DE", greeting: "Guten Tag", img: "/images/coaches/emma.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
+                  { name: "Sarah", country: "United Kingdom", code: "GB", greeting: "Cheerio!", img: "/images/coaches/sarah.jpg", flag: "/images/flags/gb.png", topicId: "sp_en_1" },
+                  { name: "Tiago", country: "Brazil", code: "BR", greeting: "Olá!", img: "/images/coaches/tiago.jpg", flag: "/images/flags/br.png", topicId: "sp_en_1" },
+                  { name: "Matteo", country: "Italy", code: "IT", greeting: "Ciao!", img: "/images/coaches/matteo.jpg", flag: "/images/flags/it.png", topicId: "sp_en_1" },
+                  { name: "Priya", country: "India", code: "IN", greeting: "வணக்கம்", img: "/images/coaches/priya.jpg", flag: "/images/flags/in.png", topicId: "sp_en_1" },
+                  { name: "Alex", country: "United States", code: "US", greeting: "Hey there!", img: "/images/coaches/alex.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
+                  { name: "Chloe", country: "France", code: "FR", greeting: "Ça va ?", img: "/images/coaches/chloe.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
+                  { name: "Sophia", country: "Spain", code: "ES", greeting: "¿Qué tal?", img: "/images/coaches/sophia.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
+                  { name: "Kenji", country: "Japan", code: "JP", greeting: "もしもし", img: "/images/coaches/kenji.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
+                  { name: "Emma", country: "Germany", code: "DE", greeting: "Guten Tag", img: "/images/coaches/emma.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
+                  { name: "Sarah", country: "United Kingdom", code: "GB", greeting: "Cheerio!", img: "/images/coaches/sarah.jpg", flag: "/images/flags/gb.png", topicId: "sp_en_1" },
+                  { name: "Tiago", country: "Brazil", code: "BR", greeting: "Olá!", img: "/images/coaches/tiago.jpg", flag: "/images/flags/br.png", topicId: "sp_en_1" },
+                  { name: "Matteo", country: "Italy", code: "IT", greeting: "Ciao!", img: "/images/coaches/matteo.jpg", flag: "/images/flags/it.png", topicId: "sp_en_1" },
+                  { name: "Priya", country: "India", code: "IN", greeting: "வணக்கம்", img: "/images/coaches/priya.jpg", flag: "/images/flags/in.png", topicId: "sp_en_1" },
+                  { name: "Alex", country: "United States", code: "US", greeting: "Hey there!", img: "/images/coaches/alex.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
+                ].map((coach, idx) => (
+                  <button
+                    key={`r2-${coach.name}-${idx}`}
+                    onClick={() => onStartCall(coach.topicId)}
+                    className={`group inline-flex items-center gap-3 px-3.5 py-2 rounded-full border transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-md shrink-0 shadow-sm hover:shadow-lg ${
+                      isLight
+                        ? "bg-white/90 border-slate-200/90 hover:border-blue-400 hover:bg-white text-slate-800"
+                        : "bg-slate-900/90 border-white/10 hover:border-blue-400/50 hover:bg-slate-900 text-white"
+                    }`}
+                  >
+                    {/* Circular Avatar with Flag Badge */}
+                    <div className="relative shrink-0">
+                      <div className="w-12 h-12 rounded-full overflow-hidden relative shadow-md border-2 border-white dark:border-slate-800">
+                        <Image
+                          src={coach.img}
+                          alt={coach.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="absolute -bottom-1 -left-1 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-0.5 text-slate-700 dark:text-slate-300">
+                        <div className="w-3 h-2 relative overflow-hidden rounded-xs shrink-0">
+                          <Image src={coach.flag} alt={coach.code} fill className="object-cover" />
+                        </div>
+                        <span>{coach.code}</span>
+                      </div>
+                    </div>
+
+                    {/* Greeting & Details */}
+                    <div className="text-left pr-2">
+                      <div className={`text-sm sm:text-base font-black tracking-tight ${isLight ? "text-slate-800" : "text-white"}`}>
+                        {coach.greeting}
+                      </div>
+                      <div className={`text-[10px] font-medium ${isLight ? "text-slate-400" : "text-slate-400"}`}>
+                        {coach.name} • {coach.country}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+      </section>
 
       {/* 11. Loved by Learners Around the World - Testimonials & Social Proof (50 Global Reviews) */}
       <section id="reviews" className={`py-16 sm:py-24 relative overflow-hidden text-center ${
