@@ -137,7 +137,7 @@ export default function CallSetupSideStage({
           {/* 3D Robot Mascot Character - Naturally Standing, NO Clipping! */}
           <div className="relative z-10 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1">
             <img
-              src="/images/robot_tutor_3d.png"
+              src="/images/robot_tutor_3d.png?v=2"
               alt="3D AI Robot Tutor"
               className="h-44 2xl:h-52 w-auto object-contain drop-shadow-[0_16px_28px_rgba(0,0,0,0.3)] select-none"
               onError={(e) => {
@@ -266,7 +266,7 @@ export default function CallSetupSideStage({
           {/* 3D Student Mascot Character - Naturally Standing, NO Clipping! */}
           <div className="relative z-10 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1">
             <img
-              src="/images/student_learner_3d.png"
+              src="/images/student_learner_3d.png?v=2"
               alt="3D Student Learner"
               className="h-44 2xl:h-52 w-auto object-contain drop-shadow-[0_16px_28px_rgba(0,0,0,0.3)] select-none"
               onError={(e) => {
