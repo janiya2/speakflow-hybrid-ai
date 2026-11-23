@@ -795,27 +795,21 @@ html.theme-light .keep-dark-hero img {
   animation: lightGleamHorizontal 14s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-/* YayTalk-Style Dual Radial Aura Backgrounds (Udai Yatai Raumata Nil Pata Laawata) */
+/* YayTalk-Style Dual Radial Aura Backgrounds (Podiwata Laawata Nil Pata - Subtle & Elegant) */
 .hero-bg-yaytalk-light {
   background-color: #ffffff;
   background-image:
-    /* Top rounded powder-blue arc (udai raumata wage nil pata laawata) */
-    radial-gradient(ellipse 90% 55% at 50% -5%, rgba(219, 234, 254, 0.85) 0%, rgba(224, 231, 255, 0.45) 45%, rgba(255, 255, 255, 0) 75%),
-    /* Bottom rounded powder-blue/indigo arc behind characters (yatai raumata wage nil pata laawata) */
-    radial-gradient(ellipse 95% 60% at 50% 105%, rgba(191, 219, 254, 0.8) 0%, rgba(224, 231, 255, 0.4) 45%, rgba(255, 255, 255, 0) 75%),
-    /* Soft side ambient accents */
-    radial-gradient(circle at 4% 45%, rgba(224, 231, 255, 0.45) 0%, rgba(255, 255, 255, 0) 55%),
-    radial-gradient(circle at 96% 45%, rgba(224, 231, 255, 0.45) 0%, rgba(255, 255, 255, 0) 55%);
+    /* Top whisper-soft powder-blue arc */
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(219, 234, 254, 0.45) 0%, rgba(238, 242, 255, 0.2) 45%, rgba(255, 255, 255, 0) 70%),
+    /* Bottom whisper-soft powder-blue arc */
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(219, 234, 254, 0.4) 0%, rgba(238, 242, 255, 0.15) 45%, rgba(255, 255, 255, 0) 70%);
 }
 
 .hero-bg-yaytalk-dark {
-  background-color: #050814;
+  background-color: #070A14;
   background-image:
-    /* Top rounded cyan/indigo neon arc (udai raumata wage) */
-    radial-gradient(ellipse 90% 55% at 50% -5%, rgba(56, 189, 248, 0.25) 0%, rgba(99, 102, 241, 0.16) 45%, rgba(5, 8, 20, 0) 75%),
-    /* Bottom rounded indigo/purple neon arc behind characters (yatai raumata wage) */
-    radial-gradient(ellipse 95% 60% at 50% 105%, rgba(99, 102, 241, 0.3) 0%, rgba(168, 85, 247, 0.18) 45%, rgba(5, 8, 20, 0) 75%),
-    /* Soft side ambient dark accents */
-    radial-gradient(circle at 4% 45%, rgba(99, 102, 241, 0.14) 0%, rgba(5, 8, 20, 0) 55%),
-    radial-gradient(circle at 96% 45%, rgba(99, 102, 241, 0.14) 0%, rgba(5, 8, 20, 0) 55%);
+    /* Top whisper-soft subtle blue arc (no harsh neon clash) */
+    radial-gradient(ellipse 85% 45% at 50% 0%, rgba(59, 130, 246, 0.08) 0%, rgba(99, 102, 241, 0.03) 45%, rgba(7, 10, 20, 0) 70%),
+    /* Bottom whisper-soft subtle blue arc (no harsh neon clash) */
+    radial-gradient(ellipse 85% 45% at 50% 100%, rgba(59, 130, 246, 0.08) 0%, rgba(99, 102, 241, 0.03) 45%, rgba(7, 10, 20, 0) 70%);
 }

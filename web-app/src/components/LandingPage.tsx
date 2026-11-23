@@ -863,7 +863,7 @@ export default function LandingPage({
           {/* Full-Width 4K Panoramic "Cave Style" Curved Strip */}
           <div className="relative w-full max-w-[1920px] mx-auto mt-4 sm:mt-6 px-0 sm:px-2 md:px-4">
             {!isLight && (
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] h-[350px] bg-gradient-to-r from-pink-500/15 via-blue-500/15 to-amber-500/15 rounded-full blur-[100px] pointer-events-none -z-10" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] h-[350px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none -z-10" />
             )}
 
             <Image
@@ -1070,10 +1070,7 @@ export default function LandingPage({
       <section id="exchange" className={`py-16 sm:py-24 relative overflow-hidden ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
-        {/* Ambient Dark Glow */}
-        {!isLight && (
-          <div className="absolute top-1/2 right-1/4 w-[500px] h-[500px] bg-gradient-to-r from-blue-500/15 via-indigo-500/15 to-purple-500/15 rounded-full blur-[120px] pointer-events-none -z-10" />
-        )}
+
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
           {/* Top Banner Header */}
@@ -1104,7 +1101,7 @@ export default function LandingPage({
               <h3 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
                 isLight ? "text-[#0F172A]" : "text-white"
               }`}>
-                Learn Through <span className={isLight ? "text-indigo-600 font-extrabold" : "text-cyan-400 font-extrabold"}>Language Exchange</span>
+                Learn Through <span className={isLight ? "text-blue-600 font-extrabold" : "text-blue-400 font-extrabold"}>Language Exchange</span>
               </h3>
 
               <p className={`text-sm sm:text-base leading-relaxed font-medium ${
@@ -1153,7 +1150,7 @@ export default function LandingPage({
             <div className="lg:col-span-6 flex justify-center">
               <div className="relative w-full max-w-[500px]">
                 {/* Ambient Glow */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/15 via-indigo-500/15 to-purple-500/15 rounded-full blur-3xl -z-10" />
+                <div className="absolute inset-0 bg-blue-500/5 rounded-full blur-3xl -z-10" />
                 <Image
                   src="/images/landing/hellotalk/feature_1_exchange.png"
                   alt="SpeakFlow AI Language Exchange with built-in voice-to-text, translation, and grammar corrections"
@@ -1177,7 +1174,7 @@ export default function LandingPage({
             {/* Left Column: Image (Phone Mockup with Floating Modes - Floating 3D) */}
             <div className="lg:col-span-6 flex justify-center order-2 lg:order-1">
               <div className="relative w-full max-w-[460px]">
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/15 via-purple-500/15 to-pink-500/15 rounded-full blur-3xl -z-10" />
+                <div className="absolute inset-0 bg-blue-500/5 rounded-full blur-3xl -z-10" />
                 <Image
                   src="/images/landing/hellotalk/feature_2_modes.png"
                   alt="Multi-Modal Practice: Text, Voice, Video and Livestreams"
@@ -1190,19 +1187,19 @@ export default function LandingPage({
 
             {/* Right Column: Content */}
             <div className="lg:col-span-6 space-y-6 order-1 lg:order-2">
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase border ${
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${
                 isLight
-                  ? "bg-purple-50 border-purple-200 text-purple-700"
-                  : "bg-indigo-950/60 border-indigo-800 text-cyan-400"
+                  ? "bg-blue-50 border-blue-200 text-blue-700"
+                  : "bg-blue-950/40 border-blue-800/40 text-blue-300"
               }`}>
-                <span className="w-2 h-2 rounded-full bg-purple-600 dark:bg-cyan-400 animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                 Text, Voice, Video, & More
               </div>
 
               <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
                 isLight ? "text-[#0F172A]" : "text-white"
               }`}>
-                Practice in the Way That <span className={isLight ? "text-indigo-600 font-extrabold" : "text-cyan-400 font-extrabold"}>Works for You</span>
+                Practice in the Way That <span className={isLight ? "text-blue-600 font-extrabold" : "text-blue-400 font-extrabold"}>Works for You</span>
               </h2>
 
               <p className={`text-sm sm:text-base leading-relaxed font-medium ${
@@ -1269,28 +1266,25 @@ export default function LandingPage({
       <section id="moments" className={`py-16 sm:py-24 relative overflow-hidden ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
-        {/* Ambient Dark Glow */}
-        {!isLight && (
-          <div className="absolute top-1/2 left-1/4 w-[500px] h-[500px] bg-gradient-to-r from-emerald-500/15 via-teal-500/15 to-blue-500/15 rounded-full blur-[120px] pointer-events-none -z-10" />
-        )}
+
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             {/* Left Column: Content */}
             <div className="lg:col-span-6 space-y-6">
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase border ${
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${
                 isLight
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                  : "bg-emerald-950/60 border-emerald-800 text-emerald-400"
+                  ? "bg-blue-50 border-blue-200 text-blue-700"
+                  : "bg-blue-950/40 border-blue-800/40 text-blue-300"
               }`}>
-                <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                 Moments
               </div>
 
               <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
                 isLight ? "text-[#0F172A]" : "text-white"
               }`}>
-                Learn and Share with the <span className={isLight ? "text-emerald-600 font-extrabold" : "text-emerald-400 font-extrabold"}>Community</span>
+                Learn and Share with the <span className={isLight ? "text-blue-600 font-extrabold" : "text-blue-400 font-extrabold"}>Community</span>
               </h2>
 
               <p className={`text-sm sm:text-base leading-relaxed font-medium ${
@@ -1354,7 +1348,7 @@ export default function LandingPage({
             {/* Right Column: Image (Floating freely with 3D drop shadow - NO OUTER BOX!) */}
             <div className="lg:col-span-6 flex justify-center">
               <div className="relative w-full max-w-[460px]">
-                <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/15 via-blue-500/15 to-teal-500/15 rounded-full blur-3xl -z-10" />
+                <div className="absolute inset-0 bg-blue-500/5 rounded-full blur-3xl -z-10" />
                 <Image
                   src="/images/landing/hellotalk/feature_3_moments.webp"
                   alt="SpeakFlow Moments: Learn and share with the community through posts and audio clips"
@@ -1377,7 +1371,7 @@ export default function LandingPage({
             {/* Left Column: Image (Voicerooms Stage - Floating 3D Phone) */}
             <div className="lg:col-span-6 flex justify-center order-2 lg:order-1">
               <div className="relative w-full max-w-[440px]">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/15 via-purple-500/15 to-pink-500/15 rounded-full blur-3xl -z-10" />
+                <div className="absolute inset-0 bg-blue-500/5 rounded-full blur-3xl -z-10" />
                 <Image
                   src="/images/landing/hellotalk/feature_4_voicerooms.png"
                   alt="Practice Speaking in Voicerooms: Live audio stages and group conversation lounges"
@@ -1390,12 +1384,12 @@ export default function LandingPage({
 
             {/* Right Column: Content */}
             <div className="lg:col-span-6 space-y-6 order-1 lg:order-2">
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase border ${
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${
                 isLight
                   ? "bg-blue-50 border-blue-200 text-blue-700"
-                  : "bg-indigo-950/60 border-indigo-800 text-cyan-400"
+                  : "bg-blue-950/40 border-blue-800/40 text-blue-300"
               }`}>
-                <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-cyan-400 animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                 Voicerooms & Audio Lounges
               </div>
 
