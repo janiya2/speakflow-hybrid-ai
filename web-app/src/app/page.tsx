@@ -36,6 +36,7 @@ import {
 import { FULL_MOBILE_TOPICS_CATALOG } from "./topicsCatalog";
 import { FULL_VOCABULARY_CATALOG, FULL_GRAMMAR_CATALOG, VocabCatalogItem, GrammarCatalogItem } from "./vocabAndGrammarCatalog";
 import LandingPage from "@/components/LandingPage";
+import ProductTourModal from "@/components/ProductTourModal";
 
 type HybridEngineType = "ON_DEVICE_NANO" | "CLOUD_GEMINI_FLASH";
 type HybridModeSetting = "auto" | "nano_only" | "cloud_only";
@@ -873,6 +874,7 @@ export default function StudentWebApp() {
   const [authError, setAuthError] = useState("");
   const [authSubmitting, setAuthSubmitting] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
 
   // Mobile App & Admin Panel Subscription Plans (Synced from Firestore lang_settings/subscription_plans)
   const [subscriptionConfig, setSubscriptionConfig] = useState({
@@ -4569,6 +4571,44 @@ export default function StudentWebApp() {
   };
 
   // =========================================================================
+  // =========================================================================
+  // 1-CLICK JUDGE & DEMO INSTANT ACCESS (Google Firebase #BuildHybridAI)
+  // Ensures hackathon judges & first-time visitors log in seamlessly in 1 click
+  // =========================================================================
+  const handleLaunchAppWithAutoAuth = (topicId?: string) => {
+    if (!user) {
+      const demoJudgeUser = {
+        uid: "jury_judge_buildhybridai_2026",
+        displayName: "Guest Judge",
+        email: "judge@buildhybridai.google.com",
+        photoURL: "/images/landing/judge_avatar.png"
+      };
+      try {
+        localStorage.setItem("speakflow_demo_user", JSON.stringify(demoJudgeUser));
+      } catch (_) {}
+      setUser(demoJudgeUser as any);
+
+      // Auto-trigger product tour on first entry
+      if (typeof window !== "undefined") {
+        try {
+          const tourDone = localStorage.getItem("speakflow_tour_completed");
+          if (!tourDone) {
+            setIsTourOpen(true);
+          }
+        } catch (_) {}
+      }
+    }
+    setViewMode("app");
+
+    if (topicId) {
+      const matched = FULL_MOBILE_TOPICS_CATALOG.find((t) => t.id === topicId);
+      if (matched) {
+        handleInitiateCallPrompt(matched);
+        return;
+      }
+    }
+  };
+
   // VIEW A: PUBLIC COMMERCIAL LANDING PAGE (YAYTALK-GRADE 10-SECTION SHOWCASE)
   // Renders instantly (0ms FCP, zero auth blocking) for all visitors & landing view
   // =========================================================================
@@ -4581,23 +4621,16 @@ export default function StudentWebApp() {
         config={landingConfig}
         onOpenAdminCMS={openLandingAdminModal}
         currentUser={user}
-        onOpenDashboard={() => setViewMode("app")}
-        onOpenAuth={() => {
-          window.location.href = "/login";
+        onOpenDashboard={() => handleLaunchAppWithAutoAuth()}
+        onOpenAuth={(mode) => {
+          if (mode === "signup") {
+            window.location.href = "/login?mode=signup";
+          } else {
+            window.location.href = "/login";
+          }
         }}
         onStartCall={(topicId) => {
-          setViewMode("app");
-          if (topicId) {
-            const matched = FULL_MOBILE_TOPICS_CATALOG.find((t) => t.id === topicId);
-            if (matched) {
-              handleInitiateCallPrompt(matched);
-              return;
-            }
-          }
-          const firstSinhala = FULL_MOBILE_TOPICS_CATALOG.find((t) => t.language === "Sinhala");
-          if (firstSinhala) {
-            handleInitiateCallPrompt(firstSinhala);
-          }
+          handleLaunchAppWithAutoAuth(topicId);
         }}
       />
     );
@@ -5537,6 +5570,21 @@ export default function StudentWebApp() {
                 >
                   <span>🌐</span>
                   <span className="hidden sm:inline">Landing Page</span>
+                </button>
+
+                {/* Interactive Product Tour Trigger Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsTourOpen(true)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-sm ${
+                    isLight
+                      ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 text-blue-700 hover:border-blue-300"
+                      : "bg-blue-500/10 border-blue-500/30 text-blue-300 hover:bg-blue-500/20"
+                  }`}
+                  title="Take Interactive Feature Tour"
+                >
+                  <span className="text-sm">✨</span>
+                  <span className="hidden sm:inline">Product Tour</span>
                 </button>
 
                 {/* Admin Landing CMS Studio Trigger Button */}
@@ -15148,6 +15196,20 @@ export default function StudentWebApp() {
       )}
 
       {/* 8. COMPREHENSIVE LANDING PAGE ADMIN CMS MODAL */}
+            {/* Interactive Product Tour Modal (For Judges & New Learners) */}
+      <ProductTourModal
+        isOpen={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        onStartPracticeCall={() => {
+          setIsTourOpen(false);
+          const firstSinhala = FULL_MOBILE_TOPICS_CATALOG.find((t) => t.language === "Sinhala") || topics[0];
+          if (firstSinhala) {
+            handleInitiateCallPrompt(firstSinhala);
+          }
+        }}
+        isLight={isLight}
+      />
+
       {showLandingAdminModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
           <div
