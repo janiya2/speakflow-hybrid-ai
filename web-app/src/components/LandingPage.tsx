@@ -904,6 +904,391 @@ export default function LandingPage({
         </div>
       </section>
 
+      {/* 5. The Global AI Language & Cultural Exchange Section (Text Left, Image Right) */}
+      <section id="exchange" className={`py-16 sm:py-24 relative overflow-hidden ${
+        isLight ? "bg-white text-slate-900" : "bg-[#060a12] text-white"
+      }`}>
+        {/* Ambient Glow */}
+        <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
+          {/* Top Banner Header */}
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <h2 className={`text-3xl sm:text-5xl font-black tracking-tight leading-tight ${
+              isLight ? "text-[#0F172A]" : "text-white"
+            }`}>
+              The <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-cyan-400 dark:via-blue-400 dark:to-indigo-400">Global</span> Language and Cultural Exchange
+            </h2>
+            <p className={`text-sm sm:text-base ${isLight ? "text-slate-600" : "text-slate-400"}`}>
+              Learn a language, explore new cultures, and master authentic fluency through 24/7 AI conversation.
+            </p>
+          </div>
+
+          {/* 2-Column Split: Content Left / Image Right */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            {/* Left Column: Content */}
+            <div className="lg:col-span-6 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-cyan-400">
+                <span className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-cyan-400 animate-pulse" />
+                Language Exchange
+              </div>
+
+              <h3 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
+                isLight ? "text-[#0F172A]" : "text-white"
+              }`}>
+                Learn Through <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-cyan-400 dark:to-indigo-400">Language Exchange</span>
+              </h3>
+
+              <p className={`text-sm sm:text-base leading-relaxed ${
+                isLight ? "text-slate-600" : "text-slate-400"
+              }`}>
+                Connect with native-level AI speaker personas and practice authentic conversations. Use built-in smart tools for real-time speech-to-text, acoustic pronunciation analysis, transliteration, and CEFR grammar corrections.
+              </p>
+
+              {/* In-chat Tools Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                {[
+                  { icon: "🎙️", title: "Voice to Text", desc: "Ultra-low 20ms transcription with accent support" },
+                  { icon: "文A", title: "Smart Translation", desc: "Instant contextual translation into your native tongue" },
+                  { icon: "✓", title: "Grammar Correction", desc: "Redline repairs with clear mistake explanations" },
+                  { icon: "🔤", title: "Transliteration", desc: "Phonetic reading guides (Pinyin, Romaji, Romanized)" },
+                ].map((tool, i) => (
+                  <div
+                    key={i}
+                    className={`p-3.5 rounded-xl border transition-all ${
+                      isLight
+                        ? "bg-slate-50/80 border-slate-200/80 hover:bg-white hover:shadow-md hover:border-indigo-200"
+                        : "bg-slate-900/60 border-indigo-500/20 hover:bg-slate-900 hover:border-cyan-400/40"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg">{tool.icon}</span>
+                      <span className={`text-sm font-bold ${isLight ? "text-slate-900" : "text-white"}`}>{tool.title}</span>
+                    </div>
+                    <p className={`text-xs ${isLight ? "text-slate-500" : "text-slate-400"}`}>{tool.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => onStartCall()}
+                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <span>Try Language Exchange</span>
+                  <span>→</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Right Column: Image */}
+            <div className="lg:col-span-6 flex justify-center">
+              <div className="relative w-full max-w-[520px]">
+                <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-indigo-500/10 to-purple-500/10 rounded-3xl blur-2xl -z-10" />
+                <div className={`p-3 sm:p-5 rounded-3xl border shadow-xl ${
+                  isLight ? "bg-white/90 border-slate-200/80" : "bg-slate-900/80 border-indigo-500/20"
+                }`}>
+                  <Image
+                    src="/images/landing/hellotalk/feature_1_exchange.png"
+                    alt="SpeakFlow AI Language Exchange with built-in voice-to-text, translation, and grammar corrections"
+                    width={1218}
+                    height={1500}
+                    className="w-full h-auto object-contain rounded-2xl drop-shadow-md"
+                    priority
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Practice in the Way That Works for You (Image Left, Text Right with Dual Radial Aura) */}
+      <section id="practice-modes" className={`py-16 sm:py-24 relative overflow-hidden ${
+        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            {/* Left Column: Image (Phone Mockup with Floating Modes) */}
+            <div className="lg:col-span-6 flex justify-center order-2 lg:order-1">
+              <div className="relative w-full max-w-[460px]">
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/15 via-purple-500/15 to-pink-500/15 rounded-full blur-3xl -z-10" />
+                <Image
+                  src="/images/landing/hellotalk/feature_2_modes.png"
+                  alt="Multi-Modal Practice: Text, Voice, Video and Livestreams"
+                  width={1665}
+                  height={1808}
+                  className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.15)] transition-transform duration-500 hover:scale-[1.02]"
+                />
+              </div>
+            </div>
+
+            {/* Right Column: Content */}
+            <div className="lg:col-span-6 space-y-6 order-1 lg:order-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-cyan-400">
+                <span className="w-2 h-2 rounded-full bg-purple-600 dark:bg-cyan-400 animate-pulse" />
+                Text, Voice, Video, & More
+              </div>
+
+              <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
+                isLight ? "text-[#0F172A]" : "text-white"
+              }`}>
+                Practice in the Way That <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-cyan-400 dark:to-indigo-400">Works for You</span>
+              </h2>
+
+              <p className={`text-sm sm:text-base leading-relaxed ${
+                isLight ? "text-slate-600" : "text-slate-400"
+              }`}>
+                Chat with language partners and AI tutors through text, voice, or video. Join Voicerooms and interactive audio lounges to practice speaking and listening with people and AI personas around the world.
+              </p>
+
+              {/* Mode Highlights */}
+              <div className="space-y-3 pt-2">
+                {[
+                  {
+                    icon: "💬",
+                    badge: "Interactive Text & Audio Drills",
+                    desc: "Type or speak naturally. Get phonetic spellings, word definitions, and instant grammar polish in real time."
+                  },
+                  {
+                    icon: "📞",
+                    badge: "20ms Low-Latency Voice Calls",
+                    desc: "No lag, no robotic pauses. Experience realistic, natural conversational back-and-forth like a real phone call."
+                  },
+                  {
+                    icon: "📹",
+                    badge: "Visual Roleplay & Scenarios",
+                    desc: "Simulate job interviews, airport customs, cafe ordering, and university presentations with contextual visual feedback."
+                  }
+                ].map((mode, i) => (
+                  <div
+                    key={i}
+                    className={`p-4 rounded-2xl border transition-all ${
+                      isLight
+                        ? "bg-white/80 border-slate-200/80 shadow-sm hover:shadow-md"
+                        : "bg-slate-900/60 border-indigo-500/20 hover:border-cyan-400/40"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-xl p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-100 dark:border-indigo-900 shrink-0">
+                        {mode.icon}
+                      </span>
+                      <div>
+                        <h4 className={`text-sm font-bold ${isLight ? "text-slate-900" : "text-white"}`}>{mode.badge}</h4>
+                        <p className={`text-xs mt-1 leading-relaxed ${isLight ? "text-slate-500" : "text-slate-400"}`}>{mode.desc}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => onStartCall()}
+                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-sm shadow-lg shadow-purple-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <span>Start Multi-Modal Practice</span>
+                  <span>→</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. Learn and Share with the Community (Text Left, Image Right) */}
+      <section id="moments" className={`py-16 sm:py-24 relative overflow-hidden ${
+        isLight ? "bg-white text-slate-900" : "bg-[#060a12] text-white"
+      }`}>
+        <div className="absolute top-1/3 left-1/4 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            {/* Left Column: Content */}
+            <div className="lg:col-span-6 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400">
+                <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse" />
+                Moments
+              </div>
+
+              <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
+                isLight ? "text-[#0F172A]" : "text-white"
+              }`}>
+                Learn and Share with the <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-blue-600 dark:from-emerald-400 dark:to-cyan-400">Community</span>
+              </h2>
+
+              <p className={`text-sm sm:text-base leading-relaxed ${
+                isLight ? "text-slate-600" : "text-slate-400"
+              }`}>
+                Share posts, ask pronunciation questions, and get instant responses from native speakers and fellow learners. Learn about language, culture, and everyday life through the SpeakFlow global community.
+              </p>
+
+              {/* Highlights Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                {[
+                  {
+                    icon: "🌍",
+                    title: "Cultural Exchange",
+                    desc: "Discover local slang, food recommendations, and traditions directly from native residents."
+                  },
+                  {
+                    icon: "🎙️",
+                    title: "Audio Clip Critiques",
+                    desc: "Post 10-second pronunciation clips and receive native accent and intonation tips."
+                  },
+                  {
+                    icon: "🤝",
+                    title: "Global Study Buddies",
+                    desc: "Find partner learners at your exact CEFR level to practice daily conversation streaks."
+                  },
+                  {
+                    icon: "🔥",
+                    title: "Daily Motivation",
+                    desc: "Earn community badges, celebrate streak milestones, and keep your practice consistent."
+                  }
+                ].map((card, i) => (
+                  <div
+                    key={i}
+                    className={`p-3.5 rounded-xl border transition-all ${
+                      isLight
+                        ? "bg-slate-50/80 border-slate-200/80 hover:bg-white hover:shadow-md hover:border-emerald-200"
+                        : "bg-slate-900/60 border-indigo-500/20 hover:bg-slate-900 hover:border-emerald-400/40"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg">{card.icon}</span>
+                      <span className={`text-sm font-bold ${isLight ? "text-slate-900" : "text-white"}`}>{card.title}</span>
+                    </div>
+                    <p className={`text-xs ${isLight ? "text-slate-500" : "text-slate-400"}`}>{card.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => onStartCall()}
+                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <span>Explore Community Moments</span>
+                  <span>→</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Right Column: Image */}
+            <div className="lg:col-span-6 flex justify-center">
+              <div className="relative w-full max-w-[480px]">
+                <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-blue-500/10 to-teal-500/10 rounded-3xl blur-2xl -z-10" />
+                <div className={`p-3 sm:p-5 rounded-3xl border shadow-xl ${
+                  isLight ? "bg-white/90 border-slate-200/80" : "bg-slate-900/80 border-indigo-500/20"
+                }`}>
+                  <Image
+                    src="/images/landing/hellotalk/feature_3_moments.webp"
+                    alt="SpeakFlow Moments: Learn and share with the community through posts and audio clips"
+                    width={1020}
+                    height={1500}
+                    className="w-full h-auto object-contain rounded-2xl transition-transform duration-500 hover:scale-[1.02] drop-shadow-md"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 8. Practice Speaking in Live AI Voicerooms (Image Left, Text Right with Dual Radial Aura) */}
+      <section id="voicerooms" className={`py-16 sm:py-24 relative overflow-hidden ${
+        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            {/* Left Column: Image (Voicerooms Stage) */}
+            <div className="lg:col-span-6 flex justify-center order-2 lg:order-1">
+              <div className="relative w-full max-w-[440px]">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/15 via-purple-500/15 to-pink-500/15 rounded-full blur-3xl -z-10" />
+                <Image
+                  src="/images/landing/hellotalk/feature_4_voicerooms.png"
+                  alt="Practice Speaking in Voicerooms: Live audio stages and group conversation lounges"
+                  width={1659}
+                  height={2848}
+                  className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.18)] transition-transform duration-500 hover:scale-[1.02]"
+                />
+              </div>
+            </div>
+
+            {/* Right Column: Content */}
+            <div className="lg:col-span-6 space-y-6 order-1 lg:order-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-cyan-400">
+                <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-cyan-400 animate-pulse" />
+                Voicerooms & Audio Lounges
+              </div>
+
+              <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
+                isLight ? "text-[#0F172A]" : "text-white"
+              }`}>
+                Practice Speaking in <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-cyan-400 dark:to-indigo-400">Voicerooms</span>
+              </h2>
+
+              <p className={`text-sm sm:text-base leading-relaxed ${
+                isLight ? "text-slate-600" : "text-slate-400"
+              }`}>
+                Join Voicerooms and interactive audio lounges to practice speaking and listening with people and AI co-hosts around the world. Overcome speaking anxiety in a welcoming, multi-speaker stage.
+              </p>
+
+              {/* Highlights */}
+              <div className="space-y-3 pt-2">
+                {[
+                  {
+                    icon: "🎙️",
+                    title: "24/7 AI-Moderated Stage",
+                    desc: "An intelligent AI co-host prompts fun topics, keeps the conversation flowing, and ensures everyone gets a turn to speak."
+                  },
+                  {
+                    icon: "🛡️",
+                    title: "Judgement-Free Listening & Speaking",
+                    desc: "Join initially as a silent listener in the audience. Raise your hand to take the mic only when you feel confident."
+                  },
+                  {
+                    icon: "🌐",
+                    title: "Multi-Accent Real-World Immersion",
+                    desc: "Sharpen your listening comprehension across diverse authentic global accents and conversational speeds."
+                  }
+                ].map((room, i) => (
+                  <div
+                    key={i}
+                    className={`p-4 rounded-2xl border transition-all ${
+                      isLight
+                        ? "bg-white/80 border-slate-200/80 shadow-sm hover:shadow-md"
+                        : "bg-slate-900/60 border-indigo-500/20 hover:border-cyan-400/40"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-xl p-2 rounded-xl bg-blue-50 dark:bg-blue-950/80 border border-blue-100 dark:border-blue-900 shrink-0">
+                        {room.icon}
+                      </span>
+                      <div>
+                        <h4 className={`text-sm font-bold ${isLight ? "text-slate-900" : "text-white"}`}>{room.title}</h4>
+                        <p className={`text-xs mt-1 leading-relaxed ${isLight ? "text-slate-500" : "text-slate-400"}`}>{room.desc}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => onStartCall()}
+                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <span>Join Live Voicerooms</span>
+                  <span>→</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* 12. Footer */}
       <footer className={`border-t py-12 text-xs transition-colors ${
         isLight ? "bg-white border-slate-200 text-slate-600" : "border-indigo-950/60 text-slate-500 bg-[#04070F]"
