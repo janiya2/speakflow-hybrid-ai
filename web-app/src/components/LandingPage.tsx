@@ -89,6 +89,709 @@ interface LandingPageProps {
   currentUser?: any;
 }
 
+const ALL_REVIEWS_50 = [
+  {
+    "id": 1,
+    "name": "Alex_D88",
+    "avatar": "/images/coaches/alex.jpg",
+    "userFlag": "/images/flags/it.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/us.png",
+    "rating": 5,
+    "title": "Best AI Tutor app!",
+    "content": "I used to struggle with speaking English, but with this app, I feel like I'm making faster progress. I like practicing for a few minutes every night without any fear of being judged.",
+    "category": "English",
+    "verified": true,
+    "role": "Software Engineer"
+  },
+  {
+    "id": 2,
+    "name": "Nattapong",
+    "avatar": "/images/coaches/aoi.jpg",
+    "userFlag": "/images/flags/th.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/us.png",
+    "rating": 5,
+    "title": "Better than expensive tutors",
+    "content": "I've paid for many human tutors before, but this is honestly better. I can go at my own pace and talk as long as I want without feeling rushed or self-conscious.",
+    "category": "English",
+    "verified": true,
+    "role": "Marketing Director"
+  },
+  {
+    "id": 3,
+    "name": "felipe.costa87",
+    "avatar": "/images/coaches/tiago.jpg",
+    "userFlag": "/images/flags/br.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/us.png",
+    "rating": 5,
+    "title": "Perfect for my schedule",
+    "content": "Because of my job, I can't book regular classes. Having an AI tutor available 24/7 is a game changer for me. I usually chat during my morning commute and my fluency doubled.",
+    "category": "English",
+    "verified": true,
+    "role": "Architect"
+  },
+  {
+    "id": 4,
+    "name": "milg77",
+    "avatar": "/images/coaches/elena.jpg",
+    "userFlag": "/images/flags/se.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/gb.png",
+    "rating": 5,
+    "title": "Perfect for daily use",
+    "content": "Highly recommend! The AI feedback is instant, and I can practice speaking without feeling stressed or judged. The real-time pronunciation corrections are spot on.",
+    "category": "English",
+    "verified": true,
+    "role": "Product Designer"
+  },
+  {
+    "id": 5,
+    "name": "carlos_valencia",
+    "avatar": "/images/coaches/diego.jpg",
+    "userFlag": "/images/flags/us.png",
+    "learned": "Spanish",
+    "targetFlag": "/images/flags/es.png",
+    "rating": 5,
+    "title": "Aced my Madrid trip!",
+    "content": "Practiced cafe ordering and airport check-ins for 2 weeks prior. When I landed in Madrid, I ordered tapas and spoke to locals completely in Spanish without hesitation!",
+    "category": "Spanish",
+    "verified": true,
+    "role": "Photographer"
+  },
+  {
+    "id": 6,
+    "name": "hannah_tokyo",
+    "avatar": "/images/coaches/chloe.jpg",
+    "userFlag": "/images/flags/gb.png",
+    "learned": "Japanese",
+    "targetFlag": "/images/flags/jp.png",
+    "rating": 5,
+    "title": "Passed JLPT N3 Speaking with flying colors",
+    "content": "Keigo and conversational Japanese always intimidated me. The AI roleplay scenarios broke down every honorific smoothly. Incredible tool for serious learners.",
+    "category": "Japanese",
+    "verified": true,
+    "role": "Translator"
+  },
+  {
+    "id": 7,
+    "name": "marcus_k90",
+    "avatar": "/images/coaches/lucas.jpg",
+    "userFlag": "/images/flags/nl.png",
+    "learned": "German",
+    "targetFlag": "/images/flags/de.png",
+    "rating": 5,
+    "title": "Landed my Munich engineering job",
+    "content": "The job interview simulation was identical to the real interview I had at BMW. It grilled me on technical terms and gave immediate grammar polish.",
+    "category": "German",
+    "verified": true,
+    "role": "Automotive Engineer"
+  },
+  {
+    "id": 8,
+    "name": "sophie_dupuis",
+    "avatar": "/images/coaches/denise.jpg",
+    "userFlag": "/images/flags/ca.png",
+    "learned": "French",
+    "targetFlag": "/images/flags/fr.png",
+    "rating": 5,
+    "title": "Sub-20ms latency feels human",
+    "content": "There is virtually zero awkward lag. The conversation flows naturally like talking on FaceTime with a Parisien native friend.",
+    "category": "French",
+    "verified": true,
+    "role": "Culinary Student"
+  },
+  {
+    "id": 9,
+    "name": "elena_kpop",
+    "avatar": "/images/coaches/sophia.jpg",
+    "userFlag": "/images/flags/ru.png",
+    "learned": "Korean",
+    "targetFlag": "/images/flags/kr.png",
+    "rating": 5,
+    "title": "From Hangul basics to full conversations",
+    "content": "Started from zero six months ago. Today I watched a K-drama and could understand 80% without subtitles. The acoustic feedback on pronunciation is unmatched.",
+    "category": "Korean",
+    "verified": true,
+    "role": "Content Creator"
+  },
+  {
+    "id": 10,
+    "name": "sameera_ceylon",
+    "avatar": "/images/coaches/sameera.jpg",
+    "userFlag": "/images/flags/lk.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/gb.png",
+    "rating": 5,
+    "title": "IELTS 8.0 speaking score unlocked!",
+    "content": "I was stuck at band 6.5 for over a year due to hesitation. Speaking 15 mins daily with SpeakFlow helped me speak continuously with native collocations.",
+    "category": "English",
+    "verified": true,
+    "role": "Civil Engineer"
+  },
+  {
+    "id": 11,
+    "name": "clara_bellini",
+    "avatar": "/images/coaches/matteo.jpg",
+    "userFlag": "/images/flags/us.png",
+    "learned": "Italian",
+    "targetFlag": "/images/flags/it.png",
+    "rating": 5,
+    "title": "Learned Italian for my wedding in Tuscany",
+    "content": "I delivered my wedding toast in fluent Italian! Guests were genuinely crying. Thank you SpeakFlow for building my confidence from scratch.",
+    "category": "Italian",
+    "verified": true,
+    "role": "Event Planner"
+  },
+  {
+    "id": 12,
+    "name": "arjun_tech",
+    "avatar": "/images/coaches/priya.jpg",
+    "userFlag": "/images/flags/in.png",
+    "learned": "Mandarin",
+    "targetFlag": "/images/flags/cn.png",
+    "rating": 5,
+    "title": "Tonal correction is a lifesaver",
+    "content": "Mandarin tones were my biggest fear. SpeakFlow visually plots my pitch against native speaker curves so I instantly know if I'm hitting 1st, 2nd, 3rd, or 4th tone.",
+    "category": "Mandarin",
+    "verified": true,
+    "role": "Supply Chain Lead"
+  },
+  {
+    "id": 13,
+    "name": "mei_ling94",
+    "avatar": "/images/coaches/mei.jpg",
+    "userFlag": "/images/flags/cn.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/us.png",
+    "rating": 5,
+    "title": "Crushed my Stanford MBA interview",
+    "content": "The AI simulated tough cross-examination questions and coached me on executive presence and concise English phrasing. 100% worth it.",
+    "category": "English",
+    "verified": true,
+    "role": "MBA Candidate"
+  },
+  {
+    "id": 14,
+    "name": "daniel_berlin",
+    "avatar": "/images/coaches/oliver.jpg",
+    "userFlag": "/images/flags/gb.png",
+    "learned": "German",
+    "targetFlag": "/images/flags/de.png",
+    "rating": 5,
+    "title": "Zero judgment when making mistakes",
+    "content": "With human teachers, I always froze because I felt silly making der/die/das mistakes. With the AI, I can fail 50 times in a row and it politely corrects me.",
+    "category": "German",
+    "verified": true,
+    "role": "Data Scientist"
+  },
+  {
+    "id": 15,
+    "name": "maria_santos_rio",
+    "avatar": "/images/coaches/sophia.jpg",
+    "userFlag": "/images/flags/br.png",
+    "learned": "Spanish",
+    "targetFlag": "/images/flags/es.png",
+    "rating": 5,
+    "title": "Portuñol to pure Spanish!",
+    "content": "Brazilians often mix Portuguese and Spanish. SpeakFlow specifically flagged my false cognates and ironed out my accent in less than a month.",
+    "category": "Spanish",
+    "verified": true,
+    "role": "Journalist"
+  },
+  {
+    "id": 16,
+    "name": "hugo_london",
+    "avatar": "/images/coaches/alex.jpg",
+    "userFlag": "/images/flags/gb.png",
+    "learned": "French",
+    "targetFlag": "/images/flags/fr.png",
+    "rating": 5,
+    "title": "The pronunciation drill is insane",
+    "content": "French nasal sounds like 'en', 'on', 'un' finally make sense to me. The immediate acoustic feedback tells me how close I am to native Parisian cadence.",
+    "category": "French",
+    "verified": true,
+    "role": "Sommelier"
+  },
+  {
+    "id": 17,
+    "name": "dave_seattle",
+    "avatar": "/images/coaches/kenji.jpg",
+    "userFlag": "/images/flags/us.png",
+    "learned": "Japanese",
+    "targetFlag": "/images/flags/jp.png",
+    "rating": 5,
+    "title": "No more awkward silence in meetings",
+    "content": "I work for a Japanese multinational. Practicing daily small talk scenarios removed the paralysis I used to feel before business calls with Tokyo.",
+    "category": "Japanese",
+    "verified": true,
+    "role": "Program Manager"
+  },
+  {
+    "id": 18,
+    "name": "sara_dubai",
+    "avatar": "/images/coaches/emma.jpg",
+    "userFlag": "/images/flags/ae.png",
+    "learned": "Korean",
+    "targetFlag": "/images/flags/kr.png",
+    "rating": 5,
+    "title": "Feels like chatting with a friend in Seoul",
+    "content": "The voice is so natural and empathetic. It laughs, encourages, and introduces real slang you actually hear on the street in Hongdae.",
+    "category": "Korean",
+    "verified": true,
+    "role": "Fashion Stylist"
+  },
+  {
+    "id": 19,
+    "name": "vikram_bangalore",
+    "avatar": "/images/coaches/priya.jpg",
+    "userFlag": "/images/flags/in.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/us.png",
+    "rating": 5,
+    "title": "Neutralized my accent for US clients",
+    "content": "Helped me speak with crisp pacing and professional enunciation. My clients in California noticed the improvement immediately.",
+    "category": "English",
+    "verified": true,
+    "role": "Solutions Architect"
+  },
+  {
+    "id": 20,
+    "name": "fatima_uae",
+    "avatar": "/images/coaches/sarah.jpg",
+    "userFlag": "/images/flags/ae.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/gb.png",
+    "rating": 5,
+    "title": "Passed OET Nursing Exam first try!",
+    "content": "Practiced clinical roleplay scenarios with patients and doctors. The medical dialogue prompts matched real hospital communication perfectly.",
+    "category": "English",
+    "verified": true,
+    "role": "Registered Nurse"
+  },
+  {
+    "id": 21,
+    "name": "liam_dublin",
+    "avatar": "/images/coaches/lucas.jpg",
+    "userFlag": "/images/flags/gb.png",
+    "learned": "Spanish",
+    "targetFlag": "/images/flags/es.png",
+    "rating": 5,
+    "title": "Best investment of the year",
+    "content": "Duolingo is great for vocabulary, but SpeakFlow is what actually makes you SPEAK out loud. 15 minutes a day changed everything.",
+    "category": "Spanish",
+    "verified": true,
+    "role": "Consultant"
+  },
+  {
+    "id": 22,
+    "name": "marcel_zurich",
+    "avatar": "/images/coaches/matteo.jpg",
+    "userFlag": "/images/flags/de.png",
+    "learned": "Italian",
+    "targetFlag": "/images/flags/it.png",
+    "rating": 5,
+    "title": "Real-time speech repair is brilliant",
+    "content": "When I say a sentence with incorrect preposition, it gently suggests the idiomatic Italian way in real time on screen without interrupting my train of thought.",
+    "category": "Italian",
+    "verified": true,
+    "role": "Financial Analyst"
+  },
+  {
+    "id": 23,
+    "name": "ananya_kolkata",
+    "avatar": "/images/coaches/priya.jpg",
+    "userFlag": "/images/flags/in.png",
+    "learned": "German",
+    "targetFlag": "/images/flags/de.png",
+    "rating": 5,
+    "title": "Got my Goethe-Zertifikat B2!",
+    "content": "The German case system (Nominativ, Akkusativ, Dativ, Genitiv) used to make my brain hurt. Roleplaying scenarios made the grammar second nature.",
+    "category": "German",
+    "verified": true,
+    "role": "Biomedical Researcher"
+  },
+  {
+    "id": 24,
+    "name": "kevin_sydney",
+    "avatar": "/images/coaches/oliver.jpg",
+    "userFlag": "/images/flags/gb.png",
+    "learned": "Japanese",
+    "targetFlag": "/images/flags/jp.png",
+    "rating": 5,
+    "title": "The ramen shop roleplay was 100% accurate",
+    "content": "Practiced ticket machines, customizing noodles, asking for kaedama. When I visited Shinjuku last week, I sounded like a seasoned Tokyoite!",
+    "category": "Japanese",
+    "verified": true,
+    "role": "Chef"
+  },
+  {
+    "id": 25,
+    "name": "thiago_sp",
+    "avatar": "/images/coaches/tiago.jpg",
+    "userFlag": "/images/flags/br.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/us.png",
+    "rating": 5,
+    "title": "Priceless for introverts",
+    "content": "I get anxious talking to strangers. SpeakFlow is the safe space I always needed. I built confidence here and now lead meetings in English.",
+    "category": "English",
+    "verified": true,
+    "role": "DevOps Engineer"
+  },
+  {
+    "id": 26,
+    "name": "nadia_cairo",
+    "avatar": "/images/coaches/denise.jpg",
+    "userFlag": "/images/flags/ae.png",
+    "learned": "French",
+    "targetFlag": "/images/flags/fr.png",
+    "rating": 5,
+    "title": "Passed DELF B2 Oral exam",
+    "content": "The examiner complimented my argumentative flow and natural connective words (d'ailleurs, en revanche). All drilled on SpeakFlow!",
+    "category": "French",
+    "verified": true,
+    "role": "Lawyer"
+  },
+  {
+    "id": 27,
+    "name": "ben_austin",
+    "avatar": "/images/coaches/alex.jpg",
+    "userFlag": "/images/flags/us.png",
+    "learned": "Spanish",
+    "targetFlag": "/images/flags/es.png",
+    "rating": 5,
+    "title": "Instant conversational reflexes",
+    "content": "Traditional flashcards teach you to translate in your head. SpeakFlow trains you to respond in under 1 second without translation delay.",
+    "category": "Spanish",
+    "verified": true,
+    "role": "Real Estate Broker"
+  },
+  {
+    "id": 28,
+    "name": "charlotte_melb",
+    "avatar": "/images/coaches/chloe.jpg",
+    "userFlag": "/images/flags/gb.png",
+    "learned": "Korean",
+    "targetFlag": "/images/flags/kr.png",
+    "rating": 5,
+    "title": "Authentic conversational pacing",
+    "content": "It doesn't sound like robotic textbook audio. The intonations, friendly interjections, and speech cadence are truly indistinguishable from native Korean.",
+    "category": "Korean",
+    "verified": true,
+    "role": "Graphic Designer"
+  },
+  {
+    "id": 29,
+    "name": "hiroshi_osaka",
+    "avatar": "/images/coaches/kenji.jpg",
+    "userFlag": "/images/flags/jp.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/us.png",
+    "rating": 5,
+    "title": "Overcame the Katakana English habit",
+    "content": "Pronouncing 'R' vs 'L' and 'TH' sounds was always hard. The visual phoneme feedback helped me reshape my mouth position accurately.",
+    "category": "English",
+    "verified": true,
+    "role": "Game Developer"
+  },
+  {
+    "id": 30,
+    "name": "rebecca_toronto",
+    "avatar": "/images/coaches/emma.jpg",
+    "userFlag": "/images/flags/ca.png",
+    "learned": "Mandarin",
+    "targetFlag": "/images/flags/cn.png",
+    "rating": 5,
+    "title": "Bilingual negotiation mastery",
+    "content": "Roleplayed high-stakes supplier negotiations in Shenzhen. Learned commercial idioms (合作共赢) that impressed my Chinese partners.",
+    "category": "Mandarin",
+    "verified": true,
+    "role": "Import Specialist"
+  },
+  {
+    "id": 31,
+    "name": "anna_warsaw",
+    "avatar": "/images/coaches/elena.jpg",
+    "userFlag": "/images/flags/ru.png",
+    "learned": "Italian",
+    "targetFlag": "/images/flags/it.png",
+    "rating": 5,
+    "title": "The cultural nuances are astonishing",
+    "content": "Not just grammar, but how Italians actually converse: formal Lei vs informal Tu, gestures in conversation, polite refusal formulas.",
+    "category": "Italian",
+    "verified": true,
+    "role": "Art Historian"
+  },
+  {
+    "id": 32,
+    "name": "kavinda_kandy",
+    "avatar": "/images/coaches/sameera.jpg",
+    "userFlag": "/images/flags/lk.png",
+    "learned": "German",
+    "targetFlag": "/images/flags/de.png",
+    "rating": 5,
+    "title": "Got accepted into TU Munich!",
+    "content": "Practiced my academic motivation interview every morning for three weeks. The feedback on sentence inversion and Nebensätze was gold.",
+    "category": "German",
+    "verified": true,
+    "role": "CS Master's Student"
+  },
+  {
+    "id": 33,
+    "name": "olga_saintp",
+    "avatar": "/images/coaches/elena.jpg",
+    "userFlag": "/images/flags/ru.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/gb.png",
+    "rating": 5,
+    "title": "Polished my British English RP accent",
+    "content": "Targeted British pronunciation nuances: non-rhoticity, glottal stops, and cadence. Sounded like I lived in London for 5 years.",
+    "category": "English",
+    "verified": true,
+    "role": "Voiceover Artist"
+  },
+  {
+    "id": 34,
+    "name": "sam_vancouver",
+    "avatar": "/images/coaches/oliver.jpg",
+    "userFlag": "/images/flags/ca.png",
+    "learned": "Spanish",
+    "targetFlag": "/images/flags/es.png",
+    "rating": 5,
+    "title": "Zero hesitation while backpacking South America",
+    "content": "Traveled through Colombia, Peru, and Argentina. Never opened Google Translate once because SpeakFlow gave me active speaking muscle memory.",
+    "category": "Spanish",
+    "verified": true,
+    "role": "Travel Writer"
+  },
+  {
+    "id": 35,
+    "name": "maya_singapore",
+    "avatar": "/images/coaches/mei.jpg",
+    "userFlag": "/images/flags/cn.png",
+    "learned": "French",
+    "targetFlag": "/images/flags/fr.png",
+    "rating": 5,
+    "title": "Subjunctive mood conquered finally!",
+    "content": "Subjonctif used to terrify me. After conversational roleplays with Chloe, it clicked naturally without having to memorize dry conjugation tables.",
+    "category": "French",
+    "verified": true,
+    "role": "Diplomatic Officer"
+  },
+  {
+    "id": 36,
+    "name": "tom_manchester",
+    "avatar": "/images/coaches/lucas.jpg",
+    "userFlag": "/images/flags/gb.png",
+    "learned": "Japanese",
+    "targetFlag": "/images/flags/jp.png",
+    "rating": 5,
+    "title": "The duplex voice is mindblowing",
+    "content": "You can interrupt, ask 'what does that word mean?', and it explains smoothly before continuing the story. It's like having Kenji right beside you.",
+    "category": "Japanese",
+    "verified": true,
+    "role": "Anime Illustrator"
+  },
+  {
+    "id": 37,
+    "name": "sunwoo_gangnam",
+    "avatar": "/images/coaches/minjun.jpg",
+    "userFlag": "/images/flags/kr.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/us.png",
+    "rating": 5,
+    "title": "TOEIC Speaking Level 8 in 60 days",
+    "content": "Jumped from 130 to 190 on TOEIC Speaking. My company promoted me to the overseas business division. Forever grateful to SpeakFlow!",
+    "category": "English",
+    "verified": true,
+    "role": "Account Executive"
+  },
+  {
+    "id": 38,
+    "name": "elena_madrid",
+    "avatar": "/images/coaches/sophia.jpg",
+    "userFlag": "/images/flags/es.png",
+    "learned": "German",
+    "targetFlag": "/images/flags/de.png",
+    "rating": 5,
+    "title": "Seamless commute practice",
+    "content": "I put my AirPods on while walking my dog and practice conversational German. 20 minutes a day added up to effortless fluency in 4 months.",
+    "category": "German",
+    "verified": true,
+    "role": "Physiotherapist"
+  },
+  {
+    "id": 39,
+    "name": "lucas_curitiba",
+    "avatar": "/images/coaches/tiago.jpg",
+    "userFlag": "/images/flags/br.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/us.png",
+    "rating": 5,
+    "title": "Real-time redline grammar repair",
+    "content": "The subtle grammar corrections on screen while speaking are revolutionary. I learn from my mistakes instantly without breaking flow.",
+    "category": "English",
+    "verified": true,
+    "role": "Full Stack Dev"
+  },
+  {
+    "id": 40,
+    "name": "chloe_bordeaux",
+    "avatar": "/images/coaches/chloe.jpg",
+    "userFlag": "/images/flags/fr.png",
+    "learned": "Spanish",
+    "targetFlag": "/images/flags/es.png",
+    "rating": 5,
+    "title": "The best language app ever built",
+    "content": "I’ve tried Babbel, Duolingo, iTalki, and Rosetta Stone. SpeakFlow is in a totally different league. The duplex AI voice engine is magic.",
+    "category": "Spanish",
+    "verified": true,
+    "role": "Brand Manager"
+  },
+  {
+    "id": 41,
+    "name": "rajesh_mumbai",
+    "avatar": "/images/coaches/priya.jpg",
+    "userFlag": "/images/flags/in.png",
+    "learned": "Korean",
+    "targetFlag": "/images/flags/kr.png",
+    "rating": 5,
+    "title": "Honorific speech levels finally made clear",
+    "content": "Jondaetmal vs Banmal used to confuse me. The AI tutor adjusts tone dynamically based on the social hierarchy scenario. Simply brilliant.",
+    "category": "Korean",
+    "verified": true,
+    "role": "Electronics Engineer"
+  },
+  {
+    "id": 42,
+    "name": "dinesh_colombo",
+    "avatar": "/images/coaches/sameera.jpg",
+    "userFlag": "/images/flags/lk.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/gb.png",
+    "rating": 5,
+    "title": "No more stuttering or searching for words",
+    "content": "I always had the vocabulary in my head but couldn't get words out fast enough. SpeakFlow trained my vocal reflexes like gym reps.",
+    "category": "English",
+    "verified": true,
+    "role": "Chartered Accountant"
+  },
+  {
+    "id": 43,
+    "name": "james_boston",
+    "avatar": "/images/coaches/alex.jpg",
+    "userFlag": "/images/flags/us.png",
+    "learned": "French",
+    "targetFlag": "/images/flags/fr.png",
+    "rating": 5,
+    "title": "Daily habit I actually look forward to",
+    "content": "Streak features and instant celebratory feedback keep you hooked. I’m on day 84 and speaking French feels as natural as breathing now.",
+    "category": "French",
+    "verified": true,
+    "role": "Professor"
+  },
+  {
+    "id": 44,
+    "name": "sara_stockholm",
+    "avatar": "/images/coaches/sarah.jpg",
+    "userFlag": "/images/flags/se.png",
+    "learned": "Italian",
+    "targetFlag": "/images/flags/it.png",
+    "rating": 5,
+    "title": "Milano fashion week ready!",
+    "content": "Practiced textile and fashion terminology with Matteo. When I arrived in Milan, I negotiated contracts directly in Italian. Huge win!",
+    "category": "Italian",
+    "verified": true,
+    "role": "Fashion Buyer"
+  },
+  {
+    "id": 45,
+    "name": "grace_auckland",
+    "avatar": "/images/coaches/emma.jpg",
+    "userFlag": "/images/flags/gb.png",
+    "learned": "Mandarin",
+    "targetFlag": "/images/flags/cn.png",
+    "rating": 5,
+    "title": "Pinyin and Hanzi reading aids are top tier",
+    "content": "Whenever I get stuck on a character, the instant transliteration and meaning popup saves me immediately. Truly an empowering learning experience.",
+    "category": "Mandarin",
+    "verified": true,
+    "role": "FinTech Analyst"
+  },
+  {
+    "id": 46,
+    "name": "pavel_prague",
+    "avatar": "/images/coaches/lucas.jpg",
+    "userFlag": "/images/flags/ru.png",
+    "learned": "German",
+    "targetFlag": "/images/flags/de.png",
+    "rating": 5,
+    "title": "Passed medical approbation German test",
+    "content": "The Fachsprachenprüfung is notoriously hard for foreign doctors. SpeakFlow's clinical scenarios made me pass on my very first attempt.",
+    "category": "German",
+    "verified": true,
+    "role": "Surgeon"
+  },
+  {
+    "id": 47,
+    "name": "thilina_galle",
+    "avatar": "/images/coaches/sameera.jpg",
+    "userFlag": "/images/flags/lk.png",
+    "learned": "Spanish",
+    "targetFlag": "/images/flags/es.png",
+    "rating": 5,
+    "title": "Hospitality Spanish mastered",
+    "content": "As a resort manager in Galle, I get Spanish guests constantly. Being able to greet them warmly and handle their requests in Spanish boosted our 5-star reviews.",
+    "category": "Spanish",
+    "verified": true,
+    "role": "Hotel General Manager"
+  },
+  {
+    "id": 48,
+    "name": "clara_lyon",
+    "avatar": "/images/coaches/chloe.jpg",
+    "userFlag": "/images/flags/fr.png",
+    "learned": "Japanese",
+    "targetFlag": "/images/flags/jp.png",
+    "rating": 5,
+    "title": "Japanese pitch accent unlocked",
+    "content": "Pitch accent is usually completely ignored by Western textbooks. Kenji corrected my pitch in words like 'hashi' (bridge vs chopsticks). Masterpiece app.",
+    "category": "Japanese",
+    "verified": true,
+    "role": "Linguistics Student"
+  },
+  {
+    "id": 49,
+    "name": "ana_porto",
+    "avatar": "/images/coaches/sophia.jpg",
+    "userFlag": "/images/flags/br.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/us.png",
+    "rating": 5,
+    "title": "Gave a TEDx talk in English!",
+    "content": "Rehearsed my 15-minute speech 40 times with the AI tutor. It timed my pauses, warned me when I spoke too fast, and boosted my vocal projection.",
+    "category": "English",
+    "verified": true,
+    "role": "Keynote Speaker"
+  },
+  {
+    "id": 50,
+    "name": "kenji_kyoto",
+    "avatar": "/images/coaches/kenji.jpg",
+    "userFlag": "/images/flags/jp.png",
+    "learned": "English",
+    "targetFlag": "/images/flags/us.png",
+    "rating": 5,
+    "title": "Overcame 20 years of English fear",
+    "content": "I studied English grammar in school for 10 years but could never speak a single sentence without freezing. With SpeakFlow, I finally speak with freedom and joy.",
+    "category": "English",
+    "verified": true,
+    "role": "Ceramics Master"
+  }
+];
+
 export default function LandingPage({
   onStartCall,
   onOpenDashboard,
@@ -106,6 +809,8 @@ export default function LandingPage({
   const [isPlayingDemoVoice, setIsPlayingDemoVoice] = useState(false);
   const [activeLanguageCard, setActiveLanguageCard] = useState<string>("Sinhala");
   const [activeScenarioIdx, setActiveScenarioIdx] = useState<number>(0);
+  const [selectedReviewFilter, setSelectedReviewFilter] = useState<string>("All");
+  const [activeReviewModal, setActiveReviewModal] = useState<any | null>(null);
 
   useEffect(() => {
     if (themeMode) {
@@ -1585,6 +2290,498 @@ export default function LandingPage({
             </div>
           </div>
         </div>
+      </section>
+
+
+      {/* 11. Loved by Learners Around the World - Testimonials & Social Proof (50 Global Reviews) */}
+      <section id="reviews" className={`py-16 sm:py-24 relative overflow-hidden text-center ${
+        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
+      }`}>
+        {/* Edge Gradient Fade Masks */}
+        <div className={`pointer-events-none absolute left-0 top-0 bottom-0 w-24 sm:w-48 z-20 ${
+          isLight ? "bg-gradient-to-r from-white via-white/80 to-transparent" : "bg-gradient-to-r from-[#070A14] via-[#070A14]/80 to-transparent"
+        }`} />
+        <div className={`pointer-events-none absolute right-0 top-0 bottom-0 w-24 sm:w-48 z-20 ${
+          isLight ? "bg-gradient-to-l from-white via-white/80 to-transparent" : "bg-gradient-to-l from-[#070A14] via-[#070A14]/80 to-transparent"
+        }`} />
+
+        <div className="w-full space-y-10 sm:space-y-12">
+          {/* Section Header */}
+          <div className="space-y-4 max-w-4xl mx-auto text-center px-4">
+            <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase border shadow-xs ${
+              isLight
+                ? "bg-blue-50 border-blue-200 text-blue-700"
+                : "bg-blue-950/40 border-blue-800/40 text-blue-300"
+            }`}>
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+              Wall of Love • 140+ Countries
+            </div>
+
+            <h2 className={`text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight ${
+              isLight ? "text-[#0F172A]" : "text-white"
+            }`}>
+              Loved by learners <span className={isLight ? "text-blue-600 font-extrabold" : "text-blue-400 font-extrabold"}>around the world</span>
+            </h2>
+
+            <p className={`text-sm sm:text-base leading-relaxed max-w-2xl mx-auto font-medium ${
+              isLight ? "text-slate-600" : "text-slate-300"
+            }`}>
+              Over 100,000 real people practice daily with SpeakFlow AI to conquer speaking anxiety, ace overseas interviews, and master authentic fluency.
+            </p>
+
+            {/* Social Proof Badges with Laurel Wreaths (Reference Image Style) */}
+            <div className="pt-4 flex flex-wrap items-center justify-center gap-8 sm:gap-16">
+              {/* Laurel Wreath 1: Ratings */}
+              <div className="flex items-center gap-2 sm:gap-3 group">
+                {/* Left Branch */}
+                <svg viewBox="0 0 36 78" fill="currentColor" className="w-8 sm:w-10 h-16 sm:h-20 text-blue-500 shrink-0" aria-hidden="true">
+                  <path d="M 10 4 C 26 22 28 48 8 72" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                  <ellipse cx="11" cy="7" rx="3.5" ry="7.5" transform="rotate(-35 11 7)" />
+                  <ellipse cx="17" cy="9" rx="3.5" ry="7.5" transform="rotate(20 17 9)" />
+                  <ellipse cx="17" cy="18" rx="3.5" ry="7.5" transform="rotate(-20 17 18)" />
+                  <ellipse cx="24" cy="21" rx="3.5" ry="7.5" transform="rotate(35 24 21)" />
+                  <ellipse cx="21" cy="30" rx="3.5" ry="7.5" transform="rotate(-5 21 30)" />
+                  <ellipse cx="28" cy="33" rx="3.5" ry="7.5" transform="rotate(45 28 33)" />
+                  <ellipse cx="21" cy="42" rx="3.5" ry="7.5" transform="rotate(10 21 42)" />
+                  <ellipse cx="27" cy="46" rx="3.5" ry="7.5" transform="rotate(60 27 46)" />
+                  <ellipse cx="17" cy="54" rx="3.5" ry="7.5" transform="rotate(25 17 54)" />
+                  <ellipse cx="22" cy="59" rx="3.5" ry="7.5" transform="rotate(75 22 59)" />
+                  <ellipse cx="10" cy="64" rx="3.5" ry="7.5" transform="rotate(40 10 64)" />
+                  <ellipse cx="14" cy="69" rx="3.5" ry="7.5" transform="rotate(85 14 69)" />
+                </svg>
+
+                <div className="text-center px-1">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <span className="text-amber-400 text-2xl sm:text-3xl">★</span>
+                    <span className={`text-3xl sm:text-4xl font-black tracking-tight ${
+                      isLight ? "text-slate-900" : "text-white"
+                    }`}>
+                      4.9
+                    </span>
+                  </div>
+                  <div className={`text-xs sm:text-sm font-semibold mt-0.5 ${
+                    isLight ? "text-slate-500" : "text-slate-400"
+                  }`}>
+                    2k+ ratings
+                  </div>
+                </div>
+
+                {/* Right Branch (flipped) */}
+                <svg viewBox="0 0 36 78" fill="currentColor" className="w-8 sm:w-10 h-16 sm:h-20 text-blue-500 shrink-0 -scale-x-100" aria-hidden="true">
+                  <path d="M 10 4 C 26 22 28 48 8 72" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                  <ellipse cx="11" cy="7" rx="3.5" ry="7.5" transform="rotate(-35 11 7)" />
+                  <ellipse cx="17" cy="9" rx="3.5" ry="7.5" transform="rotate(20 17 9)" />
+                  <ellipse cx="17" cy="18" rx="3.5" ry="7.5" transform="rotate(-20 17 18)" />
+                  <ellipse cx="24" cy="21" rx="3.5" ry="7.5" transform="rotate(35 24 21)" />
+                  <ellipse cx="21" cy="30" rx="3.5" ry="7.5" transform="rotate(-5 21 30)" />
+                  <ellipse cx="28" cy="33" rx="3.5" ry="7.5" transform="rotate(45 28 33)" />
+                  <ellipse cx="21" cy="42" rx="3.5" ry="7.5" transform="rotate(10 21 42)" />
+                  <ellipse cx="27" cy="46" rx="3.5" ry="7.5" transform="rotate(60 27 46)" />
+                  <ellipse cx="17" cy="54" rx="3.5" ry="7.5" transform="rotate(25 17 54)" />
+                  <ellipse cx="22" cy="59" rx="3.5" ry="7.5" transform="rotate(75 22 59)" />
+                  <ellipse cx="10" cy="64" rx="3.5" ry="7.5" transform="rotate(40 10 64)" />
+                  <ellipse cx="14" cy="69" rx="3.5" ry="7.5" transform="rotate(85 14 69)" />
+                </svg>
+              </div>
+
+              {/* Laurel Wreath 2: Active Learners */}
+              <div className="flex items-center gap-2 sm:gap-3 group">
+                {/* Left Branch */}
+                <svg viewBox="0 0 36 78" fill="currentColor" className="w-8 sm:w-10 h-16 sm:h-20 text-blue-500 shrink-0" aria-hidden="true">
+                  <path d="M 10 4 C 26 22 28 48 8 72" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                  <ellipse cx="11" cy="7" rx="3.5" ry="7.5" transform="rotate(-35 11 7)" />
+                  <ellipse cx="17" cy="9" rx="3.5" ry="7.5" transform="rotate(20 17 9)" />
+                  <ellipse cx="17" cy="18" rx="3.5" ry="7.5" transform="rotate(-20 17 18)" />
+                  <ellipse cx="24" cy="21" rx="3.5" ry="7.5" transform="rotate(35 24 21)" />
+                  <ellipse cx="21" cy="30" rx="3.5" ry="7.5" transform="rotate(-5 21 30)" />
+                  <ellipse cx="28" cy="33" rx="3.5" ry="7.5" transform="rotate(45 28 33)" />
+                  <ellipse cx="21" cy="42" rx="3.5" ry="7.5" transform="rotate(10 21 42)" />
+                  <ellipse cx="27" cy="46" rx="3.5" ry="7.5" transform="rotate(60 27 46)" />
+                  <ellipse cx="17" cy="54" rx="3.5" ry="7.5" transform="rotate(25 17 54)" />
+                  <ellipse cx="22" cy="59" rx="3.5" ry="7.5" transform="rotate(75 22 59)" />
+                  <ellipse cx="10" cy="64" rx="3.5" ry="7.5" transform="rotate(40 10 64)" />
+                  <ellipse cx="14" cy="69" rx="3.5" ry="7.5" transform="rotate(85 14 69)" />
+                </svg>
+
+                <div className="text-center px-1">
+                  <div className={`text-3xl sm:text-4xl font-black tracking-tight ${
+                    isLight ? "text-slate-900" : "text-white"
+                  }`}>
+                    100K
+                  </div>
+                  <div className={`text-xs sm:text-sm font-semibold mt-0.5 ${
+                    isLight ? "text-slate-500" : "text-slate-400"
+                  }`}>
+                    learners
+                  </div>
+                </div>
+
+                {/* Right Branch (flipped) */}
+                <svg viewBox="0 0 36 78" fill="currentColor" className="w-8 sm:w-10 h-16 sm:h-20 text-blue-500 shrink-0 -scale-x-100" aria-hidden="true">
+                  <path d="M 10 4 C 26 22 28 48 8 72" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                  <ellipse cx="11" cy="7" rx="3.5" ry="7.5" transform="rotate(-35 11 7)" />
+                  <ellipse cx="17" cy="9" rx="3.5" ry="7.5" transform="rotate(20 17 9)" />
+                  <ellipse cx="17" cy="18" rx="3.5" ry="7.5" transform="rotate(-20 17 18)" />
+                  <ellipse cx="24" cy="21" rx="3.5" ry="7.5" transform="rotate(35 24 21)" />
+                  <ellipse cx="21" cy="30" rx="3.5" ry="7.5" transform="rotate(-5 21 30)" />
+                  <ellipse cx="28" cy="33" rx="3.5" ry="7.5" transform="rotate(45 28 33)" />
+                  <ellipse cx="21" cy="42" rx="3.5" ry="7.5" transform="rotate(10 21 42)" />
+                  <ellipse cx="27" cy="46" rx="3.5" ry="7.5" transform="rotate(60 27 46)" />
+                  <ellipse cx="17" cy="54" rx="3.5" ry="7.5" transform="rotate(25 17 54)" />
+                  <ellipse cx="22" cy="59" rx="3.5" ry="7.5" transform="rotate(75 22 59)" />
+                  <ellipse cx="10" cy="64" rx="3.5" ry="7.5" transform="rotate(40 10 64)" />
+                  <ellipse cx="14" cy="69" rx="3.5" ry="7.5" transform="rotate(85 14 69)" />
+                </svg>
+              </div>
+
+              {/* Laurel Wreath 3: Fluency Goal Rate (Optional on larger displays) */}
+              <div className="hidden md:flex items-center gap-2 sm:gap-3 group">
+                <svg viewBox="0 0 36 78" fill="currentColor" className="w-8 sm:w-10 h-16 sm:h-20 text-blue-500 shrink-0" aria-hidden="true">
+                  <path d="M 10 4 C 26 22 28 48 8 72" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                  <ellipse cx="11" cy="7" rx="3.5" ry="7.5" transform="rotate(-35 11 7)" />
+                  <ellipse cx="17" cy="9" rx="3.5" ry="7.5" transform="rotate(20 17 9)" />
+                  <ellipse cx="17" cy="18" rx="3.5" ry="7.5" transform="rotate(-20 17 18)" />
+                  <ellipse cx="24" cy="21" rx="3.5" ry="7.5" transform="rotate(35 24 21)" />
+                  <ellipse cx="21" cy="30" rx="3.5" ry="7.5" transform="rotate(-5 21 30)" />
+                  <ellipse cx="28" cy="33" rx="3.5" ry="7.5" transform="rotate(45 28 33)" />
+                  <ellipse cx="21" cy="42" rx="3.5" ry="7.5" transform="rotate(10 21 42)" />
+                  <ellipse cx="27" cy="46" rx="3.5" ry="7.5" transform="rotate(60 27 46)" />
+                  <ellipse cx="17" cy="54" rx="3.5" ry="7.5" transform="rotate(25 17 54)" />
+                  <ellipse cx="22" cy="59" rx="3.5" ry="7.5" transform="rotate(75 22 59)" />
+                  <ellipse cx="10" cy="64" rx="3.5" ry="7.5" transform="rotate(40 10 64)" />
+                  <ellipse cx="14" cy="69" rx="3.5" ry="7.5" transform="rotate(85 14 69)" />
+                </svg>
+
+                <div className="text-center px-1">
+                  <div className={`text-3xl sm:text-4xl font-black tracking-tight ${
+                    isLight ? "text-slate-900" : "text-white"
+                  }`}>
+                    98.7%
+                  </div>
+                  <div className={`text-xs sm:text-sm font-semibold mt-0.5 ${
+                    isLight ? "text-slate-500" : "text-slate-400"
+                  }`}>
+                    fluency score
+                  </div>
+                </div>
+
+                <svg viewBox="0 0 36 78" fill="currentColor" className="w-8 sm:w-10 h-16 sm:h-20 text-blue-500 shrink-0 -scale-x-100" aria-hidden="true">
+                  <path d="M 10 4 C 26 22 28 48 8 72" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                  <ellipse cx="11" cy="7" rx="3.5" ry="7.5" transform="rotate(-35 11 7)" />
+                  <ellipse cx="17" cy="9" rx="3.5" ry="7.5" transform="rotate(20 17 9)" />
+                  <ellipse cx="17" cy="18" rx="3.5" ry="7.5" transform="rotate(-20 17 18)" />
+                  <ellipse cx="24" cy="21" rx="3.5" ry="7.5" transform="rotate(35 24 21)" />
+                  <ellipse cx="21" cy="30" rx="3.5" ry="7.5" transform="rotate(-5 21 30)" />
+                  <ellipse cx="28" cy="33" rx="3.5" ry="7.5" transform="rotate(45 28 33)" />
+                  <ellipse cx="21" cy="42" rx="3.5" ry="7.5" transform="rotate(10 21 42)" />
+                  <ellipse cx="27" cy="46" rx="3.5" ry="7.5" transform="rotate(60 27 46)" />
+                  <ellipse cx="17" cy="54" rx="3.5" ry="7.5" transform="rotate(25 17 54)" />
+                  <ellipse cx="22" cy="59" rx="3.5" ry="7.5" transform="rotate(75 22 59)" />
+                  <ellipse cx="10" cy="64" rx="3.5" ry="7.5" transform="rotate(40 10 64)" />
+                  <ellipse cx="14" cy="69" rx="3.5" ry="7.5" transform="rotate(85 14 69)" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Interactive Category Filter Pills */}
+          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-4 max-w-4xl mx-auto">
+            {[
+              { label: "All 50 Reviews", value: "All" },
+              { label: "English 🇺🇸", value: "English" },
+              { label: "Spanish 🇪🇸", value: "Spanish" },
+              { label: "Japanese 🇯🇵", value: "Japanese" },
+              { label: "French 🇫🇷", value: "French" },
+              { label: "German 🇩🇪", value: "German" },
+              { label: "Korean 🇰🇷", value: "Korean" },
+              { label: "Italian 🇮🇹", value: "Italian" },
+              { label: "Mandarin 🇨🇳", value: "Mandarin" },
+            ].map((cat) => (
+              <button
+                key={cat.value}
+                onClick={() => setSelectedReviewFilter(cat.value)}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer border ${
+                  selectedReviewFilter === cat.value
+                    ? isLight
+                      ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                      : "bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/25"
+                    : isLight
+                    ? "bg-white/80 text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-white"
+                    : "bg-slate-900/60 text-slate-300 border-white/10 hover:border-white/20 hover:bg-slate-900"
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          {/* 50 REVIEWS DUAL BIDIRECTIONAL MARQUEE STREAMS (Smooth, readable, low speed) */}
+          <div className="space-y-4 sm:space-y-6 overflow-hidden">
+            {/* STREAM 1: Gliding Left (animate-marquee-slow) */}
+            <div className="overflow-hidden whitespace-nowrap">
+              <div className="animate-marquee-slow flex items-center gap-4 sm:gap-6 py-2">
+                {[...ALL_REVIEWS_50.slice(0, 25), ...ALL_REVIEWS_50.slice(0, 25)].map((item, idx) => {
+                  const isMatching = selectedReviewFilter === "All" || item.category === selectedReviewFilter;
+                  return (
+                    <div
+                      key={`s1-${item.id}-${idx}`}
+                      onClick={() => setActiveReviewModal(item)}
+                      className={`group relative w-[310px] sm:w-[350px] p-4 sm:p-5 rounded-2xl border transition-all duration-300 shrink-0 text-left cursor-pointer hover:-translate-y-1 ${
+                        isMatching
+                          ? isLight
+                            ? "bg-white/95 border-slate-200/90 shadow-sm hover:shadow-xl hover:border-blue-400"
+                            : "bg-slate-900/90 border-white/10 shadow-lg hover:shadow-blue-500/10 hover:border-blue-400/50"
+                          : isLight
+                          ? "bg-white/40 border-slate-100 opacity-40 hover:opacity-100"
+                          : "bg-slate-900/40 border-white/5 opacity-40 hover:opacity-100"
+                      }`}
+                    >
+                      {/* Top Bar: Avatar, User Details, Learned Badge, Quote Symbol */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm shrink-0">
+                            <Image src={item.avatar} alt={item.name} fill className="object-cover" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className={`text-sm font-bold truncate ${isLight ? "text-slate-900" : "text-white"}`}>
+                              {item.name}
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                                <span>Learned</span>
+                                <span className="w-3.5 h-2.5 relative overflow-hidden rounded-xs shrink-0 inline-block align-middle">
+                                  <Image src={item.targetFlag} alt={item.learned} fill className="object-cover" />
+                                </span>
+                                <span className={`font-bold ${isLight ? "text-slate-800" : "text-slate-200"}`}>
+                                  {item.learned}
+                                </span>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <span className={`text-2xl font-serif select-none transition-colors ${
+                          isLight ? "text-slate-300 group-hover:text-blue-500" : "text-slate-700 group-hover:text-blue-400"
+                        }`}>
+                          &rdquo;
+                        </span>
+                      </div>
+
+                      {/* 5 Stars */}
+                      <div className="flex items-center gap-1 mb-2">
+                        {[...Array(5)].map((_, i) => (
+                          <span key={i} className="text-amber-400 text-xs">★</span>
+                        ))}
+                        <span className="text-[10px] font-bold text-slate-400 ml-1">5.0</span>
+                      </div>
+
+                      {/* Review Title */}
+                      <h4 className={`text-sm font-bold tracking-tight mb-1.5 truncate ${
+                        isLight ? "text-slate-900" : "text-white"
+                      }`}>
+                        {item.title}
+                      </h4>
+
+                      {/* Review Quote Text */}
+                      <p className={`text-xs leading-relaxed line-clamp-3 font-normal ${
+                        isLight ? "text-slate-600" : "text-slate-300"
+                      }`}>
+                        {item.content}
+                      </p>
+
+                      {/* Footer Stamp */}
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[10px]">
+                        <span className="text-emerald-500 font-semibold flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          Verified Learner
+                        </span>
+                        <span className={`font-medium ${isLight ? "text-slate-400" : "text-slate-400"}`}>
+                          {item.role}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* STREAM 2: Gliding Right (animate-marquee-reverse-slow) */}
+            <div className="overflow-hidden whitespace-nowrap">
+              <div className="animate-marquee-reverse-slow flex items-center gap-4 sm:gap-6 py-2">
+                {[...ALL_REVIEWS_50.slice(25, 50), ...ALL_REVIEWS_50.slice(25, 50)].map((item, idx) => {
+                  const isMatching = selectedReviewFilter === "All" || item.category === selectedReviewFilter;
+                  return (
+                    <div
+                      key={`s2-${item.id}-${idx}`}
+                      onClick={() => setActiveReviewModal(item)}
+                      className={`group relative w-[310px] sm:w-[350px] p-4 sm:p-5 rounded-2xl border transition-all duration-300 shrink-0 text-left cursor-pointer hover:-translate-y-1 ${
+                        isMatching
+                          ? isLight
+                            ? "bg-white/95 border-slate-200/90 shadow-sm hover:shadow-xl hover:border-blue-400"
+                            : "bg-slate-900/90 border-white/10 shadow-lg hover:shadow-blue-500/10 hover:border-blue-400/50"
+                          : isLight
+                          ? "bg-white/40 border-slate-100 opacity-40 hover:opacity-100"
+                          : "bg-slate-900/40 border-white/5 opacity-40 hover:opacity-100"
+                      }`}
+                    >
+                      {/* Top Bar: Avatar, User Details, Learned Badge, Quote Symbol */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm shrink-0">
+                            <Image src={item.avatar} alt={item.name} fill className="object-cover" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className={`text-sm font-bold truncate ${isLight ? "text-slate-900" : "text-white"}`}>
+                              {item.name}
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                                <span>Learned</span>
+                                <span className="w-3.5 h-2.5 relative overflow-hidden rounded-xs shrink-0 inline-block align-middle">
+                                  <Image src={item.targetFlag} alt={item.learned} fill className="object-cover" />
+                                </span>
+                                <span className={`font-bold ${isLight ? "text-slate-800" : "text-slate-200"}`}>
+                                  {item.learned}
+                                </span>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <span className={`text-2xl font-serif select-none transition-colors ${
+                          isLight ? "text-slate-300 group-hover:text-blue-500" : "text-slate-700 group-hover:text-blue-400"
+                        }`}>
+                          &rdquo;
+                        </span>
+                      </div>
+
+                      {/* 5 Stars */}
+                      <div className="flex items-center gap-1 mb-2">
+                        {[...Array(5)].map((_, i) => (
+                          <span key={i} className="text-amber-400 text-xs">★</span>
+                        ))}
+                        <span className="text-[10px] font-bold text-slate-400 ml-1">5.0</span>
+                      </div>
+
+                      {/* Review Title */}
+                      <h4 className={`text-sm font-bold tracking-tight mb-1.5 truncate ${
+                        isLight ? "text-slate-900" : "text-white"
+                      }`}>
+                        {item.title}
+                      </h4>
+
+                      {/* Review Quote Text */}
+                      <p className={`text-xs leading-relaxed line-clamp-3 font-normal ${
+                        isLight ? "text-slate-600" : "text-slate-300"
+                      }`}>
+                        {item.content}
+                      </p>
+
+                      {/* Footer Stamp */}
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[10px]">
+                        <span className="text-emerald-500 font-semibold flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          Verified Learner
+                        </span>
+                        <span className={`font-medium ${isLight ? "text-slate-400" : "text-slate-400"}`}>
+                          {item.role}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Live Community Counter Bar */}
+          <div className="pt-2 max-w-xl mx-auto px-4">
+            <div className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-full border text-xs font-semibold ${
+              isLight
+                ? "bg-slate-100/90 border-slate-200 text-slate-700"
+                : "bg-slate-900/80 border-slate-800 text-slate-300"
+            }`}>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              <span>
+                <strong className="text-emerald-500">1,420+ learners</strong> speaking right now across Tokyo, Paris, Colombo & New York
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Selected Review Full Story Modal */}
+        {activeReviewModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn"
+            onClick={() => setActiveReviewModal(null)}
+          >
+            <div
+              className={`relative w-full max-w-lg p-6 sm:p-8 rounded-3xl border shadow-2xl text-left transition-all ${
+                isLight ? "bg-white border-slate-200 text-slate-900" : "bg-[#0B1120] border-slate-800 text-white"
+              }`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setActiveReviewModal(null)}
+                className="absolute top-4 right-4 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg cursor-pointer"
+              >
+                ✕
+              </button>
+
+              <div className="flex items-center gap-4 mb-4">
+                <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-blue-500 shadow-md shrink-0">
+                  <Image src={activeReviewModal.avatar} alt={activeReviewModal.name} fill className="object-cover" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">{activeReviewModal.name}</h3>
+                  <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                    <span>{activeReviewModal.role}</span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1 font-semibold text-blue-600 dark:text-blue-400">
+                      Learned {activeReviewModal.learned}
+                      <span className="w-3.5 h-2.5 relative inline-block overflow-hidden rounded-xs ml-0.5">
+                        <Image src={activeReviewModal.targetFlag} alt={activeReviewModal.learned} fill className="object-cover" />
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 text-amber-400 mb-3">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className="text-base">★</span>
+                ))}
+                <span className="text-xs font-bold text-slate-400 ml-1">5.0 Verified Review</span>
+              </div>
+
+              <h4 className="text-base sm:text-lg font-bold tracking-tight mb-2">
+                "{activeReviewModal.title}"
+              </h4>
+
+              <p className={`text-sm leading-relaxed mb-6 ${
+                isLight ? "text-slate-600" : "text-slate-300"
+              }`}>
+                {activeReviewModal.content}
+              </p>
+
+              <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+                <span className="text-xs text-emerald-500 font-semibold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  Verified Active Learner
+                </span>
+                <button
+                  onClick={() => {
+                    setActiveReviewModal(null);
+                    onStartCall();
+                  }}
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+                >
+                  Start Speaking Now →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* 12. Footer */}
