@@ -2885,39 +2885,285 @@ export default function LandingPage({
         </ScrollReveal>
       </section>
 
-{/* 12. Footer */}
-      <footer className={`border-t py-12 text-xs transition-colors ${
-        isLight ? "bg-white border-slate-200 text-slate-600" : "border-indigo-950/60 text-slate-500 bg-[#04070F]"
+{/* 12. Enterprise Multi-Column SaaS Footer */}
+      <footer className={`border-t transition-colors ${
+        isLight
+          ? "bg-slate-50 border-slate-200 text-slate-600"
+          : "bg-[#03060E] border-indigo-950/70 text-slate-400"
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <span className="text-xl">🎙️</span>
-            <span className={`font-black ${isLight ? "text-slate-900" : "text-slate-300"}`}>SpeakFlow AI</span>
-            <span>• Engineered by InnoXpert Technologies</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
+          {/* Top Brand & Mission Bar */}
+          <div className="pb-12 border-b border-slate-200/80 dark:border-slate-800/80 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+            <div className="space-y-3 max-w-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/25">
+                  <span className="text-xl">🎙️</span>
+                </div>
+                <div className="text-left">
+                  <span className={`text-2xl font-black tracking-tight ${isLight ? "text-slate-900" : "text-white"}`}>
+                    SpeakFlow <span className="text-blue-600 dark:text-blue-400">AI</span>
+                  </span>
+                  <p className="text-[11px] font-semibold tracking-wider uppercase text-blue-600 dark:text-blue-400">
+                    Engineered by InnoXpert Technologies
+                  </p>
+                </div>
+              </div>
+              <p className={`text-sm leading-relaxed ${isLight ? "text-slate-600" : "text-slate-400"}`}>
+                Next-generation real-time voice & language exchange platform. Practice 20+ languages with native AI tutors, join live audio Voicerooms, and conquer speaking anxiety.
+              </p>
+              {/* System Status Pill */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                All Systems Operational • Sub-20ms Engine
+              </div>
+            </div>
+
+            {/* Quick Mobile App Download Badges */}
+            <div className="flex flex-wrap items-center gap-3">
+              <a
+                href={config?.appStoreUrl || "https://apple.com/app-store"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`px-4 py-2.5 rounded-xl border flex items-center gap-2.5 transition-all duration-200 hover:scale-105 shadow-xs ${
+                  isLight
+                    ? "bg-white border-slate-200 hover:border-blue-400 text-slate-800"
+                    : "bg-slate-900 border-slate-800 hover:border-blue-500 text-white"
+                }`}
+              >
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 3.5c.62-.75 1.04-1.8 0.93-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.71-.93 2.73 1.01.08 2.03-.49 2.63-1.23z"/>
+                </svg>
+                <div className="text-left leading-tight">
+                  <div className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Download on</div>
+                  <div className="text-xs font-black">App Store</div>
+                </div>
+              </a>
+
+              <a
+                href={config?.playStoreUrl || "https://play.google.com/store/apps/details?id=com.innoxpert.speakflow"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`px-4 py-2.5 rounded-xl border flex items-center gap-2.5 transition-all duration-200 hover:scale-105 shadow-xs ${
+                  isLight
+                    ? "bg-white border-slate-200 hover:border-blue-400 text-slate-800"
+                    : "bg-slate-900 border-slate-800 hover:border-blue-500 text-white"
+                }`}
+              >
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                  <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0002s.4482-1.0002.9993-1.0002c.5516 0 .9997.4486.9997 1.0002s-.4481 1.0002-.9997 1.0002m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0002s.4482-1.0002.9993-1.0002c.5516 0 .9997.4486.9997 1.0002s-.4481 1.0002-.9997 1.0002m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5896 8.4116 13.854 8 12 8s-3.5896.4116-5.1368 1.4507L4.8409 5.9467a.416.416 0 00-.5676-.1521.416.416 0 00-.1521.5676l1.9973 3.4592C2.6889 11.6701 1.5 15.1102 1.5 18.999h21c0-3.8888-1.1889-7.3289-4.6185-9.6776"/>
+                </svg>
+                <div className="text-left leading-tight">
+                  <div className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Get it on</div>
+                  <div className="text-xs font-black">Google Play</div>
+                </div>
+              </a>
+
+              <a
+                href={config?.apkDownloadUrl || "https://github.com/janithad2/speakflow-ai/releases/download/v1.0.0/speakflow-ai.apk"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`px-4 py-2.5 rounded-xl border flex items-center gap-2 transition-all duration-200 hover:scale-105 shadow-xs ${
+                  isLight
+                    ? "bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-700"
+                    : "bg-blue-950/60 border-blue-800 hover:bg-blue-900 text-blue-300"
+                }`}
+              >
+                <span className="text-base">📦</span>
+                <div className="text-left leading-tight">
+                  <div className="text-[9px] uppercase tracking-wider opacity-75 font-bold">Direct Install</div>
+                  <div className="text-xs font-black">Android APK</div>
+                </div>
+              </a>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6">
-            <a href="#scenarios" className={`transition-colors ${isLight ? "hover:text-indigo-600" : "hover:text-cyan-400"}`}>
-              Scenarios
-            </a>
-            <a href="#languages" className={`transition-colors ${isLight ? "hover:text-indigo-600" : "hover:text-cyan-400"}`}>
-              20 Languages
-            </a>
-            <a href="#pricing" className={`transition-colors ${isLight ? "hover:text-indigo-600" : "hover:text-cyan-400"}`}>
-              Pricing
-            </a>
-            <button onClick={() => onOpenAuth("login")} className={`transition-colors ${isLight ? "hover:text-indigo-600" : "hover:text-cyan-400"}`}>
-              Log In
+          {/* Main 4-Column Navigation Grid */}
+          <div className="py-12 grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+            {/* Column 1: Core Product */}
+            <div className="space-y-4">
+              <h4 className={`text-xs font-black uppercase tracking-wider ${isLight ? "text-slate-900" : "text-white"}`}>
+                Product
+              </h4>
+              <ul className="space-y-2.5 text-xs">
+                <li>
+                  <a href="#scenarios" className="hover:text-blue-500 transition-colors">
+                    Real-World Scenarios
+                  </a>
+                </li>
+                <li>
+                  <a href="#languages" className="hover:text-blue-500 transition-colors">
+                    20+ Global Languages
+                  </a>
+                </li>
+                <li>
+                  <a href="#voicerooms" className="hover:text-blue-500 transition-colors">
+                    Live AI Voicerooms
+                  </a>
+                </li>
+                <li>
+                  <a href="#search-the-world" className="hover:text-blue-500 transition-colors">
+                    Search the World Network
+                  </a>
+                </li>
+                <li>
+                  <a href="#instant-feedback" className="hover:text-blue-500 transition-colors">
+                    Instant Speech Feedback
+                  </a>
+                </li>
+                <li>
+                  <a href="#exchange" className="hover:text-blue-500 transition-colors">
+                    Grammar & Transliteration
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 2: Platform & Features */}
+            <div className="space-y-4">
+              <h4 className={`text-xs font-black uppercase tracking-wider ${isLight ? "text-slate-900" : "text-white"}`}>
+                Platform
+              </h4>
+              <ul className="space-y-2.5 text-xs">
+                <li>
+                  <button onClick={() => onStartCall()} className="hover:text-blue-500 transition-colors text-left cursor-pointer">
+                    Web App Live Audio
+                  </button>
+                </li>
+                <li>
+                  <a href={config?.playStoreUrl || "#"} target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                    Android Application
+                  </a>
+                </li>
+                <li>
+                  <a href={config?.appStoreUrl || "#"} target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                    iOS Experience
+                  </a>
+                </li>
+                <li>
+                  <a href="#pricing" className="hover:text-blue-500 transition-colors">
+                    Subscription Plans
+                  </a>
+                </li>
+                <li>
+                  <span className="text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                    Hybrid On-Device Engine <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-blue-500/10 text-blue-500 font-bold">New</span>
+                  </span>
+                </li>
+                <li>
+                  <span className="text-slate-400 dark:text-slate-500">
+                    Sub-20ms Voice VAD
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 3: Community & Trust */}
+            <div className="space-y-4">
+              <h4 className={`text-xs font-black uppercase tracking-wider ${isLight ? "text-slate-900" : "text-white"}`}>
+                Community
+              </h4>
+              <ul className="space-y-2.5 text-xs">
+                <li>
+                  <a href="#reviews" className="hover:text-blue-500 transition-colors">
+                    Learner Reviews (★ 4.8)
+                  </a>
+                </li>
+                <li>
+                  <a href="#moments" className="hover:text-blue-500 transition-colors">
+                    Community Moments
+                  </a>
+                </li>
+                <li>
+                  <a href="#faq" className="hover:text-blue-500 transition-colors">
+                    Frequently Asked Questions
+                  </a>
+                </li>
+                <li>
+                  <span className="text-slate-400 dark:text-slate-500">
+                    Speaking Clubs & Lounges
+                  </span>
+                </li>
+                <li>
+                  <span className="text-slate-400 dark:text-slate-500">
+                    Fluency Leaderboard
+                  </span>
+                </li>
+                <li>
+                  <span className="text-slate-400 dark:text-slate-500">
+                    Community Guidelines
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 4: Admin & Legal */}
+            <div className="space-y-4">
+              <h4 className={`text-xs font-black uppercase tracking-wider ${isLight ? "text-slate-900" : "text-white"}`}>
+                Access & Company
+              </h4>
+              <ul className="space-y-2.5 text-xs">
+                <li>
+                  <button onClick={() => onOpenAuth("login")} className="hover:text-blue-500 transition-colors text-left cursor-pointer">
+                    Learner Log In
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => onOpenAuth("signup")} className="hover:text-blue-500 transition-colors text-left cursor-pointer">
+                    Create Free Account
+                  </button>
+                </li>
+                {onOpenAdminCMS && (
+                  <li>
+                    <button
+                      onClick={onOpenAdminCMS}
+                      className="text-blue-600 dark:text-blue-400 hover:underline font-black flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span>⚙️</span>
+                      <span>Admin CMS Portal</span>
+                    </button>
+                  </li>
+                )}
+                <li>
+                  <span className="text-slate-400 dark:text-slate-500">
+                    Privacy Policy
+                  </span>
+                </li>
+                <li>
+                  <span className="text-slate-400 dark:text-slate-500">
+                    Terms of Service
+                  </span>
+                </li>
+                <li>
+                  <span className="text-slate-400 dark:text-slate-500">
+                    Google Cloud & Firebase
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Bar: Copyright & Back to Top */}
+          <div className="pt-8 border-t border-slate-200/80 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 text-slate-500">
+              <p>© 2026 SpeakFlow AI. Engineered by InnoXpert Technologies.</p>
+              <span>•</span>
+              <p>#BuildHybridAI Hackathon 2026</p>
+              <span>•</span>
+              <p>All rights reserved.</p>
+            </div>
+
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all duration-200 hover:scale-105 cursor-pointer ${
+                isLight
+                  ? "bg-white border-slate-200 hover:bg-slate-100 text-slate-700"
+                  : "bg-slate-900 border-slate-800 hover:bg-slate-800 text-slate-300"
+              }`}
+            >
+              <span>Back to Top</span>
+              <span>↑</span>
             </button>
-            {onOpenAdminCMS && (
-              <button onClick={onOpenAdminCMS} className="text-indigo-500 hover:text-indigo-600 font-bold flex items-center gap-1 transition-colors">
-                <span>⚙️</span>
-                <span>Admin CMS</span>
-              </button>
-            )}
           </div>
-
-          <p>© 2026 SpeakFlow AI. All rights reserved.</p>
         </div>
       </footer>
     </div>
