@@ -105,6 +105,7 @@ export default function LandingPage({
   const [activeFaqIndex, setActiveFaqIndex] = useState<number | null>(null);
   const [isPlayingDemoVoice, setIsPlayingDemoVoice] = useState(false);
   const [activeLanguageCard, setActiveLanguageCard] = useState<string>("Sinhala");
+  const [activeScenarioIdx, setActiveScenarioIdx] = useState<number>(0);
 
   useEffect(() => {
     if (themeMode) {
@@ -835,7 +836,7 @@ export default function LandingPage({
       )}
 
       {/* 4. Panoramic Scenarios Section (FULL SCREEN FIT - 4K Cave Style Panorama with Dual Radial Aura) */}
-      <section className={`py-14 sm:py-20 relative overflow-hidden text-center ${
+      <section className={`py-12 sm:py-18 relative overflow-hidden text-center ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
         <div className="w-full px-2 sm:px-4 lg:px-8 space-y-4 sm:space-y-6">
@@ -857,23 +858,10 @@ export default function LandingPage({
             }`}>
               {config?.scenariosSubtitle || "Practice English in scenarios that matter — job interviews, travel, daily life, dining, and more."}
             </p>
-
-            {/* Subtle Action Callout Banner */}
-            <div className="pt-2 flex justify-center">
-              <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide border shadow-sm backdrop-blur-md transition-all ${
-                isLight
-                  ? "bg-white/95 border-slate-200 text-slate-700 shadow-slate-200/50"
-                  : "bg-slate-900/90 border-indigo-500/30 text-cyan-300 shadow-black/40"
-              }`}>
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                <span>Click any character pedestal below to launch an instant 20ms AI voice practice</span>
-              </div>
-            </div>
           </div>
 
           {/* Full-Width 4K Panoramic "Cave Style" Curved Strip */}
           <div className="relative w-full max-w-[1920px] mx-auto mt-4 sm:mt-6 px-0 sm:px-2 md:px-4">
-            {/* Ambient Dark Mode Colorful Horizon Glow */}
             {!isLight && (
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] h-[350px] bg-gradient-to-r from-pink-500/15 via-blue-500/15 to-amber-500/15 rounded-full blur-[100px] pointer-events-none -z-10" />
             )}
@@ -888,163 +876,193 @@ export default function LandingPage({
             />
           </div>
 
-          {/* Curved Amphitheater Scenario Pedestals - Traces the exact Dome/Cave Arc of the 6 Characters */}
-          <div className="relative z-20 -mt-8 sm:-mt-16 md:-mt-24 lg:-mt-36 max-w-7xl mx-auto px-3 sm:px-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 items-end">
+          {/* Interactive Roleplay Console Dock (Dynamic Island Style - No Clunky Boxes!) */}
+          <div className="relative z-20 -mt-8 sm:-mt-14 md:-mt-20 lg:-mt-24 max-w-4xl mx-auto px-3 sm:px-6">
+            {/* Row 1: Floating Capsule Selector Tabs */}
+            <div className={`p-1.5 sm:p-2 rounded-full border shadow-xl backdrop-blur-2xl flex items-center justify-between gap-1 sm:gap-2 overflow-x-auto no-scrollbar transition-all ${
+              isLight
+                ? "bg-white/95 border-slate-200/90 shadow-[0_15px_35px_rgba(0,0,0,0.08)]"
+                : "bg-slate-900/95 border-white/10 shadow-[0_15px_35px_rgba(0,0,0,0.5)]"
+            }`}>
               {[
-                {
-                  icon: "🍽️",
-                  title: "Dining & Cafe",
-                  role: "Waiter & Chef",
-                  level: "A2",
-                  sample: "Table for two & chef's special",
-                  topicId: "sp_si_249",
-                  arcTransform: "lg:translate-y-8 lg:rotate-[-2.5deg]",
-                  borderLight: "border-pink-300/80 hover:border-pink-500",
-                  borderDark: "border-pink-500/30 hover:border-pink-400",
-                  topBar: "from-pink-500 to-rose-500",
-                  iconBg: "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20",
-                  badge: "bg-pink-100 text-pink-700 dark:bg-pink-950/90 dark:text-pink-300 border-pink-200 dark:border-pink-800",
-                  glow: "from-pink-500/20 via-pink-500/5 to-transparent",
-                  btnText: "text-pink-600 dark:text-pink-400 group-hover:text-pink-700",
-                },
-                {
-                  icon: "✈️",
-                  title: "Travel & Flight",
-                  role: "Airport & Hotel",
-                  level: "B1",
-                  sample: "Boarding gate & luggage",
-                  topicId: "sp_en_1",
-                  arcTransform: "lg:-translate-y-4 lg:rotate-[-1deg]",
-                  borderLight: "border-blue-300/80 hover:border-blue-500",
-                  borderDark: "border-blue-500/30 hover:border-blue-400",
-                  topBar: "from-blue-500 to-sky-500",
-                  iconBg: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-                  badge: "bg-blue-100 text-blue-700 dark:bg-blue-950/90 dark:text-blue-300 border-blue-200 dark:border-blue-800",
-                  glow: "from-blue-500/20 via-blue-500/5 to-transparent",
-                  btnText: "text-blue-600 dark:text-blue-400 group-hover:text-blue-700",
-                },
-                {
-                  icon: "🛍️",
-                  title: "Shopping Deals",
-                  role: "Boutique & Mall",
-                  level: "A1",
-                  sample: "Do you have this in size M?",
-                  topicId: "sp_si_249",
-                  arcTransform: "lg:-translate-y-18 lg:rotate-0",
-                  borderLight: "border-emerald-300/80 hover:border-emerald-500",
-                  borderDark: "border-emerald-500/30 hover:border-emerald-400",
-                  topBar: "from-emerald-500 to-green-500",
-                  iconBg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-                  badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/90 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
-                  glow: "from-emerald-500/20 via-emerald-500/5 to-transparent",
-                  btnText: "text-emerald-600 dark:text-emerald-400 group-hover:text-emerald-700",
-                },
-                {
-                  icon: "🩺",
-                  title: "Clinic & Health",
-                  role: "Doctor & Pharmacy",
-                  level: "B2",
-                  sample: "Describing symptoms & remedy",
-                  topicId: "sp_en_1",
-                  arcTransform: "lg:-translate-y-18 lg:rotate-0",
-                  borderLight: "border-cyan-300/80 hover:border-cyan-500",
-                  borderDark: "border-cyan-500/30 hover:border-cyan-400",
-                  topBar: "from-cyan-500 to-teal-500",
-                  iconBg: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20",
-                  badge: "bg-cyan-100 text-cyan-700 dark:bg-cyan-950/90 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800",
-                  glow: "from-cyan-500/20 via-cyan-500/5 to-transparent",
-                  btnText: "text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-700",
-                },
-                {
-                  icon: "💼",
-                  title: "Tech & Career",
-                  role: "Job Interview & Pitch",
-                  level: "C1",
-                  sample: "Leading engineering teams",
-                  topicId: "sp_en_1",
-                  arcTransform: "lg:-translate-y-4 lg:rotate-[1deg]",
-                  borderLight: "border-purple-300/80 hover:border-purple-500",
-                  borderDark: "border-purple-500/30 hover:border-purple-400",
-                  topBar: "from-purple-500 to-indigo-500",
-                  iconBg: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
-                  badge: "bg-purple-100 text-purple-700 dark:bg-purple-950/90 dark:text-purple-300 border-purple-200 dark:border-purple-800",
-                  glow: "from-purple-500/20 via-purple-500/5 to-transparent",
-                  btnText: "text-purple-600 dark:text-purple-400 group-hover:text-purple-700",
-                },
-                {
-                  icon: "🚴",
-                  title: "Sports & Fitness",
-                  role: "Trainer & Marathon",
-                  level: "B1",
-                  sample: "Pacing & nutrition for run",
-                  topicId: "sp_1",
-                  arcTransform: "lg:translate-y-8 lg:rotate-[2.5deg]",
-                  borderLight: "border-amber-300/80 hover:border-amber-500",
-                  borderDark: "border-amber-500/30 hover:border-amber-400",
-                  topBar: "from-amber-500 to-orange-500",
-                  iconBg: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
-                  badge: "bg-amber-100 text-amber-700 dark:bg-amber-950/90 dark:text-amber-300 border-amber-200 dark:border-amber-800",
-                  glow: "from-amber-500/20 via-amber-500/5 to-transparent",
-                  btnText: "text-amber-600 dark:text-amber-400 group-hover:text-amber-700",
-                },
-              ].map((s, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => onStartCall(s.topicId)}
-                  className={`group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-3xl border-2 text-left transition-all duration-300 cursor-pointer backdrop-blur-xl shadow-lg ${s.arcTransform} ${
-                    isLight
-                      ? `bg-white/95 ${s.borderLight} shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:bg-white hover:-translate-y-2 hover:shadow-2xl`
-                      : `bg-slate-900/90 ${s.borderDark} shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-slate-900 hover:-translate-y-2 hover:shadow-[0_15px_40px_rgba(0,0,0,0.6)]`
-                  }`}
-                >
-                  {/* Top Character Pillar Color Accent Strip */}
-                  <div className={`absolute -top-1 left-4 right-4 h-1.5 rounded-full bg-gradient-to-r ${s.topBar} opacity-90 shadow-sm`} />
+                { id: "dining", icon: "🍽️", label: "Dining & Cafe", activeBg: "bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-pink-500/30" },
+                { id: "travel", icon: "✈️", label: "Travel & Flight", activeBg: "bg-gradient-to-r from-blue-600 to-sky-600 text-white shadow-blue-500/30" },
+                { id: "shopping", icon: "🛍️", label: "Shopping Deals", activeBg: "bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-emerald-500/30" },
+                { id: "clinic", icon: "🩺", label: "Clinic & Health", activeBg: "bg-gradient-to-r from-cyan-600 to-teal-600 text-white shadow-cyan-500/30" },
+                { id: "career", icon: "💼", label: "Tech & Career", activeBg: "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-purple-500/30" },
+                { id: "sports", icon: "🚴", label: "Sports & Fitness", activeBg: "bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-amber-500/30" },
+              ].map((role, idx) => {
+                const isSelected = activeScenarioIdx === idx;
+                return (
+                  <button
+                    key={role.id}
+                    onClick={() => setActiveScenarioIdx(idx)}
+                    className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                      isSelected
+                        ? `${role.activeBg} shadow-md scale-[1.03]`
+                        : isLight
+                          ? "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
+                          : "text-slate-400 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <span className="text-sm sm:text-base">{role.icon}</span>
+                    <span className="hidden sm:inline">{role.label}</span>
+                    <span className="sm:hidden">{role.label.split(" ")[0]}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-                  {/* Ambient Character Aura Glow */}
-                  <div className={`absolute inset-0 rounded-3xl bg-gradient-to-b ${s.glow} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none -z-10`} />
+            {/* Row 2: Active Scenario Live Audio Stage Card */}
+            {[
+              {
+                icon: "🍽️",
+                title: "Dining & Cafe",
+                role: "Restaurant & Table Service",
+                character: "Chef & Waiter Marco",
+                level: "A2 Elementary",
+                topicId: "sp_si_249",
+                badgeBg: "bg-pink-100 text-pink-700 dark:bg-pink-950/80 dark:text-pink-300 border-pink-200 dark:border-pink-800",
+                gradient: "from-pink-500/15 via-rose-500/10 to-transparent",
+                sampleLine: "Welcome to Bistro Parisien! A table for two by the window tonight?",
+                objective: "Practice ordering gourmet dishes, asking for the bill, and polite requests.",
+              },
+              {
+                icon: "✈️",
+                title: "Travel & Flight",
+                role: "Airport, Hotel & Transit",
+                character: "Agent Sarah & Guide",
+                level: "B1 Intermediate",
+                topicId: "sp_en_1",
+                badgeBg: "bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+                gradient: "from-blue-500/15 via-sky-500/10 to-transparent",
+                sampleLine: "Good afternoon! May I see your passport and boarding pass for Gate 24B?",
+                objective: "Navigate international terminals, baggage claims, and hotel bookings.",
+              },
+              {
+                icon: "🛍️",
+                title: "Shopping Deals",
+                role: "Fashion Boutique & Mall",
+                character: "Store Stylist Emma",
+                level: "A1 Beginner",
+                topicId: "sp_si_249",
+                badgeBg: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
+                gradient: "from-emerald-500/15 via-green-500/10 to-transparent",
+                sampleLine: "Hello! We have a 30% off special on cashmere jackets today. What size do you wear?",
+                objective: "Inquire about prices, fitting room assistance, and return policies.",
+              },
+              {
+                icon: "🩺",
+                title: "Clinic & Health",
+                role: "Medical Consultation",
+                character: "Dr. InJoon & Pharmacy",
+                level: "B2 Upper-Intermediate",
+                topicId: "sp_en_1",
+                badgeBg: "bg-cyan-100 text-cyan-700 dark:bg-cyan-950/80 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800",
+                gradient: "from-cyan-500/15 via-teal-500/10 to-transparent",
+                sampleLine: "I see your symptoms started two days ago. Are you experiencing any dizziness or fever?",
+                objective: "Accurately explain aches, understand dosage instructions, and describe allergies.",
+              },
+              {
+                icon: "💼",
+                title: "Tech & Career",
+                role: "Job Interview & Pitch",
+                character: "Executive Recruiter Alex",
+                level: "C1 Advanced",
+                topicId: "sp_en_1",
+                badgeBg: "bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border-purple-200 dark:border-purple-800",
+                gradient: "from-purple-500/15 via-indigo-500/10 to-transparent",
+                sampleLine: "Tell me about a complex distributed system you scaled under strict latency constraints.",
+                objective: "Present architectural decisions, handle behavioral questions, and negotiate offers.",
+              },
+              {
+                icon: "🚴",
+                title: "Sports & Fitness",
+                role: "Athletics & Marathon",
+                character: "Coach Oliver & Trainer",
+                level: "B1 Intermediate",
+                topicId: "sp_1",
+                badgeBg: "bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border-amber-200 dark:border-amber-800",
+                gradient: "from-amber-500/15 via-orange-500/10 to-transparent",
+                sampleLine: "Let's review your split times. What pace do you plan to sustain for the first 10 kilometers?",
+                objective: "Discuss workout splits, recovery regimens, nutrition, and race strategy.",
+              },
+            ].filter((_, idx) => idx === activeScenarioIdx).map((active) => (
+              <div
+                key={active.title}
+                className={`mt-4 sm:mt-5 p-5 sm:p-7 rounded-3xl border shadow-2xl backdrop-blur-2xl transition-all duration-300 relative overflow-hidden text-left ${
+                  isLight
+                    ? "bg-white/95 border-slate-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
+                    : "bg-slate-900/95 border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
+                }`}
+              >
+                {/* Ambient Active Aura Glow */}
+                <div className={`absolute inset-0 bg-gradient-to-r ${active.gradient} pointer-events-none -z-10`} />
 
-                  {/* Top: Icon in matching bubble + CEFR Level Badge */}
-                  <div className="flex items-center justify-between gap-1 mb-2 pt-0.5">
-                    <span className={`text-xl p-1.5 rounded-2xl border ${s.iconBg} group-hover:scale-110 transition-transform shadow-sm`}>
-                      {s.icon}
-                    </span>
-                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-lg border shadow-xs ${s.badge}`}>
-                      {s.level}
-                    </span>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+                  {/* Left: Persona Details & Sample Dialogue */}
+                  <div className="space-y-3 max-w-xl">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        Live AI Roleplay
+                      </span>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${active.badgeBg}`}>
+                        {active.level}
+                      </span>
+                      <span className={`text-xs font-semibold ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                        • {active.character}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h3 className={`text-lg sm:text-xl font-black tracking-tight ${isLight ? "text-[#0F172A]" : "text-white"}`}>
+                        {active.icon} {active.title} <span className="text-sm font-medium text-slate-500">({active.role})</span>
+                      </h3>
+                      <p className={`text-xs mt-0.5 ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                        {active.objective}
+                      </p>
+                    </div>
+
+                    {/* Real Sample Line with Audio Visualizer */}
+                    <div className={`p-3.5 sm:p-4 rounded-2xl border text-xs sm:text-sm font-medium leading-relaxed relative ${
+                      isLight
+                        ? "bg-slate-50/90 border-slate-200/90 text-slate-800"
+                        : "bg-slate-800/70 border-white/10 text-slate-200"
+                    }`}>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="text-base">🎙️</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-cyan-400">
+                          Sample Dialogue Prompt • 20ms AI Voice
+                        </span>
+                        {/* Animated mini sound bars */}
+                        <div className="flex items-center gap-0.5 ml-auto">
+                          <span className="w-1 h-3 bg-blue-500 rounded-full animate-pulse" />
+                          <span className="w-1 h-5 bg-indigo-500 rounded-full animate-pulse delay-75" />
+                          <span className="w-1 h-2 bg-cyan-400 rounded-full animate-pulse delay-150" />
+                          <span className="w-1 h-4 bg-purple-500 rounded-full animate-pulse delay-100" />
+                        </div>
+                      </div>
+                      &ldquo;{active.sampleLine}&rdquo;
+                    </div>
                   </div>
 
-                  {/* Middle: Title & Role */}
-                  <div className="space-y-0.5">
-                    <h4 className={`text-xs sm:text-sm font-black tracking-tight leading-snug ${
-                      isLight ? "text-[#0F172A]" : "text-white"
-                    }`}>
-                      {s.title}
-                    </h4>
-                    <p className={`text-[11px] leading-tight font-medium ${isLight ? "text-slate-500" : "text-slate-400"}`}>
-                      {s.role}
+                  {/* Right: Action Launch Button */}
+                  <div className="flex flex-col sm:flex-row md:flex-col gap-2 shrink-0">
+                    <button
+                      onClick={() => onStartCall(active.topicId)}
+                      className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white font-bold text-sm shadow-xl shadow-indigo-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                    >
+                      <span>Practice This Scenario</span>
+                      <span>🎙️ →</span>
+                    </button>
+                    <p className={`text-[11px] text-center font-medium ${isLight ? "text-slate-400" : "text-slate-500"}`}>
+                      ⚡ 20ms duplex voice • Zero stage fright
                     </p>
                   </div>
-
-                  {/* Sample Quote Snippet */}
-                  <div className={`mt-2 pt-1.5 border-t text-[10px] italic leading-tight line-clamp-1 ${
-                    isLight ? "border-slate-100 text-slate-500" : "border-slate-800 text-slate-400"
-                  }`}>
-                    &ldquo;{s.sample}&rdquo;
-                  </div>
-
-                  {/* Bottom Action: Practice Now */}
-                  <div className="mt-3 flex items-center justify-between pt-1">
-                    <span className={`text-[11px] font-black ${s.btnText} flex items-center gap-1 transition-colors`}>
-                      Practice 🎙️
-                    </span>
-                    <span className={`text-xs font-black transition-transform group-hover:translate-x-1.5 ${s.btnText}`}>
-                      →
-                    </span>
-                  </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
