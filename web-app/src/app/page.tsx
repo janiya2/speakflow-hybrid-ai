@@ -9857,7 +9857,6 @@ export default function StudentWebApp() {
                                 alt={topic.language}
                                 className="w-4 h-3 rounded-[2px] object-cover border border-white/20"
                               />
-                              <span className="text-[10.5px] font-bold text-slate-300">{topic.language}</span>
                               <span className="text-slate-600 text-[10px]">•</span>
                               <span className="text-[10px] font-mono font-bold text-amber-400">{xpReward}</span>
                             </div>
@@ -14133,7 +14132,7 @@ export default function StudentWebApp() {
       {/* ------------------------------------------------------------- */}
       {showDurationModal && pendingTopic && (
         <div
-          className={`fixed inset-0 z-50 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200 relative ${
+          className={`fixed inset-0 z-50 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200 ${
             isLight ? "bg-slate-900/60" : "bg-black/85"
           }`}
         >
@@ -14147,7 +14146,7 @@ export default function StudentWebApp() {
           />
 
           <div
-            className={`w-full max-w-2xl border rounded-3xl p-5 sm:p-7 relative overflow-hidden my-auto space-y-5 transition-all shadow-2xl ${
+            className={`w-full max-w-2xl border rounded-3xl p-5 sm:p-7 relative z-30 overflow-hidden my-auto space-y-5 transition-all shadow-2xl ${
               isLight
                 ? "bg-white border-slate-200/90 shadow-[0_25px_70px_rgba(15,23,42,0.25)] text-slate-900 ring-1 ring-slate-900/5"
                 : "bg-[#0C1222] border-slate-800 shadow-[0_25px_80px_rgba(0,0,0,0.9)] text-white ring-1 ring-white/10"
