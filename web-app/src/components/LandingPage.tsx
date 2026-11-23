@@ -2131,12 +2131,12 @@ export default function LandingPage({
 
 
       {/* 3.5. Search the World - Dotted World Map & Bidirectional Coaches Scroller */}
-      <section id="search-the-world" className={`py-16 sm:py-24 relative overflow-hidden text-center ${
+      <section id="search-the-world" className={`pt-10 sm:pt-14 pb-16 sm:pb-24 relative overflow-hidden text-center min-h-[640px] sm:min-h-[720px] flex flex-col justify-between ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
-        {/* World Map Dotted Matrix Background (Vibrant, Crisp & Clearly Visible) */}
+        {/* World Map Dotted Matrix Background (Vibrant, Crisp & Full Span) */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
-          <div className="relative w-full max-w-[1850px] h-full min-h-[580px] opacity-100 dark:opacity-40 transition-opacity">
+          <div className="relative w-full max-w-[1920px] h-full min-h-[640px] sm:min-h-[720px] opacity-100 dark:opacity-40 transition-opacity">
             <Image
               src="/images/landing/world_map_dotted.webp"
               alt="Global Language Network World Map"
@@ -2155,9 +2155,9 @@ export default function LandingPage({
           isLight ? "bg-gradient-to-l from-white via-white/80 to-transparent" : "bg-gradient-to-l from-[#070A14] via-[#070A14]/80 to-transparent"
         }`} />
 
-        <ScrollReveal className="relative z-10 w-full space-y-8 sm:space-y-12" distance={32}>
-          {/* Section Header */}
-          <div className="space-y-3 max-w-4xl mx-auto text-center px-4">
+        <ScrollReveal className="relative z-10 w-full" distance={32}>
+          {/* Section Header (Shifted higher up) */}
+          <div className="space-y-2 max-w-4xl mx-auto text-center px-4">
             <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase border shadow-xs ${
               isLight
                 ? "bg-blue-50 border-blue-200 text-blue-700"
@@ -2180,8 +2180,8 @@ export default function LandingPage({
             </p>
           </div>
 
-          {/* Bidirectional Scrolling Coaches Rows */}
-          <div className="space-y-4 sm:space-y-6 overflow-hidden">
+          {/* Bidirectional Scrolling Coaches Rows (Shifted lower down so center of map is wide open) */}
+          <div className="mt-20 sm:mt-28 lg:mt-36 space-y-4 sm:space-y-6 overflow-hidden">
             {/* ROW 1: Scrolling Left (animate-marquee) */}
             <div className="overflow-hidden whitespace-nowrap">
               <div className="animate-marquee flex items-center gap-4 sm:gap-6 py-1">
