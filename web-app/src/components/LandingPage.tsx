@@ -812,6 +812,23 @@ export default function LandingPage({
   const [activeScenarioIdx, setActiveScenarioIdx] = useState<number>(0);
   const [selectedReviewFilter, setSelectedReviewFilter] = useState<string>("All");
   const [activeReviewModal, setActiveReviewModal] = useState<any | null>(null);
+  const [reviewPage, setReviewPage] = useState<number>(0);
+  const [isReviewPaused, setIsReviewPaused] = useState<boolean>(false);
+
+  // Auto-advance reviews carousel every 7s (pauses on hover)
+  useEffect(() => {
+    if (isReviewPaused) return;
+    const timer = setInterval(() => {
+      setReviewPage((prev) => {
+        const filtered = selectedReviewFilter === "All"
+          ? ALL_REVIEWS_50
+          : ALL_REVIEWS_50.filter((r) => r.category === selectedReviewFilter);
+        const totalPages = Math.ceil(filtered.length / 4);
+        return (prev + 1) % (totalPages || 1);
+      });
+    }, 7000);
+    return () => clearInterval(timer);
+  }, [isReviewPaused, selectedReviewFilter]);
 
   useEffect(() => {
     if (themeMode) {
@@ -2296,18 +2313,10 @@ export default function LandingPage({
         </ScrollReveal>
       </section>
 
-      {/* 11. Loved by Learners Around the World - Testimonials & Social Proof (50 Global Reviews) */}
+{/* 11. Loved by Learners Around the World - Testimonials Showcase (Image 5 Wreaths & 4-Card Carousel) */}
       <section id="reviews" className={`py-16 sm:py-24 relative overflow-hidden text-center ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
-        {/* Edge Gradient Fade Masks */}
-        <div className={`pointer-events-none absolute left-0 top-0 bottom-0 w-24 sm:w-48 z-20 ${
-          isLight ? "bg-gradient-to-r from-white via-white/80 to-transparent" : "bg-gradient-to-r from-[#070A14] via-[#070A14]/80 to-transparent"
-        }`} />
-        <div className={`pointer-events-none absolute right-0 top-0 bottom-0 w-24 sm:w-48 z-20 ${
-          isLight ? "bg-gradient-to-l from-white via-white/80 to-transparent" : "bg-gradient-to-l from-[#070A14] via-[#070A14]/80 to-transparent"
-        }`} />
-
         <ScrollReveal className="w-full space-y-10 sm:space-y-12" distance={32}>
           {/* Section Header */}
           <div className="space-y-4 max-w-4xl mx-auto text-center px-4">
@@ -2332,157 +2341,81 @@ export default function LandingPage({
               Over 100,000 real people practice daily with SpeakFlow AI to conquer speaking anxiety, ace overseas interviews, and master authentic fluency.
             </p>
 
-            {/* Social Proof Badges with Laurel Wreaths (Reference Image Style) */}
-            <div className="pt-4 flex flex-wrap items-center justify-center gap-8 sm:gap-16">
+            {/* Social Proof Badges with Real Laurel Leaf Branches (Exact to Image 5 Reference) */}
+            <div className="pt-6 flex flex-wrap items-center justify-center gap-10 sm:gap-20">
               {/* Laurel Wreath 1: Ratings */}
-              <div className="flex items-center gap-2 sm:gap-3 group">
+              <div className="flex items-center gap-2 sm:gap-3 group select-none">
                 {/* Left Branch */}
-                <svg viewBox="0 0 36 78" fill="currentColor" className="w-8 sm:w-10 h-16 sm:h-20 text-blue-500 shrink-0" aria-hidden="true">
-                  <path d="M 10 4 C 26 22 28 48 8 72" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                  <ellipse cx="11" cy="7" rx="3.5" ry="7.5" transform="rotate(-35 11 7)" />
-                  <ellipse cx="17" cy="9" rx="3.5" ry="7.5" transform="rotate(20 17 9)" />
-                  <ellipse cx="17" cy="18" rx="3.5" ry="7.5" transform="rotate(-20 17 18)" />
-                  <ellipse cx="24" cy="21" rx="3.5" ry="7.5" transform="rotate(35 24 21)" />
-                  <ellipse cx="21" cy="30" rx="3.5" ry="7.5" transform="rotate(-5 21 30)" />
-                  <ellipse cx="28" cy="33" rx="3.5" ry="7.5" transform="rotate(45 28 33)" />
-                  <ellipse cx="21" cy="42" rx="3.5" ry="7.5" transform="rotate(10 21 42)" />
-                  <ellipse cx="27" cy="46" rx="3.5" ry="7.5" transform="rotate(60 27 46)" />
-                  <ellipse cx="17" cy="54" rx="3.5" ry="7.5" transform="rotate(25 17 54)" />
-                  <ellipse cx="22" cy="59" rx="3.5" ry="7.5" transform="rotate(75 22 59)" />
-                  <ellipse cx="10" cy="64" rx="3.5" ry="7.5" transform="rotate(40 10 64)" />
-                  <ellipse cx="14" cy="69" rx="3.5" ry="7.5" transform="rotate(85 14 69)" />
-                </svg>
+                <div className="relative w-8 sm:w-11 h-16 sm:h-22 shrink-0">
+                  <Image
+                    src="/images/landing/laurel_branch.png"
+                    alt="Laurel branch left"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
 
-                <div className="text-center px-1">
+                <div className="text-center px-2">
                   <div className="flex items-center justify-center gap-1.5">
-                    <span className="text-amber-400 text-2xl sm:text-3xl">★</span>
-                    <span className={`text-3xl sm:text-4xl font-black tracking-tight ${
+                    <span className="text-amber-500 text-2xl sm:text-3xl">★</span>
+                    <span className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight ${
                       isLight ? "text-slate-900" : "text-white"
                     }`}>
-                      4.9
+                      4.8
                     </span>
                   </div>
-                  <div className={`text-xs sm:text-sm font-semibold mt-0.5 ${
+                  <div className={`text-xs sm:text-sm font-semibold tracking-wide mt-1 ${
                     isLight ? "text-slate-500" : "text-slate-400"
                   }`}>
                     2k+ ratings
                   </div>
                 </div>
 
-                {/* Right Branch (flipped) */}
-                <svg viewBox="0 0 36 78" fill="currentColor" className="w-8 sm:w-10 h-16 sm:h-20 text-blue-500 shrink-0 -scale-x-100" aria-hidden="true">
-                  <path d="M 10 4 C 26 22 28 48 8 72" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                  <ellipse cx="11" cy="7" rx="3.5" ry="7.5" transform="rotate(-35 11 7)" />
-                  <ellipse cx="17" cy="9" rx="3.5" ry="7.5" transform="rotate(20 17 9)" />
-                  <ellipse cx="17" cy="18" rx="3.5" ry="7.5" transform="rotate(-20 17 18)" />
-                  <ellipse cx="24" cy="21" rx="3.5" ry="7.5" transform="rotate(35 24 21)" />
-                  <ellipse cx="21" cy="30" rx="3.5" ry="7.5" transform="rotate(-5 21 30)" />
-                  <ellipse cx="28" cy="33" rx="3.5" ry="7.5" transform="rotate(45 28 33)" />
-                  <ellipse cx="21" cy="42" rx="3.5" ry="7.5" transform="rotate(10 21 42)" />
-                  <ellipse cx="27" cy="46" rx="3.5" ry="7.5" transform="rotate(60 27 46)" />
-                  <ellipse cx="17" cy="54" rx="3.5" ry="7.5" transform="rotate(25 17 54)" />
-                  <ellipse cx="22" cy="59" rx="3.5" ry="7.5" transform="rotate(75 22 59)" />
-                  <ellipse cx="10" cy="64" rx="3.5" ry="7.5" transform="rotate(40 10 64)" />
-                  <ellipse cx="14" cy="69" rx="3.5" ry="7.5" transform="rotate(85 14 69)" />
-                </svg>
+                {/* Right Branch (Flipped horizontally) */}
+                <div className="relative w-8 sm:w-11 h-16 sm:h-22 shrink-0 -scale-x-100">
+                  <Image
+                    src="/images/landing/laurel_branch.png"
+                    alt="Laurel branch right"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
               </div>
 
               {/* Laurel Wreath 2: Active Learners */}
-              <div className="flex items-center gap-2 sm:gap-3 group">
+              <div className="flex items-center gap-2 sm:gap-3 group select-none">
                 {/* Left Branch */}
-                <svg viewBox="0 0 36 78" fill="currentColor" className="w-8 sm:w-10 h-16 sm:h-20 text-blue-500 shrink-0" aria-hidden="true">
-                  <path d="M 10 4 C 26 22 28 48 8 72" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                  <ellipse cx="11" cy="7" rx="3.5" ry="7.5" transform="rotate(-35 11 7)" />
-                  <ellipse cx="17" cy="9" rx="3.5" ry="7.5" transform="rotate(20 17 9)" />
-                  <ellipse cx="17" cy="18" rx="3.5" ry="7.5" transform="rotate(-20 17 18)" />
-                  <ellipse cx="24" cy="21" rx="3.5" ry="7.5" transform="rotate(35 24 21)" />
-                  <ellipse cx="21" cy="30" rx="3.5" ry="7.5" transform="rotate(-5 21 30)" />
-                  <ellipse cx="28" cy="33" rx="3.5" ry="7.5" transform="rotate(45 28 33)" />
-                  <ellipse cx="21" cy="42" rx="3.5" ry="7.5" transform="rotate(10 21 42)" />
-                  <ellipse cx="27" cy="46" rx="3.5" ry="7.5" transform="rotate(60 27 46)" />
-                  <ellipse cx="17" cy="54" rx="3.5" ry="7.5" transform="rotate(25 17 54)" />
-                  <ellipse cx="22" cy="59" rx="3.5" ry="7.5" transform="rotate(75 22 59)" />
-                  <ellipse cx="10" cy="64" rx="3.5" ry="7.5" transform="rotate(40 10 64)" />
-                  <ellipse cx="14" cy="69" rx="3.5" ry="7.5" transform="rotate(85 14 69)" />
-                </svg>
+                <div className="relative w-8 sm:w-11 h-16 sm:h-22 shrink-0">
+                  <Image
+                    src="/images/landing/laurel_branch.png"
+                    alt="Laurel branch left"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
 
-                <div className="text-center px-1">
-                  <div className={`text-3xl sm:text-4xl font-black tracking-tight ${
+                <div className="text-center px-2">
+                  <div className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight ${
                     isLight ? "text-slate-900" : "text-white"
                   }`}>
                     100K
                   </div>
-                  <div className={`text-xs sm:text-sm font-semibold mt-0.5 ${
+                  <div className={`text-xs sm:text-sm font-semibold tracking-wide mt-1 ${
                     isLight ? "text-slate-500" : "text-slate-400"
                   }`}>
                     learners
                   </div>
                 </div>
 
-                {/* Right Branch (flipped) */}
-                <svg viewBox="0 0 36 78" fill="currentColor" className="w-8 sm:w-10 h-16 sm:h-20 text-blue-500 shrink-0 -scale-x-100" aria-hidden="true">
-                  <path d="M 10 4 C 26 22 28 48 8 72" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                  <ellipse cx="11" cy="7" rx="3.5" ry="7.5" transform="rotate(-35 11 7)" />
-                  <ellipse cx="17" cy="9" rx="3.5" ry="7.5" transform="rotate(20 17 9)" />
-                  <ellipse cx="17" cy="18" rx="3.5" ry="7.5" transform="rotate(-20 17 18)" />
-                  <ellipse cx="24" cy="21" rx="3.5" ry="7.5" transform="rotate(35 24 21)" />
-                  <ellipse cx="21" cy="30" rx="3.5" ry="7.5" transform="rotate(-5 21 30)" />
-                  <ellipse cx="28" cy="33" rx="3.5" ry="7.5" transform="rotate(45 28 33)" />
-                  <ellipse cx="21" cy="42" rx="3.5" ry="7.5" transform="rotate(10 21 42)" />
-                  <ellipse cx="27" cy="46" rx="3.5" ry="7.5" transform="rotate(60 27 46)" />
-                  <ellipse cx="17" cy="54" rx="3.5" ry="7.5" transform="rotate(25 17 54)" />
-                  <ellipse cx="22" cy="59" rx="3.5" ry="7.5" transform="rotate(75 22 59)" />
-                  <ellipse cx="10" cy="64" rx="3.5" ry="7.5" transform="rotate(40 10 64)" />
-                  <ellipse cx="14" cy="69" rx="3.5" ry="7.5" transform="rotate(85 14 69)" />
-                </svg>
-              </div>
-
-              {/* Laurel Wreath 3: Fluency Goal Rate (Optional on larger displays) */}
-              <div className="hidden md:flex items-center gap-2 sm:gap-3 group">
-                <svg viewBox="0 0 36 78" fill="currentColor" className="w-8 sm:w-10 h-16 sm:h-20 text-blue-500 shrink-0" aria-hidden="true">
-                  <path d="M 10 4 C 26 22 28 48 8 72" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                  <ellipse cx="11" cy="7" rx="3.5" ry="7.5" transform="rotate(-35 11 7)" />
-                  <ellipse cx="17" cy="9" rx="3.5" ry="7.5" transform="rotate(20 17 9)" />
-                  <ellipse cx="17" cy="18" rx="3.5" ry="7.5" transform="rotate(-20 17 18)" />
-                  <ellipse cx="24" cy="21" rx="3.5" ry="7.5" transform="rotate(35 24 21)" />
-                  <ellipse cx="21" cy="30" rx="3.5" ry="7.5" transform="rotate(-5 21 30)" />
-                  <ellipse cx="28" cy="33" rx="3.5" ry="7.5" transform="rotate(45 28 33)" />
-                  <ellipse cx="21" cy="42" rx="3.5" ry="7.5" transform="rotate(10 21 42)" />
-                  <ellipse cx="27" cy="46" rx="3.5" ry="7.5" transform="rotate(60 27 46)" />
-                  <ellipse cx="17" cy="54" rx="3.5" ry="7.5" transform="rotate(25 17 54)" />
-                  <ellipse cx="22" cy="59" rx="3.5" ry="7.5" transform="rotate(75 22 59)" />
-                  <ellipse cx="10" cy="64" rx="3.5" ry="7.5" transform="rotate(40 10 64)" />
-                  <ellipse cx="14" cy="69" rx="3.5" ry="7.5" transform="rotate(85 14 69)" />
-                </svg>
-
-                <div className="text-center px-1">
-                  <div className={`text-3xl sm:text-4xl font-black tracking-tight ${
-                    isLight ? "text-slate-900" : "text-white"
-                  }`}>
-                    98.7%
-                  </div>
-                  <div className={`text-xs sm:text-sm font-semibold mt-0.5 ${
-                    isLight ? "text-slate-500" : "text-slate-400"
-                  }`}>
-                    fluency score
-                  </div>
+                {/* Right Branch (Flipped horizontally) */}
+                <div className="relative w-8 sm:w-11 h-16 sm:h-22 shrink-0 -scale-x-100">
+                  <Image
+                    src="/images/landing/laurel_branch.png"
+                    alt="Laurel branch right"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
-
-                <svg viewBox="0 0 36 78" fill="currentColor" className="w-8 sm:w-10 h-16 sm:h-20 text-blue-500 shrink-0 -scale-x-100" aria-hidden="true">
-                  <path d="M 10 4 C 26 22 28 48 8 72" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-                  <ellipse cx="11" cy="7" rx="3.5" ry="7.5" transform="rotate(-35 11 7)" />
-                  <ellipse cx="17" cy="9" rx="3.5" ry="7.5" transform="rotate(20 17 9)" />
-                  <ellipse cx="17" cy="18" rx="3.5" ry="7.5" transform="rotate(-20 17 18)" />
-                  <ellipse cx="24" cy="21" rx="3.5" ry="7.5" transform="rotate(35 24 21)" />
-                  <ellipse cx="21" cy="30" rx="3.5" ry="7.5" transform="rotate(-5 21 30)" />
-                  <ellipse cx="28" cy="33" rx="3.5" ry="7.5" transform="rotate(45 28 33)" />
-                  <ellipse cx="21" cy="42" rx="3.5" ry="7.5" transform="rotate(10 21 42)" />
-                  <ellipse cx="27" cy="46" rx="3.5" ry="7.5" transform="rotate(60 27 46)" />
-                  <ellipse cx="17" cy="54" rx="3.5" ry="7.5" transform="rotate(25 17 54)" />
-                  <ellipse cx="22" cy="59" rx="3.5" ry="7.5" transform="rotate(75 22 59)" />
-                  <ellipse cx="10" cy="64" rx="3.5" ry="7.5" transform="rotate(40 10 64)" />
-                  <ellipse cx="14" cy="69" rx="3.5" ry="7.5" transform="rotate(85 14 69)" />
-                </svg>
               </div>
             </div>
           </div>
@@ -2502,7 +2435,10 @@ export default function LandingPage({
             ].map((cat) => (
               <button
                 key={cat.value}
-                onClick={() => setSelectedReviewFilter(cat.value)}
+                onClick={() => {
+                  setSelectedReviewFilter(cat.value);
+                  setReviewPage(0);
+                }}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer border ${
                   selectedReviewFilter === cat.value
                     ? isLight
@@ -2518,183 +2454,161 @@ export default function LandingPage({
             ))}
           </div>
 
-          {/* 50 REVIEWS DUAL BIDIRECTIONAL MARQUEE STREAMS (Smooth, readable, low speed) */}
-          <div className="space-y-4 sm:space-y-6 overflow-hidden">
-            {/* STREAM 1: Gliding Left (animate-marquee-slow) */}
-            <div className="overflow-hidden whitespace-nowrap">
-              <div className="animate-marquee-slow flex items-center gap-4 sm:gap-6 py-2">
-                {[...ALL_REVIEWS_50.slice(0, 25), ...ALL_REVIEWS_50.slice(0, 25)].map((item, idx) => {
-                  const isMatching = selectedReviewFilter === "All" || item.category === selectedReviewFilter;
-                  return (
-                    <div
-                      key={`s1-${item.id}-${idx}`}
-                      onClick={() => setActiveReviewModal(item)}
-                      className={`group relative w-[310px] sm:w-[350px] p-4 sm:p-5 rounded-2xl border transition-all duration-300 shrink-0 text-left cursor-pointer hover:-translate-y-1 ${
-                        isMatching
-                          ? isLight
+          {/* 4-CARD STABLE SHOWCASE (Non-Marquee, Pausable Carousel - Zero Conflict with Search the World) */}
+          <div
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+            onMouseEnter={() => setIsReviewPaused(true)}
+            onMouseLeave={() => setIsReviewPaused(false)}
+          >
+            {(() => {
+              const filtered = selectedReviewFilter === "All"
+                ? ALL_REVIEWS_50
+                : ALL_REVIEWS_50.filter((r) => r.category === selectedReviewFilter);
+              const itemsPerPage = 4;
+              const totalPages = Math.ceil(filtered.length / itemsPerPage);
+              const safePage = Math.min(reviewPage, Math.max(0, totalPages - 1));
+              const currentReviews = filtered.slice(safePage * itemsPerPage, (safePage + 1) * itemsPerPage);
+
+              return (
+                <div className="space-y-6">
+                  {/* The 4 Cards Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                    {currentReviews.map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => setActiveReviewModal(item)}
+                        className={`group relative p-5 rounded-2xl border transition-all duration-300 text-left cursor-pointer flex flex-col justify-between hover:-translate-y-1 ${
+                          isLight
                             ? "bg-white/95 border-slate-200/90 shadow-sm hover:shadow-xl hover:border-blue-400"
                             : "bg-slate-900/90 border-white/10 shadow-lg hover:shadow-blue-500/10 hover:border-blue-400/50"
-                          : isLight
-                          ? "bg-white/40 border-slate-100 opacity-40 hover:opacity-100"
-                          : "bg-slate-900/40 border-white/5 opacity-40 hover:opacity-100"
-                      }`}
-                    >
-                      {/* Top Bar: Avatar, User Details, Learned Badge, Quote Symbol */}
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm shrink-0">
-                            <Image src={item.avatar} alt={item.name} fill className="object-cover" />
-                          </div>
-                          <div className="min-w-0">
-                            <div className={`text-sm font-bold truncate ${isLight ? "text-slate-900" : "text-white"}`}>
-                              {item.name}
+                        }`}
+                      >
+                        <div>
+                          {/* Top Bar: Avatar, User Details, Learned Badge, Quote Symbol */}
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm shrink-0">
+                                <Image src={item.avatar} alt={item.name} fill className="object-cover" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className={`text-sm font-bold truncate ${isLight ? "text-slate-900" : "text-white"}`}>
+                                  {item.name}
+                                </div>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                                    <span>Learned</span>
+                                    <span className="w-3.5 h-2.5 relative overflow-hidden rounded-xs shrink-0 inline-block align-middle">
+                                      <Image src={item.targetFlag} alt={item.learned} fill className="object-cover" />
+                                    </span>
+                                    <span className={`font-bold ${isLight ? "text-slate-800" : "text-slate-200"}`}>
+                                      {item.learned}
+                                    </span>
+                                  </span>
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                                <span>Learned</span>
-                                <span className="w-3.5 h-2.5 relative overflow-hidden rounded-xs shrink-0 inline-block align-middle">
-                                  <Image src={item.targetFlag} alt={item.learned} fill className="object-cover" />
-                                </span>
-                                <span className={`font-bold ${isLight ? "text-slate-800" : "text-slate-200"}`}>
-                                  {item.learned}
-                                </span>
-                              </span>
-                            </div>
+
+                            <span className={`text-2xl font-serif select-none transition-colors ${
+                              isLight ? "text-slate-300 group-hover:text-blue-500" : "text-slate-700 group-hover:text-blue-400"
+                            }`}>
+                              &rdquo;
+                            </span>
                           </div>
+
+                          {/* 5 Stars */}
+                          <div className="flex items-center gap-1 mb-2">
+                            {[...Array(5)].map((_, i) => (
+                              <span key={i} className="text-amber-400 text-xs">★</span>
+                            ))}
+                            <span className="text-[10px] font-bold text-slate-400 ml-1">5.0</span>
+                          </div>
+
+                          {/* Review Title */}
+                          <h4 className={`text-sm font-bold tracking-tight mb-1.5 ${
+                            isLight ? "text-slate-900" : "text-white"
+                          }`}>
+                            {item.title}
+                          </h4>
+
+                          {/* Review Quote Text */}
+                          <p className={`text-xs leading-relaxed line-clamp-4 font-normal ${
+                            isLight ? "text-slate-600" : "text-slate-300"
+                          }`}>
+                            {item.content}
+                          </p>
                         </div>
 
-                        <span className={`text-2xl font-serif select-none transition-colors ${
-                          isLight ? "text-slate-300 group-hover:text-blue-500" : "text-slate-700 group-hover:text-blue-400"
-                        }`}>
-                          &rdquo;
-                        </span>
-                      </div>
-
-                      {/* 5 Stars */}
-                      <div className="flex items-center gap-1 mb-2">
-                        {[...Array(5)].map((_, i) => (
-                          <span key={i} className="text-amber-400 text-xs">★</span>
-                        ))}
-                        <span className="text-[10px] font-bold text-slate-400 ml-1">5.0</span>
-                      </div>
-
-                      {/* Review Title */}
-                      <h4 className={`text-sm font-bold tracking-tight mb-1.5 truncate ${
-                        isLight ? "text-slate-900" : "text-white"
-                      }`}>
-                        {item.title}
-                      </h4>
-
-                      {/* Review Quote Text */}
-                      <p className={`text-xs leading-relaxed line-clamp-3 font-normal ${
-                        isLight ? "text-slate-600" : "text-slate-300"
-                      }`}>
-                        {item.content}
-                      </p>
-
-                      {/* Footer Stamp */}
-                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[10px]">
-                        <span className="text-emerald-500 font-semibold flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          Verified Learner
-                        </span>
-                        <span className={`font-medium ${isLight ? "text-slate-400" : "text-slate-400"}`}>
-                          {item.role}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* STREAM 2: Gliding Right (animate-marquee-reverse-slow) */}
-            <div className="overflow-hidden whitespace-nowrap">
-              <div className="animate-marquee-reverse-slow flex items-center gap-4 sm:gap-6 py-2">
-                {[...ALL_REVIEWS_50.slice(25, 50), ...ALL_REVIEWS_50.slice(25, 50)].map((item, idx) => {
-                  const isMatching = selectedReviewFilter === "All" || item.category === selectedReviewFilter;
-                  return (
-                    <div
-                      key={`s2-${item.id}-${idx}`}
-                      onClick={() => setActiveReviewModal(item)}
-                      className={`group relative w-[310px] sm:w-[350px] p-4 sm:p-5 rounded-2xl border transition-all duration-300 shrink-0 text-left cursor-pointer hover:-translate-y-1 ${
-                        isMatching
-                          ? isLight
-                            ? "bg-white/95 border-slate-200/90 shadow-sm hover:shadow-xl hover:border-blue-400"
-                            : "bg-slate-900/90 border-white/10 shadow-lg hover:shadow-blue-500/10 hover:border-blue-400/50"
-                          : isLight
-                          ? "bg-white/40 border-slate-100 opacity-40 hover:opacity-100"
-                          : "bg-slate-900/40 border-white/5 opacity-40 hover:opacity-100"
-                      }`}
-                    >
-                      {/* Top Bar: Avatar, User Details, Learned Badge, Quote Symbol */}
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm shrink-0">
-                            <Image src={item.avatar} alt={item.name} fill className="object-cover" />
-                          </div>
-                          <div className="min-w-0">
-                            <div className={`text-sm font-bold truncate ${isLight ? "text-slate-900" : "text-white"}`}>
-                              {item.name}
-                            </div>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                                <span>Learned</span>
-                                <span className="w-3.5 h-2.5 relative overflow-hidden rounded-xs shrink-0 inline-block align-middle">
-                                  <Image src={item.targetFlag} alt={item.learned} fill className="object-cover" />
-                                </span>
-                                <span className={`font-bold ${isLight ? "text-slate-800" : "text-slate-200"}`}>
-                                  {item.learned}
-                                </span>
-                              </span>
-                            </div>
-                          </div>
+                        {/* Footer Stamp */}
+                        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[10px]">
+                          <span className="text-emerald-500 font-semibold flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Verified Learner
+                          </span>
+                          <span className={`font-medium ${isLight ? "text-slate-400" : "text-slate-400"}`}>
+                            {item.role}
+                          </span>
                         </div>
-
-                        <span className={`text-2xl font-serif select-none transition-colors ${
-                          isLight ? "text-slate-300 group-hover:text-blue-500" : "text-slate-700 group-hover:text-blue-400"
-                        }`}>
-                          &rdquo;
-                        </span>
                       </div>
+                    ))}
+                  </div>
 
-                      {/* 5 Stars */}
-                      <div className="flex items-center gap-1 mb-2">
-                        {[...Array(5)].map((_, i) => (
-                          <span key={i} className="text-amber-400 text-xs">★</span>
-                        ))}
-                        <span className="text-[10px] font-bold text-slate-400 ml-1">5.0</span>
-                      </div>
-
-                      {/* Review Title */}
-                      <h4 className={`text-sm font-bold tracking-tight mb-1.5 truncate ${
-                        isLight ? "text-slate-900" : "text-white"
-                      }`}>
-                        {item.title}
-                      </h4>
-
-                      {/* Review Quote Text */}
-                      <p className={`text-xs leading-relaxed line-clamp-3 font-normal ${
-                        isLight ? "text-slate-600" : "text-slate-300"
-                      }`}>
-                        {item.content}
-                      </p>
-
-                      {/* Footer Stamp */}
-                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[10px]">
-                        <span className="text-emerald-500 font-semibold flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          Verified Learner
-                        </span>
-                        <span className={`font-medium ${isLight ? "text-slate-400" : "text-slate-400"}`}>
-                          {item.role}
-                        </span>
-                      </div>
+                  {/* Carousel Pagination & Page Controls */}
+                  <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    {/* Left: Indicator Info */}
+                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      Showing <strong className={isLight ? "text-slate-800" : "text-white"}>{safePage * itemsPerPage + 1}–{Math.min((safePage + 1) * itemsPerPage, filtered.length)}</strong> of <strong className={isLight ? "text-slate-800" : "text-white"}>{filtered.length}</strong> verified reviews
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+
+                    {/* Middle: Dot Indicators */}
+                    <div className="flex items-center gap-1.5">
+                      {Array.from({ length: totalPages }).map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setReviewPage(idx)}
+                          className={`h-2 rounded-full transition-all cursor-pointer ${
+                            safePage === idx
+                              ? "w-6 bg-blue-600 shadow-xs"
+                              : isLight
+                              ? "w-2 bg-slate-300 hover:bg-slate-400"
+                              : "w-2 bg-slate-700 hover:bg-slate-500"
+                          }`}
+                          aria-label={`Go to page ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Right: Prev & Next Arrow Buttons */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setReviewPage((prev) => (prev > 0 ? prev - 1 : totalPages - 1))}
+                        className={`p-2 sm:px-3 sm:py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1 shadow-xs ${
+                          isLight
+                            ? "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                            : "bg-slate-900 border-slate-800 text-slate-200 hover:bg-slate-800 hover:border-slate-700"
+                        }`}
+                        aria-label="Previous reviews"
+                      >
+                        <span>←</span>
+                        <span className="hidden sm:inline">Prev</span>
+                      </button>
+
+                      <button
+                        onClick={() => setReviewPage((prev) => (prev + 1) % totalPages)}
+                        className={`p-2 sm:px-3 sm:py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1 shadow-xs ${
+                          isLight
+                            ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20"
+                            : "bg-blue-600 border-blue-500 text-white hover:bg-blue-500 shadow-blue-500/20"
+                        }`}
+                        aria-label="Next reviews"
+                      >
+                        <span className="hidden sm:inline">Next</span>
+                        <span>→</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Bottom Live Community Counter Bar */}
@@ -2786,6 +2700,8 @@ export default function LandingPage({
           </div>
         )}
       </section>
+
+
 
       {/* 12. Footer */}
       <footer className={`border-t py-12 text-xs transition-colors ${
