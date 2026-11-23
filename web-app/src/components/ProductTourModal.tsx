@@ -174,24 +174,24 @@ export default function ProductTourModal({
     return (
       <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[95] animate-in fade-in slide-in-from-bottom-2 duration-200">
         <div
-          className={`flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border shadow-xl backdrop-blur-xl transition-all ${
+          className={`flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all ${
             isLight
-              ? "bg-white/95 border-slate-200/90 shadow-[0_10px_30px_rgba(15,23,42,0.15)] text-slate-800"
-              : "bg-slate-900/95 border-slate-800/90 shadow-[0_10px_30px_rgba(0,0,0,0.6)] text-white"
+              ? "bg-white border-slate-300 shadow-[0_12px_35px_rgba(15,23,42,0.18)] text-slate-900 ring-1 ring-slate-900/10"
+              : "bg-[#0C1222] border-slate-700/80 shadow-[0_12px_40px_rgba(0,0,0,0.8)] text-white ring-1 ring-white/10"
           }`}
         >
-          <span className="text-lg animate-pulse">{step.icon}</span>
+          <span className="text-xl animate-pulse">{step.icon}</span>
           <div className="flex flex-col cursor-pointer" onClick={() => setIsMinimized(false)}>
-            <span className="text-[11px] font-black uppercase tracking-wider text-blue-600 dark:text-cyan-400">
+            <span className={`text-[10px] font-black uppercase tracking-wider ${isLight ? "text-blue-700" : "text-cyan-400"}`}>
               Tour • {step.badge.split("•")[1]?.trim() || `Step ${currentStepIdx + 1}`}
             </span>
-            <span className="text-xs font-bold line-clamp-1">{step.title}</span>
+            <span className="text-xs font-black line-clamp-1">{step.title}</span>
           </div>
 
           <button
             type="button"
             onClick={() => setIsMinimized(false)}
-            className="ml-2 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+            className="ml-2 px-3 py-1.5 rounded-xl text-[11px] font-black bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm hover:brightness-110 transition-all"
           >
             Expand ↗
           </button>
@@ -199,7 +199,11 @@ export default function ProductTourModal({
           <button
             type="button"
             onClick={handleDismiss}
-            className={`p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors`}
+            className={`p-1.5 rounded-xl border transition-colors ${
+              isLight
+                ? "border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                : "border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800"
+            }`}
             title="Close Tour"
           >
             ✕
@@ -211,37 +215,43 @@ export default function ProductTourModal({
 
   // Expanded Floating Tour Card (Docked at bottom-right, non-blocking!)
   return (
-    <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[95] w-[350px] sm:w-[390px] max-w-[calc(100vw-2.5rem)] animate-in fade-in slide-in-from-bottom-5 duration-300 pointer-events-auto">
+    <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[95] w-[360px] sm:w-[410px] max-w-[calc(100vw-2rem)] animate-in fade-in slide-in-from-bottom-5 duration-300 pointer-events-auto">
       <div
-        className={`rounded-3xl border shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-300 ${
+        className={`rounded-3xl border shadow-2xl backdrop-blur-2xl overflow-hidden transition-all duration-300 ${
           isLight
-            ? "bg-white/95 border-slate-200/90 shadow-[0_20px_50px_rgba(15,23,42,0.22)] text-slate-800"
-            : "bg-[#0A0F1F]/95 border-slate-800/90 shadow-[0_20px_60px_rgba(0,0,0,0.75)] text-white"
+            ? "bg-white border-slate-300 shadow-[0_25px_60px_rgba(15,23,42,0.25)] text-slate-900 ring-1 ring-slate-900/10"
+            : "bg-[#0C1222] border-slate-700 shadow-[0_25px_70px_rgba(0,0,0,0.85)] text-white ring-1 ring-white/10"
         }`}
       >
         {/* Top Gradient Accent Strip */}
         <div className={`h-1.5 w-full bg-gradient-to-r ${step.accentColor}`} />
 
         {/* Header Bar */}
-        <div className="px-5 pt-4 pb-2 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/70">
-          <div className="flex items-center gap-2.5">
-            <span className="text-2xl">{step.icon}</span>
-            <div>
-              <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${step.accentBg}`}>
+        <div className={`px-5 pt-4 pb-3 flex items-center justify-between border-b ${
+          isLight ? "border-slate-200/90 bg-slate-50/80" : "border-slate-800/90 bg-slate-900/50"
+        }`}>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="text-2xl drop-shadow">{step.icon}</span>
+            <div className="min-w-0">
+              <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-xs ${
+                isLight
+                  ? "bg-blue-50 border-blue-200 text-blue-700"
+                  : "bg-cyan-500/15 border-cyan-400/40 text-cyan-300"
+              }`}>
                 {step.badge}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5 shrink-0">
             {/* Minimize Button */}
             <button
               type="button"
               onClick={() => setIsMinimized(true)}
-              className={`p-1.5 rounded-lg border transition-all text-xs ${
+              className={`px-2 py-1 rounded-xl border text-xs font-bold transition-all ${
                 isLight
-                  ? "bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200"
-                  : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white"
+                  ? "bg-white border-slate-300 text-slate-700 hover:bg-slate-100 hover:text-slate-950 shadow-xs"
+                  : "bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
               }`}
               title="Minimize Tour"
             >
@@ -252,10 +262,10 @@ export default function ProductTourModal({
             <button
               type="button"
               onClick={handleDismiss}
-              className={`p-1.5 rounded-lg border transition-all text-xs ${
+              className={`px-2 py-1 rounded-xl border text-xs font-bold transition-all ${
                 isLight
-                  ? "bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200"
-                  : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white"
+                  ? "bg-white border-slate-300 text-slate-700 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-600 shadow-xs"
+                  : "bg-slate-900 border-slate-700 text-slate-300 hover:bg-rose-950/40 hover:border-rose-500/50 hover:text-rose-400"
               }`}
               title="Skip Tour"
             >
@@ -265,40 +275,42 @@ export default function ProductTourModal({
         </div>
 
         {/* Tour Body */}
-        <div className="px-5 py-3.5 space-y-3">
+        <div className="px-5 py-4 space-y-3.5">
           <div>
-            <h4 className={`text-base font-black tracking-tight leading-snug ${isLight ? "text-slate-900" : "text-white"}`}>
+            <h4 className={`text-base font-black tracking-tight leading-snug ${isLight ? "text-slate-950" : "text-white"}`}>
               {step.title}
             </h4>
-            <p className={`text-[11.5px] font-semibold leading-tight mt-0.5 ${isLight ? "text-blue-600" : "text-cyan-400"}`}>
+            <p className={`text-[12px] font-bold leading-tight mt-1 ${isLight ? "text-blue-700" : "text-cyan-400"}`}>
               {step.tagline}
             </p>
-            <p className={`text-[11.5px] leading-relaxed mt-1 ${isLight ? "text-slate-600" : "text-slate-400"}`}>
+            <p className={`text-[12px] font-medium leading-relaxed mt-1.5 ${isLight ? "text-slate-700" : "text-slate-300"}`}>
               {step.description}
             </p>
           </div>
 
           {/* Key Options / Mentions List */}
-          <div className="space-y-1.5 pt-0.5">
-            <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1">
-              <span>Key Options Mentioned</span>
-              <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800"></span>
+          <div className="space-y-2 pt-0.5">
+            <div className={`text-[10px] font-black uppercase tracking-wider flex items-center gap-2 ${
+              isLight ? "text-slate-500" : "text-slate-400"
+            }`}>
+              <span>Key Features &amp; Options</span>
+              <span className={`h-px flex-1 ${isLight ? "bg-slate-200" : "bg-slate-800"}`}></span>
             </div>
             {step.options.map((opt, idx) => (
               <div
                 key={idx}
-                className={`flex items-start gap-2.5 p-2 rounded-xl border transition-all ${
+                className={`flex items-start gap-3 p-2.5 rounded-2xl border transition-all ${
                   isLight
-                    ? "bg-slate-50/80 border-slate-200/70 hover:bg-white hover:border-blue-300"
-                    : "bg-slate-900/50 border-slate-800/80 hover:bg-slate-900 hover:border-cyan-500/30"
+                    ? "bg-slate-50 border-slate-200 hover:bg-white hover:border-blue-400 hover:shadow-sm"
+                    : "bg-[#0F172A]/70 border-slate-800 hover:bg-[#0F172A] hover:border-cyan-500/40"
                 }`}
               >
-                <span className="text-sm mt-0.5 shrink-0">{opt.icon}</span>
+                <span className="text-base mt-0.5 shrink-0">{opt.icon}</span>
                 <div className="min-w-0 flex-1">
-                  <div className={`text-[11.5px] font-bold leading-tight ${isLight ? "text-slate-900" : "text-slate-200"}`}>
+                  <div className={`text-[12px] font-black leading-tight ${isLight ? "text-slate-950" : "text-slate-100"}`}>
                     {opt.label}
                   </div>
-                  <div className={`text-[10.5px] leading-tight mt-0.5 ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                  <div className={`text-[11px] font-medium leading-tight mt-0.5 ${isLight ? "text-slate-600" : "text-slate-400"}`}>
                     {opt.detail}
                   </div>
                 </div>
@@ -308,7 +320,7 @@ export default function ProductTourModal({
 
           {/* Progress Indicator Dots */}
           <div className="flex items-center justify-between pt-1">
-            <span className="text-[10.5px] font-semibold text-slate-400">
+            <span className={`text-[11px] font-bold ${isLight ? "text-slate-600" : "text-slate-400"}`}>
               Step {currentStepIdx + 1} of {TOUR_STEPS.length}
             </span>
 
@@ -320,8 +332,8 @@ export default function ProductTourModal({
                   onClick={() => setCurrentStepIdx(idx)}
                   className={`transition-all duration-300 rounded-full ${
                     idx === currentStepIdx
-                      ? "w-6 h-1.5 bg-blue-600 dark:bg-cyan-400"
-                      : "w-1.5 h-1.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400"
+                      ? isLight ? "w-7 h-2 bg-blue-600 shadow-sm" : "w-7 h-2 bg-cyan-400 shadow-[0_0_8px_#22d3ee]"
+                      : isLight ? "w-2 h-2 bg-slate-300 hover:bg-slate-400" : "w-2 h-2 bg-slate-700 hover:bg-slate-500"
                   }`}
                   aria-label={`Jump to step ${idx + 1}`}
                 />
@@ -331,15 +343,17 @@ export default function ProductTourModal({
         </div>
 
         {/* Footer Controls */}
-        <div className="px-5 py-3 bg-slate-50/90 dark:bg-slate-900/60 border-t border-slate-100 dark:border-slate-800/70 flex items-center justify-between">
+        <div className={`px-5 py-3 border-t flex items-center justify-between ${
+          isLight ? "bg-slate-50/90 border-slate-200/90" : "bg-slate-900/80 border-slate-800/90"
+        }`}>
           <button
             type="button"
             onClick={handleDismiss}
             className={`text-xs font-bold transition-colors ${
-              isLight ? "text-slate-400 hover:text-slate-700" : "text-slate-500 hover:text-slate-300"
+              isLight ? "text-slate-500 hover:text-slate-900" : "text-slate-400 hover:text-white"
             }`}
           >
-            Skip
+            Skip Tour
           </button>
 
           <div className="flex items-center gap-2">
@@ -349,8 +363,8 @@ export default function ProductTourModal({
                 onClick={handleBack}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
                   isLight
-                    ? "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"
-                    : "bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800"
+                    ? "bg-white border-slate-300 text-slate-800 hover:bg-slate-100 shadow-xs"
+                    : "bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700"
                 }`}
               >
                 ← Back
@@ -360,9 +374,9 @@ export default function ProductTourModal({
             <button
               type="button"
               onClick={handleNext}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-black text-white shadow-md transition-all duration-200 hover:scale-105 active:scale-95 bg-gradient-to-r ${step.accentColor}`}
+              className={`px-4 py-1.5 rounded-xl text-xs font-black text-white shadow-md transition-all duration-200 hover:scale-105 active:scale-95 bg-gradient-to-r ${step.accentColor}`}
             >
-              {isLast ? "Got It! Start 🎙️" : "Next →"}
+              {isLast ? "Got It! Start 🎙️" : "Next Step →"}
             </button>
           </div>
         </div>

@@ -116,7 +116,8 @@ import {
   Moon,
   Upload,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  Settings
 } from "lucide-react";
 
 interface TopicModel {
@@ -4842,7 +4843,11 @@ export default function StudentWebApp() {
   const completedWordsCount = currentPowerWords.filter((pw) => spokenTranscriptAll.includes(pw.word.toLowerCase())).length;
 
   return (
-    <div className="min-h-screen bg-[#0A0F1D] text-slate-100 flex flex-col md:flex-row selection:bg-blue-500 selection:text-white relative">
+    <div
+      className={`min-h-screen flex flex-col md:flex-row selection:bg-blue-500 selection:text-white relative transition-colors duration-200 ${
+        isLight ? "bg-[#F3F7FD] text-slate-900" : "bg-[#0A0F1D] text-slate-100"
+      }`}
+    >
       {/* Global Hidden File Input for Firebase Storage Profile Photo Upload (Accessible from Profile & Edit Modal) */}
       <input
         ref={avatarFileInputRef}
@@ -5122,9 +5127,28 @@ export default function StudentWebApp() {
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Compass className="w-4 h-4" />
+                      <Settings className="w-4 h-4" />
                       <span>Settings</span>
                     </div>
+                  </button>
+
+                  {/* Quick Product Tour Trigger in Sidebar */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsTourOpen(true);
+                      setMobileSidebarOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl transition-all text-slate-400 hover:text-cyan-300 hover:bg-slate-900/70 group"
+                    title="Start Interactive Product Tour"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Sparkles className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
+                      <span>Interactive Tour</span>
+                    </div>
+                    <span className="text-[8.5px] font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 px-1.5 py-0.2 rounded-full">
+                      Guide
+                    </span>
                   </button>
                 </nav>
               </div>
@@ -5312,7 +5336,11 @@ export default function StudentWebApp() {
       {/* ------------------------------------------------------------- */}
       {/* 2. MAIN DASHBOARD CONTENT AREA */}
       {/* ------------------------------------------------------------- */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
+      <div
+        className={`flex-1 flex flex-col min-w-0 transition-colors duration-200 ${
+          isLight ? "bg-[#F3F7FD] text-slate-900" : "bg-[#0A0F1D] text-slate-100"
+        }`}
+      >
         {/* TOP EXECUTIVE COMMAND HEADER - Hidden during active call for zero distraction */}
         {!activeCallTopic && (() => {
           const tabLabels: Record<MainTab, { title: string; badge: string }> = {
@@ -5371,10 +5399,10 @@ export default function StudentWebApp() {
 
           return (
             <header
-              className={`h-16 border-b backdrop-blur-xl sticky top-0 z-30 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 transition-colors ${
+              className={`h-16 border-b backdrop-blur-xl sticky top-0 z-40 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 transition-colors ${
                 isLight
-                  ? "border-slate-200 bg-white/95 text-slate-900 shadow-sm"
-                  : "border-slate-800/80 bg-[#0A0F1D]/95 text-slate-100"
+                  ? "border-slate-200/90 bg-white/95 text-slate-900 shadow-[0_4px_25px_rgba(0,0,0,0.06)]"
+                  : "border-slate-800/90 bg-[#0A0F1D]/95 text-slate-100 shadow-[0_4px_25px_rgba(0,0,0,0.5)]"
               }`}
             >
               {/* Left Cluster: Mobile Menu + Active View Pill + Live Command Spotlight Search */}
