@@ -269,6 +269,40 @@ const GLOBAL_LANG_CODE_MAP: Record<string, string> = {
   Swedish: "sv-SE",
 };
 
+const CANONICAL_CATEGORIES = [
+  "Sports",
+  "Travel",
+  "Food",
+  "Career",
+  "Daily Life",
+  "Social",
+  "Entertainment",
+  "Tech"
+] as const;
+
+const normalizeLang = (lang: string | undefined | null): string => {
+  if (!lang) return "";
+  const l = lang.trim().toLowerCase();
+  if (l.startsWith("chinese")) return "chinese";
+  return l;
+};
+
+const normalizeCategory = (cat: string | undefined | null): string => {
+  if (!cat) return "Daily Life";
+  const c = cat.trim().toLowerCase();
+  if (c.includes("sport") || c.includes("fitness") || c.includes("cricket") || c.includes("gym")) return "Sports";
+  if (c.includes("travel") || c.includes("transit") || c.includes("airport") || c.includes("flight") || c.includes("hotel") || c.includes("sightseeing")) return "Travel";
+  if (c.includes("food") || c.includes("dining") || c.includes("cafe") || c.includes("restaurant") || c.includes("coffee") || c.includes("cuisine")) return "Food";
+  if (c.includes("career") || c.includes("business") || c.includes("job") || c.includes("interview") || c.includes("work") || c.includes("salary") || c.includes("client")) return "Career";
+  if (c.includes("tech") || c.includes("innovation") || c.includes("ai") || c.includes("code") || c.includes("software") || c.includes("robot")) return "Tech";
+  if (c.includes("entertainment") || c.includes("movie") || c.includes("gaming") || c.includes("music") || c.includes("cinema")) return "Entertainment";
+  if (c.includes("social") || c.includes("meetup") || c.includes("party") || c.includes("friend") || c.includes("dinner party")) return "Social";
+  if (c.includes("daily") || c.includes("life") || c.includes("shopping") || c.includes("routine") || c.includes("neighbour") || c.includes("emergency") || c.includes("call grammar repair")) return "Daily Life";
+  const matched = CANONICAL_CATEGORIES.find((oc) => oc.toLowerCase() === c);
+  return matched || "Daily Life";
+};
+
+
 interface CallSessionRecord {
   id?: string;
   userId: string;
@@ -2607,7 +2641,7 @@ export default function StudentWebApp() {
   // Featured Daily Challenge Scenario dynamically synced with Main Selected Language
   const activeDailyChallengeTopic = useMemo(() => {
     const activeLang = selectedLanguage && selectedLanguage !== "All" ? selectedLanguage : "English";
-    const langPool = topics.filter((t) => t.language.toLowerCase() === activeLang.toLowerCase());
+    const langPool = topics.filter((t) => normalizeLang(t.language) === normalizeLang(activeLang));
     const pool = langPool.length > 0 ? langPool : topics;
     return (
       pool.find((t) => (t.category || "").toLowerCase().includes("career") && t.level === "Advanced") ||
@@ -4545,7 +4579,7 @@ export default function StudentWebApp() {
   const launchTopicByKeyword = (keyword: string) => {
     const activeLang = selectedLanguage && selectedLanguage !== "All" ? selectedLanguage : "English";
     const matchingLangTopics = topics.filter(
-      (t) => t.language.toLowerCase() === activeLang.toLowerCase()
+      (t) => normalizeLang(t.language) === normalizeLang(activeLang)
     );
 
     const pool = matchingLangTopics.length > 0 ? matchingLangTopics : topics;
@@ -4671,7 +4705,7 @@ export default function StudentWebApp() {
   // VIEW B: LOGGED-IN 1:1 DESKTOP DASHBOARD (MATCHING media_1795125850996_608b6b20.png)
   // =========================================================================
   const filteredTopics = topics.filter((t) => {
-    const matchesLang = selectedLanguage === "All" || t.language === selectedLanguage;
+    const matchesLang = selectedLanguage === "All" || normalizeLang(t.language) === normalizeLang(selectedLanguage);
     const matchesSearch =
       t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.scenario.toLowerCase().includes(searchQuery.toLowerCase());
@@ -7736,7 +7770,7 @@ export default function StudentWebApp() {
                             <MessageCircle className="w-4 h-4 text-white" />
                           </div>
                           <span className="text-[8.5px] font-bold bg-amber-400/20 border border-amber-300/30 text-amber-100 px-1.5 py-0.2 rounded-full">
-                            {topics.filter((t) => t.language.toLowerCase() === selectedLanguage.toLowerCase()).length} Calls
+                            {topics.filter((t) => normalizeLang(t.language) === normalizeLang(selectedLanguage)).length} Calls
                           </span>
                         </div>
                         <div>
@@ -8508,17 +8542,17 @@ export default function StudentWebApp() {
             {/* FULL-WIDTH BOTTOM SHOWCASE: PRACTICE CALLS + VOCABULARY + GRAMMAR CALLING HUB */}
             {(() => {
               const langCallPool = topics.filter(
-                (t) => selectedLanguage === "All" || t.language.toLowerCase() === selectedLanguage.toLowerCase()
+                (t) => selectedLanguage === "All" || normalizeLang(t.language) === normalizeLang(selectedLanguage)
               );
               const featuredDashCalls = (langCallPool.length >= 3 ? langCallPool : topics).slice(0, 3);
 
               const langVocabPool = FULL_VOCABULARY_CATALOG.filter(
-                (v) => v.language.toLowerCase() === selectedLanguage.toLowerCase()
+                (v) => normalizeLang(v.language) === normalizeLang(selectedLanguage)
               );
               const featuredDashVocab = (langVocabPool.length >= 3 ? langVocabPool : FULL_VOCABULARY_CATALOG).slice(0, 3);
 
               const langGrammarPoolDash = FULL_GRAMMAR_CATALOG.filter(
-                (g) => g.language.toLowerCase() === selectedLanguage.toLowerCase()
+                (g) => normalizeLang(g.language) === normalizeLang(selectedLanguage)
               );
               const featuredDashGrammar = (langGrammarPoolDash.length >= 3 ? langGrammarPoolDash : FULL_GRAMMAR_CATALOG).slice(0, 3);
 
@@ -8814,11 +8848,11 @@ export default function StudentWebApp() {
             /* ----------------------------------------------------------- */
             (() => {
               const langTopics = topics.filter(
-                (t) => selectedLanguage === "All" || t.language.toLowerCase() === selectedLanguage.toLowerCase()
+                (t) => selectedLanguage === "All" || normalizeLang(t.language) === normalizeLang(selectedLanguage)
               );
               const studioTopics = (langTopics.length >= 3 ? langTopics : topics).slice(0, 3);
               const langVocab = FULL_VOCABULARY_CATALOG.filter(
-                (v) => v.language.toLowerCase() === selectedLanguage.toLowerCase()
+                (v) => normalizeLang(v.language) === normalizeLang(selectedLanguage)
               );
               const dueVocab = (langVocab.filter((v) => !masteredVocabIds.includes(v.id)).length > 0
                 ? langVocab.filter((v) => !masteredVocabIds.includes(v.id))
@@ -8827,7 +8861,7 @@ export default function StudentWebApp() {
                 : FULL_VOCABULARY_CATALOG
               ).slice(0, 3);
               const langGrammar = FULL_GRAMMAR_CATALOG.filter(
-                (g) => g.language.toLowerCase() === selectedLanguage.toLowerCase()
+                (g) => normalizeLang(g.language) === normalizeLang(selectedLanguage)
               );
               const focusGrammar = (langGrammar.length >= 3 ? langGrammar : FULL_GRAMMAR_CATALOG).slice(0, 3);
 
@@ -9555,32 +9589,23 @@ export default function StudentWebApp() {
                 }
               };
 
-              const ORDERED_CATEGORIES = [
-                "Sports",
-                "Travel",
-                "Food",
-                "Career",
-                "Daily Life",
-                "Social",
-                "Entertainment",
-                "Tech"
-              ];
+              const ORDERED_CATEGORIES = CANONICAL_CATEGORIES;
 
               const getLangMeta = (langName: string) =>
-                AVAILABLE_LANGUAGES.find((l) => l.name.toLowerCase() === langName.toLowerCase()) ||
+                AVAILABLE_LANGUAGES.find((l) => normalizeLang(l.name) === normalizeLang(langName)) ||
                 AVAILABLE_LANGUAGES[0];
 
               // Topics filtered by the active Language filter first (for accurate category counts)
               const langFilteredPool = topics.filter((t) => {
                 if (practiceSelectedLangFilter === "All") return true;
-                return t.language.toLowerCase() === practiceSelectedLangFilter.toLowerCase();
+                return normalizeLang(t.language) === normalizeLang(practiceSelectedLangFilter);
               });
 
               // Compute dynamic sub-categories available in current category + language pool
               const availableSubCategories = Array.from(
                 new Set(
                   langFilteredPool
-                    .filter((t) => practiceSelectedCategory === "All" || (t.category || "Daily Life") === practiceSelectedCategory)
+                    .filter((t) => practiceSelectedCategory === "All" || normalizeCategory(t.category) === practiceSelectedCategory)
                     .map((t) => t.subCategory)
                     .filter((s): s is string => Boolean(s && s.trim().length > 0))
                 )
@@ -9588,7 +9613,7 @@ export default function StudentWebApp() {
 
               // Full multi-filter application (Language + Category + SubCategory + Level + Search Query)
               const studioFilteredTopics = langFilteredPool.filter((t) => {
-                const tCat = t.category || "Daily Life";
+                const tCat = normalizeCategory(t.category);
                 const matchesCat = practiceSelectedCategory === "All" || tCat.toLowerCase() === practiceSelectedCategory.toLowerCase();
                 const matchesSubCat =
                   practiceSelectedSubCategory === "All" ||
@@ -9633,10 +9658,10 @@ export default function StudentWebApp() {
               const handleQuickRandomCall = () => {
                 const targetLang = practiceSelectedLangFilter === "All" ? selectedLanguage : practiceSelectedLangFilter;
                 const strictLangMatches = studioFilteredTopics.filter(
-                  (t) => t.language.toLowerCase() === targetLang.toLowerCase()
+                  (t) => normalizeLang(t.language) === normalizeLang(targetLang)
                 );
                 const allLangMatches = topics.filter(
-                  (t) => t.language.toLowerCase() === targetLang.toLowerCase()
+                  (t) => normalizeLang(t.language) === normalizeLang(targetLang)
                 );
                 const pool =
                   strictLangMatches.length > 0
@@ -9797,7 +9822,7 @@ export default function StudentWebApp() {
                           </span>
                           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 text-[11px] font-bold">
                             <Zap className="w-3 h-3 text-cyan-400" />
-                            8 Real-World Categories • 6 Languages
+                            8 Real-World Categories • 20 Languages • 540+ Calls
                           </span>
                         </div>
 
@@ -9940,7 +9965,7 @@ export default function StudentWebApp() {
                       {/* 8 Category Cards */}
                       {ORDERED_CATEGORIES.map((catKey) => {
                         const meta = CATEGORY_META[catKey];
-                        const count = langFilteredPool.filter((t) => (t.category || "Daily Life") === catKey).length;
+                        const count = langFilteredPool.filter((t) => normalizeCategory(t.category) === catKey).length;
                         const isSelected = practiceSelectedCategory === catKey;
                         return (
                           <button
@@ -10065,8 +10090,8 @@ export default function StudentWebApp() {
                         </button>
 
                         {AVAILABLE_LANGUAGES.map((lang) => {
-                          const langCount = topics.filter((t) => t.language.toLowerCase() === lang.name.toLowerCase()).length;
-                          const isSelected = practiceSelectedLangFilter.toLowerCase() === lang.name.toLowerCase();
+                          const langCount = topics.filter((t) => normalizeLang(t.language) === normalizeLang(lang.name)).length;
+                          const isSelected = normalizeLang(practiceSelectedLangFilter) === normalizeLang(lang.name);
                           return (
                             <button
                               key={lang.id}
@@ -10200,7 +10225,7 @@ export default function StudentWebApp() {
                   ) : practiceViewMode === "categories" && practiceSelectedCategory === "All" ? (
                     <div className="space-y-8">
                       {ORDERED_CATEGORIES.map((catKey) => {
-                        const catTopics = studioFilteredTopics.filter((t) => (t.category || "Daily Life") === catKey);
+                        const catTopics = studioFilteredTopics.filter((t) => normalizeCategory(t.category) === catKey);
                         if (catTopics.length === 0) return null;
                         const meta = CATEGORY_META[catKey] || CATEGORY_META["Daily Life"];
 
@@ -10280,11 +10305,11 @@ export default function StudentWebApp() {
               ];
 
               const getLangMeta = (langName: string) =>
-                AVAILABLE_LANGUAGES.find((l) => l.name.toLowerCase() === langName.toLowerCase()) ||
+                AVAILABLE_LANGUAGES.find((l) => normalizeLang(l.name) === normalizeLang(langName)) ||
                 AVAILABLE_LANGUAGES[0];
 
               const langPool = FULL_VOCABULARY_CATALOG.filter((v) =>
-                vocabLangFilter === "All" ? true : v.language.toLowerCase() === vocabLangFilter.toLowerCase()
+                vocabLangFilter === "All" ? true : normalizeLang(v.language) === normalizeLang(vocabLangFilter)
               );
 
               const filteredVocab = langPool.filter((v) => {
@@ -10737,9 +10762,9 @@ export default function StudentWebApp() {
 
                         {AVAILABLE_LANGUAGES.map((lang) => {
                           const count = FULL_VOCABULARY_CATALOG.filter(
-                            (v) => v.language.toLowerCase() === lang.name.toLowerCase()
+                            (v) => normalizeLang(v.language) === normalizeLang(lang.name)
                           ).length;
-                          const isSelected = vocabLangFilter.toLowerCase() === lang.name.toLowerCase();
+                          const isSelected = normalizeLang(vocabLangFilter) === normalizeLang(lang.name);
                           return (
                             <button
                               key={lang.id}
@@ -11400,7 +11425,7 @@ export default function StudentWebApp() {
 
               // Secondary Library Filtering (for when user switches to Full 34+ Grammar Rules Library tab)
               const langGrammarPool = FULL_GRAMMAR_CATALOG.filter((g) =>
-                grammarLangFilter === "All" ? true : g.language.toLowerCase() === grammarLangFilter.toLowerCase()
+                grammarLangFilter === "All" ? true : normalizeLang(g.language) === normalizeLang(grammarLangFilter)
               );
               const filteredLibraryGrammar = langGrammarPool.filter((g) => {
                 const matchesCat = grammarCategoryFilter === "All" || g.category === grammarCategoryFilter;
@@ -11990,23 +12015,32 @@ export default function StudentWebApp() {
                             >
                               🌐 All ({FULL_GRAMMAR_CATALOG.length})
                             </button>
-                            {AVAILABLE_LANGUAGES.map((lang) => (
-                              <button
-                                key={lang.id}
-                                onClick={() => {
-                                  setGrammarLangFilter(lang.name);
-                                  setSelectedLanguage(lang.name);
-                                }}
-                                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border ${
-                                  grammarLangFilter.toLowerCase() === lang.name.toLowerCase()
-                                    ? "bg-purple-500/20 border-purple-400 text-purple-300"
-                                    : "bg-slate-900 border-slate-800 text-slate-400"
-                                }`}
-                              >
-                                <img src={lang.flagUrl} alt={lang.name} className="w-3.5 h-2.5 rounded-[2px] object-cover" />
-                                <span>{lang.name}</span>
-                              </button>
-                            ))}
+                            {AVAILABLE_LANGUAGES.map((lang) => {
+                              const count = FULL_GRAMMAR_CATALOG.filter(
+                                (g) => normalizeLang(g.language) === normalizeLang(lang.name)
+                              ).length;
+                              const isSelected = normalizeLang(grammarLangFilter) === normalizeLang(lang.name);
+                              return (
+                                <button
+                                  key={lang.id}
+                                  onClick={() => {
+                                    setGrammarLangFilter(lang.name);
+                                    setSelectedLanguage(lang.name);
+                                  }}
+                                  className={`px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border ${
+                                    isSelected
+                                      ? "bg-purple-500/20 border-purple-400 text-purple-300"
+                                      : "bg-slate-900 border-slate-800 text-slate-400"
+                                  }`}
+                                >
+                                  <img src={lang.flagUrl} alt={lang.name} className="w-3.5 h-2.5 rounded-[2px] object-cover" />
+                                  <span>{lang.name}</span>
+                                  <span className="text-[9.5px] px-1 py-0.2 rounded-full bg-black/30 font-mono">
+                                    {count}
+                                  </span>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       </div>

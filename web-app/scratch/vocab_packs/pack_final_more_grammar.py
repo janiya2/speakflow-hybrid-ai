@@ -1,0 +1,110 @@
+# -*- coding: utf-8 -*-
+
+MORE_GRAMMAR = {
+    "Vietnamese": [
+        ("Classifier Selection: Cái vs Con", "Classifiers", "Beginner",
+         "Một cái chó và một con bàn.",
+         "Một con chó và một cái bàn.",
+         "In Vietnamese, living animate animals take classifier 'con' (con chó, con mèo). Inanimate objects take 'cái' (cái bàn, cái ghế).",
+         "Rule: Animate animals = Con. Inanimate objects = Cái.", "classifiers"),
+        ("Tense Markers: Đã (past), Đang (continuous), Sẽ (future)", "Tense", "Beginner",
+         "Hôm qua tôi đi chợ và sẽ mua cá.",
+         "Hôm qua tôi đã đi chợ và đã mua cá.",
+         "Use 'đã' for completed past actions, 'đang' for current actions in progress, and 'sẽ' for future intentions.",
+         "Temporal markers: Đã (past), Đang (now), Sẽ (future).", "tense-markers"),
+        ("Honorific Pronoun Addressing: Em / Anh / Chị / Cô / Bác", "Pronouns", "Intermediate",
+         "Tôi nói với bạn (To an older female teacher).",
+         "Em nói với cô.",
+         "Vietnamese rarely uses impersonal 'tôi - bạn'. Social age and hierarchy require kinship pronouns (Em for younger, Anh for older brother, Chị for older sister, Cô for teacher/aunt).",
+         "Social etiquette: Address yourself relative to the listener's age: Em with Anh/Chị/Cô.", "pronouns"),
+        ("Question Words at the End: Chưa vs Không", "Questions", "Beginner",
+         "Bạn ăn cơm rồi không?",
+         "Bạn ăn cơm chưa?",
+         "For completed actions ('Have you eaten yet?'), end with 'chưa' (not yet?). Use 'không' for general yes/no state queries ('Bạn có đói không?').",
+         "Action completed yet? End with 'chưa?'. General condition? End with 'không?'.", "questions"),
+        ("Adjective Placement (After Noun)", "Word Order", "Beginner",
+         "Tôi muốn mua một đỏ áo.",
+         "Tôi muốn mua một cái áo đỏ.",
+         "In Vietnamese, descriptive adjectives follow the noun: Noun + Adjective ('áo đỏ' = red shirt, 'cà phê nóng' = hot coffee).",
+         "Rule: Noun first, color/size second: 'áo' (shirt) + 'đỏ' (red).", "adjectives")
+    ],
+
+    "Indonesian": [
+        ("Active 'Me-' Prefix vs Passive 'Di-'", "Verbs", "Intermediate",
+         "Buku itu membaca oleh Budi.",
+         "Buku itu dibaca oleh Budi.",
+         "When the object is promoted to the subject of the clause (passive voice), the verb takes the prefix 'di-' (dibaca), not active 'me-' (membaca).",
+         "Passive rule: Object + di-verb + oleh + Agent: 'Apel itu dimakan saya'.", "verbs-passive"),
+        ("Exclusive 'Kami' vs Inclusive 'Kita' for We", "Pronouns", "Beginner",
+         "Kepada pelayan: Kita mau pesan makanan sekarang. (Includes the waiter!)",
+         "Kepada pelayan: Kami mau pesan makanan sekarang. (Excludes the waiter)",
+         "'Kita' includes the listener ('you and I'). 'Kami' excludes the listener ('we, but not you'). When ordering to a waiter, use 'kami'.",
+         "Golden Rule: 'Kita' = All of us including you. 'Kami' = Us, not you.", "pronouns-we"),
+        ("Word Order: Noun + Adjective (Bukan sebaliknya)", "Word Order", "Beginner",
+         "Saya minum panas kopi.",
+         "Saya minum kopi panas.",
+         "Indonesian is strictly head-initial (DM rule: Diterangkan - Menerangkan). The noun comes first, adjectives and modifiers follow.",
+         "Formula: Noun + Adjective: 'rumah besar' (big house), 'mobil baru' (new car).", "word-order"),
+        ("Negation: 'Bukan' (Nouns) vs 'Tidak' (Verbs/Adjectives)", "Negation", "Beginner",
+         "Dia tidak dokter, dan saya bukan lapar.",
+         "Dia bukan dokter, dan saya tidak lapar.",
+         "Use 'bukan' to negate nouns and identities ('bukan dokter', 'bukan saya'). Use 'tidak' to negate verbs and adjectives ('tidak lapar', 'tidak tahu').",
+         "Negative check: Noun? -> Bukan. Verb or Adjective? -> Tidak.", "negation"),
+        ("Sudah vs Pernah for Past Experience", "Aspect", "Intermediate",
+         "Saya sudah ke Bali tahun lalu vs Saya pernah ke Bali.",
+         "Saya sudah makan (already eaten today) vs Saya pernah ke Bali (ever been in life).",
+         "'Sudah' denotes an action completed recently ('already done today'). 'Pernah' denotes life experience ('have ever experienced in the past').",
+         "Life experience = Pernah. Completed today = Sudah.", "aspect")
+    ],
+
+    "Thai": [
+        ("Polite Final Particles: ครับ (khrap) vs ค่ะ/คะ (kha/kha)", "Politeness", "Beginner",
+         "ชายพูด: ขอบคุณค่ะ / หญิงถาม: ใช่ค่ะ?",
+         "ชายพูด: ขอบคุณครับ / หญิงถาม: ใช่ไหมคะ? / หญิงตอบ: ใช่ค่ะ",
+         "Male speakers always use ครับ (khrap). Female speakers use ค่ะ (kha - falling tone) for statements and คะ (kha - high tone) for questions.",
+         "Tone rule for women: Statements = ค่ะ (falling tone), Questions = คะ (high tone).", "particles-polite"),
+        ("Word Order: Noun + Adjective (No Copula 'To Be')", "Syntax", "Beginner",
+         "ต้มยำกุ้งคือเผ็ดมาก.",
+         "ต้มยำกุ้งเผ็ดมาก.",
+         "Thai adjectives function as stative verbs. Never insert the copula คือ (khue) or เป็น (pen) before an adjective.",
+         "Rule: Drop 'to be' before adjectives: say 'ข้าวผัดอร่อย' (fried rice delicious), not 'ข้าวผัดคืออร่อย'.", "syntax"),
+        ("Classifier Requirement for Counting (Noun + Number + Classifier)", "Classifiers", "Beginner",
+         "ผมขอน้ำสอง.",
+         "ผมขอน้ำสองขวด / สองแก้ว.",
+         "In Thai, items must be counted with their proper classifier in the order: Noun + Number + Classifier (e.g. น้ำ 2 ขวด = water 2 bottles).",
+         "Counting order: Item + Number + Classifier: 'กาแฟ 1 แก้ว' (coffee 1 cup).", "classifiers"),
+        ("Negation with ไม่ (mai) vs ไม่ได้ (mai dai)", "Negation", "Intermediate",
+         "เมื่อวานผมไม่ไปทำงาน (General habit) vs เมื่อวานผมไม่ได้ไปทำงาน (Did not go yesterday).",
+         "เมื่อวานผมไม่ได้ไปทำงาน.",
+         "Use 'ไม่ได้' (mai dai) to negate past actions ('did not do'). Use simple 'ไม่' (mai) to express refusal or present unwillingness.",
+         "Past negation = ไม่ได้ + Verb. Present refusal = ไม่ + Verb.", "negation"),
+        ("Preposition ที่ (thee) for Location", "Prepositions", "Beginner",
+         "เราเจอกันสยาม.",
+         "เราเจอกันที่สยาม.",
+         "When indicating where an action occurs, place the locative particle ที่ (thee = at) before the place name.",
+         "Pattern: Verb + ที่ + Place: 'กินข้าวที่บ้าน' (eat at home).", "prepositions")
+    ],
+
+    "Arabic": [
+        ("Subject-Verb Agreement with Word Order (VSO vs SVO)", "Word Order", "Intermediate",
+         "ذهبوا الطلاب إلى المدرسة.",
+         "ذهبَ الطلابُ إلى المدرسةِ / الطلابُ ذهبوا إلى المدرسةِ.",
+         "When the verb precedes the plural subject (VSO order), the verb MUST remain singular in number ('ذهب الطلاب'). If the subject comes first (SVO), the verb agrees in plural ('الطلاب ذهبوا').",
+         "Golden Rule: Verb first = Singular verb. Subject first = Full plural agreement.", "vso-agreement"),
+        ("Preposition 'في' vs 'بـ' for Location and Instrument", "Prepositions", "Beginner",
+         "سافرتُ في الطائرةِ وكتبتُ في القلمِ.",
+         "سافرتُ بالـطائرةِ وكتبتُ بالـقلمِ.",
+         "Use the prefix 'بـ' (bi-) for instruments and modes of transportation ('بالطائرة' = by plane, 'بالقلم' = with a pen). Use 'في' for enclosed physical location.",
+         "Transport & Tools = 'بـ' (bi-). Spatial location inside = 'في' (fee).", "prepositions")
+    ],
+
+    "Italian": [
+        ("Partitive Articles: Del, Dello, Della", "Articles", "Beginner",
+         "Voglio pane e acqua.",
+         "Voglio del pane e dell'acqua.",
+         "To express 'some' uncountable food/drink, Italian uses partitive articles (di + definite article: del, dello, della, dei).",
+         "Some food = Partitive: 'del formaggio' (some cheese), 'della pasta' (some pasta).", "partitive")
+    ]
+}
+
+print("More grammar pack ready.")
