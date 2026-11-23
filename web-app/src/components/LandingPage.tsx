@@ -1079,9 +1079,9 @@ export default function LandingPage({
             <h2 className={`text-3xl sm:text-5xl font-black tracking-tight leading-tight ${
               isLight ? "text-[#0F172A]" : "text-white"
             }`}>
-              The <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-cyan-400 dark:via-blue-400 dark:to-indigo-400">Global</span> Language and Cultural Exchange
+              The <span className={isLight ? "text-blue-600 font-extrabold" : "text-cyan-400 font-extrabold"}>Global</span> Language and Cultural Exchange
             </h2>
-            <p className={`text-sm sm:text-base ${isLight ? "text-slate-600" : "text-slate-400"}`}>
+            <p className={`text-sm sm:text-base font-medium ${isLight ? "text-slate-600" : "text-slate-300"}`}>
               Learn a language, explore new cultures, and master authentic fluency through 24/7 AI conversation.
             </p>
           </div>
@@ -1090,7 +1090,11 @@ export default function LandingPage({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             {/* Left Column: Content */}
             <div className="lg:col-span-6 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-cyan-400">
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase border ${
+                isLight
+                  ? "bg-indigo-50 border-indigo-200 text-indigo-700"
+                  : "bg-indigo-950/60 border-indigo-800 text-cyan-400"
+              }`}>
                 <span className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-cyan-400 animate-pulse" />
                 Language Exchange
               </div>
@@ -1098,11 +1102,11 @@ export default function LandingPage({
               <h3 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
                 isLight ? "text-[#0F172A]" : "text-white"
               }`}>
-                Learn Through <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-cyan-400 dark:to-indigo-400">Language Exchange</span>
+                Learn Through <span className={isLight ? "text-indigo-600 font-extrabold" : "text-cyan-400 font-extrabold"}>Language Exchange</span>
               </h3>
 
-              <p className={`text-sm sm:text-base leading-relaxed ${
-                isLight ? "text-slate-600" : "text-slate-400"
+              <p className={`text-sm sm:text-base leading-relaxed font-medium ${
+                isLight ? "text-slate-600" : "text-slate-300"
               }`}>
                 Connect with native-level AI speaker personas and practice authentic conversations. Use built-in smart tools for real-time speech-to-text, acoustic pronunciation analysis, transliteration, and CEFR grammar corrections.
               </p>
@@ -1119,7 +1123,7 @@ export default function LandingPage({
                     key={i}
                     className={`p-3.5 rounded-xl border transition-all ${
                       isLight
-                        ? "bg-slate-50/80 border-slate-200/80 hover:bg-white hover:shadow-md hover:border-indigo-200"
+                        ? "bg-slate-50 border-slate-200 hover:bg-white hover:shadow-md hover:border-indigo-300"
                         : "bg-slate-900/60 border-indigo-500/20 hover:bg-slate-900 hover:border-cyan-400/40"
                     }`}
                   >
@@ -1127,7 +1131,7 @@ export default function LandingPage({
                       <span className="text-lg">{tool.icon}</span>
                       <span className={`text-sm font-bold ${isLight ? "text-slate-900" : "text-white"}`}>{tool.title}</span>
                     </div>
-                    <p className={`text-xs ${isLight ? "text-slate-500" : "text-slate-400"}`}>{tool.desc}</p>
+                    <p className={`text-xs ${isLight ? "text-slate-600" : "text-slate-400"}`}>{tool.desc}</p>
                   </div>
                 ))}
               </div>
@@ -1135,7 +1139,7 @@ export default function LandingPage({
               <div className="pt-2">
                 <button
                   onClick={() => onStartCall()}
-                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
                   <span>Try Language Exchange</span>
                   <span>→</span>
@@ -1143,22 +1147,19 @@ export default function LandingPage({
               </div>
             </div>
 
-            {/* Right Column: Image */}
+            {/* Right Column: Image (Floating freely with 3D drop shadow - NO OUTER BOX!) */}
             <div className="lg:col-span-6 flex justify-center">
-              <div className="relative w-full max-w-[520px]">
-                <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-indigo-500/10 to-purple-500/10 rounded-3xl blur-2xl -z-10" />
-                <div className={`p-3 sm:p-5 rounded-3xl border shadow-xl ${
-                  isLight ? "bg-white/90 border-slate-200/80" : "bg-slate-900/80 border-indigo-500/20"
-                }`}>
-                  <Image
-                    src="/images/landing/hellotalk/feature_1_exchange.png"
-                    alt="SpeakFlow AI Language Exchange with built-in voice-to-text, translation, and grammar corrections"
-                    width={1218}
-                    height={1500}
-                    className="w-full h-auto object-contain rounded-2xl drop-shadow-md"
-                    priority
-                  />
-                </div>
+              <div className="relative w-full max-w-[500px]">
+                {/* Ambient Glow */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/15 via-indigo-500/15 to-purple-500/15 rounded-full blur-3xl -z-10" />
+                <Image
+                  src="/images/landing/hellotalk/feature_1_exchange.png"
+                  alt="SpeakFlow AI Language Exchange with built-in voice-to-text, translation, and grammar corrections"
+                  width={1218}
+                  height={1500}
+                  className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.16)] transition-transform duration-500 hover:scale-[1.02]"
+                  priority
+                />
               </div>
             </div>
           </div>
@@ -1171,7 +1172,7 @@ export default function LandingPage({
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-            {/* Left Column: Image (Phone Mockup with Floating Modes) */}
+            {/* Left Column: Image (Phone Mockup with Floating Modes - Floating 3D) */}
             <div className="lg:col-span-6 flex justify-center order-2 lg:order-1">
               <div className="relative w-full max-w-[460px]">
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/15 via-purple-500/15 to-pink-500/15 rounded-full blur-3xl -z-10" />
@@ -1180,14 +1181,18 @@ export default function LandingPage({
                   alt="Multi-Modal Practice: Text, Voice, Video and Livestreams"
                   width={1665}
                   height={1808}
-                  className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.15)] transition-transform duration-500 hover:scale-[1.02]"
+                  className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.16)] transition-transform duration-500 hover:scale-[1.02]"
                 />
               </div>
             </div>
 
             {/* Right Column: Content */}
             <div className="lg:col-span-6 space-y-6 order-1 lg:order-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-cyan-400">
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase border ${
+                isLight
+                  ? "bg-purple-50 border-purple-200 text-purple-700"
+                  : "bg-indigo-950/60 border-indigo-800 text-cyan-400"
+              }`}>
                 <span className="w-2 h-2 rounded-full bg-purple-600 dark:bg-cyan-400 animate-pulse" />
                 Text, Voice, Video, & More
               </div>
@@ -1195,11 +1200,11 @@ export default function LandingPage({
               <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
                 isLight ? "text-[#0F172A]" : "text-white"
               }`}>
-                Practice in the Way That <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-cyan-400 dark:to-indigo-400">Works for You</span>
+                Practice in the Way That <span className={isLight ? "text-indigo-600 font-extrabold" : "text-cyan-400 font-extrabold"}>Works for You</span>
               </h2>
 
-              <p className={`text-sm sm:text-base leading-relaxed ${
-                isLight ? "text-slate-600" : "text-slate-400"
+              <p className={`text-sm sm:text-base leading-relaxed font-medium ${
+                isLight ? "text-slate-600" : "text-slate-300"
               }`}>
                 Chat with language partners and AI tutors through text, voice, or video. Join Voicerooms and interactive audio lounges to practice speaking and listening with people and AI personas around the world.
               </p>
@@ -1227,7 +1232,7 @@ export default function LandingPage({
                     key={i}
                     className={`p-4 rounded-2xl border transition-all ${
                       isLight
-                        ? "bg-white/80 border-slate-200/80 shadow-sm hover:shadow-md"
+                        ? "bg-white/90 border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300"
                         : "bg-slate-900/60 border-indigo-500/20 hover:border-cyan-400/40"
                     }`}
                   >
@@ -1237,7 +1242,7 @@ export default function LandingPage({
                       </span>
                       <div>
                         <h4 className={`text-sm font-bold ${isLight ? "text-slate-900" : "text-white"}`}>{mode.badge}</h4>
-                        <p className={`text-xs mt-1 leading-relaxed ${isLight ? "text-slate-500" : "text-slate-400"}`}>{mode.desc}</p>
+                        <p className={`text-xs mt-1 leading-relaxed ${isLight ? "text-slate-600" : "text-slate-400"}`}>{mode.desc}</p>
                       </div>
                     </div>
                   </div>
@@ -1247,7 +1252,7 @@ export default function LandingPage({
               <div className="pt-2">
                 <button
                   onClick={() => onStartCall()}
-                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-sm shadow-lg shadow-purple-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-sm shadow-lg shadow-purple-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
                   <span>Start Multi-Modal Practice</span>
                   <span>→</span>
@@ -1268,7 +1273,11 @@ export default function LandingPage({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             {/* Left Column: Content */}
             <div className="lg:col-span-6 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400">
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase border ${
+                isLight
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                  : "bg-emerald-950/60 border-emerald-800 text-emerald-400"
+              }`}>
                 <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-emerald-400 animate-pulse" />
                 Moments
               </div>
@@ -1276,11 +1285,11 @@ export default function LandingPage({
               <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
                 isLight ? "text-[#0F172A]" : "text-white"
               }`}>
-                Learn and Share with the <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-blue-600 dark:from-emerald-400 dark:to-cyan-400">Community</span>
+                Learn and Share with the <span className={isLight ? "text-emerald-600 font-extrabold" : "text-emerald-400 font-extrabold"}>Community</span>
               </h2>
 
-              <p className={`text-sm sm:text-base leading-relaxed ${
-                isLight ? "text-slate-600" : "text-slate-400"
+              <p className={`text-sm sm:text-base leading-relaxed font-medium ${
+                isLight ? "text-slate-600" : "text-slate-300"
               }`}>
                 Share posts, ask pronunciation questions, and get instant responses from native speakers and fellow learners. Learn about language, culture, and everyday life through the SpeakFlow global community.
               </p>
@@ -1313,7 +1322,7 @@ export default function LandingPage({
                     key={i}
                     className={`p-3.5 rounded-xl border transition-all ${
                       isLight
-                        ? "bg-slate-50/80 border-slate-200/80 hover:bg-white hover:shadow-md hover:border-emerald-200"
+                        ? "bg-slate-50 border-slate-200 hover:bg-white hover:shadow-md hover:border-emerald-300"
                         : "bg-slate-900/60 border-indigo-500/20 hover:bg-slate-900 hover:border-emerald-400/40"
                     }`}
                   >
@@ -1321,7 +1330,7 @@ export default function LandingPage({
                       <span className="text-lg">{card.icon}</span>
                       <span className={`text-sm font-bold ${isLight ? "text-slate-900" : "text-white"}`}>{card.title}</span>
                     </div>
-                    <p className={`text-xs ${isLight ? "text-slate-500" : "text-slate-400"}`}>{card.desc}</p>
+                    <p className={`text-xs ${isLight ? "text-slate-600" : "text-slate-400"}`}>{card.desc}</p>
                   </div>
                 ))}
               </div>
@@ -1329,7 +1338,7 @@ export default function LandingPage({
               <div className="pt-2">
                 <button
                   onClick={() => onStartCall()}
-                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-sm shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
                   <span>Explore Community Moments</span>
                   <span>→</span>
@@ -1337,21 +1346,17 @@ export default function LandingPage({
               </div>
             </div>
 
-            {/* Right Column: Image */}
+            {/* Right Column: Image (Floating freely with 3D drop shadow - NO OUTER BOX!) */}
             <div className="lg:col-span-6 flex justify-center">
-              <div className="relative w-full max-w-[480px]">
-                <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-blue-500/10 to-teal-500/10 rounded-3xl blur-2xl -z-10" />
-                <div className={`p-3 sm:p-5 rounded-3xl border shadow-xl ${
-                  isLight ? "bg-white/90 border-slate-200/80" : "bg-slate-900/80 border-indigo-500/20"
-                }`}>
-                  <Image
-                    src="/images/landing/hellotalk/feature_3_moments.webp"
-                    alt="SpeakFlow Moments: Learn and share with the community through posts and audio clips"
-                    width={1020}
-                    height={1500}
-                    className="w-full h-auto object-contain rounded-2xl transition-transform duration-500 hover:scale-[1.02] drop-shadow-md"
-                  />
-                </div>
+              <div className="relative w-full max-w-[460px]">
+                <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/15 via-blue-500/15 to-teal-500/15 rounded-full blur-3xl -z-10" />
+                <Image
+                  src="/images/landing/hellotalk/feature_3_moments.webp"
+                  alt="SpeakFlow Moments: Learn and share with the community through posts and audio clips"
+                  width={1020}
+                  height={1500}
+                  className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.16)] transition-transform duration-500 hover:scale-[1.02]"
+                />
               </div>
             </div>
           </div>
@@ -1364,7 +1369,7 @@ export default function LandingPage({
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-            {/* Left Column: Image (Voicerooms Stage) */}
+            {/* Left Column: Image (Voicerooms Stage - Floating 3D Phone) */}
             <div className="lg:col-span-6 flex justify-center order-2 lg:order-1">
               <div className="relative w-full max-w-[440px]">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/15 via-purple-500/15 to-pink-500/15 rounded-full blur-3xl -z-10" />
@@ -1380,7 +1385,11 @@ export default function LandingPage({
 
             {/* Right Column: Content */}
             <div className="lg:col-span-6 space-y-6 order-1 lg:order-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-cyan-400">
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase border ${
+                isLight
+                  ? "bg-blue-50 border-blue-200 text-blue-700"
+                  : "bg-indigo-950/60 border-indigo-800 text-cyan-400"
+              }`}>
                 <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-cyan-400 animate-pulse" />
                 Voicerooms & Audio Lounges
               </div>
@@ -1388,11 +1397,11 @@ export default function LandingPage({
               <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
                 isLight ? "text-[#0F172A]" : "text-white"
               }`}>
-                Practice Speaking in <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-cyan-400 dark:to-indigo-400">Voicerooms</span>
+                Practice Speaking in <span className={isLight ? "text-blue-600 font-extrabold" : "text-cyan-400 font-extrabold"}>Voicerooms</span>
               </h2>
 
-              <p className={`text-sm sm:text-base leading-relaxed ${
-                isLight ? "text-slate-600" : "text-slate-400"
+              <p className={`text-sm sm:text-base leading-relaxed font-medium ${
+                isLight ? "text-slate-600" : "text-slate-300"
               }`}>
                 Join Voicerooms and interactive audio lounges to practice speaking and listening with people and AI co-hosts around the world. Overcome speaking anxiety in a welcoming, multi-speaker stage.
               </p>
@@ -1420,7 +1429,7 @@ export default function LandingPage({
                     key={i}
                     className={`p-4 rounded-2xl border transition-all ${
                       isLight
-                        ? "bg-white/80 border-slate-200/80 shadow-sm hover:shadow-md"
+                        ? "bg-white/90 border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300"
                         : "bg-slate-900/60 border-indigo-500/20 hover:border-cyan-400/40"
                     }`}
                   >
@@ -1430,7 +1439,7 @@ export default function LandingPage({
                       </span>
                       <div>
                         <h4 className={`text-sm font-bold ${isLight ? "text-slate-900" : "text-white"}`}>{room.title}</h4>
-                        <p className={`text-xs mt-1 leading-relaxed ${isLight ? "text-slate-500" : "text-slate-400"}`}>{room.desc}</p>
+                        <p className={`text-xs mt-1 leading-relaxed ${isLight ? "text-slate-600" : "text-slate-400"}`}>{room.desc}</p>
                       </div>
                     </div>
                   </div>
@@ -1440,7 +1449,7 @@ export default function LandingPage({
               <div className="pt-2">
                 <button
                   onClick={() => onStartCall()}
-                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
                   <span>Join Live Voicerooms</span>
                   <span>→</span>
