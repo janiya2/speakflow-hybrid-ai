@@ -421,6 +421,7 @@ interface LandingPageConfig {
   dashboardMockupUrl: string;
   apkDownloadUrl: string;
   playStoreUrl: string;
+  appStoreUrl: string;
   webAppUrl: string;
   demoVideoUrl: string;
   statMinutes: string;
@@ -459,6 +460,7 @@ const DEFAULT_LANDING_CONFIG: LandingPageConfig = {
   dashboardMockupUrl: "/images/dashboard-full-mockup.jpg",
   apkDownloadUrl: "https://github.com/janithad2/speakflow-ai/releases/download/v1.0.0/speakflow-ai.apk",
   playStoreUrl: "https://play.google.com/store/apps/details?id=com.innoxpert.speakflow",
+  appStoreUrl: "https://apps.apple.com/app/speakflow-ai/id6470000000",
   webAppUrl: "http://localhost:3001",
   demoVideoUrl: "https://youtube.com/watch?v=speakflow-demo",
   statMinutes: "125,000+",
@@ -15573,6 +15575,24 @@ export default function StudentWebApp() {
                       value={adminLandingForm.apkDownloadUrl}
                       onChange={(e) =>
                         setAdminLandingForm((prev) => ({ ...prev, apkDownloadUrl: e.target.value }))
+                      }
+                      className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 font-mono ${
+                        isLight
+                          ? "bg-slate-50 border-slate-300 text-slate-900"
+                          : "bg-slate-950 border-slate-800 text-slate-100"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      Apple App Store URL
+                    </label>
+                    <input
+                      type="text"
+                      value={adminLandingForm.appStoreUrl || ""}
+                      onChange={(e) =>
+                        setAdminLandingForm((prev) => ({ ...prev, appStoreUrl: e.target.value }))
                       }
                       className={`w-full p-3 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400 font-mono ${
                         isLight

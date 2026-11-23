@@ -18,6 +18,7 @@ export interface LandingPageConfig {
   dashboardMockupUrl?: string;
   apkDownloadUrl?: string;
   playStoreUrl?: string;
+  appStoreUrl?: string;
   webAppUrl?: string;
   demoVideoUrl?: string;
   statMinutes?: string;
@@ -2706,7 +2707,185 @@ export default function LandingPage({
 
 
 
-      {/* 12. Footer */}
+            {/* 11.5. Talk to the World (Mobile App Showcase with Dual Ambient Pink & Blue Aura) */}
+      <section id="talk-to-the-world" className={`py-20 sm:py-28 relative overflow-hidden ${
+        isLight ? "bg-white text-slate-900" : "bg-[#070A14] text-white"
+      }`}>
+        {/* Soft Ambient Radial Glows (Left Rose/Pink, Right Soft Sky-Blue) */}
+        <div className={`pointer-events-none absolute -left-24 top-1/2 -translate-y-1/2 w-[520px] h-[520px] rounded-full blur-[110px] -z-0 ${
+          isLight ? "bg-rose-200/50" : "bg-rose-950/25"
+        }`} />
+        <div className={`pointer-events-none absolute -right-24 top-1/2 -translate-y-1/2 w-[520px] h-[520px] rounded-full blur-[110px] -z-0 ${
+          isLight ? "bg-blue-200/50" : "bg-blue-950/30"
+        }`} />
+
+        <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10" distance={32}>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            {/* Left Column: Heading, Subtitle & Interactive Dynamic QR Code Download Card */}
+            <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
+              <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase border shadow-xs ${
+                isLight
+                  ? "bg-blue-50 border-blue-200 text-blue-700"
+                  : "bg-blue-950/40 border-blue-800/40 text-blue-300"
+              }`}>
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                Mobile Experience
+              </div>
+
+              <h2 className={`text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] ${
+                isLight ? "text-[#0F172A]" : "text-white"
+              }`}>
+                Talk to the <span className={isLight ? "text-blue-600 font-extrabold" : "text-blue-400 font-extrabold"}>World</span>
+              </h2>
+
+              <p className={`text-base sm:text-lg leading-relaxed max-w-lg mx-auto lg:mx-0 font-medium ${
+                isLight ? "text-slate-600" : "text-slate-300"
+              }`}>
+                Find language exchange partners and practice for free by chatting with native speakers around the world.
+              </p>
+
+              {/* Dynamic QR Code Download Card */}
+              <div className="pt-2 flex justify-center lg:justify-start">
+                <div className={`p-4 sm:p-5 rounded-2xl border shadow-xl flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] backdrop-blur-md ${
+                  isLight
+                    ? "bg-white/95 border-slate-200 shadow-slate-200/60"
+                    : "bg-slate-900/90 border-slate-800 shadow-black/40"
+                }`}>
+                  {/* Real Live Dynamic QR Code generated from App Target URL */}
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white p-1 rounded-xl border border-slate-200 shadow-xs shrink-0 flex items-center justify-center overflow-hidden">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
+                        config?.playStoreUrl || config?.apkDownloadUrl || "https://play.google.com/store/apps/details?id=com.innoxpert.speakflow"
+                      )}&color=0-0-0&bgcolor=255-255-255`}
+                      alt="Scan to Download SpeakFlow App"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+
+                  {/* Details & App Store Icons */}
+                  <div className="text-left space-y-1.5">
+                    <p className={`text-xs sm:text-sm font-black leading-tight ${isLight ? "text-slate-900" : "text-white"}`}>
+                      Chat with <span className={isLight ? "text-blue-600 font-black" : "text-blue-400 font-black"}>millions</span> of native speakers
+                    </p>
+                    <p className={`text-[11px] sm:text-xs font-medium ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                      Scan to download free app
+                    </p>
+
+                    {/* App Store & Android Icons with Live Admin Links */}
+                    <div className="flex items-center gap-2 pt-1.5">
+                      {/* Apple App Store */}
+                      <a
+                        href={config?.appStoreUrl || "https://apple.com/app-store"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Download on Apple App Store"
+                        className={`p-2 rounded-xl border transition-all duration-200 flex items-center justify-center ${
+                          isLight
+                            ? "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-800 hover:border-slate-300"
+                            : "bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-200 hover:border-slate-600"
+                        }`}
+                      >
+                        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 3.5c.62-.75 1.04-1.8 0.93-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.71-.93 2.73 1.01.08 2.03-.49 2.63-1.23z"/>
+                        </svg>
+                      </a>
+
+                      {/* Google Play Store */}
+                      <a
+                        href={config?.playStoreUrl || "https://play.google.com/store/apps/details?id=com.innoxpert.speakflow"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Get it on Google Play"
+                        className={`p-2 rounded-xl border transition-all duration-200 flex items-center justify-center ${
+                          isLight
+                            ? "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-800 hover:border-slate-300"
+                            : "bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-200 hover:border-slate-600"
+                        }`}
+                      >
+                        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                          <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0002s.4482-1.0002.9993-1.0002c.5516 0 .9997.4486.9997 1.0002s-.4481 1.0002-.9997 1.0002m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0002s.4482-1.0002.9993-1.0002c.5516 0 .9997.4486.9997 1.0002s-.4481 1.0002-.9997 1.0002m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5896 8.4116 13.854 8 12 8s-3.5896.4116-5.1368 1.4507L4.8409 5.9467a.416.416 0 00-.5676-.1521.416.416 0 00-.1521.5676l1.9973 3.4592C2.6889 11.6701 1.5 15.1102 1.5 18.999h21c0-3.8888-1.1889-7.3289-4.6185-9.6776"/>
+                        </svg>
+                      </a>
+
+                      {/* Direct APK Link */}
+                      <a
+                        href={config?.apkDownloadUrl || "https://github.com/janithad2/speakflow-ai/releases/download/v1.0.0/speakflow-ai.apk"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Download Android APK directly"
+                        className={`text-[10px] font-bold px-2.5 py-1.5 rounded-lg border transition-all ${
+                          isLight
+                            ? "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                            : "bg-blue-950/60 border-blue-800 text-blue-300 hover:bg-blue-900"
+                        }`}
+                      >
+                        APK
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Hand with Phone & Floating Audio Chat Avatars */}
+            <div className="lg:col-span-6 flex justify-center items-center">
+              <div className="relative w-full max-w-[500px] sm:max-w-[560px] lg:max-w-[620px] transition-transform duration-700 hover:scale-[1.02]">
+                <Image
+                  src="/images/landing/talk_to_the_world_phone.png"
+                  alt="Talk to the World - SpeakFlow on Mobile"
+                  width={1800}
+                  height={2010}
+                  className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.14)] dark:drop-shadow-[0_25px_60px_rgba(59,130,246,0.18)]"
+                  priority
+                />
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+      </section>
+
+      {/* 11.8. Your Language Learning Journey Starts Here (Pre-Footer CTA Banner) */}
+      <section id="cta-journey-start" className={`py-16 sm:py-24 relative overflow-hidden border-t ${
+        isLight
+          ? "bg-white border-slate-100 text-slate-900"
+          : "bg-[#050811] border-slate-800/80 text-white"
+      }`}>
+        <ScrollReveal className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6" distance={24}>
+          <h3 className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
+            isLight ? "text-[#0F172A]" : "text-white"
+          }`}>
+            Your Language Learning Journey <span className={isLight ? "text-blue-600 font-extrabold" : "text-blue-400 font-extrabold"}>Starts Here</span>
+          </h3>
+
+          <p className={`text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-medium ${
+            isLight ? "text-slate-600" : "text-slate-300"
+          }`}>
+            Practice languages and make friends with native speakers from around the world for free.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-3">
+            <button
+              onClick={() => onStartCall()}
+              className="px-8 py-3.5 rounded-full font-black text-sm tracking-wide bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105 transition-all duration-300 cursor-pointer"
+            >
+              Start Learning
+            </button>
+
+            <a
+              href="#search-the-world"
+              className={`px-8 py-3.5 rounded-full font-bold text-sm tracking-wide border transition-all duration-300 hover:scale-105 cursor-pointer shadow-xs ${
+                isLight
+                  ? "bg-white border-slate-300 hover:bg-slate-50 text-slate-800 hover:border-slate-400"
+                  : "bg-slate-900/90 border-slate-700 hover:bg-slate-800 text-white hover:border-slate-600"
+              }`}
+            >
+              Find Your First Partner
+            </a>
+          </div>
+        </ScrollReveal>
+      </section>
+
+{/* 12. Footer */}
       <footer className={`border-t py-12 text-xs transition-colors ${
         isLight ? "bg-white border-slate-200 text-slate-600" : "border-indigo-950/60 text-slate-500 bg-[#04070F]"
       }`}>
