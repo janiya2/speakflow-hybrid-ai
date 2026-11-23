@@ -806,6 +806,7 @@ export default function LandingPage({
   currentUser,
 }: LandingPageProps) {
   const [activeTheme, setActiveTheme] = useState<"dark" | "light">(themeMode || "light");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedScenarioCategory, setSelectedScenarioCategory] = useState<string>("All");
   const [activeFaqIndex, setActiveFaqIndex] = useState<number | null>(null);
   const [isPlayingDemoVoice, setIsPlayingDemoVoice] = useState(false);
@@ -1028,23 +1029,24 @@ export default function LandingPage({
             </div>
           </div>
 
-          {/* Desktop Nav Links (Clean, Title Case & Elegant Hover States) */}
+          {/* Desktop Nav Links - 1:1 Matched with Actual Page Sections */}
           <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
             {[
               { name: "Scenarios", href: "#scenarios" },
-              { name: "Instant Feedback", href: "#features" },
-              { name: "20+ Languages", href: "#languages" },
-              { name: "Pricing", href: "#pricing" },
+              { name: "Exchange", href: "#exchange" },
+              { name: "Practice Modes", href: "#practice-modes" },
+              { name: "Voicerooms", href: "#voicerooms" },
+              { name: "Search the World", href: "#search-the-world" },
               { name: "Reviews", href: "#reviews" },
-              { name: "FAQ", href: "#faq" },
+              { name: "Mobile App", href: "#talk-to-the-world" },
             ].map((item) => (
               <a
                 key={item.name}
                 href={item.href}
-                className={`px-3 py-1.5 rounded-xl text-[13px] font-semibold transition-all ${
+                className={`px-2.5 xl:px-3 py-1.5 rounded-xl text-xs xl:text-[13px] font-semibold transition-all ${
                   isLight
-                    ? "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                    : "text-slate-300 hover:text-white hover:bg-white/10"
+                    ? "text-slate-600 hover:text-blue-600 hover:bg-blue-50/80"
+                    : "text-slate-300 hover:text-cyan-300 hover:bg-white/10"
                 }`}
               >
                 {item.name}
@@ -1053,8 +1055,8 @@ export default function LandingPage({
           </nav>
 
           {/* Header Action Buttons */}
-          <div className="flex items-center gap-2.5">
-            {/* Admin CMS Trigger (If authorized/available) */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            {/* Admin CMS Trigger */}
             {onOpenAdminCMS && (
               <button
                 onClick={onOpenAdminCMS}
@@ -1083,11 +1085,11 @@ export default function LandingPage({
               {isLight ? "🌙" : "☀️"}
             </button>
 
-            {/* Log In OR Dashboard Button (If user is logged in, show Dashboard!) */}
+            {/* Log In OR Dashboard Button */}
             {currentUser ? (
               <button
                 onClick={() => onOpenDashboard()}
-                className="px-5 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm text-white bg-gradient-to-r from-emerald-500 via-teal-600 to-cyan-600 shadow-md shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5"
+                className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm text-white bg-gradient-to-r from-emerald-500 via-teal-600 to-cyan-600 shadow-md shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5"
               >
                 <span>Dashboard</span>
                 <span>→</span>
@@ -1096,7 +1098,7 @@ export default function LandingPage({
               <>
                 <button
                   onClick={() => onOpenAuth("login")}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                  className={`hidden sm:block px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                     isLight
                       ? "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
                       : "text-slate-300 hover:text-white hover:bg-white/10"
@@ -1107,19 +1109,101 @@ export default function LandingPage({
 
                 <button
                   onClick={() => onOpenDashboard()}
-                  className="px-5 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 shadow-md shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5"
+                  className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 shadow-md shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-1.5"
                 >
                   <span>Launch App</span>
                   <span className="text-cyan-200 text-xs">→</span>
                 </button>
               </>
             )}
+
+            {/* Mobile Hamburger Toggle Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className={`lg:hidden p-2 rounded-xl border transition-all ${
+                isLight
+                  ? "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                  : "bg-slate-900/90 border-slate-700 text-slate-300 hover:bg-slate-800"
+              }`}
+              aria-label="Toggle Navigation Menu"
+            >
+              {isMobileMenuOpen ? (
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <div className={`lg:hidden border-b px-4 py-4 space-y-3 backdrop-blur-xl animate-in slide-in-from-top-2 duration-200 ${
+            isLight
+              ? "bg-white/95 border-slate-200 shadow-xl text-slate-800"
+              : "bg-[#060B18]/95 border-slate-800 shadow-2xl text-white"
+          }`}>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { name: "Scenarios", href: "#scenarios" },
+                { name: "Exchange", href: "#exchange" },
+                { name: "Practice Modes", href: "#practice-modes" },
+                { name: "Voicerooms", href: "#voicerooms" },
+                { name: "Search the World", href: "#search-the-world" },
+                { name: "Reviews", href: "#reviews" },
+                { name: "Mobile App", href: "#talk-to-the-world" },
+              ].map((item) => (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all text-center ${
+                    isLight
+                      ? "hover:bg-blue-50 hover:text-blue-600 bg-slate-100/70"
+                      : "hover:bg-blue-950/50 hover:text-blue-400 bg-slate-900/80"
+                  }`}
+                >
+                  {item.name}
+                </a>
+              ))}
+            </div>
+            <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/60 flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  onOpenAuth("login");
+                }}
+                className={`flex-1 py-2 rounded-xl font-bold text-xs border text-center ${
+                  isLight ? "bg-slate-50 border-slate-200 text-slate-700" : "bg-slate-900 border-slate-800 text-slate-300"
+                }`}
+              >
+                Log In
+              </button>
+              {onOpenAdminCMS && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenAdminCMS();
+                  }}
+                  className={`py-2 px-3 rounded-xl font-bold text-xs border flex items-center justify-center gap-1 ${
+                    isLight ? "bg-slate-50 border-slate-200 text-slate-700" : "bg-slate-900 border-slate-800 text-slate-300"
+                  }`}
+                >
+                  <span>⚙️</span>
+                  <span>CMS</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       {/* 3. Hero Section (Modeled after YayTalk Image 1 & Image 2 with Dual Radial Aura & Ambient Visual Engine) */}
-      <section className={`relative pt-12 sm:pt-16 pb-14 sm:pb-20 overflow-hidden ${
+      <section id="hero" className={`relative pt-12 sm:pt-16 pb-14 sm:pb-20 overflow-hidden scroll-mt-24 ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
         {/* Ambient Dark Mode Animation System: Cosmic Glowing Orbs & Cyber Grid */}
@@ -1507,7 +1591,7 @@ export default function LandingPage({
 
 
       {/* 4. Panoramic Scenarios Section (FULL SCREEN FIT - 4K Cave Style Panorama with Dual Radial Aura) */}
-      <section className={`py-12 sm:py-18 relative overflow-hidden text-center ${
+      <section id="scenarios" className={`py-12 sm:py-18 relative overflow-hidden text-center scroll-mt-20 ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
         <ScrollReveal className="w-full px-2 sm:px-4 lg:px-8 space-y-4 sm:space-y-6" distance={32}>
@@ -1738,7 +1822,7 @@ export default function LandingPage({
       </section>
 
       {/* 5. The Global AI Language & Cultural Exchange Section (Text Left, Image Right) */}
-      <section id="exchange" className={`py-16 sm:py-24 relative overflow-hidden ${
+      <section id="exchange" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
 
@@ -1837,7 +1921,7 @@ export default function LandingPage({
       </section>
 
       {/* 6. Practice in the Way That Works for You (Image Left, Text Right with Dual Radial Aura) */}
-      <section id="practice-modes" className={`py-16 sm:py-24 relative overflow-hidden ${
+      <section id="practice-modes" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
         <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" distance={32}>
@@ -1934,7 +2018,7 @@ export default function LandingPage({
       </section>
 
       {/* 7. Learn and Share with the Community (Text Left, Image Right) */}
-      <section id="moments" className={`py-16 sm:py-24 relative overflow-hidden ${
+      <section id="moments" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
 
@@ -2034,7 +2118,7 @@ export default function LandingPage({
       </section>
 
       {/* 8. Practice Speaking in Live AI Voicerooms (Image Left, Text Right with Dual Radial Aura) */}
-      <section id="voicerooms" className={`py-16 sm:py-24 relative overflow-hidden ${
+      <section id="voicerooms" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
         <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" distance={32}>
@@ -2132,7 +2216,7 @@ export default function LandingPage({
 
 
       {/* 3.5. Search the World - Dotted World Map & Bidirectional Coaches Scroller */}
-      <section id="search-the-world" className={`py-16 sm:py-24 relative overflow-hidden text-center ${
+      <section id="search-the-world" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden text-center ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
         <ScrollReveal className="w-full space-y-10 sm:space-y-14" distance={32}>
@@ -2318,7 +2402,7 @@ export default function LandingPage({
     </section>
 
 {/* 11. Loved by Learners Around the World - Testimonials Showcase (Image 5 Wreaths & 4-Card Carousel) */}
-      <section id="reviews" className={`py-16 sm:py-24 relative overflow-hidden text-center ${
+      <section id="reviews" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden text-center ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
         <ScrollReveal className="w-full space-y-10 sm:space-y-12" distance={32}>
@@ -2708,7 +2792,7 @@ export default function LandingPage({
 
 
             {/* 11.5. Talk to the World (Mobile App Showcase with Dual Ambient Pink & Blue Aura) */}
-      <section id="talk-to-the-world" className={`py-20 sm:py-28 relative overflow-hidden ${
+      <section id="talk-to-the-world" className={`scroll-mt-20 py-20 sm:py-28 relative overflow-hidden ${
         isLight ? "bg-white text-slate-900" : "bg-[#070A14] text-white"
       }`}>
         {/* Soft Ambient Radial Glows (Left Rose/Pink, Right Soft Sky-Blue) */}
@@ -2845,7 +2929,7 @@ export default function LandingPage({
       </section>
 
       {/* 11.8. Your Language Learning Journey Starts Here (Pre-Footer CTA Banner) */}
-      <section id="cta-journey-start" className={`py-16 sm:py-24 relative overflow-hidden border-t ${
+      <section id="cta-journey-start" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden border-t ${
         isLight
           ? "bg-white border-slate-100 text-slate-900"
           : "bg-[#050811] border-slate-800/80 text-white"
