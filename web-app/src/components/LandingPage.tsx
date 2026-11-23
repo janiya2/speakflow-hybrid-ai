@@ -2976,8 +2976,14 @@ export default function LandingPage({
           <div className="pb-12 border-b border-slate-200/80 dark:border-slate-800/80 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
             <div className="space-y-3 max-w-xl">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/25">
-                  <span className="text-xl">🎙️</span>
+                <div className="w-10 h-10 rounded-xl overflow-hidden shadow-md shadow-blue-500/25 shrink-0 border border-blue-400/30">
+                  <Image
+                    src="/images/app_logo.png"
+                    alt="SpeakFlow Logo"
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="text-left">
                   <span className={`text-2xl font-black tracking-tight ${isLight ? "text-slate-900" : "text-white"}`}>

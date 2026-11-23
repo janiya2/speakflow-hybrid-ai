@@ -1630,6 +1630,7 @@ export default function StudentWebApp() {
     {
       id: "session-cricket-01",
       topicTitle: "Talking About Cricket & T20 World Cup",
+      language: "English",
       coachName: "Coach Sarah Jenkins",
       coachAvatar: "/images/coaches/sarah.jpg",
       coachRole: "Executive Speech & Sports Cadence Coach",
@@ -1765,6 +1766,7 @@ export default function StudentWebApp() {
     {
       id: "session-rec-5",
       topicTitle: "Ordering Food & Authentic Dining",
+      language: "English",
       coachName: "Coach Aoi Tanaka",
       coachAvatar: "/images/coaches/aoi.jpg",
       coachRole: "French Elegant Conversational Coach",
@@ -1788,6 +1790,90 @@ export default function StudentWebApp() {
       },
       createdAt: new Date(Date.now() - 3600000 * 96).toISOString(),
       xpEarned: 200
+    },
+    {
+      id: "session-rec-6",
+      topicTitle: "Madrid Tapas & Evening Social Chat",
+      language: "Spanish",
+      coachName: "Coach Diego Rivera",
+      coachAvatar: "/images/coaches/sophia.jpg",
+      coachRole: "Latin & Castilian Spanish Conversational Coach",
+      coachCountry: "Spain",
+      coachFlag: "🇪🇸",
+      category: "Food & Social",
+      timeAgo: "4 days ago",
+      durationSeconds: 180,
+      durationFormatted: "3m 00s",
+      score: 93,
+      grade: "A",
+      fluencyScore: 93,
+      accuracyScore: 94,
+      engine: "ON_DEVICE_NANO",
+      latencyMs: 15,
+      audioPreviewText: "¡Excelente! Ordering tapas in Madrid with authentic rhythm and vocabulary was a great success.",
+      dialogueSnippet: {
+        user: "¡Hola Diego! ¿Me recomiendas las patatas bravas o los calamares?",
+        ai: "¡Qué buena elección! Las patatas bravas con salsa casera son imprescindibles.",
+        tip: "Pro Tip: Keep vowels crisp and unstressed syllables quick when ordering in Spain."
+      },
+      createdAt: new Date(Date.now() - 3600000 * 96).toISOString(),
+      xpEarned: 220
+    },
+    {
+      id: "session-rec-7",
+      topicTitle: "Paris Café & Metro Navigation",
+      language: "French",
+      coachName: "Coach Chloe Dubois",
+      coachAvatar: "/images/coaches/chloe.jpg",
+      coachRole: "Parisian Standard & French Culture Coach",
+      coachCountry: "France",
+      coachFlag: "🇫🇷",
+      category: "Travel & Transit",
+      timeAgo: "5 days ago",
+      durationSeconds: 210,
+      durationFormatted: "3m 30s",
+      score: 94,
+      grade: "A",
+      fluencyScore: 94,
+      accuracyScore: 95,
+      engine: "CLOUD_GEMINI_FLASH",
+      latencyMs: 210,
+      audioPreviewText: "Magnifique! Your navigation queries in the Paris metro were fluent and polite.",
+      dialogueSnippet: {
+        user: "Pardon madame, pour aller au Louvre, c'est bien la ligne un?",
+        ai: "Oui tout à fait! Prenez la ligne un en direction de Château de Vincennes.",
+        tip: "Pro Tip: Remember to liaison between 'c'est' and 'bien' naturally."
+      },
+      createdAt: new Date(Date.now() - 3600000 * 120).toISOString(),
+      xpEarned: 240
+    },
+    {
+      id: "session-rec-8",
+      topicTitle: "Colombo Street Food & Cultural Talk",
+      language: "Sinhala",
+      coachName: "Coach Sameera Perera",
+      coachAvatar: "/images/coaches/alex.jpg",
+      coachRole: "Bilingual English & Sinhala Conversational Coach",
+      coachCountry: "Sri Lanka",
+      coachFlag: "🇱🇰",
+      category: "Food & Culture",
+      timeAgo: "6 days ago",
+      durationSeconds: 165,
+      durationFormatted: "2m 45s",
+      score: 95,
+      grade: "A",
+      fluencyScore: 95,
+      accuracyScore: 96,
+      engine: "ON_DEVICE_NANO",
+      latencyMs: 12,
+      audioPreviewText: "Shaa niyamai Janitha! Great colloquial spoken flow and authentic food terminology.",
+      dialogueSnippet: {
+        user: "Sameera, kottu ekak kanna Galle Face yanna puluwanda ada?",
+        ai: "Ow niyamayi! Galle Face eke cheese kottu eka godak prasiddai.",
+        tip: "Pro Tip: Use warm conversational tone markers when chatting with Sri Lankan friends."
+      },
+      createdAt: new Date(Date.now() - 3600000 * 144).toISOString(),
+      xpEarned: 250
     }
   ];
 
@@ -11112,6 +11198,82 @@ export default function StudentWebApp() {
                       "Our chef highly recommends tasting the artisanal pistachio gelato."
                     ]
                   }
+                ],
+                "session-rec-6": [
+                  {
+                    language: "Spanish",
+                    category: "Food & Social",
+                    level: "Intermediate",
+                    ruleTitle: "Ser vs. Estar for Permanent Qualities vs. Temporary State",
+                    wrong: "La comida de tapas es muy fría hoy.",
+                    correct: "La comida de tapas está muy fría hoy.",
+                    explanation: "Use 'estar' for temporary physical conditions or states like food temperature ('está fría'), and reserve 'ser' for inherent, permanent characteristics.",
+                    similarExamples: [
+                      "Esta paella de mariscos está deliciosa y recién hecha.",
+                      "El camarero es muy simpático y servicial con nosotros.",
+                      "¿Dónde está el baño del restaurante, por favor?"
+                    ]
+                  },
+                  {
+                    language: "Spanish",
+                    category: "Food & Social",
+                    level: "Beginner",
+                    ruleTitle: "Direct Object Pronoun Placement with Verbs ('Lo' / 'La')",
+                    wrong: "Yo quiero pagar lo ahora mismo.",
+                    correct: "Yo lo quiero pagar ahora mismo / Quiero pagarlo.",
+                    explanation: "In Spanish, attach clitic pronouns to the end of an infinitive ('pagarlo') or place them directly before the conjugated verb ('lo quiero pagar').",
+                    similarExamples: [
+                      "¿Me puede traer la cuenta, por favor?",
+                      "Lo voy a llamar cuando llegue a la estación.",
+                      "¿La paella? La pedimos hace diez minutos."
+                    ]
+                  }
+                ],
+                "session-rec-7": [
+                  {
+                    language: "French",
+                    category: "Travel & Transit",
+                    level: "Beginner",
+                    ruleTitle: "Passé Composé Auxiliary Selection: Être vs. Avoir",
+                    wrong: "J'ai allé à la station de métro ce matin.",
+                    correct: "Je suis allé à la station de métro ce matin.",
+                    explanation: "Verbs of movement like 'aller', 'venir', 'partir', and 'arriver' require the auxiliary verb 'être' in the passé composé, never 'avoir'.",
+                    similarExamples: [
+                      "Nous sommes arrivés à Paris hier soir.",
+                      "Elle est partie avant le début du concert.",
+                      "À quelle heure êtes-vous monté dans le train?"
+                    ]
+                  },
+                  {
+                    language: "French",
+                    category: "Food & Dining",
+                    level: "Intermediate",
+                    ruleTitle: "Partitive Articles with Food & Drinks ('Du', 'De la', 'Des')",
+                    wrong: "Je voudrais un café avec le sucre et le lait.",
+                    correct: "Je voudrais un café avec du sucre et du lait.",
+                    explanation: "Use partitive articles ('du', 'de la', 'de l'') when referring to unspecified quantities of uncountable food and drink items.",
+                    similarExamples: [
+                      "Est-ce que vous prenez du fromage avec votre baguette?",
+                      "Je préfère boire de l'eau minérale gazeuse.",
+                      "Voulez-vous du beurre avec vos tartines?"
+                    ]
+                  }
+                ],
+                "session-rec-8": [
+                  {
+                    language: "Sinhala",
+                    category: "Food & Culture",
+                    level: "Beginner",
+                    ruleTitle: "Colloquial Spoken Verb Ending ('-nawa') vs Literary",
+                    wrong: "මම කොත්තු රොටී කන්නෙමි (Too literary/formal for hotel)",
+                    correct: "මම කොත්තු රොටියක් කන්න කැමතියි / කනවා (Natural spoken)",
+                    explanation: "In natural spoken Sinhala dining and conversation, use colloquial verbal forms like 'කන්න කැමතියි' (would like to eat) or '-නවා' endings rather than literary written grammar ('-මි').",
+                    similarExamples: [
+                      "මට තේ එකක් ගේන්න පුළුවන්ද? (Could you bring me a cup of tea?)",
+                      "මේ කොත්තුව ගොඩක් රසයි. (This kottu is very delicious.)",
+                      "අපි හවසට කොළඹ පැත්තේ ඇවිදින්න යමු. (Let's go for a walk around Colombo in the evening.)"
+                    ]
+                  }
                 ]
               };
 
@@ -11242,12 +11404,61 @@ export default function StudentWebApp() {
                 });
               });
 
+              // Also ensure that all 20 languages have available spoken call mistakes by mapping catalog rules to coaches
+              const existingMistakeLangs = new Set(allCallMistakes.map((m) => normalizeLang(m.language)));
+              const COACH_LANG_MAP: Record<string, { coach: string; avatar: string; flag: string }> = {
+                german: { coach: "Coach Lucas Weber", avatar: "/images/coaches/emma.jpg", flag: "🇩🇪" },
+                italian: { coach: "Coach Matteo Rossi", avatar: "/images/coaches/alex.jpg", flag: "🇮🇹" },
+                portuguese: { coach: "Coach Tiago Silva", avatar: "/images/coaches/oliver.jpg", flag: "🇧🇷" },
+                chinese: { coach: "Coach Mei Lin", avatar: "/images/coaches/aoi.jpg", flag: "🇨🇳" },
+                arabic: { coach: "Coach Tariq Mansoor", avatar: "/images/coaches/kenji.jpg", flag: "🇸🇦" },
+                hindi: { coach: "Coach Priya Sharma", avatar: "/images/coaches/sarah.jpg", flag: "🇮🇳" },
+                russian: { coach: "Coach Elena Rostova", avatar: "/images/coaches/emma.jpg", flag: "🇷🇺" },
+                tamil: { coach: "Coach Kaviya Murugan", avatar: "/images/coaches/chloe.jpg", flag: "🇱🇰" },
+                dutch: { coach: "Coach Daan van Dijk", avatar: "/images/coaches/oliver.jpg", flag: "🇳🇱" },
+                turkish: { coach: "Coach Emre Yilmaz", avatar: "/images/coaches/alex.jpg", flag: "🇹🇷" },
+                vietnamese: { coach: "Coach Linh Nguyen", avatar: "/images/coaches/aoi.jpg", flag: "🇻🇳" },
+                indonesian: { coach: "Coach Budi Santoso", avatar: "/images/coaches/kenji.jpg", flag: "🇮🇩" },
+                thai: { coach: "Coach Somchai Prasert", avatar: "/images/coaches/sophia.jpg", flag: "🇹🇭" },
+                swedish: { coach: "Coach Astrid Lind", avatar: "/images/coaches/emma.jpg", flag: "🇸🇪" },
+                korean: { coach: "Coach Minjun Park", avatar: "/images/coaches/kenji.jpg", flag: "🇰🇷" },
+              };
+
+              Object.entries(COACH_LANG_MAP).forEach(([normL, meta]) => {
+                if (!existingMistakeLangs.has(normL)) {
+                  const catRules = FULL_GRAMMAR_CATALOG.filter((g) => normalizeLang(g.language) === normL);
+                  catRules.forEach((cr) => {
+                    allCallMistakes.push({
+                      id: `cm_seed_${cr.id}`,
+                      sessionId: `session_seed_${normL}`,
+                      sessionTitle: `${cr.language} Conversational Fluency Call`,
+                      sessionTimeAgo: "Recent Practice",
+                      sessionScore: 92,
+                      coachName: meta.coach,
+                      coachAvatar: meta.avatar,
+                      coachFlag: meta.flag,
+                      language: cr.language,
+                      category: cr.category || "Daily Conversation",
+                      level: (cr.level as any) || "Intermediate",
+                      ruleTitle: cr.title,
+                      wrong: cr.wrong,
+                      correct: cr.correct,
+                      explanation: cr.rule,
+                      similarExamples: cr.tip ? [cr.tip, cr.correct, "Practice speaking this pattern aloud!"] : [cr.correct]
+                    });
+                  });
+                }
+              });
+
               // Count mistakes per recorded call session for the Call Filter cards
               const getSessionMistakeCount = (sessionId: string) =>
                 allCallMistakes.filter((m) => m.sessionId === sessionId).length;
 
-              // Filter call mistakes by Selected Recorded Call, Category, Fix Status, and Search Query
+              // Filter call mistakes by Language, Selected Recorded Call, Category, Fix Status, and Search Query
               const filteredCallMistakes = allCallMistakes.filter((m) => {
+                const matchesLang =
+                  grammarLangFilter === "All" ||
+                  normalizeLang(m.language) === normalizeLang(grammarLangFilter);
                 const matchesSession =
                   selectedGrammarSessionId === "All" || m.sessionId === selectedGrammarSessionId;
                 const matchesCat =
@@ -11269,7 +11480,7 @@ export default function StudentWebApp() {
                   m.explanation.toLowerCase().includes(q) ||
                   m.sessionTitle.toLowerCase().includes(q) ||
                   m.coachName.toLowerCase().includes(q);
-                return matchesSession && matchesCat && matchesStatus && matchesSearch;
+                return matchesLang && matchesSession && matchesCat && matchesStatus && matchesSearch;
               });
 
               const selectedCallObj =
@@ -11532,22 +11743,34 @@ export default function StudentWebApp() {
                         filteredCallMistakes.find((m) => m.id === selectedGrammarMistakeId) ||
                         filteredCallMistakes[0] ||
                         null;
-                      const sessionsWithMistakes = userSessions.filter((sess) => getSessionMistakeCount(sess.id) > 0);
+                      const activeLangMistakes = allCallMistakes.filter((m) =>
+                        grammarLangFilter === "All" ? true : normalizeLang(m.language) === normalizeLang(grammarLangFilter)
+                      );
+                      const matchingSessions = userSessions.filter((sess) => {
+                        const count = activeLangMistakes.filter((m) => m.sessionId === sess.id).length;
+                        return count > 0;
+                      });
+                      const displaySessions = matchingSessions.length > 0
+                        ? matchingSessions
+                        : userSessions.filter((sess) => getSessionMistakeCount(sess.id) > 0);
 
                       return (
                         <>
-                          {/* 2. SLEEK HORIZONTAL CALL FILTER STRIP */}
-                          <div className="space-y-2.5">
-                            <div className="flex items-center justify-between px-1">
+                          {/* 2. GLOBAL LANGUAGE FILTER BAR */}
+                          <div className="p-4 sm:p-5 rounded-3xl bg-[#111827]/95 border border-slate-800/90 shadow-xl space-y-3">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
                               <div className="flex items-center gap-2">
-                                <PhoneCall className="w-4 h-4 text-cyan-400" />
-                                <h2 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider">
-                                  Filter Mistakes by Call Session ({sessionsWithMistakes.length} Calls With Insights)
-                                </h2>
+                                <Globe className="w-4 h-4 text-cyan-400" />
+                                <span className="text-xs font-black text-white uppercase tracking-wider">
+                                  Filter Mistakes by Language (20 Global Languages)
+                                </span>
                               </div>
-                              {selectedGrammarSessionId !== "All" && (
+                              {grammarLangFilter !== "All" && (
                                 <button
-                                  onClick={() => setSelectedGrammarSessionId("All")}
+                                  onClick={() => {
+                                    setGrammarLangFilter("All");
+                                    setSelectedGrammarSessionId("All");
+                                  }}
                                   className="text-xs font-bold text-cyan-400 hover:text-cyan-300"
                                 >
                                   Show All ({allCallMistakes.length})
@@ -11555,39 +11778,112 @@ export default function StudentWebApp() {
                               )}
                             </div>
 
-                            <div className="flex items-stretch gap-2.5 overflow-x-auto pb-1.5 custom-scrollbar">
-                              {/* All Calls Pill Card */}
+                            <div className="flex items-center gap-1.5 flex-wrap">
                               <button
-                                onClick={() => setSelectedGrammarSessionId("All")}
-                                className={`min-w-[175px] p-3 rounded-2xl border text-left transition-all flex items-center gap-3 shrink-0 ${
-                                  selectedGrammarSessionId === "All"
-                                    ? "bg-gradient-to-br from-purple-600/30 via-indigo-900/40 to-slate-900 border-purple-400 shadow-lg shadow-purple-500/20"
-                                    : "bg-[#111827]/95 border-slate-800 hover:border-slate-700"
+                                onClick={() => {
+                                  setGrammarLangFilter("All");
+                                  setSelectedGrammarSessionId("All");
+                                }}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                                  grammarLangFilter === "All"
+                                    ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md font-black"
+                                    : "bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700"
                                 }`}
                               >
-                                <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-base shrink-0">
+                                <Globe className="w-3.5 h-3.5 text-cyan-300" />
+                                <span>All Languages</span>
+                                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/30 font-mono text-cyan-300">
+                                  {allCallMistakes.length}
+                                </span>
+                              </button>
+
+                              {AVAILABLE_LANGUAGES.map((lang) => {
+                                const langCount = allCallMistakes.filter(
+                                  (m) => normalizeLang(m.language) === normalizeLang(lang.name)
+                                ).length;
+                                const isSelected = normalizeLang(grammarLangFilter) === normalizeLang(lang.name);
+                                return (
+                                  <button
+                                    key={lang.id}
+                                    onClick={() => {
+                                      setGrammarLangFilter(lang.name);
+                                      setSelectedLanguage(lang.name);
+                                      setSelectedGrammarSessionId("All");
+                                    }}
+                                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                                      isSelected
+                                        ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white border border-purple-400/50 shadow-md font-black scale-[1.02]"
+                                        : "bg-slate-900/90 text-slate-300 border border-slate-800 hover:border-slate-700"
+                                    }`}
+                                  >
+                                    <img
+                                      src={lang.flagUrl}
+                                      alt={lang.name}
+                                      className="w-4 h-3 rounded-[2px] object-cover border border-white/20"
+                                    />
+                                    <span>{lang.name}</span>
+                                    <span className="text-[9.5px] px-1.5 py-0.2 rounded-full bg-black/30 text-slate-300 font-mono">
+                                      {langCount}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {/* 3. AI VOICE COACHES & CALL SESSIONS (CLEAN NON-SCROLLING RESPONSIVE GRID) */}
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between px-1 flex-wrap gap-2">
+                              <div className="flex items-center gap-2">
+                                <PhoneCall className="w-4 h-4 text-cyan-400" />
+                                <h2 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider">
+                                  AI Voice Coaches &amp; Call Sessions ({displaySessions.length} Calls With Insights)
+                                </h2>
+                              </div>
+                              {selectedGrammarSessionId !== "All" && (
+                                <button
+                                  onClick={() => setSelectedGrammarSessionId("All")}
+                                  className="text-xs font-bold text-cyan-400 hover:text-cyan-300"
+                                >
+                                  Show All Calls ({activeLangMistakes.length})
+                                </button>
+                              )}
+                            </div>
+
+                            {/* RESPONSIVE GRID - NO HORIZONTAL SCROLLBAR */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-2.5">
+                              {/* All Calls Card */}
+                              <button
+                                onClick={() => setSelectedGrammarSessionId("All")}
+                                className={`p-3 rounded-2xl border text-left transition-all flex items-center gap-3 ${
+                                  selectedGrammarSessionId === "All"
+                                    ? "bg-gradient-to-br from-purple-600/30 via-indigo-900/40 to-slate-900 border-purple-400 shadow-lg shadow-purple-500/20 ring-1 ring-purple-400/40"
+                                    : "bg-[#111827]/95 border-slate-800 hover:border-slate-700 hover:bg-slate-900/80"
+                                }`}
+                              >
+                                <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-lg shrink-0">
                                   📞
                                 </div>
-                                <div className="min-w-0">
-                                  <div className="font-black text-xs text-white truncate">All Calls</div>
-                                  <div className="text-[10px] text-purple-300 font-bold">
-                                    {allCallMistakes.length} Unique Rules
+                                <div className="min-w-0 flex-1">
+                                  <div className="font-black text-xs text-white truncate">All Coaches &amp; Calls</div>
+                                  <div className="text-[10.5px] text-purple-300 font-bold truncate">
+                                    {activeLangMistakes.length} Unique Rules
                                   </div>
                                 </div>
                               </button>
 
-                              {/* Individual Calls With Grammar Slips */}
-                              {sessionsWithMistakes.map((sess) => {
+                              {/* Individual Coach Call Sessions */}
+                              {displaySessions.map((sess) => {
                                 const count = getSessionMistakeCount(sess.id);
                                 const isSelected = selectedGrammarSessionId === sess.id;
                                 return (
                                   <button
                                     key={sess.id}
                                     onClick={() => setSelectedGrammarSessionId(isSelected ? "All" : sess.id)}
-                                    className={`min-w-[215px] max-w-[240px] p-3 rounded-2xl border text-left transition-all flex items-center gap-2.5 shrink-0 ${
+                                    className={`p-2.5 rounded-2xl border text-left transition-all flex items-center gap-2.5 group ${
                                       isSelected
-                                        ? "bg-gradient-to-br from-cyan-500/25 via-indigo-900/40 to-slate-900 border-cyan-400 shadow-lg shadow-cyan-500/20"
-                                        : "bg-[#111827]/95 border-slate-800 hover:border-slate-700"
+                                        ? "bg-gradient-to-br from-cyan-500/25 via-indigo-900/40 to-slate-900 border-cyan-400 shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400/50"
+                                        : "bg-[#111827]/95 border-slate-800 hover:border-slate-700 hover:bg-slate-900/80"
                                     }`}
                                   >
                                     <div className="relative shrink-0">
@@ -11597,16 +11893,16 @@ export default function StudentWebApp() {
                                         onError={(e) => {
                                           e.currentTarget.src = "/images/coaches/sarah.jpg";
                                         }}
-                                        className="w-9 h-9 rounded-xl object-cover border border-slate-700"
+                                        className="w-10 h-10 rounded-xl object-cover border border-slate-700 group-hover:scale-105 transition-transform"
                                       />
-                                      <span className="absolute -bottom-1 -right-1 text-[10px]">{sess.coachFlag}</span>
+                                      <span className="absolute -bottom-1 -right-1 text-xs">{sess.coachFlag}</span>
                                     </div>
                                     <div className="min-w-0 flex-1">
                                       <div className="font-bold text-xs text-white truncate" title={sess.topicTitle}>
                                         {sess.topicTitle}
                                       </div>
-                                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                                        <span className="truncate">{sess.coachName.replace("Coach ", "")}</span>
+                                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5">
+                                        <span className="truncate text-slate-300 font-medium">{sess.coachName.replace("Coach ", "")}</span>
                                         <span>•</span>
                                         <span className="text-amber-300 font-bold shrink-0">
                                           {count} {count === 1 ? "Rule" : "Rules"}
@@ -11685,11 +11981,13 @@ export default function StudentWebApp() {
 
                               {(selectedGrammarSessionId !== "All" ||
                                 grammarFixStatusFilter !== "All" ||
+                                grammarLangFilter !== "All" ||
                                 grammarSearchQuery.trim() !== "") && (
                                 <button
                                   onClick={() => {
                                     setSelectedGrammarSessionId("All");
                                     setGrammarFixStatusFilter("All");
+                                    setGrammarLangFilter("All");
                                     setGrammarSearchQuery("");
                                   }}
                                   className="text-xs font-bold text-rose-400 hover:text-rose-300 px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center gap-1"
@@ -11710,6 +12008,7 @@ export default function StudentWebApp() {
                                 onClick={() => {
                                   setSelectedGrammarSessionId("All");
                                   setGrammarFixStatusFilter("All");
+                                  setGrammarLangFilter("All");
                                   setGrammarSearchQuery("");
                                 }}
                                 className="px-4 py-2 rounded-xl bg-purple-600 text-white text-xs font-black"
