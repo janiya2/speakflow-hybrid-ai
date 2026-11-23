@@ -876,30 +876,153 @@ export default function LandingPage({
             />
           </div>
 
-          {/* Interactive Role / Scenario Quick Filter Pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-4 max-w-5xl mx-auto px-4">
-            {[
-              { icon: "🦐", label: "Street Food & Dining", topicId: "sp_si_249" },
-              { icon: "🗺️", label: "Travel & Exploration", topicId: "sp_en_1" },
-              { icon: "🛍️", label: "Shopping & Markets", topicId: "sp_si_249" },
-              { icon: "🩺", label: "Medical & Doctor", topicId: "sp_en_1" },
-              { icon: "💼", label: "Job Interview & Tech", topicId: "sp_en_1" },
-              { icon: "🚴", label: "Sports & Fitness", topicId: "sp_1" },
-            ].map((s, idx) => (
-              <button
-                key={idx}
-                onClick={() => onStartCall(s.topicId)}
-                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-bold transition-all shadow-sm ${
-                  isLight
-                    ? "bg-slate-50 border-slate-300 text-slate-800 hover:bg-slate-100 hover:border-blue-400"
-                    : "bg-slate-900/70 border-indigo-500/20 text-slate-300 hover:border-cyan-400/40 hover:text-white"
-                }`}
-              >
-                <span>{s.icon}</span>
-                <span>{s.label}</span>
-                <span className={`text-[10px] ${isLight ? "text-blue-600" : "text-cyan-400"}`}>→</span>
-              </button>
-            ))}
+          {/* Interactive Scenario Cards Dock - Perfectly Aligned Under the 6 Characters */}
+          <div className="relative z-20 -mt-6 sm:-mt-12 md:-mt-16 lg:-mt-24 max-w-7xl mx-auto px-3 sm:px-6">
+            {/* Contextual Badge Header */}
+            <div className="flex items-center justify-center mb-4 sm:mb-6">
+              <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide border shadow-sm backdrop-blur-md transition-all ${
+                isLight
+                  ? "bg-white/95 border-slate-200/90 text-slate-800 shadow-slate-200/50"
+                  : "bg-slate-900/90 border-indigo-500/30 text-cyan-300 shadow-black/40"
+              }`}>
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                <span>Choose a character roleplay below for instant 20ms AI practice:</span>
+              </div>
+            </div>
+
+            {/* 6 Aligned Interactive Scenario Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+              {[
+                {
+                  icon: "🍽️",
+                  title: "Dining & Cafe",
+                  role: "Waiter & Chef",
+                  level: "A2",
+                  sample: "Table for two & chef's special",
+                  topicId: "sp_si_249",
+                  hoverBorder: "hover:border-pink-400 dark:hover:border-pink-500/60",
+                  badge: "bg-pink-100 text-pink-700 dark:bg-pink-950/80 dark:text-pink-300 border-pink-200 dark:border-pink-800",
+                  glow: "from-pink-500/15 to-rose-500/5",
+                  activeDot: "bg-pink-500",
+                },
+                {
+                  icon: "✈️",
+                  title: "Travel & Flight",
+                  role: "Airport & Hotel",
+                  level: "B1",
+                  sample: "Boarding gate & luggage",
+                  topicId: "sp_en_1",
+                  hoverBorder: "hover:border-blue-400 dark:hover:border-blue-500/60",
+                  badge: "bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+                  glow: "from-blue-500/15 to-sky-500/5",
+                  activeDot: "bg-blue-500",
+                },
+                {
+                  icon: "🛍️",
+                  title: "Shopping Deals",
+                  role: "Boutique & Mall",
+                  level: "A1",
+                  sample: "Do you have this in size M?",
+                  topicId: "sp_si_249",
+                  hoverBorder: "hover:border-emerald-400 dark:hover:border-emerald-500/60",
+                  badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
+                  glow: "from-emerald-500/15 to-green-500/5",
+                  activeDot: "bg-emerald-500",
+                },
+                {
+                  icon: "🩺",
+                  title: "Clinic & Health",
+                  role: "Doctor & Pharmacy",
+                  level: "B2",
+                  sample: "Describing symptoms & remedy",
+                  topicId: "sp_en_1",
+                  hoverBorder: "hover:border-cyan-400 dark:hover:border-cyan-500/60",
+                  badge: "bg-cyan-100 text-cyan-700 dark:bg-cyan-950/80 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800",
+                  glow: "from-cyan-500/15 to-teal-500/5",
+                  activeDot: "bg-cyan-500",
+                },
+                {
+                  icon: "💼",
+                  title: "Tech & Career",
+                  role: "Job Interview & Pitch",
+                  level: "C1",
+                  sample: "Leading engineering teams",
+                  topicId: "sp_en_1",
+                  hoverBorder: "hover:border-purple-400 dark:hover:border-purple-500/60",
+                  badge: "bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border-purple-200 dark:border-purple-800",
+                  glow: "from-purple-500/15 to-indigo-500/5",
+                  activeDot: "bg-purple-500",
+                },
+                {
+                  icon: "🚴",
+                  title: "Sports & Fitness",
+                  role: "Trainer & Marathon",
+                  level: "B1",
+                  sample: "Pacing & nutrition for run",
+                  topicId: "sp_1",
+                  hoverBorder: "hover:border-amber-400 dark:hover:border-amber-500/60",
+                  badge: "bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border-amber-200 dark:border-amber-800",
+                  glow: "from-amber-500/15 to-orange-500/5",
+                  activeDot: "bg-amber-500",
+                },
+              ].map((s, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => onStartCall(s.topicId)}
+                  className={`group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl border text-left transition-all duration-300 cursor-pointer backdrop-blur-md shadow-md ${s.hoverBorder} ${
+                    isLight
+                      ? "bg-white/95 border-slate-200/90 shadow-[0_8px_25px_rgba(0,0,0,0.06)] hover:bg-white hover:-translate-y-1.5 hover:shadow-xl"
+                      : "bg-slate-900/85 border-white/10 shadow-[0_8px_25px_rgba(0,0,0,0.35)] hover:bg-slate-900 hover:-translate-y-1.5 hover:shadow-[0_12px_35px_rgba(0,0,0,0.5)]"
+                  }`}
+                >
+                  {/* Ambient hover glow inside card */}
+                  <div className={`absolute inset-0 rounded-2xl bg-gradient-to-b ${s.glow} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none -z-10`} />
+
+                  {/* Top: Icon + Level Badge */}
+                  <div className="flex items-center justify-between gap-1 mb-2">
+                    <span className="text-2xl p-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 group-hover:scale-110 transition-transform">
+                      {s.icon}
+                    </span>
+                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border ${s.badge}`}>
+                      {s.level}
+                    </span>
+                  </div>
+
+                  {/* Middle: Title & Role */}
+                  <div className="space-y-0.5">
+                    <h4 className={`text-xs sm:text-sm font-black tracking-tight leading-snug ${
+                      isLight ? "text-[#0F172A] group-hover:text-blue-600" : "text-white group-hover:text-cyan-400"
+                    } transition-colors`}>
+                      {s.title}
+                    </h4>
+                    <p className={`text-[11px] leading-tight font-medium ${isLight ? "text-slate-500" : "text-slate-400"}`}>
+                      {s.role}
+                    </p>
+                  </div>
+
+                  {/* Sample Quote Snippet */}
+                  <div className={`mt-2 pt-1.5 border-t text-[10px] italic leading-tight line-clamp-1 ${
+                    isLight ? "border-slate-100 text-slate-500" : "border-slate-800 text-slate-400"
+                  }`}>
+                    {s.sample}
+                  </div>
+
+                  {/* Bottom Action: Practice Now */}
+                  <div className="mt-3 flex items-center justify-between pt-1">
+                    <span className={`text-[11px] font-bold ${
+                      isLight ? "text-blue-600 group-hover:text-blue-700" : "text-cyan-400 group-hover:text-cyan-300"
+                    } flex items-center gap-1`}>
+                      Practice 🎙️
+                    </span>
+                    <span className={`text-xs font-black transition-transform group-hover:translate-x-1 ${
+                      isLight ? "text-blue-600" : "text-cyan-400"
+                    }`}>
+                      →
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
