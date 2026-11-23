@@ -876,10 +876,10 @@ export default function LandingPage({
             />
           </div>
 
-          {/* Interactive Roleplay Console Dock (Dynamic Island Style - No Clunky Boxes!) */}
-          <div className="relative z-20 -mt-8 sm:-mt-14 md:-mt-20 lg:-mt-24 max-w-4xl mx-auto px-3 sm:px-6">
-            {/* Row 1: Floating Capsule Selector Tabs */}
-            <div className={`p-1.5 sm:p-2 rounded-full border shadow-xl backdrop-blur-2xl flex items-center justify-between gap-1 sm:gap-2 overflow-x-auto no-scrollbar transition-all ${
+          {/* Interactive Roleplay Console Dock (Dynamic Island Style - Perfectly Fitted, No Scrollbars!) */}
+          <div className="relative z-20 -mt-8 sm:-mt-14 md:-mt-20 lg:-mt-24 max-w-5xl mx-auto px-3 sm:px-6">
+            {/* Row 1: Floating Capsule Selector Tabs - 6-column Grid (Zero Scrollbar) */}
+            <div className={`p-1.5 sm:p-2 rounded-2xl sm:rounded-full border shadow-xl backdrop-blur-2xl grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2 transition-all ${
               isLight
                 ? "bg-white/95 border-slate-200/90 shadow-[0_15px_35px_rgba(0,0,0,0.08)]"
                 : "bg-slate-900/95 border-white/10 shadow-[0_15px_35px_rgba(0,0,0,0.5)]"
@@ -897,17 +897,16 @@ export default function LandingPage({
                   <button
                     key={role.id}
                     onClick={() => setActiveScenarioIdx(idx)}
-                    className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    className={`flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 rounded-xl sm:rounded-full text-xs font-bold transition-all w-full cursor-pointer text-center ${
                       isSelected
-                        ? `${role.activeBg} shadow-md scale-[1.03]`
+                        ? `${role.activeBg} shadow-md scale-[1.02]`
                         : isLight
                           ? "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
                           : "text-slate-400 hover:text-white hover:bg-white/5"
                     }`}
                   >
-                    <span className="text-sm sm:text-base">{role.icon}</span>
-                    <span className="hidden sm:inline">{role.label}</span>
-                    <span className="sm:hidden">{role.label.split(" ")[0]}</span>
+                    <span className="text-sm sm:text-base shrink-0">{role.icon}</span>
+                    <span className="truncate">{role.label}</span>
                   </button>
                 );
               })}
