@@ -2131,33 +2131,12 @@ export default function LandingPage({
 
 
       {/* 3.5. Search the World - Dotted World Map & Bidirectional Coaches Scroller */}
-      <section id="search-the-world" className={`pt-10 sm:pt-14 pb-16 sm:pb-24 relative overflow-hidden text-center min-h-[640px] sm:min-h-[720px] flex flex-col justify-between ${
+      <section id="search-the-world" className={`py-16 sm:py-24 relative overflow-hidden text-center ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
-        {/* World Map Dotted Matrix Background (Vibrant, Crisp & Full Span) */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
-          <div className="relative w-full max-w-[1920px] h-full min-h-[640px] sm:min-h-[720px] opacity-100 dark:opacity-40 transition-opacity">
-            <Image
-              src="/images/landing/world_map_dotted.webp"
-              alt="Global Language Network World Map"
-              fill
-              className="object-contain object-center scale-105 sm:scale-110 drop-shadow-[0_4px_16px_rgba(99,102,241,0.12)] dark:drop-shadow-none"
-              priority
-            />
-          </div>
-        </div>
-
-        {/* Edge Gradient Fade Masks */}
-        <div className={`pointer-events-none absolute left-0 top-0 bottom-0 w-24 sm:w-48 z-20 ${
-          isLight ? "bg-gradient-to-r from-white via-white/80 to-transparent" : "bg-gradient-to-r from-[#070A14] via-[#070A14]/80 to-transparent"
-        }`} />
-        <div className={`pointer-events-none absolute right-0 top-0 bottom-0 w-24 sm:w-48 z-20 ${
-          isLight ? "bg-gradient-to-l from-white via-white/80 to-transparent" : "bg-gradient-to-l from-[#070A14] via-[#070A14]/80 to-transparent"
-        }`} />
-
-        <ScrollReveal className="relative z-10 w-full" distance={32}>
-          {/* Section Header (Shifted higher up) */}
-          <div className="space-y-2 max-w-4xl mx-auto text-center px-4">
+        <ScrollReveal className="w-full space-y-10 sm:space-y-14" distance={32}>
+          {/* 1. Header (Heading + Subtitle) */}
+          <div className="space-y-3 max-w-4xl mx-auto text-center px-4">
             <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase border shadow-xs ${
               isLight
                 ? "bg-blue-50 border-blue-200 text-blue-700"
@@ -2180,9 +2159,32 @@ export default function LandingPage({
             </p>
           </div>
 
-          {/* Bidirectional Scrolling Coaches Rows (Shifted lower down so center of map is wide open) */}
-          <div className="mt-20 sm:mt-28 lg:mt-36 space-y-4 sm:space-y-6 overflow-hidden">
-            {/* ROW 1: Scrolling Left (animate-marquee) */}
+          {/* 2. Middle: Pristine World Map Infographic Graphic (Normal image in flow, NOT background!) */}
+          <div className="relative w-full max-w-[1240px] mx-auto px-4 sm:px-6 flex justify-center">
+            <div className="relative w-full overflow-hidden rounded-2xl sm:rounded-3xl">
+              <Image
+                src="/images/landing/world_map_dotted.webp"
+                alt="Global AI Language Exchange Map with AI Tutor and Student Dialogue"
+                width={2358}
+                height={1263}
+                className="w-full h-auto object-contain transition-transform duration-500 hover:scale-[1.01]"
+                priority
+              />
+            </div>
+          </div>
+
+          {/* 3. Bottom: Bidirectional Scrolling Coaches Rows with Edge Fades */}
+          <div className="relative w-full overflow-hidden pt-2 sm:pt-4">
+            {/* Edge Gradient Fade Masks */}
+            <div className={`pointer-events-none absolute left-0 top-0 bottom-0 w-24 sm:w-48 z-20 ${
+              isLight ? "bg-gradient-to-r from-white via-white/80 to-transparent" : "bg-gradient-to-r from-[#070A14] via-[#070A14]/80 to-transparent"
+            }`} />
+            <div className={`pointer-events-none absolute right-0 top-0 bottom-0 w-24 sm:w-48 z-20 ${
+              isLight ? "bg-gradient-to-l from-white via-white/80 to-transparent" : "bg-gradient-to-l from-[#070A14] via-[#070A14]/80 to-transparent"
+            }`} />
+
+            <div className="space-y-4 sm:space-y-6 overflow-hidden">
+              {/* ROW 1: Scrolling Left (animate-marquee) */}
             <div className="overflow-hidden whitespace-nowrap">
               <div className="animate-marquee flex items-center gap-4 sm:gap-6 py-1">
                 {[
@@ -2310,8 +2312,9 @@ export default function LandingPage({
               </div>
             </div>
           </div>
-        </ScrollReveal>
-      </section>
+        </div>
+      </ScrollReveal>
+    </section>
 
 {/* 11. Loved by Learners Around the World - Testimonials Showcase (Image 5 Wreaths & 4-Card Carousel) */}
       <section id="reviews" className={`py-16 sm:py-24 relative overflow-hidden text-center ${
