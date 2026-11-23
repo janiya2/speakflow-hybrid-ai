@@ -4095,6 +4095,20 @@ export default function StudentWebApp() {
       setActiveGrammarDrillMeta(null);
     }
     setPendingTopic(topic);
+
+    // Auto-select the best native coach for this topic's language if available
+    const tLang = normalizeLang(topic.language);
+    if (tLang.startsWith("jap")) {
+      const jpCoach = COACHES.find((c) => c.id === "kenji" || c.id === "aoi");
+      if (jpCoach) setSelectedCoach(jpCoach);
+    } else if (tLang.startsWith("spa")) {
+      const spCoach = COACHES.find((c) => c.id === "alex" || c.id === "sarah");
+      if (spCoach) setSelectedCoach(spCoach);
+    } else if (tLang.startsWith("eng")) {
+      const enCoach = COACHES.find((c) => c.id === "sarah" || c.id === "oliver" || c.id === "emma");
+      if (enCoach) setSelectedCoach(enCoach);
+    }
+
     setShowDurationModal(true);
   };
 
@@ -14119,47 +14133,66 @@ export default function StudentWebApp() {
       {showDurationModal && pendingTopic && (
         <div
           className={`fixed inset-0 z-50 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200 ${
-            isLight ? "bg-slate-900/45" : "bg-black/85"
+            isLight ? "bg-slate-900/60" : "bg-black/85"
           }`}
         >
           <div
-            className={`w-full max-w-2xl border rounded-3xl p-5 sm:p-6 relative overflow-hidden my-auto space-y-5 ${
+            className={`w-full max-w-2xl border rounded-3xl p-5 sm:p-7 relative overflow-hidden my-auto space-y-5 transition-all shadow-2xl ${
               isLight
-                ? "bg-[#E6EEF9] border-blue-300 shadow-[0_25px_70px_rgba(15,35,75,0.22)]"
-                : "bg-gradient-to-b from-[#131b2e] via-[#0d1527] to-[#070b16] border-cyan-500/40 shadow-[0_25px_80px_rgba(0,0,0,0.9)]"
+                ? "bg-white border-slate-200/90 shadow-[0_25px_70px_rgba(15,23,42,0.25)] text-slate-900 ring-1 ring-slate-900/5"
+                : "bg-[#0C1222] border-slate-800 shadow-[0_25px_80px_rgba(0,0,0,0.9)] text-white ring-1 ring-white/10"
             }`}
           >
             {/* Ambient Corner Glows */}
-            <div className="absolute -top-12 -left-12 w-48 h-48 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent" />
+            <div className={`absolute -top-12 -left-12 w-48 h-48 rounded-full blur-3xl pointer-events-none ${isLight ? "bg-blue-400/10" : "bg-cyan-500/15"}`} />
+            <div className={`absolute -bottom-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none ${isLight ? "bg-indigo-400/10" : "bg-purple-500/15"}`} />
+            <div className={`absolute inset-x-0 top-0 h-[2px] ${isLight ? "bg-gradient-to-r from-blue-500 via-indigo-600 to-cyan-500" : "bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent"}`} />
 
             {/* Top Bar: Topic Badge + Close */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800/80 relative z-10">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/30 border border-cyan-400/40 text-cyan-300 flex items-center justify-center text-2xl shadow-lg shadow-cyan-950/40 shrink-0">
+            <div className={`flex items-center justify-between pb-3.5 border-b relative z-10 ${
+              isLight ? "border-slate-100" : "border-slate-800/80"
+            }`}>
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 border ${
+                  isLight
+                    ? "bg-blue-50 border-blue-200 text-blue-700 shadow-xs"
+                    : "bg-cyan-500/20 border-cyan-400/40 text-cyan-300 shadow-md shadow-cyan-950/40"
+                }`}>
                   {pendingTopic.icon}
                 </div>
-                <div className="truncate">
+                <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 text-[10px] font-black uppercase tracking-wider">
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-xs ${
+                      isLight
+                        ? "bg-blue-50 text-blue-700 border-blue-200"
+                        : "bg-cyan-500/15 border-cyan-400/30 text-cyan-300"
+                    }`}>
                       {pendingTopic.language}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-[10px] font-bold">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                      isLight
+                        ? "bg-slate-100 text-slate-700 border-slate-200"
+                        : "bg-slate-800 text-slate-300 border-slate-700"
+                    }`}>
                       {pendingTopic.level}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className={`inline-flex items-center gap-1.5 text-[10.5px] font-bold ${
+                      isLight ? "text-emerald-700" : "text-emerald-400"
+                    }`}>
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                       Live AI Call Ready
                     </span>
                   </div>
-                  <h3 className="font-black text-base sm:text-lg text-white truncate mt-1">
+                  <h3 className={`font-black text-base sm:text-lg truncate mt-1 leading-snug ${
+                    isLight ? "text-slate-950" : "text-white"
+                  }`}>
                     {pendingTopic.title}
                   </h3>
                 </div>
               </div>
 
               <button
+                type="button"
                 onClick={() => {
                   if (typeof window !== "undefined" && "speechSynthesis" in window) {
                     window.speechSynthesis.cancel();
@@ -14167,7 +14200,12 @@ export default function StudentWebApp() {
                   setPreviewingCoachVoiceId(null);
                   setShowDurationModal(false);
                 }}
-                className="w-8 h-8 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all shrink-0 ml-2"
+                className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all shrink-0 ml-2 ${
+                  isLight
+                    ? "bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
+                    : "bg-slate-800/80 border-slate-700 text-slate-400 hover:text-white"
+                }`}
+                title="Close"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -14177,15 +14215,21 @@ export default function StudentWebApp() {
             <div className="space-y-3 relative z-10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${
+                    isLight ? "bg-blue-50 text-blue-600 border border-blue-200" : "bg-cyan-500/20 text-cyan-400"
+                  }`}>
                     <Bot className="w-3.5 h-3.5" />
                   </div>
-                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-200">
+                  <h4 className={`text-xs font-black uppercase tracking-wider ${
+                    isLight ? "text-slate-800" : "text-slate-200"
+                  }`}>
                     Choose Your AI Speech Coach (6 Available)
                   </h4>
                 </div>
-                <span className="text-[11px] font-bold text-cyan-300 flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+                <span className={`text-[11px] font-bold flex items-center gap-1 ${
+                  isLight ? "text-blue-700" : "text-cyan-300"
+                }`}>
+                  <CheckCircle2 className={`w-3.5 h-3.5 ${isLight ? "text-blue-600" : "text-cyan-400"}`} />
                   <span>Coach {selectedCoach.name} Active</span>
                 </span>
               </div>
@@ -14200,25 +14244,37 @@ export default function StudentWebApp() {
                     <div
                       key={coach.id}
                       onClick={() => setSelectedCoach(coach)}
-                      className={`p-2.5 sm:p-3 rounded-2xl transition-all duration-200 cursor-pointer relative flex flex-col justify-between group ${
+                      className={`p-3 rounded-2xl transition-all duration-200 cursor-pointer relative flex flex-col justify-between group border ${
                         isSelected
-                          ? "bg-gradient-to-b from-cyan-950/70 via-blue-950/50 to-slate-900 border-2 border-cyan-400 shadow-lg shadow-cyan-500/25 scale-[1.02]"
+                          ? isLight
+                            ? "bg-gradient-to-b from-blue-50/90 via-indigo-50/40 to-white border-blue-600 shadow-md shadow-blue-500/15 scale-[1.02] ring-2 ring-blue-500/20"
+                            : "bg-gradient-to-b from-cyan-950/70 via-blue-950/50 to-slate-900 border-2 border-cyan-400 shadow-lg shadow-cyan-500/25 scale-[1.02]"
+                          : isLight
+                          ? "bg-slate-50 border-slate-200/90 hover:border-blue-300 hover:bg-white hover:shadow-sm"
                           : "bg-slate-900/70 border border-slate-800/90 hover:border-slate-700 hover:bg-slate-800/50"
                       }`}
                     >
                       {/* Active Check Badge */}
                       {isSelected && (
-                        <div className="absolute top-2 right-2 w-4.5 h-4.5 rounded-full bg-cyan-400 text-slate-950 flex items-center justify-center shadow-md shadow-cyan-400/50 z-10">
+                        <div className={`absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center shadow-md z-10 ${
+                          isLight
+                            ? "bg-blue-600 text-white shadow-blue-500/30"
+                            : "bg-cyan-400 text-slate-950 shadow-cyan-400/50"
+                        }`}>
                           <Check className="w-3 h-3 stroke-[3]" />
                         </div>
                       )}
 
-                      <div className="flex flex-col items-center text-center space-y-1">
+                      <div className="flex flex-col items-center text-center space-y-1.5">
                         {/* Coach Avatar with Online Ring */}
                         <div className="relative">
                           <div className={`w-12 h-12 rounded-full p-0.5 transition-all ${
                             isSelected
-                              ? "bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-500 shadow-md shadow-cyan-400/40"
+                              ? isLight
+                                ? "bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-md shadow-blue-500/30"
+                                : "bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-500 shadow-md shadow-cyan-400/40"
+                              : isLight
+                              ? "bg-slate-200 group-hover:bg-blue-300"
                               : "bg-slate-700 group-hover:bg-slate-600"
                           }`}>
                             <img
@@ -14227,15 +14283,23 @@ export default function StudentWebApp() {
                               className="w-full h-full object-cover rounded-full"
                             />
                           </div>
-                          <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-400 border-2 border-slate-900 shadow-sm" />
+                          <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 shadow-sm ${
+                            isLight ? "border-white" : "border-slate-900"
+                          }`} />
                         </div>
 
                         {/* Coach Name & Accent */}
                         <div>
-                          <h5 className="font-black text-xs text-white group-hover:text-cyan-200 transition-colors truncate max-w-[120px]">
+                          <h5 className={`font-black text-xs truncate max-w-[120px] transition-colors ${
+                            isLight
+                              ? isSelected ? "text-blue-900" : "text-slate-900 group-hover:text-blue-700"
+                              : isSelected ? "text-white" : "text-slate-200 group-hover:text-cyan-200"
+                          }`}>
                             {coach.name}
                           </h5>
-                          <p className="text-[9px] text-slate-400 line-clamp-1 mt-0.5">
+                          <p className={`text-[9.5px] line-clamp-1 mt-0.5 font-medium ${
+                            isLight ? "text-slate-600" : "text-slate-400"
+                          }`}>
                             {coach.accent}
                           </p>
                         </div>
@@ -14243,11 +14307,14 @@ export default function StudentWebApp() {
 
                       {/* Listen Preview Button */}
                       <button
+                        type="button"
                         onClick={(e) => handlePreviewCoachVoice(e, coach)}
-                        className={`mt-2 py-1 px-2 rounded-xl text-[9px] font-bold flex items-center justify-center gap-1 transition-all ${
+                        className={`mt-2.5 py-1 px-2 rounded-xl text-[9.5px] font-bold flex items-center justify-center gap-1 transition-all border ${
                           isVoicePlaying
-                            ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/40 animate-pulse"
-                            : "bg-slate-800/80 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-slate-700/60"
+                            ? "bg-emerald-500 text-white border-emerald-600 shadow-md shadow-emerald-500/40 animate-pulse"
+                            : isLight
+                            ? "bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 border-slate-200 hover:border-blue-300 shadow-2xs"
+                            : "bg-slate-800/80 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border-slate-700/60"
                         }`}
                         title="Click to preview coach voice"
                       >
@@ -14258,7 +14325,7 @@ export default function StudentWebApp() {
                           </>
                         ) : (
                           <>
-                            <Volume2 className="w-2.5 h-2.5 text-cyan-400" />
+                            <Volume2 className={`w-2.5 h-2.5 ${isLight ? "text-blue-600" : "text-cyan-400"}`} />
                             <span>Preview</span>
                           </>
                         )}
@@ -14272,12 +14339,14 @@ export default function StudentWebApp() {
               <div
                 className={`p-3 rounded-2xl border flex items-center justify-between gap-3 ${
                   isLight
-                    ? "bg-gradient-to-r from-sky-100 via-blue-50 to-indigo-100 border-blue-300 shadow-sm"
+                    ? "bg-slate-50 border-slate-200 shadow-xs"
                     : "bg-gradient-to-r from-blue-950/50 via-cyan-950/40 to-indigo-950/50 border-cyan-500/30"
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-cyan-400/80 shadow-md shadow-cyan-400/30 shrink-0">
+                  <div className={`w-10 h-10 rounded-full overflow-hidden border-2 shadow-sm shrink-0 ${
+                    isLight ? "border-blue-500 shadow-blue-500/20" : "border-cyan-400/80 shadow-cyan-400/30"
+                  }`}>
                     <img src={selectedCoach.avatar} alt={selectedCoach.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="truncate">
@@ -14288,14 +14357,14 @@ export default function StudentWebApp() {
                       <span
                         className={`text-[9px] font-bold px-1.5 py-0.5 rounded border shrink-0 ${
                           isLight
-                            ? "text-blue-700 bg-white/80 border-blue-200"
+                            ? "text-blue-700 bg-blue-50 border-blue-200"
                             : "text-cyan-300 bg-cyan-500/20 border-cyan-500/30"
                         }`}
                       >
                         {selectedCoach.accent}
                       </span>
                     </div>
-                    <p className={`text-[10px] truncate mt-0.5 ${isLight ? "text-slate-600" : "text-slate-300"}`}>
+                    <p className={`text-[10px] truncate mt-0.5 font-medium ${isLight ? "text-slate-600" : "text-slate-300"}`}>
                       {selectedCoach.tagline}
                     </p>
                   </div>
@@ -14305,7 +14374,7 @@ export default function StudentWebApp() {
                   <span
                     className={`px-2.5 py-1 rounded-full border text-[10px] font-bold hidden sm:inline-flex items-center gap-1.5 ${
                       isLight
-                        ? "bg-emerald-100 border-emerald-300 text-emerald-800"
+                        ? "bg-emerald-50 border-emerald-200 text-emerald-800"
                         : "bg-emerald-500/15 border-emerald-400/30 text-emerald-300"
                     }`}
                   >
@@ -14317,15 +14386,15 @@ export default function StudentWebApp() {
             </div>
 
             {/* Section 2: Call Duration & Bonus XP */}
-            <div className="space-y-2.5 relative z-10 pt-1 border-t border-slate-800/80">
+            <div className={`space-y-2.5 relative z-10 pt-2 border-t ${isLight ? "border-slate-100" : "border-slate-800/80"}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5 text-amber-400" />
-                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-200">
+                  <Clock className={`w-3.5 h-3.5 ${isLight ? "text-amber-500" : "text-amber-400"}`} />
+                  <h4 className={`text-xs font-black uppercase tracking-wider ${isLight ? "text-slate-800" : "text-slate-200"}`}>
                     Select Call Duration
                   </h4>
                 </div>
-                <span className="text-[10px] text-amber-400 font-mono font-bold">
+                <span className={`text-[10px] font-mono font-bold ${isLight ? "text-amber-600" : "text-amber-400"}`}>
                   Bonus XP Multipliers Active
                 </span>
               </div>
@@ -14340,11 +14409,14 @@ export default function StudentWebApp() {
                   return (
                     <button
                       key={tier.mins}
+                      type="button"
                       onClick={() => setSelectedDurationMinutes(tier.mins)}
-                      className={`p-3 rounded-2xl text-left transition-all duration-200 relative ${
+                      className={`p-3 rounded-2xl text-left transition-all duration-200 relative border ${
                         isSelected
-                          ? "bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-lg shadow-blue-600/30 border border-cyan-400/60 scale-[1.02]"
-                          : "bg-slate-900/80 text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700"
+                          ? "bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-lg shadow-blue-600/30 border-blue-400 scale-[1.02]"
+                          : isLight
+                          ? "bg-slate-50 border-slate-200 text-slate-800 hover:bg-white hover:border-blue-300 hover:shadow-xs"
+                          : "bg-slate-900/80 text-slate-300 hover:text-white border-slate-800 hover:border-slate-700"
                       }`}
                     >
                       {tier.popular && (
@@ -14355,13 +14427,17 @@ export default function StudentWebApp() {
                       <div className="flex items-center justify-between">
                         <span className="font-black text-sm">{tier.label}</span>
                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                          isSelected ? "bg-white/20 text-white" : "bg-amber-500/15 text-amber-300 border border-amber-500/30"
+                          isSelected
+                            ? "bg-white/20 text-white"
+                            : isLight
+                            ? "bg-amber-100 text-amber-800 border border-amber-200"
+                            : "bg-amber-500/15 text-amber-300 border border-amber-500/30"
                         }`}>
                           {tier.badge}
                         </span>
                       </div>
                       <p className={`text-[10px] mt-1 font-medium ${
-                        isSelected ? "text-cyan-100" : "text-slate-400"
+                        isSelected ? "text-cyan-100" : isLight ? "text-slate-500" : "text-slate-400"
                       }`}>
                         {tier.sub}
                       </p>
@@ -14372,13 +14448,17 @@ export default function StudentWebApp() {
             </div>
 
             {/* AI Engine & Privacy Guarantee */}
-            <div className="flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-950/60 border border-slate-800 text-[10px] text-slate-400 relative z-10">
+            <div className={`flex items-center justify-between px-3.5 py-2 rounded-xl text-[10px] relative z-10 border ${
+              isLight
+                ? "bg-slate-100 border-slate-200 text-slate-600"
+                : "bg-slate-950/60 border-slate-800 text-slate-400"
+            }`}>
               <div className="flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-yellow-400" />
-                <span>Powered by <strong className="text-white">SpeakFlow Neural Voice Engine</strong></span>
+                <Zap className={`w-3.5 h-3.5 ${isLight ? "text-amber-500" : "text-yellow-400"}`} />
+                <span>Powered by <strong className={isLight ? "text-slate-900 font-bold" : "text-white"}>SpeakFlow Neural Voice Engine</strong></span>
               </div>
-              <div className="flex items-center gap-1 text-emerald-400 font-mono">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <div className={`flex items-center gap-1 font-mono font-bold ${isLight ? "text-emerald-700" : "text-emerald-400"}`}>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 <span>Sub-15ms Live Voice Latency</span>
               </div>
             </div>
@@ -14386,6 +14466,7 @@ export default function StudentWebApp() {
             {/* Action Buttons */}
             <div className="flex items-center gap-3 pt-1 relative z-10">
               <button
+                type="button"
                 onClick={() => {
                   if (typeof window !== "undefined" && "speechSynthesis" in window) {
                     window.speechSynthesis.cancel();
@@ -14393,11 +14474,16 @@ export default function StudentWebApp() {
                   setPreviewingCoachVoiceId(null);
                   setShowDurationModal(false);
                 }}
-                className="py-3 px-5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition-all"
+                className={`py-3 px-5 rounded-2xl text-xs font-bold transition-all border ${
+                  isLight
+                    ? "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200 hover:text-slate-900"
+                    : "bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border-transparent"
+                }`}
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={() => {
                   if (typeof window !== "undefined" && "speechSynthesis" in window) {
                     window.speechSynthesis.cancel();
@@ -14405,7 +14491,7 @@ export default function StudentWebApp() {
                   setPreviewingCoachVoiceId(null);
                   handleConfirmStartCall();
                 }}
-                className="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-black text-xs sm:text-sm shadow-xl shadow-blue-600/40 hover:shadow-cyan-500/50 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                className="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-black text-xs sm:text-sm shadow-xl shadow-blue-600/30 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
               >
                 <PhoneCall className="w-4 h-4 animate-bounce" />
                 <span>
@@ -15563,9 +15649,12 @@ export default function StudentWebApp() {
         onClose={() => setIsTourOpen(false)}
         onStartPracticeCall={() => {
           setIsTourOpen(false);
-          const firstSinhala = FULL_MOBILE_TOPICS_CATALOG.find((t) => t.language === "Sinhala") || topics[0];
-          if (firstSinhala) {
-            handleInitiateCallPrompt(firstSinhala);
+          const activeLang = selectedLanguage && selectedLanguage !== "All" ? selectedLanguage : "English";
+          const matchedTopic =
+            topics.find((t) => normalizeLang(t.language) === normalizeLang(activeLang)) ||
+            topics[0];
+          if (matchedTopic) {
+            handleInitiateCallPrompt(matchedTopic);
           }
         }}
         isLight={isLight}
