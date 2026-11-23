@@ -37,6 +37,7 @@ import { FULL_MOBILE_TOPICS_CATALOG } from "./topicsCatalog";
 import { FULL_VOCABULARY_CATALOG, FULL_GRAMMAR_CATALOG, VocabCatalogItem, GrammarCatalogItem } from "./vocabAndGrammarCatalog";
 import LandingPage from "@/components/LandingPage";
 import ProductTourModal from "@/components/ProductTourModal";
+import CallSetupSideStage from "@/components/CallSetupSideStage";
 
 type HybridEngineType = "ON_DEVICE_NANO" | "CLOUD_GEMINI_FLASH";
 type HybridModeSetting = "auto" | "nano_only" | "cloud_only";
@@ -14132,10 +14133,19 @@ export default function StudentWebApp() {
       {/* ------------------------------------------------------------- */}
       {showDurationModal && pendingTopic && (
         <div
-          className={`fixed inset-0 z-50 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200 ${
+          className={`fixed inset-0 z-50 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200 relative ${
             isLight ? "bg-slate-900/60" : "bg-black/85"
           }`}
         >
+          {/* Animated Conversational Side Stage (3D Robot Tutor on Left & Student Learner on Right) */}
+          <CallSetupSideStage
+            isLight={isLight}
+            topicTitle={pendingTopic.title}
+            topicLanguage={pendingTopic.language}
+            coachName={selectedCoach.name}
+            durationMinutes={selectedDurationMinutes ?? 5}
+          />
+
           <div
             className={`w-full max-w-2xl border rounded-3xl p-5 sm:p-7 relative overflow-hidden my-auto space-y-5 transition-all shadow-2xl ${
               isLight
