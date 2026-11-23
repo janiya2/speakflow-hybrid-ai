@@ -130,52 +130,76 @@ export default function LoginPage() {
   return (
     <div
       className={`min-h-screen flex flex-col lg:flex-row transition-colors duration-300 font-sans selection:bg-indigo-500 selection:text-white ${
-        isLight ? "bg-[#F8FAFC] text-slate-800" : "bg-[#060913] text-slate-100"
+        isLight
+          ? "bg-gradient-to-br from-[#dce7f6] via-[#e5eef9] to-[#d8e3f4] text-slate-800"
+          : "bg-gradient-to-br from-[#060913] via-[#091128] to-[#04060E] text-slate-100"
       }`}
     >
       {/* ------------------------------------------------------------- */}
-      {/* LEFT COLUMN: YayTalk-Style Visual Showcase (login-sider.webp)  */}
+      {/* LEFT COLUMN: YayTalk-Style Visual Showcase (Seamless Blend)   */}
       {/* ------------------------------------------------------------- */}
-      <div className="relative hidden lg:flex lg:w-[58%] xl:w-[60%] flex-col justify-center items-center p-8 xl:p-12 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-sky-50 dark:from-[#070D1E] dark:via-[#0A122C] dark:to-[#040711] border-r border-slate-200 dark:border-slate-800/80">
+      <div className="relative hidden lg:flex lg:w-[60%] xl:w-[62%] flex-col justify-between items-center p-6 sm:p-8 xl:p-10 overflow-hidden">
         {/* Soft Ambient Background Glows */}
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-500/10 dark:bg-cyan-500/15 rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute bottom-10 right-10 w-[450px] h-[450px] bg-indigo-500/10 dark:bg-purple-500/15 rounded-full blur-[130px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/4 w-[550px] h-[550px] bg-blue-500/10 dark:bg-cyan-500/15 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-10 right-10 w-[500px] h-[500px] bg-indigo-500/10 dark:bg-purple-500/15 rounded-full blur-[130px] pointer-events-none" />
+        {/* Luminous Glow behind Stats in Dark Mode */}
+        <div className="absolute top-[18%] left-1/2 -translate-x-1/2 w-[520px] h-[340px] bg-blue-400/10 dark:bg-cyan-400/20 rounded-full blur-[100px] pointer-events-none" />
 
         {/* Top Floating Badge for SpeakFlow */}
-        <div className="absolute top-8 left-8 z-20 flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-transform">
-              <span className="text-xl">🎙️</span>
+        <div className="w-full flex items-center justify-start z-20">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/25 shrink-0 border border-blue-400/30 transition-transform duration-200 group-hover:scale-105 p-0.5 bg-gradient-to-br from-cyan-400/40 via-blue-500/30 to-indigo-600/40">
+              <div className="w-full h-full rounded-[14px] overflow-hidden bg-[#0A0F1D] flex items-center justify-center">
+                <Image
+                  src="/images/app_logo.png"
+                  alt="SpeakFlow Logo"
+                  width={38}
+                  height={38}
+                  className="w-full h-full object-cover"
+                  priority
+                />
+              </div>
             </div>
             <div>
-              <span className="font-black text-xl tracking-tight bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 dark:from-cyan-400 dark:via-indigo-300 dark:to-purple-400 bg-clip-text text-transparent">
-                SpeakFlow<span className="text-cyan-500 dark:text-cyan-400 font-serif">.ai</span>
-              </span>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Real-Time AI Voice Tutor</p>
+              <div className="flex items-center">
+                <span className={`font-black text-xl tracking-tight transition-colors ${isLight ? "text-slate-900" : "text-white"}`}>
+                  SpeakFlow
+                </span>
+                <span
+                  className="font-black text-xl tracking-tight ml-0.5"
+                  style={{ color: isLight ? "#2563EB" : "#38BDF8" }}
+                >
+                  .ai
+                </span>
+                <span className="ml-1.5 px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-xs">
+                  AI
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">Real-Time AI Voice Tutor</p>
             </div>
           </Link>
         </div>
 
-        {/* Main Artwork: login-sider.webp (Cleanly rendered with subtle depth) */}
-        <div className="relative z-10 w-full max-w-[720px] aspect-[1780/1536] flex items-center justify-center my-auto transition-transform duration-700 hover:scale-[1.01]">
+        {/* Main Artwork: login-sider.webp / login-sider-dark.webp (Expanded & Seamless) */}
+        <div className="relative z-10 w-full max-w-[860px] xl:max-w-[940px] aspect-[1780/1536] flex items-center justify-center my-auto transition-transform duration-700 hover:scale-[1.01]">
           <Image
-            src="/images/login-sider.webp"
+            src={isLight ? "/images/login-sider.webp" : "/images/login-sider-dark.webp"}
             alt="SpeakFlow AI Trusted Voice Coaching Showcase"
             fill
             priority
-            className="object-contain drop-shadow-[0_20px_50px_rgba(37,99,235,0.12)] dark:drop-shadow-[0_20px_60px_rgba(0,0,0,0.8)] select-none pointer-events-none"
+            className="object-contain drop-shadow-[0_20px_50px_rgba(37,99,235,0.12)] dark:drop-shadow-[0_25px_60px_rgba(0,0,0,0.85)] select-none pointer-events-none"
           />
         </div>
 
         {/* Bottom Social Proof Bar */}
-        <div className="relative z-10 flex items-center justify-center gap-6 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pt-4">
+        <div className="relative z-10 flex items-center justify-center flex-wrap gap-4 sm:gap-6 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider pt-2">
           <span className="flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
             <span>100% Judgment-Free Practice</span>
           </span>
-          <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+          <span className="w-1 h-1 rounded-full bg-slate-400/60 dark:bg-slate-700" />
           <span>20+ Dialects Supported</span>
-          <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+          <span className="w-1 h-1 rounded-full bg-slate-400/60 dark:bg-slate-700" />
           <span>Sub-20ms Neural Speech</span>
         </div>
       </div>
