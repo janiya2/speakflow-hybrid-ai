@@ -2855,55 +2855,51 @@ export default function LandingPage({
                       Scan to download free app
                     </p>
 
-                    {/* App Store & Android Icons with Live Admin Links */}
-                    <div className="flex items-center gap-2 pt-1.5">
-                      {/* Apple App Store */}
+                    {/* App Store & Android Real Official Badges */}
+                    <div className="flex flex-wrap items-center gap-2 pt-2">
                       <a
                         href={config?.appStoreUrl || "https://apple.com/app-store"}
                         target="_blank"
                         rel="noopener noreferrer"
-                        title="Download on Apple App Store"
-                        className={`p-2 rounded-xl border transition-all duration-200 flex items-center justify-center ${
-                          isLight
-                            ? "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-800 hover:border-slate-300"
-                            : "bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-200 hover:border-slate-600"
-                        }`}
+                        className="transition-transform duration-200 hover:scale-105 drop-shadow-xs shrink-0"
                       >
-                        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 3.5c.62-.75 1.04-1.8 0.93-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.71-.93 2.73 1.01.08 2.03-.49 2.63-1.23z"/>
-                        </svg>
+                        <Image
+                          src="/images/landing/app_store.webp"
+                          alt="Download on the App Store"
+                          width={120}
+                          height={36}
+                          className="h-8 sm:h-9 w-auto object-contain"
+                        />
                       </a>
 
-                      {/* Google Play Store */}
                       <a
                         href={config?.playStoreUrl || "https://play.google.com/store/apps/details?id=com.innoxpert.speakflow"}
                         target="_blank"
                         rel="noopener noreferrer"
-                        title="Get it on Google Play"
-                        className={`p-2 rounded-xl border transition-all duration-200 flex items-center justify-center ${
-                          isLight
-                            ? "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-800 hover:border-slate-300"
-                            : "bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-200 hover:border-slate-600"
-                        }`}
+                        className="transition-transform duration-200 hover:scale-105 drop-shadow-xs shrink-0"
                       >
-                        <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                          <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0002s.4482-1.0002.9993-1.0002c.5516 0 .9997.4486.9997 1.0002s-.4481 1.0002-.9997 1.0002m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0002s.4482-1.0002.9993-1.0002c.5516 0 .9997.4486.9997 1.0002s-.4481 1.0002-.9997 1.0002m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5896 8.4116 13.854 8 12 8s-3.5896.4116-5.1368 1.4507L4.8409 5.9467a.416.416 0 00-.5676-.1521.416.416 0 00-.1521.5676l1.9973 3.4592C2.6889 11.6701 1.5 15.1102 1.5 18.999h21c0-3.8888-1.1889-7.3289-4.6185-9.6776"/>
-                        </svg>
+                        <Image
+                          src="/images/landing/google_play.webp"
+                          alt="Get it on Google Play"
+                          width={120}
+                          height={36}
+                          className="h-8 sm:h-9 w-auto object-contain"
+                        />
                       </a>
 
-                      {/* Direct APK Link */}
                       <a
                         href={config?.apkDownloadUrl || "https://github.com/janithad2/speakflow-ai/releases/download/v1.0.0/speakflow-ai.apk"}
                         target="_blank"
                         rel="noopener noreferrer"
-                        title="Download Android APK directly"
-                        className={`text-[10px] font-bold px-2.5 py-1.5 rounded-lg border transition-all ${
-                          isLight
-                            ? "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
-                            : "bg-blue-950/60 border-blue-800 text-blue-300 hover:bg-blue-900"
-                        }`}
+                        className="transition-transform duration-200 hover:scale-105 drop-shadow-xs shrink-0"
                       >
-                        APK
+                        <Image
+                          src="/images/landing/android_apk.webp"
+                          alt="Direct Android APK Download"
+                          width={120}
+                          height={36}
+                          className="h-8 sm:h-9 w-auto object-contain"
+                        />
                       </a>
                     </div>
                   </div>
@@ -3002,61 +2998,51 @@ export default function LandingPage({
               </div>
             </div>
 
-            {/* Quick Mobile App Download Badges */}
+            {/* Quick Mobile App Download Badges (Official Store Badges) */}
             <div className="flex flex-wrap items-center gap-3">
               <a
                 href={config?.appStoreUrl || "https://apple.com/app-store"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`px-4 py-2.5 rounded-xl border flex items-center gap-2.5 transition-all duration-200 hover:scale-105 shadow-xs ${
-                  isLight
-                    ? "bg-white border-slate-200 hover:border-blue-400 text-slate-800"
-                    : "bg-slate-900 border-slate-800 hover:border-blue-500 text-white"
-                }`}
+                className="transition-transform duration-200 hover:scale-105 drop-shadow-md shrink-0"
               >
-                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 3.5c.62-.75 1.04-1.8 0.93-2.85-.9.04-1.99.6-2.63 1.35-.57.65-1.07 1.71-.93 2.73 1.01.08 2.03-.49 2.63-1.23z"/>
-                </svg>
-                <div className="text-left leading-tight">
-                  <div className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Download on</div>
-                  <div className="text-xs font-black">App Store</div>
-                </div>
+                <Image
+                  src="/images/landing/app_store.webp"
+                  alt="Download on the App Store"
+                  width={140}
+                  height={42}
+                  className="h-10 sm:h-11 w-auto object-contain"
+                />
               </a>
 
               <a
                 href={config?.playStoreUrl || "https://play.google.com/store/apps/details?id=com.innoxpert.speakflow"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`px-4 py-2.5 rounded-xl border flex items-center gap-2.5 transition-all duration-200 hover:scale-105 shadow-xs ${
-                  isLight
-                    ? "bg-white border-slate-200 hover:border-blue-400 text-slate-800"
-                    : "bg-slate-900 border-slate-800 hover:border-blue-500 text-white"
-                }`}
+                className="transition-transform duration-200 hover:scale-105 drop-shadow-md shrink-0"
               >
-                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                  <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0002s.4482-1.0002.9993-1.0002c.5516 0 .9997.4486.9997 1.0002s-.4481 1.0002-.9997 1.0002m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0002s.4482-1.0002.9993-1.0002c.5516 0 .9997.4486.9997 1.0002s-.4481 1.0002-.9997 1.0002m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5896 8.4116 13.854 8 12 8s-3.5896.4116-5.1368 1.4507L4.8409 5.9467a.416.416 0 00-.5676-.1521.416.416 0 00-.1521.5676l1.9973 3.4592C2.6889 11.6701 1.5 15.1102 1.5 18.999h21c0-3.8888-1.1889-7.3289-4.6185-9.6776"/>
-                </svg>
-                <div className="text-left leading-tight">
-                  <div className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Get it on</div>
-                  <div className="text-xs font-black">Google Play</div>
-                </div>
+                <Image
+                  src="/images/landing/google_play.webp"
+                  alt="Get it on Google Play"
+                  width={140}
+                  height={42}
+                  className="h-10 sm:h-11 w-auto object-contain"
+                />
               </a>
 
               <a
                 href={config?.apkDownloadUrl || "https://github.com/janithad2/speakflow-ai/releases/download/v1.0.0/speakflow-ai.apk"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`px-4 py-2.5 rounded-xl border flex items-center gap-2 transition-all duration-200 hover:scale-105 shadow-xs ${
-                  isLight
-                    ? "bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-700"
-                    : "bg-blue-950/60 border-blue-800 hover:bg-blue-900 text-blue-300"
-                }`}
+                className="transition-transform duration-200 hover:scale-105 drop-shadow-md shrink-0"
               >
-                <span className="text-base">📦</span>
-                <div className="text-left leading-tight">
-                  <div className="text-[9px] uppercase tracking-wider opacity-75 font-bold">Direct Install</div>
-                  <div className="text-xs font-black">Android APK</div>
-                </div>
+                <Image
+                  src="/images/landing/android_apk.webp"
+                  alt="Direct Android APK Download"
+                  width={140}
+                  height={42}
+                  className="h-10 sm:h-11 w-auto object-contain"
+                />
               </a>
             </div>
           </div>
