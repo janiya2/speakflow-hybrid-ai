@@ -548,6 +548,80 @@ html.theme-light .keep-dark-hero img {
   opacity: 1;
 }
 
+/* 8. FLOATING COOKIE CONSENT BANNER & MODAL (.keep-dark-cookies): High Contrast Preservation */
+html.theme-light .keep-dark-cookies {
+  background-color: rgba(9, 13, 26, 0.98) !important;
+  color: #f8fafc !important;
+  border-color: rgba(51, 65, 85, 0.85) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+html.theme-light .keep-dark-cookies .text-white:not(.bg-clip-text),
+html.theme-light .keep-dark-cookies [class*="text-slate-100"],
+html.theme-light .keep-dark-cookies [class*="text-slate-200"] {
+  color: #ffffff !important;
+}
+
+html.theme-light .keep-dark-cookies [class*="text-slate-300"] {
+  color: #e2e8f0 !important;
+}
+
+html.theme-light .keep-dark-cookies [class*="text-slate-400"] {
+  color: #94a3b8 !important;
+}
+
+html.theme-light .keep-dark-cookies [class*="text-cyan-400"],
+html.theme-light .keep-dark-cookies [class*="text-cyan-300"] {
+  color: #38bdf8 !important;
+}
+
+html.theme-light .keep-dark-cookies [class*="bg-slate-900"] {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+html.theme-light .keep-dark-cookies [class*="bg-slate-950"] {
+  background-color: #020617 !important;
+  border-color: #1e293b !important;
+}
+
+html.theme-light .keep-dark-cookies [class*="bg-[#0C1222]"] {
+  background-color: #0c1222 !important;
+  border-color: #1e293b !important;
+}
+
+html.theme-light .keep-dark-cookies p {
+  color: #f1f5f9 !important;
+}
+
+html.theme-light .keep-dark-cookies a {
+  color: #38bdf8 !important;
+}
+
+html.theme-light .keep-dark-cookies button.cookie-btn-manage {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+html.theme-light .keep-dark-cookies button.cookie-btn-manage:hover {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+}
+
+html.theme-light .keep-dark-cookies button.cookie-btn-manage * {
+  color: #f8fafc !important;
+}
+
+html.theme-light .keep-dark-cookies .cookie-btn-close {
+  color: #94a3b8 !important;
+}
+
+html.theme-light .keep-dark-cookies .cookie-btn-close:hover {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+}
+
 
 
 

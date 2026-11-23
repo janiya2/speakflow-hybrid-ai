@@ -110,17 +110,17 @@ export default function CookieConsentBanner() {
       {/* ------------------------------------------------------------- */}
       {isVisible && !showManageModal && (
         <div className="fixed bottom-0 inset-x-0 z-50 p-3 sm:p-5 flex justify-center pointer-events-none animate-in fade-in slide-in-from-bottom-6 duration-300">
-          <div className="pointer-events-auto w-full max-w-6xl rounded-2xl bg-[#090D1A]/95 backdrop-blur-xl border border-slate-800 text-white shadow-[0_20px_60px_rgba(0,0,0,0.85)] p-4 sm:py-3.5 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4 ring-1 ring-white/10">
+          <div className="keep-dark-cookies pointer-events-auto w-full max-w-6xl rounded-2xl bg-[#090D1A]/95 backdrop-blur-xl border border-slate-700/80 text-white shadow-[0_20px_60px_rgba(0,0,0,0.85)] p-4 sm:py-3.5 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4 ring-1 ring-white/10">
             {/* Banner Left Info Text */}
-            <div className="flex items-start sm:items-center gap-3 text-xs text-slate-300 leading-relaxed pr-2">
-              <div className="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-400/30 text-cyan-400 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
-                <Cookie className="w-4 h-4" />
+            <div className="flex items-start sm:items-center gap-3.5 text-xs text-slate-100 leading-relaxed pr-2">
+              <div className="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0 shadow-[0_0_12px_rgba(6,182,212,0.25)]">
+                <Cookie className="w-4 h-4 text-cyan-300" />
               </div>
-              <p className="text-[11px] sm:text-xs">
+              <p className="text-[11px] sm:text-xs text-slate-100 font-medium leading-relaxed">
                 This website uses cookies and other tracking technologies to enhance user experience and to analyze performance and traffic on our website. If we have detected an opt-out preference signal, then it will be honored. More information is available in our{" "}
                 <Link
                   href="/cookies"
-                  className="font-bold text-cyan-400 hover:text-cyan-300 underline underline-offset-2 transition-colors inline-flex items-center gap-0.5"
+                  className="font-bold text-cyan-300 hover:text-cyan-200 underline underline-offset-2 transition-colors inline-flex items-center gap-0.5"
                 >
                   Cookies Policy
                 </Link>
@@ -133,9 +133,9 @@ export default function CookieConsentBanner() {
               <button
                 type="button"
                 onClick={() => setShowManageModal(true)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 transition-all flex items-center gap-1.5"
+                className="cookie-btn-manage px-4 py-2 rounded-xl text-xs font-bold text-slate-100 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-slate-700 transition-all flex items-center gap-1.5 shadow-sm"
               >
-                <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+                <Sliders className="w-3.5 h-3.5 text-cyan-300" />
                 <span>Manage Setting</span>
               </button>
 
@@ -151,7 +151,7 @@ export default function CookieConsentBanner() {
                 type="button"
                 onClick={handleClose}
                 aria-label="Dismiss cookie notice"
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0 ml-1"
+                className="cookie-btn-close p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0 ml-1"
                 title="Dismiss (Accept Essential Only)"
               >
                 <X className="w-4 h-4" />
@@ -166,7 +166,7 @@ export default function CookieConsentBanner() {
       {/* ------------------------------------------------------------- */}
       {showManageModal && (
         <div className="fixed inset-0 z-50 backdrop-blur-md bg-black/80 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-          <div className="w-full max-w-xl rounded-3xl bg-[#0C1222] border border-slate-800 text-white shadow-2xl p-6 sm:p-7 space-y-5 relative my-auto ring-1 ring-white/10">
+          <div className="keep-dark-cookies w-full max-w-xl rounded-3xl bg-[#0C1222] border border-slate-800 text-white shadow-2xl p-6 sm:p-7 space-y-5 relative my-auto ring-1 ring-white/10">
             {/* Header */}
             <div className="flex items-center justify-between pb-3.5 border-b border-slate-800">
               <div className="flex items-center gap-3">
