@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 
 export const metadata: Metadata = {
   title: "SpeakFlow AI • Real-Time Voice Language Coach",
@@ -47,6 +48,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased bg-[#F8FAFC] text-slate-900 selection:bg-indigo-500 selection:text-white">
         {children}
+        <CookieConsentBanner />
       </body>
     </html>
   );
