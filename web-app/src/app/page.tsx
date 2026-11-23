@@ -517,7 +517,7 @@ const DEFAULT_LANDING_CONFIG: LandingPageConfig = {
   feature3Desc: "0-100 fluency metrics, phonetic precision grading, and active pronunciation drill loops.",
   feature4Title: "Seamless Cross-Platform Sync",
   feature4Desc: "Unified learning progress across Flutter Mobile (Android/iOS) and Next.js Web Dashboard.",
-  announcementText: "🎉 Google Firebase #BuildHybridAI 2026 Hackathon Finalist Edition Live!",
+  announcementText: "Google Firebase #BuildHybridAI 2026 Finalist • Sub-20ms Neural Voice AI Coach is Live!",
   announcementActive: true,
   languagesSliderActive: true,
   languagesSliderTitle: "20 Supported World Languages & Native Accents",

@@ -816,6 +816,7 @@ export default function LandingPage({
   const [activeReviewModal, setActiveReviewModal] = useState<any | null>(null);
   const [reviewPage, setReviewPage] = useState<number>(0);
   const [isReviewPaused, setIsReviewPaused] = useState<boolean>(false);
+  const [bannerDismissed, setBannerDismissed] = useState<boolean>(false);
 
   // Auto-advance reviews carousel every 7s (pauses on hover)
   useEffect(() => {
@@ -852,7 +853,7 @@ export default function LandingPage({
       try {
         localStorage.setItem("speakflow_theme", next);
         localStorage.setItem("speakflow_theme_v2", "true");
-      } catch (_) {}
+      } catch (_) { }
     }
     if (onToggleTheme) onToggleTheme(next);
   };
@@ -970,60 +971,112 @@ export default function LandingPage({
 
   return (
     <div
-      className={`min-h-screen font-sans transition-colors duration-300 selection:bg-indigo-500 selection:text-white ${
-        isLight ? "bg-[#F8FAFC] text-slate-800" : "bg-[#060913] text-slate-100"
-      }`}
+      className={`min-h-screen font-sans transition-colors duration-300 selection:bg-indigo-500 selection:text-white ${isLight ? "bg-[#F8FAFC] text-slate-800" : "bg-[#060913] text-slate-100"
+        }`}
     >
       {/* 1. Admin System Notice Banner (Sleek, Modern & High-End) */}
-      {((config?.announcementActive !== false && config?.announcementText) || adminNotice) && (
-        <div className={`py-2 px-4 text-xs font-semibold border-b transition-colors flex items-center justify-center gap-2 ${
-          isLight
-            ? "bg-gradient-to-r from-blue-50/90 via-indigo-50/90 to-cyan-50/90 border-indigo-100/80 text-slate-700"
-            : "bg-gradient-to-r from-[#0C122B]/95 via-[#131638]/95 to-[#0E1535]/95 border-indigo-900/40 text-cyan-200"
-        }`}>
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
-          </span>
-          <span>{config?.announcementText || adminNotice}</span>
+      {!bannerDismissed && ((config?.announcementActive !== false && config?.announcementText) || adminNotice) && (
+        <div
+          className={`py-2 px-3 sm:px-6 text-xs border-b transition-all flex items-center justify-between gap-3 relative z-50 ${
+            isLight
+              ? "bg-gradient-to-r from-blue-50 via-indigo-50/80 to-cyan-50 border-blue-200/80 text-slate-800 shadow-[0_1px_12px_rgba(37,99,235,0.08)]"
+              : "bg-gradient-to-r from-[#070D1E] via-[#0D1836] to-[#070D1E] border-cyan-500/25 text-slate-100 shadow-[0_2px_15px_rgba(0,0,0,0.6)]"
+          }`}
+        >
+          {/* Centered content with badge, text, and action CTA */}
+          <div className="flex-1 flex items-center justify-center flex-wrap gap-2 sm:gap-3 text-center">
+            {/* Pulsing Live Finalist Badge */}
+            <span
+              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0 shadow-xs ${
+                isLight
+                  ? "bg-blue-600 text-white shadow-blue-500/25"
+                  : "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-cyan-500/30"
+              }`}
+            >
+              <span className="flex h-1.5 w-1.5 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-80"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
+              </span>
+              <span>Finalist Edition</span>
+            </span>
+
+            {/* Announcement Message */}
+            <span className={`text-[11px] sm:text-xs font-bold leading-tight ${isLight ? "text-slate-800" : "text-slate-100"}`}>
+              {config?.announcementText || adminNotice}
+            </span>
+
+            {/* Interactive Launch CTA Pill */}
+            <button
+              onClick={() => onStartCall()}
+              className={`group/cta inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black transition-all hover:scale-105 active:scale-95 shadow-xs ${
+                isLight
+                  ? "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/25"
+                  : "bg-gradient-to-r from-cyan-400 to-blue-500 hover:brightness-110 text-slate-950 shadow-cyan-400/20"
+              }`}
+            >
+              <span>Try Live Studio</span>
+              <span className="transition-transform duration-200 group-hover/cta:translate-x-0.5 font-bold">→</span>
+            </button>
+          </div>
+
+          {/* Dismiss button */}
           <button
-            onClick={() => onStartCall()}
-            className={`ml-2 inline-flex items-center gap-1 font-bold text-[11px] underline transition-colors ${
-              isLight ? "text-blue-600 hover:text-blue-800" : "text-cyan-400 hover:text-cyan-300"
+            onClick={() => setBannerDismissed(true)}
+            aria-label="Dismiss banner"
+            className={`p-1 rounded-lg transition-colors shrink-0 ${
+              isLight ? "text-slate-400 hover:text-slate-700 hover:bg-blue-100/60" : "text-slate-400 hover:text-white hover:bg-white/10"
             }`}
+            title="Dismiss announcement"
           >
-            <span>Try Live Studio</span>
-            <span>→</span>
+            <span className="text-xs font-bold">✕</span>
           </button>
         </div>
       )}
 
       {/* 2. Sticky Glassmorphism Header (FULL WIDTH Edge-to-Edge with Sleek SaaS Layout) */}
       <header
-        className={`sticky top-0 z-50 backdrop-blur-xl border-b transition-all duration-200 ${
-          isLight
-            ? "bg-white/85 border-slate-200/80 shadow-[0_2px_15px_rgba(0,0,0,0.03)]"
-            : "bg-[#060B18]/85 border-slate-800/80 shadow-[0_4px_25px_rgba(0,0,0,0.4)]"
-        }`}
+        className={`sticky top-0 z-50 backdrop-blur-xl border-b transition-all duration-200 ${isLight
+          ? "bg-white/85 border-slate-200/80 shadow-[0_2px_15px_rgba(0,0,0,0.03)]"
+          : "bg-[#060B18]/85 border-slate-800/80 shadow-[0_4px_25px_rgba(0,0,0,0.4)]"
+          }`}
       >
         <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 h-[68px] flex items-center justify-between">
           {/* Brand Logo with Real app_logo.png */}
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => onOpenDashboard()}>
-            <div className="w-9 h-9 rounded-xl overflow-hidden shadow-md shadow-blue-500/20 shrink-0 border border-blue-400/25 transition-transform duration-200 group-hover:scale-105">
-              <Image
-                src="/images/app_logo.png"
-                alt="SpeakFlow Logo"
-                width={36}
-                height={36}
-                className="w-full h-full object-cover"
-                priority
-              />
+            <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-md shadow-blue-500/20 shrink-0 border border-blue-400/30 transition-transform duration-200 group-hover:scale-105 p-0.5 bg-gradient-to-br from-cyan-400/30 via-blue-500/20 to-indigo-600/30">
+              <div className="w-full h-full rounded-[14px] overflow-hidden bg-[#0A0F1D] flex items-center justify-center">
+                <Image
+                  src="/images/app_logo.png"
+                  alt="SpeakFlow Logo"
+                  width={38}
+                  height={38}
+                  className="w-full h-full object-cover"
+                  priority
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className={`font-black text-xl tracking-tight transition-colors ${isLight ? "text-slate-900" : "text-white"}`}>
-                SpeakFlow<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">.ai</span>
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-black tracking-wide bg-blue-500/10 text-blue-700 dark:text-cyan-400 border border-blue-400/25 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center">
+                <span className={`font-black text-xl sm:text-2xl tracking-tight transition-colors ${isLight ? "text-slate-900" : "text-white"}`}>
+                  SpeakFlow
+                </span>
+                <span
+                  className="font-black text-xl sm:text-2xl tracking-tight ml-0.5"
+                  style={{ color: isLight ? "#2563EB" : "#38BDF8" }}
+                >
+                  .ai
+                </span>
+                <span className="ml-1.5 px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-xs">
+                  AI
+                </span>
+              </div>
+              <span
+                className={`hidden sm:inline-flex px-2.5 py-0.5 rounded-full text-[10.5px] font-bold tracking-wide border shadow-xs ${
+                  isLight
+                    ? "bg-blue-500/10 text-blue-700 border-blue-400/30"
+                    : "bg-cyan-500/10 text-cyan-300 border-cyan-400/30"
+                }`}
+              >
                 20+ Languages
               </span>
             </div>
@@ -1043,11 +1096,10 @@ export default function LandingPage({
               <a
                 key={item.name}
                 href={item.href}
-                className={`px-2.5 xl:px-3 py-1.5 rounded-xl text-xs xl:text-[13px] font-semibold transition-all ${
-                  isLight
-                    ? "text-slate-600 hover:text-blue-600 hover:bg-blue-50/80"
-                    : "text-slate-300 hover:text-cyan-300 hover:bg-white/10"
-                }`}
+                className={`px-2.5 xl:px-3 py-1.5 rounded-xl text-xs xl:text-[13px] font-semibold transition-all ${isLight
+                  ? "text-slate-600 hover:text-blue-600 hover:bg-blue-50/80"
+                  : "text-slate-300 hover:text-cyan-300 hover:bg-white/10"
+                  }`}
               >
                 {item.name}
               </a>
@@ -1060,11 +1112,10 @@ export default function LandingPage({
             {onOpenAdminCMS && (
               <button
                 onClick={onOpenAdminCMS}
-                className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${
-                  isLight
-                    ? "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300"
-                    : "bg-slate-900/90 border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
-                }`}
+                className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${isLight
+                  ? "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300"
+                  : "bg-slate-900/90 border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                  }`}
                 title="Manage Landing Page Content via Live Admin CMS"
               >
                 <span className="text-xs">⚙️</span>
@@ -1075,11 +1126,10 @@ export default function LandingPage({
             {/* Theme Toggle Button */}
             <button
               onClick={toggleThemeLocal}
-              className={`p-2 rounded-xl border transition-all text-sm flex items-center justify-center ${
-                isLight
-                  ? "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300"
-                  : "bg-slate-900/90 border-slate-700 text-amber-300 hover:bg-slate-800 hover:border-amber-400/40"
-              }`}
+              className={`p-2 rounded-xl border transition-all text-sm flex items-center justify-center ${isLight
+                ? "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300"
+                : "bg-slate-900/90 border-slate-700 text-amber-300 hover:bg-slate-800 hover:border-amber-400/40"
+                }`}
               title={isLight ? "Switch to Dark Mode" : "Switch to Light Mode"}
             >
               {isLight ? "🌙" : "☀️"}
@@ -1098,11 +1148,10 @@ export default function LandingPage({
               <>
                 <button
                   onClick={() => onOpenAuth("login")}
-                  className={`hidden sm:block px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
-                    isLight
-                      ? "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
-                      : "text-slate-300 hover:text-white hover:bg-white/10"
-                  }`}
+                  className={`hidden sm:block px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${isLight
+                    ? "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                    : "text-slate-300 hover:text-white hover:bg-white/10"
+                    }`}
                 >
                   Log In
                 </button>
@@ -1120,11 +1169,10 @@ export default function LandingPage({
             {/* Mobile Hamburger Toggle Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`lg:hidden p-2 rounded-xl border transition-all ${
-                isLight
-                  ? "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
-                  : "bg-slate-900/90 border-slate-700 text-slate-300 hover:bg-slate-800"
-              }`}
+              className={`lg:hidden p-2 rounded-xl border transition-all ${isLight
+                ? "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                : "bg-slate-900/90 border-slate-700 text-slate-300 hover:bg-slate-800"
+                }`}
               aria-label="Toggle Navigation Menu"
             >
               {isMobileMenuOpen ? (
@@ -1142,11 +1190,10 @@ export default function LandingPage({
 
         {/* Mobile Dropdown Menu */}
         {isMobileMenuOpen && (
-          <div className={`lg:hidden border-b px-4 py-4 space-y-3 backdrop-blur-xl animate-in slide-in-from-top-2 duration-200 ${
-            isLight
-              ? "bg-white/95 border-slate-200 shadow-xl text-slate-800"
-              : "bg-[#060B18]/95 border-slate-800 shadow-2xl text-white"
-          }`}>
+          <div className={`lg:hidden border-b px-4 py-4 space-y-3 backdrop-blur-xl animate-in slide-in-from-top-2 duration-200 ${isLight
+            ? "bg-white/95 border-slate-200 shadow-xl text-slate-800"
+            : "bg-[#060B18]/95 border-slate-800 shadow-2xl text-white"
+            }`}>
             <div className="grid grid-cols-2 gap-2">
               {[
                 { name: "Scenarios", href: "#scenarios" },
@@ -1161,11 +1208,10 @@ export default function LandingPage({
                   key={item.name}
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all text-center ${
-                    isLight
-                      ? "hover:bg-blue-50 hover:text-blue-600 bg-slate-100/70"
-                      : "hover:bg-blue-950/50 hover:text-blue-400 bg-slate-900/80"
-                  }`}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all text-center ${isLight
+                    ? "hover:bg-blue-50 hover:text-blue-600 bg-slate-100/70"
+                    : "hover:bg-blue-950/50 hover:text-blue-400 bg-slate-900/80"
+                    }`}
                 >
                   {item.name}
                 </a>
@@ -1177,9 +1223,8 @@ export default function LandingPage({
                   setIsMobileMenuOpen(false);
                   onOpenAuth("login");
                 }}
-                className={`flex-1 py-2 rounded-xl font-bold text-xs border text-center ${
-                  isLight ? "bg-slate-50 border-slate-200 text-slate-700" : "bg-slate-900 border-slate-800 text-slate-300"
-                }`}
+                className={`flex-1 py-2 rounded-xl font-bold text-xs border text-center ${isLight ? "bg-slate-50 border-slate-200 text-slate-700" : "bg-slate-900 border-slate-800 text-slate-300"
+                  }`}
               >
                 Log In
               </button>
@@ -1189,9 +1234,8 @@ export default function LandingPage({
                     setIsMobileMenuOpen(false);
                     onOpenAdminCMS();
                   }}
-                  className={`py-2 px-3 rounded-xl font-bold text-xs border flex items-center justify-center gap-1 ${
-                    isLight ? "bg-slate-50 border-slate-200 text-slate-700" : "bg-slate-900 border-slate-800 text-slate-300"
-                  }`}
+                  className={`py-2 px-3 rounded-xl font-bold text-xs border flex items-center justify-center gap-1 ${isLight ? "bg-slate-50 border-slate-200 text-slate-700" : "bg-slate-900 border-slate-800 text-slate-300"
+                    }`}
                 >
                   <span>⚙️</span>
                   <span>CMS</span>
@@ -1203,9 +1247,8 @@ export default function LandingPage({
       </header>
 
       {/* 3. Hero Section (Modeled after YayTalk Image 1 & Image 2 with Dual Radial Aura & Ambient Visual Engine) */}
-      <section id="hero" className={`relative pt-12 sm:pt-16 pb-14 sm:pb-20 overflow-hidden scroll-mt-24 ${
-        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
-      }`}>
+      <section id="hero" className={`relative pt-12 sm:pt-16 pb-14 sm:pb-20 overflow-hidden scroll-mt-24 ${isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
+        }`}>
         {/* Ambient Dark Mode Animation System: Cosmic Glowing Orbs & Cyber Grid */}
         {!isLight && (
           <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
@@ -1252,27 +1295,24 @@ export default function LandingPage({
         </div>
 
         {/* Subtle Moving Color Highlight Sweep Ribbon (Lawata Podiyata Highlight Eka) */}
-        <div className={`absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] sm:w-[960px] h-[340px] rounded-full pointer-events-none -z-10 animate-highlight-sweep blur-[110px] sm:blur-[140px] opacity-45 dark:opacity-25 ${
-          isLight
-            ? "bg-gradient-to-r from-sky-300 via-indigo-300 to-rose-300"
-            : "bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600"
-        }`} />
+        <div className={`absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] sm:w-[960px] h-[340px] rounded-full pointer-events-none -z-10 animate-highlight-sweep blur-[110px] sm:blur-[140px] opacity-45 dark:opacity-25 ${isLight
+          ? "bg-gradient-to-r from-sky-300 via-indigo-300 to-rose-300"
+          : "bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600"
+          }`} />
 
         {/* Subtle Horizontal Gleam Streamer */}
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[1.5px] pointer-events-none -z-10 overflow-hidden">
-          <div className={`w-1/2 h-full animate-light-gleam ${
-            isLight
-              ? "bg-gradient-to-r from-transparent via-blue-500/35 to-transparent"
-              : "bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent"
-          }`} />
+          <div className={`w-1/2 h-full animate-light-gleam ${isLight
+            ? "bg-gradient-to-r from-transparent via-blue-500/35 to-transparent"
+            : "bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent"
+            }`} />
         </div>
 
         {/* Ambient Floating World Language Chips across Canvas (High Contrast & Pure International) */}
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
           {/* Chip 1: German (Top-Left) */}
-          <div className={`hidden sm:flex absolute left-4 sm:left-10 lg:left-14 top-20 items-center gap-2 px-3.5 py-1.5 rounded-full border-2 shadow-sm backdrop-blur-md opacity-90 animate-float-drift ${
-            isLight ? "bg-white/95 border-slate-200 text-slate-900" : "bg-[#091228]/95 border-slate-700 text-slate-100"
-          }`}>
+          <div className={`hidden sm:flex absolute left-4 sm:left-10 lg:left-14 top-20 items-center gap-2 px-3.5 py-1.5 rounded-full border-2 shadow-sm backdrop-blur-md opacity-90 animate-float-drift ${isLight ? "bg-white/95 border-slate-200 text-slate-900" : "bg-[#091228]/95 border-slate-700 text-slate-100"
+            }`}>
             <div className="w-5 h-3.5 relative overflow-hidden rounded-[2px] shadow-xs border border-black/10 shrink-0">
               <Image src="/images/flags/de.png" alt="German" fill className="object-cover" />
             </div>
@@ -1281,9 +1321,8 @@ export default function LandingPage({
           </div>
 
           {/* Chip 2: Japanese (Mid-Left) */}
-          <div className={`hidden md:flex absolute left-6 sm:left-12 lg:left-16 top-72 items-center gap-2 px-3.5 py-1.5 rounded-full border-2 shadow-sm backdrop-blur-md opacity-85 animate-float-drift-slow ${
-            isLight ? "bg-white/95 border-slate-200 text-slate-900" : "bg-[#091228]/95 border-slate-700 text-slate-100"
-          }`}>
+          <div className={`hidden md:flex absolute left-6 sm:left-12 lg:left-16 top-72 items-center gap-2 px-3.5 py-1.5 rounded-full border-2 shadow-sm backdrop-blur-md opacity-85 animate-float-drift-slow ${isLight ? "bg-white/95 border-slate-200 text-slate-900" : "bg-[#091228]/95 border-slate-700 text-slate-100"
+            }`}>
             <div className="w-5 h-3.5 relative overflow-hidden rounded-[2px] shadow-xs border border-black/10 shrink-0">
               <Image src="/images/flags/jp.png" alt="Japanese" fill className="object-cover" />
             </div>
@@ -1292,9 +1331,8 @@ export default function LandingPage({
           </div>
 
           {/* Chip 3: Spanish (Top-Right) */}
-          <div className={`hidden sm:flex absolute right-4 sm:right-10 lg:right-14 top-20 items-center gap-2 px-3.5 py-1.5 rounded-full border-2 shadow-sm backdrop-blur-md opacity-90 animate-float-drift-slow ${
-            isLight ? "bg-white/95 border-slate-200 text-slate-900" : "bg-[#091228]/95 border-slate-700 text-slate-100"
-          }`}>
+          <div className={`hidden sm:flex absolute right-4 sm:right-10 lg:right-14 top-20 items-center gap-2 px-3.5 py-1.5 rounded-full border-2 shadow-sm backdrop-blur-md opacity-90 animate-float-drift-slow ${isLight ? "bg-white/95 border-slate-200 text-slate-900" : "bg-[#091228]/95 border-slate-700 text-slate-100"
+            }`}>
             <div className="w-5 h-3.5 relative overflow-hidden rounded-[2px] shadow-xs border border-black/10 shrink-0">
               <Image src="/images/flags/es.png" alt="Spanish" fill className="object-cover" />
             </div>
@@ -1303,9 +1341,8 @@ export default function LandingPage({
           </div>
 
           {/* Chip 4: French (Mid-Right) */}
-          <div className={`hidden md:flex absolute right-6 sm:right-12 lg:right-16 top-72 items-center gap-2 px-3.5 py-1.5 rounded-full border-2 shadow-sm backdrop-blur-md opacity-85 animate-float-drift ${
-            isLight ? "bg-white/95 border-slate-200 text-slate-900" : "bg-[#091228]/95 border-slate-700 text-slate-100"
-          }`}>
+          <div className={`hidden md:flex absolute right-6 sm:right-12 lg:right-16 top-72 items-center gap-2 px-3.5 py-1.5 rounded-full border-2 shadow-sm backdrop-blur-md opacity-85 animate-float-drift ${isLight ? "bg-white/95 border-slate-200 text-slate-900" : "bg-[#091228]/95 border-slate-700 text-slate-100"
+            }`}>
             <div className="w-5 h-3.5 relative overflow-hidden rounded-[2px] shadow-xs border border-black/10 shrink-0">
               <Image src="/images/flags/fr.png" alt="French" fill className="object-cover" />
             </div>
@@ -1316,11 +1353,10 @@ export default function LandingPage({
 
         {/* Left Side Floating Conversational Dialogue Card (Spanish Coffee Scenario - High Contrast & Vivid) */}
         <div className="hidden xl:block absolute left-2 xl:left-4 2xl:left-8 top-32 z-20 w-68 2xl:w-76 pointer-events-none animate-float-left">
-          <div className={`p-4 rounded-3xl border-2 shadow-2xl backdrop-blur-xl space-y-3 ${
-            isLight
-              ? "bg-white border-slate-200 shadow-[0_20px_50px_rgba(15,23,42,0.12)] text-slate-900"
-              : "bg-[#091228]/95 border-cyan-500/40 shadow-[0_20px_60px_rgba(0,0,0,0.7)] text-slate-100"
-          }`}>
+          <div className={`p-4 rounded-3xl border-2 shadow-2xl backdrop-blur-xl space-y-3 ${isLight
+            ? "bg-white border-slate-200 shadow-[0_20px_50px_rgba(15,23,42,0.12)] text-slate-900"
+            : "bg-[#091228]/95 border-cyan-500/40 shadow-[0_20px_60px_rgba(0,0,0,0.7)] text-slate-100"
+            }`}>
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-4 relative overflow-hidden rounded-[3px] shadow-sm border border-black/10 shrink-0">
@@ -1341,9 +1377,8 @@ export default function LandingPage({
 
             {/* Speech dialogue bubbles */}
             <div className="space-y-2 text-left">
-              <div className={`p-3 rounded-2xl text-xs font-semibold leading-relaxed border ${
-                isLight ? "bg-slate-100 border-slate-200 text-slate-900" : "bg-slate-800/90 border-slate-700 text-slate-100"
-              }`}>
+              <div className={`p-3 rounded-2xl text-xs font-semibold leading-relaxed border ${isLight ? "bg-slate-100 border-slate-200 text-slate-900" : "bg-slate-800/90 border-slate-700 text-slate-100"
+                }`}>
                 &ldquo;¡Hola! ¿Un café con leche para empezar el día?&rdquo; ☕
               </div>
               <div className="p-3 rounded-2xl text-xs font-bold leading-relaxed bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25">
@@ -1361,11 +1396,10 @@ export default function LandingPage({
 
         {/* Left Side Lower Floating Metric Pill */}
         <div className="hidden lg:block absolute left-8 2xl:left-20 bottom-24 z-20 pointer-events-none animate-float-subtle">
-          <div className={`px-4 py-2.5 rounded-2xl border-2 text-xs font-black shadow-lg backdrop-blur-md flex items-center gap-2.5 ${
-            isLight
-              ? "bg-white border-slate-200 text-slate-900 shadow-slate-300/50"
-              : "bg-slate-900/90 border-indigo-500/30 text-cyan-300 shadow-indigo-950/40"
-          }`}>
+          <div className={`px-4 py-2.5 rounded-2xl border-2 text-xs font-black shadow-lg backdrop-blur-md flex items-center gap-2.5 ${isLight
+            ? "bg-white border-slate-200 text-slate-900 shadow-slate-300/50"
+            : "bg-slate-900/90 border-indigo-500/30 text-cyan-300 shadow-indigo-950/40"
+            }`}>
             <span className="text-base">⚡</span>
             <span>Edge VAD Active • Sub-20ms Engine</span>
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
@@ -1374,11 +1408,10 @@ export default function LandingPage({
 
         {/* Right Side Floating Grammar Repair Card (Ultra High-Contrast) */}
         <div className="hidden xl:block absolute right-2 xl:right-4 2xl:right-8 top-32 z-20 w-76 2xl:w-84 pointer-events-none animate-float-right">
-          <div className={`p-4 rounded-3xl border-2 shadow-2xl backdrop-blur-xl space-y-3 ${
-            isLight
-              ? "bg-white border-slate-200 shadow-[0_20px_50px_rgba(15,23,42,0.12)] text-slate-900"
-              : "bg-[#091228]/90 border-indigo-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.6)] text-slate-100"
-          }`}>
+          <div className={`p-4 rounded-3xl border-2 shadow-2xl backdrop-blur-xl space-y-3 ${isLight
+            ? "bg-white border-slate-200 shadow-[0_20px_50px_rgba(15,23,42,0.12)] text-slate-900"
+            : "bg-[#091228]/90 border-indigo-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.6)] text-slate-100"
+            }`}>
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-4 relative overflow-hidden rounded-[3px] shadow-sm border border-black/10 shrink-0">
@@ -1416,11 +1449,10 @@ export default function LandingPage({
 
         {/* Right Side Lower Floating Metric Pill */}
         <div className="hidden lg:block absolute right-8 2xl:right-20 bottom-24 z-20 pointer-events-none animate-float-subtle">
-          <div className={`px-4 py-2.5 rounded-2xl border text-xs font-bold shadow-lg backdrop-blur-md flex items-center gap-2.5 ${
-            isLight
-              ? "bg-white/95 border-slate-200/90 text-slate-800 shadow-slate-200/50"
-              : "bg-slate-900/90 border-indigo-500/30 text-amber-300 shadow-indigo-950/40"
-          }`}>
+          <div className={`px-4 py-2.5 rounded-2xl border text-xs font-bold shadow-lg backdrop-blur-md flex items-center gap-2.5 ${isLight
+            ? "bg-white/95 border-slate-200/90 text-slate-800 shadow-slate-200/50"
+            : "bg-slate-900/90 border-indigo-500/30 text-amber-300 shadow-indigo-950/40"
+            }`}>
             <span className="text-base">🎯</span>
             <span>256 Real Voice Scenarios</span>
             <span className="text-amber-500">★★★★★</span>
@@ -1429,11 +1461,10 @@ export default function LandingPage({
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8 relative z-10">
           {/* Social Proof Pill with Live Status */}
-          <div className={`inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border text-xs font-bold shadow-sm transition-all hover:scale-105 ${
-            isLight
-              ? "border-blue-300/80 bg-white/95 text-blue-800 shadow-blue-500/10 backdrop-blur-md"
-              : "border-indigo-400/25 bg-indigo-500/10 text-cyan-400 backdrop-blur-md"
-          }`}>
+          <div className={`inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border text-xs font-bold shadow-sm transition-all hover:scale-105 ${isLight
+            ? "border-blue-300/80 bg-white/95 text-blue-800 shadow-blue-500/10 backdrop-blur-md"
+            : "border-indigo-400/25 bg-indigo-500/10 text-cyan-400 backdrop-blur-md"
+            }`}>
             <span className="flex text-amber-500 text-xs">★★★★★</span>
             <span className={`${isLight ? "text-slate-700 font-semibold" : "text-slate-300"} font-medium`}>4.8/5 Rating</span>
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -1444,9 +1475,8 @@ export default function LandingPage({
 
           {/* Master Headline with Sleek 3D Studio Mic Token & Guaranteed High-Contrast Typography */}
           <div className="space-y-4 max-w-4xl mx-auto">
-            <h1 className={`text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.2] sm:leading-[1.24] overflow-visible pb-1 ${
-              isLight ? "text-[#0F172A]" : "text-white"
-            }`}>
+            <h1 className={`text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.2] sm:leading-[1.24] overflow-visible pb-1 ${isLight ? "text-[#0F172A]" : "text-white"
+              }`}>
               {(!config?.heroHeadline || config.heroHeadline.includes("20 Languages") || config.heroHeadline.includes("confidently")) ? (
                 <>
                   <span className="inline-block whitespace-nowrap">
@@ -1457,11 +1487,10 @@ export default function LandingPage({
                       <span className="absolute -inset-1 sm:-inset-1.5 rounded-full bg-cyan-400/35 animate-sound-ripple pointer-events-none" />
                       <span className="absolute -inset-2.5 sm:-inset-3.5 rounded-full bg-blue-500/20 animate-sound-ripple-delayed pointer-events-none" />
 
-                      <span className={`relative w-11 h-11 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shadow-lg border transition-all duration-300 group-hover:scale-110 ${
-                        isLight
-                          ? "bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 border-white text-white shadow-cyan-500/30"
-                          : "bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-600 border-cyan-400/40 text-white shadow-cyan-500/40"
-                      }`}>
+                      <span className={`relative w-11 h-11 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shadow-lg border transition-all duration-300 group-hover:scale-110 ${isLight
+                        ? "bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 border-white text-white shadow-cyan-500/30"
+                        : "bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-600 border-cyan-400/40 text-white shadow-cyan-500/40"
+                        }`}>
                         <span className="text-xl sm:text-3xl drop-shadow-md">🎙️</span>
                         {/* Live beacon indicator */}
                         <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
@@ -1474,11 +1503,10 @@ export default function LandingPage({
                   <br className="hidden md:inline" />
                   {" "}
                   {/* Guaranteed High-Contrast 20+ Languages Text with full descender clearance */}
-                  <span className={`font-black tracking-tight inline-block pb-3 pt-1 px-1 overflow-visible ${
-                    isLight
-                      ? "hero-gradient-text-light text-blue-700"
-                      : "hero-gradient-text-dark text-cyan-400"
-                  }`}>
+                  <span className={`font-black tracking-tight inline-block pb-3 pt-1 px-1 overflow-visible ${isLight
+                    ? "hero-gradient-text-light text-blue-700"
+                    : "hero-gradient-text-dark text-cyan-400"
+                    }`}>
                     20+ Languages
                   </span>{" "}
                   <span className="inline-block">confidently with AI Tutors.</span>
@@ -1488,9 +1516,8 @@ export default function LandingPage({
               )}
             </h1>
             <p
-              className={`text-base sm:text-xl font-medium leading-relaxed max-w-2xl mx-auto ${
-                isLight ? "text-slate-700" : "text-slate-300/90"
-              }`}
+              className={`text-base sm:text-xl font-medium leading-relaxed max-w-2xl mx-auto ${isLight ? "text-slate-700" : "text-slate-300/90"
+                }`}
             >
               {config?.heroSubtitle ||
                 "The fastest way to speak any language with confidence: real conversations with AI, instant feedback, and a safe space to practice."}
@@ -1499,16 +1526,14 @@ export default function LandingPage({
 
           {/* Interactive Live Audio Visualizer Bar */}
           <div className="flex items-center justify-center pt-1">
-            <div className={`inline-flex items-center gap-3 px-4 py-2 rounded-2xl border text-xs font-bold shadow-md transition-all ${
-              isLight
-                ? "bg-white/95 border-slate-200/90 text-slate-800 shadow-slate-200/50"
-                : "bg-slate-900/90 border-indigo-500/30 text-slate-200 shadow-indigo-950/40"
-            }`}>
+            <div className={`inline-flex items-center gap-3 px-4 py-2 rounded-2xl border text-xs font-bold shadow-md transition-all ${isLight
+              ? "bg-white/95 border-slate-200/90 text-slate-800 shadow-slate-200/50"
+              : "bg-slate-900/90 border-indigo-500/30 text-slate-200 shadow-indigo-950/40"
+              }`}>
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className={`text-[11px] font-black uppercase tracking-wider ${
-                  isLight ? "text-emerald-700" : "text-emerald-400"
-                }`}>
+                <span className={`text-[11px] font-black uppercase tracking-wider ${isLight ? "text-emerald-700" : "text-emerald-400"
+                  }`}>
                   Live Voice Studio
                 </span>
               </div>
@@ -1591,26 +1616,22 @@ export default function LandingPage({
 
 
       {/* 4. Panoramic Scenarios Section (FULL SCREEN FIT - 4K Cave Style Panorama with Dual Radial Aura) */}
-      <section id="scenarios" className={`py-12 sm:py-18 relative overflow-hidden text-center scroll-mt-20 ${
-        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
-      }`}>
+      <section id="scenarios" className={`py-12 sm:py-18 relative overflow-hidden text-center scroll-mt-20 ${isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
+        }`}>
         <ScrollReveal className="w-full px-2 sm:px-4 lg:px-8 space-y-4 sm:space-y-6" distance={32}>
           <div className="space-y-3 max-w-4xl mx-auto text-center px-4">
-            <div className={`text-xs sm:text-sm font-black uppercase tracking-wider flex items-center justify-center gap-1.5 ${
-              isLight ? "text-indigo-600" : "text-cyan-400"
-            }`}>
+            <div className={`text-xs sm:text-sm font-black uppercase tracking-wider flex items-center justify-center gap-1.5 ${isLight ? "text-indigo-600" : "text-cyan-400"
+              }`}>
               <span>{config?.scenariosHeadingTag || "Everything you need to speak English 🔮 fluently"}</span>
             </div>
 
-            <h2 className={`text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight ${
-              isLight ? "text-[#0F172A]" : "text-white"
-            }`}>
+            <h2 className={`text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight ${isLight ? "text-[#0F172A]" : "text-white"
+              }`}>
               {config?.scenariosTitle || "Practice the conversations you'll actually have"}
             </h2>
 
-            <p className={`text-sm sm:text-base leading-relaxed max-w-xl mx-auto ${
-              isLight ? "text-slate-600" : "text-slate-400"
-            }`}>
+            <p className={`text-sm sm:text-base leading-relaxed max-w-xl mx-auto ${isLight ? "text-slate-600" : "text-slate-400"
+              }`}>
               {config?.scenariosSubtitle || "Practice English in scenarios that matter — job interviews, travel, daily life, dining, and more."}
             </p>
           </div>
@@ -1634,11 +1655,10 @@ export default function LandingPage({
           {/* Interactive Roleplay Console Dock (Dynamic Island Style - Perfectly Fitted, No Scrollbars!) */}
           <div className="relative z-20 -mt-8 sm:-mt-14 md:-mt-20 lg:-mt-24 max-w-5xl mx-auto px-3 sm:px-6">
             {/* Row 1: Floating Capsule Selector Tabs - 6-column Grid (Zero Scrollbar) */}
-            <div className={`p-1.5 sm:p-2 rounded-2xl sm:rounded-full border shadow-xl backdrop-blur-2xl grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2 transition-all ${
-              isLight
-                ? "bg-white/95 border-slate-200/90 shadow-[0_15px_35px_rgba(0,0,0,0.08)]"
-                : "bg-slate-900/95 border-white/10 shadow-[0_15px_35px_rgba(0,0,0,0.5)]"
-            }`}>
+            <div className={`p-1.5 sm:p-2 rounded-2xl sm:rounded-full border shadow-xl backdrop-blur-2xl grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2 transition-all ${isLight
+              ? "bg-white/95 border-slate-200/90 shadow-[0_15px_35px_rgba(0,0,0,0.08)]"
+              : "bg-slate-900/95 border-white/10 shadow-[0_15px_35px_rgba(0,0,0,0.5)]"
+              }`}>
               {[
                 { id: "dining", icon: "🍽️", label: "Dining & Cafe", activeBg: "bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-pink-500/30" },
                 { id: "travel", icon: "✈️", label: "Travel & Flight", activeBg: "bg-gradient-to-r from-blue-600 to-sky-600 text-white shadow-blue-500/30" },
@@ -1652,13 +1672,12 @@ export default function LandingPage({
                   <button
                     key={role.id}
                     onClick={() => setActiveScenarioIdx(idx)}
-                    className={`flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 rounded-xl sm:rounded-full text-xs font-bold transition-all w-full cursor-pointer text-center ${
-                      isSelected
-                        ? `${role.activeBg} shadow-md scale-[1.02]`
-                        : isLight
-                          ? "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
-                          : "text-slate-400 hover:text-white hover:bg-white/5"
-                    }`}
+                    className={`flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 rounded-xl sm:rounded-full text-xs font-bold transition-all w-full cursor-pointer text-center ${isSelected
+                      ? `${role.activeBg} shadow-md scale-[1.02]`
+                      : isLight
+                        ? "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"
+                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                      }`}
                   >
                     <span className="text-sm sm:text-base shrink-0">{role.icon}</span>
                     <span className="truncate">{role.label}</span>
@@ -1744,11 +1763,10 @@ export default function LandingPage({
             ].filter((_, idx) => idx === activeScenarioIdx).map((active) => (
               <div
                 key={active.title}
-                className={`mt-4 sm:mt-5 p-5 sm:p-7 rounded-3xl border shadow-2xl backdrop-blur-2xl transition-all duration-300 relative overflow-hidden text-left ${
-                  isLight
-                    ? "bg-white/95 border-slate-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
-                    : "bg-slate-900/95 border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
-                }`}
+                className={`mt-4 sm:mt-5 p-5 sm:p-7 rounded-3xl border shadow-2xl backdrop-blur-2xl transition-all duration-300 relative overflow-hidden text-left ${isLight
+                  ? "bg-white/95 border-slate-200/90 shadow-[0_20px_50px_rgba(0,0,0,0.08)]"
+                  : "bg-slate-900/95 border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
+                  }`}
               >
                 {/* Ambient Active Aura Glow */}
                 <div className={`absolute inset-0 bg-gradient-to-r ${active.gradient} pointer-events-none -z-10`} />
@@ -1779,11 +1797,10 @@ export default function LandingPage({
                     </div>
 
                     {/* Real Sample Line with Audio Visualizer */}
-                    <div className={`p-3.5 sm:p-4 rounded-2xl border text-xs sm:text-sm font-medium leading-relaxed relative ${
-                      isLight
-                        ? "bg-slate-50/90 border-slate-200/90 text-slate-800"
-                        : "bg-slate-800/70 border-white/10 text-slate-200"
-                    }`}>
+                    <div className={`p-3.5 sm:p-4 rounded-2xl border text-xs sm:text-sm font-medium leading-relaxed relative ${isLight
+                      ? "bg-slate-50/90 border-slate-200/90 text-slate-800"
+                      : "bg-slate-800/70 border-white/10 text-slate-200"
+                      }`}>
                       <div className="flex items-center gap-2 mb-1.5">
                         <span className="text-base">🎙️</span>
                         <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-cyan-400">
@@ -1822,17 +1839,15 @@ export default function LandingPage({
       </section>
 
       {/* 5. The Global AI Language & Cultural Exchange Section (Text Left, Image Right) */}
-      <section id="exchange" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden ${
-        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
-      }`}>
+      <section id="exchange" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden ${isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
+        }`}>
 
 
         <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14" distance={32}>
           {/* Top Banner Header */}
           <div className="text-center max-w-3xl mx-auto space-y-3">
-            <h2 className={`text-3xl sm:text-5xl font-black tracking-tight leading-tight ${
-              isLight ? "text-[#0F172A]" : "text-white"
-            }`}>
+            <h2 className={`text-3xl sm:text-5xl font-black tracking-tight leading-tight ${isLight ? "text-[#0F172A]" : "text-white"
+              }`}>
               The <span className={isLight ? "text-blue-600 font-extrabold" : "text-cyan-400 font-extrabold"}>Global</span> Language and Cultural Exchange
             </h2>
             <p className={`text-sm sm:text-base font-medium ${isLight ? "text-slate-600" : "text-slate-300"}`}>
@@ -1844,24 +1859,21 @@ export default function LandingPage({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             {/* Left Column: Content */}
             <div className="lg:col-span-6 space-y-6">
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase border ${
-                isLight
-                  ? "bg-indigo-50 border-indigo-200 text-indigo-700"
-                  : "bg-indigo-950/60 border-indigo-800 text-cyan-400"
-              }`}>
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase border ${isLight
+                ? "bg-indigo-50 border-indigo-200 text-indigo-700"
+                : "bg-indigo-950/60 border-indigo-800 text-cyan-400"
+                }`}>
                 <span className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-cyan-400 animate-pulse" />
                 Language Exchange
               </div>
 
-              <h3 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
-                isLight ? "text-[#0F172A]" : "text-white"
-              }`}>
+              <h3 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${isLight ? "text-[#0F172A]" : "text-white"
+                }`}>
                 Learn Through <span className={isLight ? "text-blue-600 font-extrabold" : "text-blue-400 font-extrabold"}>Language Exchange</span>
               </h3>
 
-              <p className={`text-sm sm:text-base leading-relaxed font-medium ${
-                isLight ? "text-slate-600" : "text-slate-300"
-              }`}>
+              <p className={`text-sm sm:text-base leading-relaxed font-medium ${isLight ? "text-slate-600" : "text-slate-300"
+                }`}>
                 Connect with native-level AI speaker personas and practice authentic conversations. Use built-in smart tools for real-time speech-to-text, acoustic pronunciation analysis, transliteration, and CEFR grammar corrections.
               </p>
 
@@ -1875,11 +1887,10 @@ export default function LandingPage({
                 ].map((tool, i) => (
                   <div
                     key={i}
-                    className={`p-3.5 rounded-xl border transition-all ${
-                      isLight
-                        ? "bg-slate-50 border-slate-200 hover:bg-white hover:shadow-md hover:border-indigo-300"
-                        : "bg-slate-900/60 border-indigo-500/20 hover:bg-slate-900 hover:border-cyan-400/40"
-                    }`}
+                    className={`p-3.5 rounded-xl border transition-all ${isLight
+                      ? "bg-slate-50 border-slate-200 hover:bg-white hover:shadow-md hover:border-indigo-300"
+                      : "bg-slate-900/60 border-indigo-500/20 hover:bg-slate-900 hover:border-cyan-400/40"
+                      }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-lg">{tool.icon}</span>
@@ -1921,9 +1932,8 @@ export default function LandingPage({
       </section>
 
       {/* 6. Practice in the Way That Works for You (Image Left, Text Right with Dual Radial Aura) */}
-      <section id="practice-modes" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden ${
-        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
-      }`}>
+      <section id="practice-modes" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden ${isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
+        }`}>
         <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" distance={32}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             {/* Left Column: Image (Phone Mockup with Floating Modes - Floating 3D) */}
@@ -1942,24 +1952,21 @@ export default function LandingPage({
 
             {/* Right Column: Content */}
             <div className="lg:col-span-6 space-y-6 order-1 lg:order-2">
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${
-                isLight
-                  ? "bg-blue-50 border-blue-200 text-blue-700"
-                  : "bg-blue-950/40 border-blue-800/40 text-blue-300"
-              }`}>
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${isLight
+                ? "bg-blue-50 border-blue-200 text-blue-700"
+                : "bg-blue-950/40 border-blue-800/40 text-blue-300"
+                }`}>
                 <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                 Text, Voice, Video, & More
               </div>
 
-              <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
-                isLight ? "text-[#0F172A]" : "text-white"
-              }`}>
+              <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${isLight ? "text-[#0F172A]" : "text-white"
+                }`}>
                 Practice in the Way That <span className={isLight ? "text-blue-600 font-extrabold" : "text-blue-400 font-extrabold"}>Works for You</span>
               </h2>
 
-              <p className={`text-sm sm:text-base leading-relaxed font-medium ${
-                isLight ? "text-slate-600" : "text-slate-300"
-              }`}>
+              <p className={`text-sm sm:text-base leading-relaxed font-medium ${isLight ? "text-slate-600" : "text-slate-300"
+                }`}>
                 Chat with language partners and AI tutors through text, voice, or video. Join Voicerooms and interactive audio lounges to practice speaking and listening with people and AI personas around the world.
               </p>
 
@@ -1984,11 +1991,10 @@ export default function LandingPage({
                 ].map((mode, i) => (
                   <div
                     key={i}
-                    className={`p-4 rounded-2xl border transition-all ${
-                      isLight
-                        ? "bg-white/90 border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300"
-                        : "bg-slate-900/60 border-indigo-500/20 hover:border-cyan-400/40"
-                    }`}
+                    className={`p-4 rounded-2xl border transition-all ${isLight
+                      ? "bg-white/90 border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300"
+                      : "bg-slate-900/60 border-indigo-500/20 hover:border-cyan-400/40"
+                      }`}
                   >
                     <div className="flex items-start gap-3">
                       <span className="text-xl p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-100 dark:border-indigo-900 shrink-0">
@@ -2018,33 +2024,29 @@ export default function LandingPage({
       </section>
 
       {/* 7. Learn and Share with the Community (Text Left, Image Right) */}
-      <section id="moments" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden ${
-        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
-      }`}>
+      <section id="moments" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden ${isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
+        }`}>
 
 
         <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" distance={32}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             {/* Left Column: Content */}
             <div className="lg:col-span-6 space-y-6">
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${
-                isLight
-                  ? "bg-blue-50 border-blue-200 text-blue-700"
-                  : "bg-blue-950/40 border-blue-800/40 text-blue-300"
-              }`}>
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${isLight
+                ? "bg-blue-50 border-blue-200 text-blue-700"
+                : "bg-blue-950/40 border-blue-800/40 text-blue-300"
+                }`}>
                 <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                 Moments
               </div>
 
-              <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
-                isLight ? "text-[#0F172A]" : "text-white"
-              }`}>
+              <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${isLight ? "text-[#0F172A]" : "text-white"
+                }`}>
                 Learn and Share with the <span className={isLight ? "text-blue-600 font-extrabold" : "text-blue-400 font-extrabold"}>Community</span>
               </h2>
 
-              <p className={`text-sm sm:text-base leading-relaxed font-medium ${
-                isLight ? "text-slate-600" : "text-slate-300"
-              }`}>
+              <p className={`text-sm sm:text-base leading-relaxed font-medium ${isLight ? "text-slate-600" : "text-slate-300"
+                }`}>
                 Share posts, ask pronunciation questions, and get instant responses from native speakers and fellow learners. Learn about language, culture, and everyday life through the SpeakFlow global community.
               </p>
 
@@ -2074,11 +2076,10 @@ export default function LandingPage({
                 ].map((card, i) => (
                   <div
                     key={i}
-                    className={`p-3.5 rounded-xl border transition-all ${
-                      isLight
-                        ? "bg-slate-50 border-slate-200 hover:bg-white hover:shadow-md hover:border-emerald-300"
-                        : "bg-slate-900/60 border-indigo-500/20 hover:bg-slate-900 hover:border-emerald-400/40"
-                    }`}
+                    className={`p-3.5 rounded-xl border transition-all ${isLight
+                      ? "bg-slate-50 border-slate-200 hover:bg-white hover:shadow-md hover:border-emerald-300"
+                      : "bg-slate-900/60 border-indigo-500/20 hover:bg-slate-900 hover:border-emerald-400/40"
+                      }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-lg">{card.icon}</span>
@@ -2118,9 +2119,8 @@ export default function LandingPage({
       </section>
 
       {/* 8. Practice Speaking in Live AI Voicerooms (Image Left, Text Right with Dual Radial Aura) */}
-      <section id="voicerooms" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden ${
-        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
-      }`}>
+      <section id="voicerooms" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden ${isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
+        }`}>
         <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" distance={32}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
             {/* Left Column: Image (Voicerooms Stage - Floating 3D Phone) */}
@@ -2139,24 +2139,21 @@ export default function LandingPage({
 
             {/* Right Column: Content */}
             <div className="lg:col-span-6 space-y-6 order-1 lg:order-2">
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${
-                isLight
-                  ? "bg-blue-50 border-blue-200 text-blue-700"
-                  : "bg-blue-950/40 border-blue-800/40 text-blue-300"
-              }`}>
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${isLight
+                ? "bg-blue-50 border-blue-200 text-blue-700"
+                : "bg-blue-950/40 border-blue-800/40 text-blue-300"
+                }`}>
                 <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                 Voicerooms & Audio Lounges
               </div>
 
-              <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
-                isLight ? "text-[#0F172A]" : "text-white"
-              }`}>
+              <h2 className={`text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${isLight ? "text-[#0F172A]" : "text-white"
+                }`}>
                 Practice Speaking in <span className={isLight ? "text-blue-600 font-extrabold" : "text-cyan-400 font-extrabold"}>Voicerooms</span>
               </h2>
 
-              <p className={`text-sm sm:text-base leading-relaxed font-medium ${
-                isLight ? "text-slate-600" : "text-slate-300"
-              }`}>
+              <p className={`text-sm sm:text-base leading-relaxed font-medium ${isLight ? "text-slate-600" : "text-slate-300"
+                }`}>
                 Join Voicerooms and interactive audio lounges to practice speaking and listening with people and AI co-hosts around the world. Overcome speaking anxiety in a welcoming, multi-speaker stage.
               </p>
 
@@ -2181,11 +2178,10 @@ export default function LandingPage({
                 ].map((room, i) => (
                   <div
                     key={i}
-                    className={`p-4 rounded-2xl border transition-all ${
-                      isLight
-                        ? "bg-white/90 border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300"
-                        : "bg-slate-900/60 border-indigo-500/20 hover:border-cyan-400/40"
-                    }`}
+                    className={`p-4 rounded-2xl border transition-all ${isLight
+                      ? "bg-white/90 border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300"
+                      : "bg-slate-900/60 border-indigo-500/20 hover:border-cyan-400/40"
+                      }`}
                   >
                     <div className="flex items-start gap-3">
                       <span className="text-xl p-2 rounded-xl bg-blue-50 dark:bg-blue-950/80 border border-blue-100 dark:border-blue-900 shrink-0">
@@ -2216,30 +2212,26 @@ export default function LandingPage({
 
 
       {/* 3.5. Search the World - Dotted World Map & Bidirectional Coaches Scroller */}
-      <section id="search-the-world" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden text-center ${
-        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
-      }`}>
+      <section id="search-the-world" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden text-center ${isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
+        }`}>
         <ScrollReveal className="w-full space-y-10 sm:space-y-14" distance={32}>
           {/* 1. Header (Heading + Subtitle) */}
           <div className="space-y-3 max-w-4xl mx-auto text-center px-4">
-            <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase border shadow-xs ${
-              isLight
-                ? "bg-blue-50 border-blue-200 text-blue-700"
-                : "bg-blue-950/40 border-blue-800/40 text-blue-300"
-            }`}>
+            <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase border shadow-xs ${isLight
+              ? "bg-blue-50 border-blue-200 text-blue-700"
+              : "bg-blue-950/40 border-blue-800/40 text-blue-300"
+              }`}>
               <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
               Global Speaking Network
             </div>
 
-            <h2 className={`text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight ${
-              isLight ? "text-[#0F172A]" : "text-white"
-            }`}>
+            <h2 className={`text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight ${isLight ? "text-[#0F172A]" : "text-white"
+              }`}>
               <span className={isLight ? "text-blue-600 font-extrabold" : "text-blue-400 font-extrabold"}>Search</span> the World
             </h2>
 
-            <p className={`text-sm sm:text-base leading-relaxed max-w-xl mx-auto font-medium ${
-              isLight ? "text-slate-600" : "text-slate-300"
-            }`}>
+            <p className={`text-sm sm:text-base leading-relaxed max-w-xl mx-auto font-medium ${isLight ? "text-slate-600" : "text-slate-300"
+              }`}>
               Search for language partners and native AI tutors by native language, city, and real-world fluency goals.
             </p>
           </div>
@@ -2261,171 +2253,163 @@ export default function LandingPage({
           {/* 3. Bottom: Bidirectional Scrolling Coaches Rows with Edge Fades */}
           <div className="relative w-full overflow-hidden pt-2 sm:pt-4">
             {/* Edge Gradient Fade Masks */}
-            <div className={`pointer-events-none absolute left-0 top-0 bottom-0 w-24 sm:w-48 z-20 ${
-              isLight ? "bg-gradient-to-r from-white via-white/80 to-transparent" : "bg-gradient-to-r from-[#070A14] via-[#070A14]/80 to-transparent"
-            }`} />
-            <div className={`pointer-events-none absolute right-0 top-0 bottom-0 w-24 sm:w-48 z-20 ${
-              isLight ? "bg-gradient-to-l from-white via-white/80 to-transparent" : "bg-gradient-to-l from-[#070A14] via-[#070A14]/80 to-transparent"
-            }`} />
+            <div className={`pointer-events-none absolute left-0 top-0 bottom-0 w-24 sm:w-48 z-20 ${isLight ? "bg-gradient-to-r from-white via-white/80 to-transparent" : "bg-gradient-to-r from-[#070A14] via-[#070A14]/80 to-transparent"
+              }`} />
+            <div className={`pointer-events-none absolute right-0 top-0 bottom-0 w-24 sm:w-48 z-20 ${isLight ? "bg-gradient-to-l from-white via-white/80 to-transparent" : "bg-gradient-to-l from-[#070A14] via-[#070A14]/80 to-transparent"
+              }`} />
 
             <div className="space-y-4 sm:space-y-6 overflow-hidden">
               {/* ROW 1: Scrolling Left (animate-marquee) */}
-            <div className="overflow-hidden whitespace-nowrap">
-              <div className="animate-marquee flex items-center gap-4 sm:gap-6 py-1">
-                {[
-                  { name: "Denise", country: "France", code: "FR", greeting: "Bonjour", img: "/images/coaches/denise.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
-                  { name: "Diego", country: "Spain", code: "ES", greeting: "Hola", img: "/images/coaches/diego.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
-                  { name: "Elena", country: "Russia", code: "RU", greeting: "Привет", img: "/images/coaches/elena.jpg", flag: "/images/flags/ru.png", topicId: "sp_en_1" },
-                  { name: "Lucas", country: "Germany", code: "DE", greeting: "Hallo", img: "/images/coaches/lucas.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
-                  { name: "Oliver", country: "United States", code: "US", greeting: "Hello", img: "/images/coaches/oliver.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
-                  { name: "Mei", country: "China", code: "CN", greeting: "你好!", img: "/images/coaches/mei.jpg", flag: "/images/flags/cn.png", topicId: "sp_en_1" },
-                  { name: "Aoi", country: "Japan", code: "JP", greeting: "こんにちは", img: "/images/coaches/aoi.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
-                  { name: "Minjun", country: "South Korea", code: "KR", greeting: "안녕하세요", img: "/images/coaches/minjun.jpg", flag: "/images/flags/kr.png", topicId: "sp_en_1" },
-                  { name: "Sameera", country: "Sri Lanka", code: "LK", greeting: "ආයුබෝවන්", img: "/images/coaches/sameera.jpg", flag: "/images/flags/lk.png", topicId: "sp_si_249" },
-                  { name: "Denise", country: "France", code: "FR", greeting: "Bonjour", img: "/images/coaches/denise.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
-                  { name: "Diego", country: "Spain", code: "ES", greeting: "Hola", img: "/images/coaches/diego.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
-                  { name: "Elena", country: "Russia", code: "RU", greeting: "Привет", img: "/images/coaches/elena.jpg", flag: "/images/flags/ru.png", topicId: "sp_en_1" },
-                  { name: "Lucas", country: "Germany", code: "DE", greeting: "Hallo", img: "/images/coaches/lucas.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
-                  { name: "Oliver", country: "United States", code: "US", greeting: "Hello", img: "/images/coaches/oliver.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
-                  { name: "Mei", country: "China", code: "CN", greeting: "你好!", img: "/images/coaches/mei.jpg", flag: "/images/flags/cn.png", topicId: "sp_en_1" },
-                  { name: "Aoi", country: "Japan", code: "JP", greeting: "こんにちは", img: "/images/coaches/aoi.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
-                  { name: "Minjun", country: "South Korea", code: "KR", greeting: "안녕하세요", img: "/images/coaches/minjun.jpg", flag: "/images/flags/kr.png", topicId: "sp_en_1" },
-                  { name: "Sameera", country: "Sri Lanka", code: "LK", greeting: "ආයුබෝවන්", img: "/images/coaches/sameera.jpg", flag: "/images/flags/lk.png", topicId: "sp_si_249" },
-                ].map((coach, idx) => (
-                  <button
-                    key={`r1-${coach.name}-${idx}`}
-                    onClick={() => onStartCall(coach.topicId)}
-                    className={`group inline-flex items-center gap-3 px-3.5 py-2 rounded-full border transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-md shrink-0 shadow-sm hover:shadow-lg ${
-                      isLight
+              <div className="overflow-hidden whitespace-nowrap">
+                <div className="animate-marquee flex items-center gap-4 sm:gap-6 py-1">
+                  {[
+                    { name: "Denise", country: "France", code: "FR", greeting: "Bonjour", img: "/images/coaches/denise.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
+                    { name: "Diego", country: "Spain", code: "ES", greeting: "Hola", img: "/images/coaches/diego.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
+                    { name: "Elena", country: "Russia", code: "RU", greeting: "Привет", img: "/images/coaches/elena.jpg", flag: "/images/flags/ru.png", topicId: "sp_en_1" },
+                    { name: "Lucas", country: "Germany", code: "DE", greeting: "Hallo", img: "/images/coaches/lucas.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
+                    { name: "Oliver", country: "United States", code: "US", greeting: "Hello", img: "/images/coaches/oliver.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
+                    { name: "Mei", country: "China", code: "CN", greeting: "你好!", img: "/images/coaches/mei.jpg", flag: "/images/flags/cn.png", topicId: "sp_en_1" },
+                    { name: "Aoi", country: "Japan", code: "JP", greeting: "こんにちは", img: "/images/coaches/aoi.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
+                    { name: "Minjun", country: "South Korea", code: "KR", greeting: "안녕하세요", img: "/images/coaches/minjun.jpg", flag: "/images/flags/kr.png", topicId: "sp_en_1" },
+                    { name: "Sameera", country: "Sri Lanka", code: "LK", greeting: "ආයුබෝවන්", img: "/images/coaches/sameera.jpg", flag: "/images/flags/lk.png", topicId: "sp_si_249" },
+                    { name: "Denise", country: "France", code: "FR", greeting: "Bonjour", img: "/images/coaches/denise.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
+                    { name: "Diego", country: "Spain", code: "ES", greeting: "Hola", img: "/images/coaches/diego.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
+                    { name: "Elena", country: "Russia", code: "RU", greeting: "Привет", img: "/images/coaches/elena.jpg", flag: "/images/flags/ru.png", topicId: "sp_en_1" },
+                    { name: "Lucas", country: "Germany", code: "DE", greeting: "Hallo", img: "/images/coaches/lucas.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
+                    { name: "Oliver", country: "United States", code: "US", greeting: "Hello", img: "/images/coaches/oliver.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
+                    { name: "Mei", country: "China", code: "CN", greeting: "你好!", img: "/images/coaches/mei.jpg", flag: "/images/flags/cn.png", topicId: "sp_en_1" },
+                    { name: "Aoi", country: "Japan", code: "JP", greeting: "こんにちは", img: "/images/coaches/aoi.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
+                    { name: "Minjun", country: "South Korea", code: "KR", greeting: "안녕하세요", img: "/images/coaches/minjun.jpg", flag: "/images/flags/kr.png", topicId: "sp_en_1" },
+                    { name: "Sameera", country: "Sri Lanka", code: "LK", greeting: "ආයුබෝවන්", img: "/images/coaches/sameera.jpg", flag: "/images/flags/lk.png", topicId: "sp_si_249" },
+                  ].map((coach, idx) => (
+                    <button
+                      key={`r1-${coach.name}-${idx}`}
+                      onClick={() => onStartCall(coach.topicId)}
+                      className={`group inline-flex items-center gap-3 px-3.5 py-2 rounded-full border transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-md shrink-0 shadow-sm hover:shadow-lg ${isLight
                         ? "bg-white/90 border-slate-200/90 hover:border-blue-400 hover:bg-white text-slate-800"
                         : "bg-slate-900/90 border-white/10 hover:border-blue-400/50 hover:bg-slate-900 text-white"
-                    }`}
-                  >
-                    {/* Circular Avatar with Flag Badge */}
-                    <div className="relative shrink-0">
-                      <div className="w-12 h-12 rounded-full overflow-hidden relative shadow-md border-2 border-white dark:border-slate-800">
-                        <Image
-                          src={coach.img}
-                          alt={coach.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="absolute -bottom-1 -left-1 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-0.5 text-slate-700 dark:text-slate-300">
-                        <div className="w-3 h-2 relative overflow-hidden rounded-xs shrink-0">
-                          <Image src={coach.flag} alt={coach.code} fill className="object-cover" />
+                        }`}
+                    >
+                      {/* Circular Avatar with Flag Badge */}
+                      <div className="relative shrink-0">
+                        <div className="w-12 h-12 rounded-full overflow-hidden relative shadow-md border-2 border-white dark:border-slate-800">
+                          <Image
+                            src={coach.img}
+                            alt={coach.name}
+                            fill
+                            className="object-cover"
+                          />
                         </div>
-                        <span>{coach.code}</span>
+                        <div className="absolute -bottom-1 -left-1 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-0.5 text-slate-700 dark:text-slate-300">
+                          <div className="w-3 h-2 relative overflow-hidden rounded-xs shrink-0">
+                            <Image src={coach.flag} alt={coach.code} fill className="object-cover" />
+                          </div>
+                          <span>{coach.code}</span>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Greeting & Details */}
-                    <div className="text-left pr-2">
-                      <div className={`text-sm sm:text-base font-black tracking-tight ${isLight ? "text-slate-800" : "text-white"}`}>
-                        {coach.greeting}
+                      {/* Greeting & Details */}
+                      <div className="text-left pr-2">
+                        <div className={`text-sm sm:text-base font-black tracking-tight ${isLight ? "text-slate-800" : "text-white"}`}>
+                          {coach.greeting}
+                        </div>
+                        <div className={`text-[10px] font-medium ${isLight ? "text-slate-400" : "text-slate-400"}`}>
+                          {coach.name} • {coach.country}
+                        </div>
                       </div>
-                      <div className={`text-[10px] font-medium ${isLight ? "text-slate-400" : "text-slate-400"}`}>
-                        {coach.name} • {coach.country}
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* ROW 2: Scrolling Right (animate-marquee-reverse) */}
-            <div className="overflow-hidden whitespace-nowrap">
-              <div className="animate-marquee-reverse flex items-center gap-4 sm:gap-6 py-1">
-                {[
-                  { name: "Chloe", country: "France", code: "FR", greeting: "Ça va ?", img: "/images/coaches/chloe.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
-                  { name: "Sophia", country: "Spain", code: "ES", greeting: "¿Qué tal?", img: "/images/coaches/sophia.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
-                  { name: "Kenji", country: "Japan", code: "JP", greeting: "もしもし", img: "/images/coaches/kenji.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
-                  { name: "Emma", country: "Germany", code: "DE", greeting: "Guten Tag", img: "/images/coaches/emma.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
-                  { name: "Sarah", country: "United Kingdom", code: "GB", greeting: "Cheerio!", img: "/images/coaches/sarah.jpg", flag: "/images/flags/gb.png", topicId: "sp_en_1" },
-                  { name: "Tiago", country: "Brazil", code: "BR", greeting: "Olá!", img: "/images/coaches/tiago.jpg", flag: "/images/flags/br.png", topicId: "sp_en_1" },
-                  { name: "Matteo", country: "Italy", code: "IT", greeting: "Ciao!", img: "/images/coaches/matteo.jpg", flag: "/images/flags/it.png", topicId: "sp_en_1" },
-                  { name: "Priya", country: "India", code: "IN", greeting: "வணக்கம்", img: "/images/coaches/priya.jpg", flag: "/images/flags/in.png", topicId: "sp_en_1" },
-                  { name: "Alex", country: "United States", code: "US", greeting: "Hey there!", img: "/images/coaches/alex.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
-                  { name: "Chloe", country: "France", code: "FR", greeting: "Ça va ?", img: "/images/coaches/chloe.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
-                  { name: "Sophia", country: "Spain", code: "ES", greeting: "¿Qué tal?", img: "/images/coaches/sophia.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
-                  { name: "Kenji", country: "Japan", code: "JP", greeting: "もしもし", img: "/images/coaches/kenji.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
-                  { name: "Emma", country: "Germany", code: "DE", greeting: "Guten Tag", img: "/images/coaches/emma.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
-                  { name: "Sarah", country: "United Kingdom", code: "GB", greeting: "Cheerio!", img: "/images/coaches/sarah.jpg", flag: "/images/flags/gb.png", topicId: "sp_en_1" },
-                  { name: "Tiago", country: "Brazil", code: "BR", greeting: "Olá!", img: "/images/coaches/tiago.jpg", flag: "/images/flags/br.png", topicId: "sp_en_1" },
-                  { name: "Matteo", country: "Italy", code: "IT", greeting: "Ciao!", img: "/images/coaches/matteo.jpg", flag: "/images/flags/it.png", topicId: "sp_en_1" },
-                  { name: "Priya", country: "India", code: "IN", greeting: "வணக்கம்", img: "/images/coaches/priya.jpg", flag: "/images/flags/in.png", topicId: "sp_en_1" },
-                  { name: "Alex", country: "United States", code: "US", greeting: "Hey there!", img: "/images/coaches/alex.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
-                ].map((coach, idx) => (
-                  <button
-                    key={`r2-${coach.name}-${idx}`}
-                    onClick={() => onStartCall(coach.topicId)}
-                    className={`group inline-flex items-center gap-3 px-3.5 py-2 rounded-full border transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-md shrink-0 shadow-sm hover:shadow-lg ${
-                      isLight
+              {/* ROW 2: Scrolling Right (animate-marquee-reverse) */}
+              <div className="overflow-hidden whitespace-nowrap">
+                <div className="animate-marquee-reverse flex items-center gap-4 sm:gap-6 py-1">
+                  {[
+                    { name: "Chloe", country: "France", code: "FR", greeting: "Ça va ?", img: "/images/coaches/chloe.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
+                    { name: "Sophia", country: "Spain", code: "ES", greeting: "¿Qué tal?", img: "/images/coaches/sophia.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
+                    { name: "Kenji", country: "Japan", code: "JP", greeting: "もしもし", img: "/images/coaches/kenji.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
+                    { name: "Emma", country: "Germany", code: "DE", greeting: "Guten Tag", img: "/images/coaches/emma.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
+                    { name: "Sarah", country: "United Kingdom", code: "GB", greeting: "Cheerio!", img: "/images/coaches/sarah.jpg", flag: "/images/flags/gb.png", topicId: "sp_en_1" },
+                    { name: "Tiago", country: "Brazil", code: "BR", greeting: "Olá!", img: "/images/coaches/tiago.jpg", flag: "/images/flags/br.png", topicId: "sp_en_1" },
+                    { name: "Matteo", country: "Italy", code: "IT", greeting: "Ciao!", img: "/images/coaches/matteo.jpg", flag: "/images/flags/it.png", topicId: "sp_en_1" },
+                    { name: "Priya", country: "India", code: "IN", greeting: "வணக்கம்", img: "/images/coaches/priya.jpg", flag: "/images/flags/in.png", topicId: "sp_en_1" },
+                    { name: "Alex", country: "United States", code: "US", greeting: "Hey there!", img: "/images/coaches/alex.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
+                    { name: "Chloe", country: "France", code: "FR", greeting: "Ça va ?", img: "/images/coaches/chloe.jpg", flag: "/images/flags/fr.png", topicId: "sp_en_1" },
+                    { name: "Sophia", country: "Spain", code: "ES", greeting: "¿Qué tal?", img: "/images/coaches/sophia.jpg", flag: "/images/flags/es.png", topicId: "sp_si_249" },
+                    { name: "Kenji", country: "Japan", code: "JP", greeting: "もしもし", img: "/images/coaches/kenji.jpg", flag: "/images/flags/jp.png", topicId: "sp_en_1" },
+                    { name: "Emma", country: "Germany", code: "DE", greeting: "Guten Tag", img: "/images/coaches/emma.jpg", flag: "/images/flags/de.png", topicId: "sp_en_1" },
+                    { name: "Sarah", country: "United Kingdom", code: "GB", greeting: "Cheerio!", img: "/images/coaches/sarah.jpg", flag: "/images/flags/gb.png", topicId: "sp_en_1" },
+                    { name: "Tiago", country: "Brazil", code: "BR", greeting: "Olá!", img: "/images/coaches/tiago.jpg", flag: "/images/flags/br.png", topicId: "sp_en_1" },
+                    { name: "Matteo", country: "Italy", code: "IT", greeting: "Ciao!", img: "/images/coaches/matteo.jpg", flag: "/images/flags/it.png", topicId: "sp_en_1" },
+                    { name: "Priya", country: "India", code: "IN", greeting: "வணக்கம்", img: "/images/coaches/priya.jpg", flag: "/images/flags/in.png", topicId: "sp_en_1" },
+                    { name: "Alex", country: "United States", code: "US", greeting: "Hey there!", img: "/images/coaches/alex.jpg", flag: "/images/flags/us.png", topicId: "sp_en_1" },
+                  ].map((coach, idx) => (
+                    <button
+                      key={`r2-${coach.name}-${idx}`}
+                      onClick={() => onStartCall(coach.topicId)}
+                      className={`group inline-flex items-center gap-3 px-3.5 py-2 rounded-full border transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-md shrink-0 shadow-sm hover:shadow-lg ${isLight
                         ? "bg-white/90 border-slate-200/90 hover:border-blue-400 hover:bg-white text-slate-800"
                         : "bg-slate-900/90 border-white/10 hover:border-blue-400/50 hover:bg-slate-900 text-white"
-                    }`}
-                  >
-                    {/* Circular Avatar with Flag Badge */}
-                    <div className="relative shrink-0">
-                      <div className="w-12 h-12 rounded-full overflow-hidden relative shadow-md border-2 border-white dark:border-slate-800">
-                        <Image
-                          src={coach.img}
-                          alt={coach.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="absolute -bottom-1 -left-1 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-0.5 text-slate-700 dark:text-slate-300">
-                        <div className="w-3 h-2 relative overflow-hidden rounded-xs shrink-0">
-                          <Image src={coach.flag} alt={coach.code} fill className="object-cover" />
+                        }`}
+                    >
+                      {/* Circular Avatar with Flag Badge */}
+                      <div className="relative shrink-0">
+                        <div className="w-12 h-12 rounded-full overflow-hidden relative shadow-md border-2 border-white dark:border-slate-800">
+                          <Image
+                            src={coach.img}
+                            alt={coach.name}
+                            fill
+                            className="object-cover"
+                          />
                         </div>
-                        <span>{coach.code}</span>
+                        <div className="absolute -bottom-1 -left-1 px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-0.5 text-slate-700 dark:text-slate-300">
+                          <div className="w-3 h-2 relative overflow-hidden rounded-xs shrink-0">
+                            <Image src={coach.flag} alt={coach.code} fill className="object-cover" />
+                          </div>
+                          <span>{coach.code}</span>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Greeting & Details */}
-                    <div className="text-left pr-2">
-                      <div className={`text-sm sm:text-base font-black tracking-tight ${isLight ? "text-slate-800" : "text-white"}`}>
-                        {coach.greeting}
+                      {/* Greeting & Details */}
+                      <div className="text-left pr-2">
+                        <div className={`text-sm sm:text-base font-black tracking-tight ${isLight ? "text-slate-800" : "text-white"}`}>
+                          {coach.greeting}
+                        </div>
+                        <div className={`text-[10px] font-medium ${isLight ? "text-slate-400" : "text-slate-400"}`}>
+                          {coach.name} • {coach.country}
+                        </div>
                       </div>
-                      <div className={`text-[10px] font-medium ${isLight ? "text-slate-400" : "text-slate-400"}`}>
-                        {coach.name} • {coach.country}
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </ScrollReveal>
-    </section>
+        </ScrollReveal>
+      </section>
 
-{/* 11. Loved by Learners Around the World - Testimonials Showcase (Image 5 Wreaths & 4-Card Carousel) */}
-      <section id="reviews" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden text-center ${
-        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
-      }`}>
+      {/* 11. Loved by Learners Around the World - Testimonials Showcase (Image 5 Wreaths & 4-Card Carousel) */}
+      <section id="reviews" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden text-center ${isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
+        }`}>
         <ScrollReveal className="w-full space-y-10 sm:space-y-12" distance={32}>
           {/* Section Header */}
           <div className="space-y-4 max-w-4xl mx-auto text-center px-4">
-            <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase border shadow-xs ${
-              isLight
-                ? "bg-blue-50 border-blue-200 text-blue-700"
-                : "bg-blue-950/40 border-blue-800/40 text-blue-300"
-            }`}>
+            <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase border shadow-xs ${isLight
+              ? "bg-blue-50 border-blue-200 text-blue-700"
+              : "bg-blue-950/40 border-blue-800/40 text-blue-300"
+              }`}>
               <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
               Wall of Love • 140+ Countries
             </div>
 
-            <h2 className={`text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight ${
-              isLight ? "text-[#0F172A]" : "text-white"
-            }`}>
+            <h2 className={`text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight ${isLight ? "text-[#0F172A]" : "text-white"
+              }`}>
               Loved by learners <span className={isLight ? "text-blue-600 font-extrabold" : "text-blue-400 font-extrabold"}>around the world</span>
             </h2>
 
-            <p className={`text-sm sm:text-base leading-relaxed max-w-2xl mx-auto font-medium ${
-              isLight ? "text-slate-600" : "text-slate-300"
-            }`}>
+            <p className={`text-sm sm:text-base leading-relaxed max-w-2xl mx-auto font-medium ${isLight ? "text-slate-600" : "text-slate-300"
+              }`}>
               Over 100,000 real people practice daily with SpeakFlow AI to conquer speaking anxiety, ace overseas interviews, and master authentic fluency.
             </p>
 
@@ -2446,15 +2430,13 @@ export default function LandingPage({
                 <div className="text-center px-2">
                   <div className="flex items-center justify-center gap-1.5">
                     <span className="text-amber-500 text-2xl sm:text-3xl">★</span>
-                    <span className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight ${
-                      isLight ? "text-slate-900" : "text-white"
-                    }`}>
+                    <span className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight ${isLight ? "text-slate-900" : "text-white"
+                      }`}>
                       4.8
                     </span>
                   </div>
-                  <div className={`text-xs sm:text-sm font-semibold tracking-wide mt-1 ${
-                    isLight ? "text-slate-500" : "text-slate-400"
-                  }`}>
+                  <div className={`text-xs sm:text-sm font-semibold tracking-wide mt-1 ${isLight ? "text-slate-500" : "text-slate-400"
+                    }`}>
                     2k+ ratings
                   </div>
                 </div>
@@ -2483,14 +2465,12 @@ export default function LandingPage({
                 </div>
 
                 <div className="text-center px-2">
-                  <div className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight ${
-                    isLight ? "text-slate-900" : "text-white"
-                  }`}>
+                  <div className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight ${isLight ? "text-slate-900" : "text-white"
+                    }`}>
                     100K
                   </div>
-                  <div className={`text-xs sm:text-sm font-semibold tracking-wide mt-1 ${
-                    isLight ? "text-slate-500" : "text-slate-400"
-                  }`}>
+                  <div className={`text-xs sm:text-sm font-semibold tracking-wide mt-1 ${isLight ? "text-slate-500" : "text-slate-400"
+                    }`}>
                     learners
                   </div>
                 </div>
@@ -2527,15 +2507,14 @@ export default function LandingPage({
                   setSelectedReviewFilter(cat.value);
                   setReviewPage(0);
                 }}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer border ${
-                  selectedReviewFilter === cat.value
-                    ? isLight
-                      ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                      : "bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/25"
-                    : isLight
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer border ${selectedReviewFilter === cat.value
+                  ? isLight
+                    ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                    : "bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/25"
+                  : isLight
                     ? "bg-white/80 text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-white"
                     : "bg-slate-900/60 text-slate-300 border-white/10 hover:border-white/20 hover:bg-slate-900"
-                }`}
+                  }`}
               >
                 {cat.label}
               </button>
@@ -2565,11 +2544,10 @@ export default function LandingPage({
                       <div
                         key={item.id}
                         onClick={() => setActiveReviewModal(item)}
-                        className={`group relative p-5 rounded-2xl border transition-all duration-300 text-left cursor-pointer flex flex-col justify-between hover:-translate-y-1 ${
-                          isLight
-                            ? "bg-white/95 border-slate-200/90 shadow-sm hover:shadow-xl hover:border-blue-400"
-                            : "bg-slate-900/90 border-white/10 shadow-lg hover:shadow-blue-500/10 hover:border-blue-400/50"
-                        }`}
+                        className={`group relative p-5 rounded-2xl border transition-all duration-300 text-left cursor-pointer flex flex-col justify-between hover:-translate-y-1 ${isLight
+                          ? "bg-white/95 border-slate-200/90 shadow-sm hover:shadow-xl hover:border-blue-400"
+                          : "bg-slate-900/90 border-white/10 shadow-lg hover:shadow-blue-500/10 hover:border-blue-400/50"
+                          }`}
                       >
                         <div>
                           {/* Top Bar: Avatar, User Details, Learned Badge, Quote Symbol */}
@@ -2596,9 +2574,8 @@ export default function LandingPage({
                               </div>
                             </div>
 
-                            <span className={`text-2xl font-serif select-none transition-colors ${
-                              isLight ? "text-slate-300 group-hover:text-blue-500" : "text-slate-700 group-hover:text-blue-400"
-                            }`}>
+                            <span className={`text-2xl font-serif select-none transition-colors ${isLight ? "text-slate-300 group-hover:text-blue-500" : "text-slate-700 group-hover:text-blue-400"
+                              }`}>
                               &rdquo;
                             </span>
                           </div>
@@ -2612,16 +2589,14 @@ export default function LandingPage({
                           </div>
 
                           {/* Review Title */}
-                          <h4 className={`text-sm font-bold tracking-tight mb-1.5 ${
-                            isLight ? "text-slate-900" : "text-white"
-                          }`}>
+                          <h4 className={`text-sm font-bold tracking-tight mb-1.5 ${isLight ? "text-slate-900" : "text-white"
+                            }`}>
                             {item.title}
                           </h4>
 
                           {/* Review Quote Text */}
-                          <p className={`text-xs leading-relaxed line-clamp-4 font-normal ${
-                            isLight ? "text-slate-600" : "text-slate-300"
-                          }`}>
+                          <p className={`text-xs leading-relaxed line-clamp-4 font-normal ${isLight ? "text-slate-600" : "text-slate-300"
+                            }`}>
                             {item.content}
                           </p>
                         </div>
@@ -2653,13 +2628,12 @@ export default function LandingPage({
                         <button
                           key={idx}
                           onClick={() => setReviewPage(idx)}
-                          className={`h-2 rounded-full transition-all cursor-pointer ${
-                            safePage === idx
-                              ? "w-6 bg-blue-600 shadow-xs"
-                              : isLight
+                          className={`h-2 rounded-full transition-all cursor-pointer ${safePage === idx
+                            ? "w-6 bg-blue-600 shadow-xs"
+                            : isLight
                               ? "w-2 bg-slate-300 hover:bg-slate-400"
                               : "w-2 bg-slate-700 hover:bg-slate-500"
-                          }`}
+                            }`}
                           aria-label={`Go to page ${idx + 1}`}
                         />
                       ))}
@@ -2669,11 +2643,10 @@ export default function LandingPage({
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setReviewPage((prev) => (prev > 0 ? prev - 1 : totalPages - 1))}
-                        className={`p-2 sm:px-3 sm:py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1 shadow-xs ${
-                          isLight
-                            ? "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
-                            : "bg-slate-900 border-slate-800 text-slate-200 hover:bg-slate-800 hover:border-slate-700"
-                        }`}
+                        className={`p-2 sm:px-3 sm:py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1 shadow-xs ${isLight
+                          ? "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                          : "bg-slate-900 border-slate-800 text-slate-200 hover:bg-slate-800 hover:border-slate-700"
+                          }`}
                         aria-label="Previous reviews"
                       >
                         <span>←</span>
@@ -2682,11 +2655,10 @@ export default function LandingPage({
 
                       <button
                         onClick={() => setReviewPage((prev) => (prev + 1) % totalPages)}
-                        className={`p-2 sm:px-3 sm:py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1 shadow-xs ${
-                          isLight
-                            ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20"
-                            : "bg-blue-600 border-blue-500 text-white hover:bg-blue-500 shadow-blue-500/20"
-                        }`}
+                        className={`p-2 sm:px-3 sm:py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1 shadow-xs ${isLight
+                          ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20"
+                          : "bg-blue-600 border-blue-500 text-white hover:bg-blue-500 shadow-blue-500/20"
+                          }`}
                         aria-label="Next reviews"
                       >
                         <span className="hidden sm:inline">Next</span>
@@ -2701,11 +2673,10 @@ export default function LandingPage({
 
           {/* Bottom Live Community Counter Bar */}
           <div className="pt-2 max-w-xl mx-auto px-4">
-            <div className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-full border text-xs font-semibold ${
-              isLight
-                ? "bg-slate-100/90 border-slate-200 text-slate-700"
-                : "bg-slate-900/80 border-slate-800 text-slate-300"
-            }`}>
+            <div className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-full border text-xs font-semibold ${isLight
+              ? "bg-slate-100/90 border-slate-200 text-slate-700"
+              : "bg-slate-900/80 border-slate-800 text-slate-300"
+              }`}>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
               <span>
                 <strong className="text-emerald-500">1,420+ learners</strong> speaking right now across Tokyo, Paris, Colombo & New York
@@ -2721,9 +2692,8 @@ export default function LandingPage({
             onClick={() => setActiveReviewModal(null)}
           >
             <div
-              className={`relative w-full max-w-lg p-6 sm:p-8 rounded-3xl border shadow-2xl text-left transition-all ${
-                isLight ? "bg-white border-slate-200 text-slate-900" : "bg-[#0B1120] border-slate-800 text-white"
-              }`}
+              className={`relative w-full max-w-lg p-6 sm:p-8 rounded-3xl border shadow-2xl text-left transition-all ${isLight ? "bg-white border-slate-200 text-slate-900" : "bg-[#0B1120] border-slate-800 text-white"
+                }`}
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -2763,9 +2733,8 @@ export default function LandingPage({
                 "{activeReviewModal.title}"
               </h4>
 
-              <p className={`text-sm leading-relaxed mb-6 ${
-                isLight ? "text-slate-600" : "text-slate-300"
-              }`}>
+              <p className={`text-sm leading-relaxed mb-6 ${isLight ? "text-slate-600" : "text-slate-300"
+                }`}>
                 {activeReviewModal.content}
               </p>
 
@@ -2791,50 +2760,43 @@ export default function LandingPage({
 
 
 
-            {/* 11.5. Talk to the World (Mobile App Showcase with Dual Ambient Pink & Blue Aura) */}
-      <section id="talk-to-the-world" className={`scroll-mt-20 py-20 sm:py-28 relative overflow-hidden ${
-        isLight ? "bg-white text-slate-900" : "bg-[#070A14] text-white"
-      }`}>
+      {/* 11.5. Talk to the World (Mobile App Showcase with Dual Ambient Pink & Blue Aura) */}
+      <section id="talk-to-the-world" className={`scroll-mt-20 py-20 sm:py-28 relative overflow-hidden ${isLight ? "bg-white text-slate-900" : "bg-[#070A14] text-white"
+        }`}>
         {/* Soft Ambient Radial Glows (Left Rose/Pink, Right Soft Sky-Blue) */}
-        <div className={`pointer-events-none absolute -left-24 top-1/2 -translate-y-1/2 w-[520px] h-[520px] rounded-full blur-[110px] -z-0 ${
-          isLight ? "bg-rose-200/50" : "bg-rose-950/25"
-        }`} />
-        <div className={`pointer-events-none absolute -right-24 top-1/2 -translate-y-1/2 w-[520px] h-[520px] rounded-full blur-[110px] -z-0 ${
-          isLight ? "bg-blue-200/50" : "bg-blue-950/30"
-        }`} />
+        <div className={`pointer-events-none absolute -left-24 top-1/2 -translate-y-1/2 w-[520px] h-[520px] rounded-full blur-[110px] -z-0 ${isLight ? "bg-rose-200/50" : "bg-rose-950/25"
+          }`} />
+        <div className={`pointer-events-none absolute -right-24 top-1/2 -translate-y-1/2 w-[520px] h-[520px] rounded-full blur-[110px] -z-0 ${isLight ? "bg-blue-200/50" : "bg-blue-950/30"
+          }`} />
 
         <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10" distance={32}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             {/* Left Column: Heading, Subtitle & Interactive Dynamic QR Code Download Card */}
             <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
-              <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase border shadow-xs ${
-                isLight
-                  ? "bg-blue-50 border-blue-200 text-blue-700"
-                  : "bg-blue-950/40 border-blue-800/40 text-blue-300"
-              }`}>
+              <div className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-wider uppercase border shadow-xs ${isLight
+                ? "bg-blue-50 border-blue-200 text-blue-700"
+                : "bg-blue-950/40 border-blue-800/40 text-blue-300"
+                }`}>
                 <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                 Mobile Experience
               </div>
 
-              <h2 className={`text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] ${
-                isLight ? "text-[#0F172A]" : "text-white"
-              }`}>
+              <h2 className={`text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] ${isLight ? "text-[#0F172A]" : "text-white"
+                }`}>
                 Talk to the <span className={isLight ? "text-blue-600 font-extrabold" : "text-blue-400 font-extrabold"}>World</span>
               </h2>
 
-              <p className={`text-base sm:text-lg leading-relaxed max-w-lg mx-auto lg:mx-0 font-medium ${
-                isLight ? "text-slate-600" : "text-slate-300"
-              }`}>
+              <p className={`text-base sm:text-lg leading-relaxed max-w-lg mx-auto lg:mx-0 font-medium ${isLight ? "text-slate-600" : "text-slate-300"
+                }`}>
                 Find language exchange partners and practice for free by chatting with native speakers around the world.
               </p>
 
               {/* Dynamic QR Code Download Card */}
               <div className="pt-2 flex justify-center lg:justify-start">
-                <div className={`p-4 sm:p-5 rounded-2xl border shadow-xl flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] backdrop-blur-md ${
-                  isLight
-                    ? "bg-white/95 border-slate-200 shadow-slate-200/60"
-                    : "bg-slate-900/90 border-slate-800 shadow-black/40"
-                }`}>
+                <div className={`p-4 sm:p-5 rounded-2xl border shadow-xl flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] backdrop-blur-md ${isLight
+                  ? "bg-white/95 border-slate-200 shadow-slate-200/60"
+                  : "bg-slate-900/90 border-slate-800 shadow-black/40"
+                  }`}>
                   {/* Real Live Dynamic QR Code generated from App Target URL */}
                   <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white p-1 rounded-xl border border-slate-200 shadow-xs shrink-0 flex items-center justify-center overflow-hidden">
                     <img
@@ -2925,21 +2887,18 @@ export default function LandingPage({
       </section>
 
       {/* 11.8. Your Language Learning Journey Starts Here (Pre-Footer CTA Banner) */}
-      <section id="cta-journey-start" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden border-t ${
-        isLight
-          ? "bg-white border-slate-100 text-slate-900"
-          : "bg-[#050811] border-slate-800/80 text-white"
-      }`}>
+      <section id="cta-journey-start" className={`scroll-mt-20 py-16 sm:py-24 relative overflow-hidden border-t ${isLight
+        ? "bg-white border-slate-100 text-slate-900"
+        : "bg-[#050811] border-slate-800/80 text-white"
+        }`}>
         <ScrollReveal className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6" distance={24}>
-          <h3 className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${
-            isLight ? "text-[#0F172A]" : "text-white"
-          }`}>
+          <h3 className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight ${isLight ? "text-[#0F172A]" : "text-white"
+            }`}>
             Your Language Learning Journey <span className={isLight ? "text-blue-600 font-extrabold" : "text-blue-400 font-extrabold"}>Starts Here</span>
           </h3>
 
-          <p className={`text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-medium ${
-            isLight ? "text-slate-600" : "text-slate-300"
-          }`}>
+          <p className={`text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-medium ${isLight ? "text-slate-600" : "text-slate-300"
+            }`}>
             Practice languages and make friends with native speakers from around the world for free.
           </p>
 
@@ -2953,11 +2912,10 @@ export default function LandingPage({
 
             <a
               href="#search-the-world"
-              className={`px-8 py-3.5 rounded-full font-bold text-sm tracking-wide border transition-all duration-300 hover:scale-105 cursor-pointer shadow-xs ${
-                isLight
-                  ? "bg-white border-slate-300 hover:bg-slate-50 text-slate-800 hover:border-slate-400"
-                  : "bg-slate-900/90 border-slate-700 hover:bg-slate-800 text-white hover:border-slate-600"
-              }`}
+              className={`px-8 py-3.5 rounded-full font-bold text-sm tracking-wide border transition-all duration-300 hover:scale-105 cursor-pointer shadow-xs ${isLight
+                ? "bg-white border-slate-300 hover:bg-slate-50 text-slate-800 hover:border-slate-400"
+                : "bg-slate-900/90 border-slate-700 hover:bg-slate-800 text-white hover:border-slate-600"
+                }`}
             >
               Find Your First Partner
             </a>
@@ -2965,12 +2923,11 @@ export default function LandingPage({
         </ScrollReveal>
       </section>
 
-{/* 12. Enterprise Multi-Column SaaS Footer */}
-      <footer className={`border-t transition-colors ${
-        isLight
-          ? "bg-slate-50 border-slate-200 text-slate-600"
-          : "bg-[#03060E] border-indigo-950/70 text-slate-400"
-      }`}>
+      {/* 12. Enterprise Multi-Column SaaS Footer */}
+      <footer className={`border-t transition-colors ${isLight
+        ? "bg-slate-50 border-slate-200 text-slate-600"
+        : "bg-[#03060E] border-indigo-950/70 text-slate-400"
+        }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
           {/* Top Brand & Mission Bar */}
           <div className="pb-12 border-b border-slate-200/80 dark:border-slate-800/80 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
@@ -3230,11 +3187,10 @@ export default function LandingPage({
 
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all duration-200 hover:scale-105 cursor-pointer ${
-                isLight
-                  ? "bg-white border-slate-200 hover:bg-slate-100 text-slate-700"
-                  : "bg-slate-900 border-slate-800 hover:bg-slate-800 text-slate-300"
-              }`}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all duration-200 hover:scale-105 cursor-pointer ${isLight
+                ? "bg-white border-slate-200 hover:bg-slate-100 text-slate-700"
+                : "bg-slate-900 border-slate-800 hover:bg-slate-800 text-slate-300"
+                }`}
             >
               <span>Back to Top</span>
               <span>↑</span>
