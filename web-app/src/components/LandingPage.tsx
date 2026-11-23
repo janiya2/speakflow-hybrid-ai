@@ -1068,10 +1068,12 @@ export default function LandingPage({
 
       {/* 5. The Global AI Language & Cultural Exchange Section (Text Left, Image Right) */}
       <section id="exchange" className={`py-16 sm:py-24 relative overflow-hidden ${
-        isLight ? "bg-white text-slate-900" : "bg-[#060a12] text-white"
+        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
-        {/* Ambient Glow */}
-        <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+        {/* Ambient Dark Glow */}
+        {!isLight && (
+          <div className="absolute top-1/2 right-1/4 w-[500px] h-[500px] bg-gradient-to-r from-blue-500/15 via-indigo-500/15 to-purple-500/15 rounded-full blur-[120px] pointer-events-none -z-10" />
+        )}
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
           {/* Top Banner Header */}
@@ -1157,7 +1159,7 @@ export default function LandingPage({
                   alt="SpeakFlow AI Language Exchange with built-in voice-to-text, translation, and grammar corrections"
                   width={1218}
                   height={1500}
-                  className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.16)] transition-transform duration-500 hover:scale-[1.02]"
+                  className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.16)] dark:drop-shadow-[0_25px_60px_rgba(56,189,248,0.15)] transition-transform duration-500 hover:scale-[1.02]"
                   priority
                 />
               </div>
@@ -1265,9 +1267,12 @@ export default function LandingPage({
 
       {/* 7. Learn and Share with the Community (Text Left, Image Right) */}
       <section id="moments" className={`py-16 sm:py-24 relative overflow-hidden ${
-        isLight ? "bg-white text-slate-900" : "bg-[#060a12] text-white"
+        isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
-        <div className="absolute top-1/3 left-1/4 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+        {/* Ambient Dark Glow */}
+        {!isLight && (
+          <div className="absolute top-1/2 left-1/4 w-[500px] h-[500px] bg-gradient-to-r from-emerald-500/15 via-teal-500/15 to-blue-500/15 rounded-full blur-[120px] pointer-events-none -z-10" />
+        )}
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
@@ -1355,7 +1360,7 @@ export default function LandingPage({
                   alt="SpeakFlow Moments: Learn and share with the community through posts and audio clips"
                   width={1020}
                   height={1500}
-                  className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.16)] transition-transform duration-500 hover:scale-[1.02]"
+                  className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.16)] dark:drop-shadow-[0_25px_60px_rgba(16,185,129,0.15)] transition-transform duration-500 hover:scale-[1.02]"
                 />
               </div>
             </div>
