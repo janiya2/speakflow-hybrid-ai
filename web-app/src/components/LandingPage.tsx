@@ -835,10 +835,10 @@ export default function LandingPage({
       )}
 
       {/* 4. Panoramic Scenarios Section (FULL SCREEN FIT - 4K Cave Style Panorama with Dual Radial Aura) */}
-      <section className={`py-16 sm:py-24 relative overflow-hidden text-center ${
+      <section className={`py-14 sm:py-20 relative overflow-hidden text-center ${
         isLight ? "hero-bg-yaytalk-light text-slate-900" : "hero-bg-yaytalk-dark text-white"
       }`}>
-        <div className="w-full px-2 sm:px-4 lg:px-8 space-y-6">
+        <div className="w-full px-2 sm:px-4 lg:px-8 space-y-4 sm:space-y-6">
           <div className="space-y-3 max-w-4xl mx-auto text-center px-4">
             <div className={`text-xs sm:text-sm font-black uppercase tracking-wider flex items-center justify-center gap-1.5 ${
               isLight ? "text-indigo-600" : "text-cyan-400"
@@ -857,10 +857,22 @@ export default function LandingPage({
             }`}>
               {config?.scenariosSubtitle || "Practice English in scenarios that matter — job interviews, travel, daily life, dining, and more."}
             </p>
+
+            {/* Subtle Action Callout Banner */}
+            <div className="pt-2 flex justify-center">
+              <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide border shadow-sm backdrop-blur-md transition-all ${
+                isLight
+                  ? "bg-white/95 border-slate-200 text-slate-700 shadow-slate-200/50"
+                  : "bg-slate-900/90 border-indigo-500/30 text-cyan-300 shadow-black/40"
+              }`}>
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                <span>Click any character pedestal below to launch an instant 20ms AI voice practice</span>
+              </div>
+            </div>
           </div>
 
           {/* Full-Width 4K Panoramic "Cave Style" Curved Strip */}
-          <div className="relative w-full max-w-[1920px] mx-auto mt-6 sm:mt-10 px-0 sm:px-2 md:px-4">
+          <div className="relative w-full max-w-[1920px] mx-auto mt-4 sm:mt-6 px-0 sm:px-2 md:px-4">
             {/* Ambient Dark Mode Colorful Horizon Glow */}
             {!isLight && (
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] h-[350px] bg-gradient-to-r from-pink-500/15 via-blue-500/15 to-amber-500/15 rounded-full blur-[100px] pointer-events-none -z-10" />
@@ -871,27 +883,14 @@ export default function LandingPage({
               alt="Real-world conversations in multiple scenarios"
               width={3840}
               height={1389}
-              className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.18)] transition-transform duration-500 hover:scale-[1.01]"
+              className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.18)] transition-transform duration-500 hover:scale-[1.005]"
               priority
             />
           </div>
 
-          {/* Interactive Scenario Cards Dock - Perfectly Aligned Under the 6 Characters */}
-          <div className="relative z-20 -mt-6 sm:-mt-12 md:-mt-16 lg:-mt-24 max-w-7xl mx-auto px-3 sm:px-6">
-            {/* Contextual Badge Header */}
-            <div className="flex items-center justify-center mb-4 sm:mb-6">
-              <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide border shadow-sm backdrop-blur-md transition-all ${
-                isLight
-                  ? "bg-white/95 border-slate-200/90 text-slate-800 shadow-slate-200/50"
-                  : "bg-slate-900/90 border-indigo-500/30 text-cyan-300 shadow-black/40"
-              }`}>
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                <span>Choose a character roleplay below for instant 20ms AI practice:</span>
-              </div>
-            </div>
-
-            {/* 6 Aligned Interactive Scenario Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          {/* Curved Amphitheater Scenario Pedestals - Traces the exact Dome/Cave Arc of the 6 Characters */}
+          <div className="relative z-20 -mt-8 sm:-mt-16 md:-mt-24 lg:-mt-36 max-w-7xl mx-auto px-3 sm:px-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 items-end">
               {[
                 {
                   icon: "🍽️",
@@ -900,10 +899,14 @@ export default function LandingPage({
                   level: "A2",
                   sample: "Table for two & chef's special",
                   topicId: "sp_si_249",
-                  hoverBorder: "hover:border-pink-400 dark:hover:border-pink-500/60",
-                  badge: "bg-pink-100 text-pink-700 dark:bg-pink-950/80 dark:text-pink-300 border-pink-200 dark:border-pink-800",
-                  glow: "from-pink-500/15 to-rose-500/5",
-                  activeDot: "bg-pink-500",
+                  arcTransform: "lg:translate-y-8 lg:rotate-[-2.5deg]",
+                  borderLight: "border-pink-300/80 hover:border-pink-500",
+                  borderDark: "border-pink-500/30 hover:border-pink-400",
+                  topBar: "from-pink-500 to-rose-500",
+                  iconBg: "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20",
+                  badge: "bg-pink-100 text-pink-700 dark:bg-pink-950/90 dark:text-pink-300 border-pink-200 dark:border-pink-800",
+                  glow: "from-pink-500/20 via-pink-500/5 to-transparent",
+                  btnText: "text-pink-600 dark:text-pink-400 group-hover:text-pink-700",
                 },
                 {
                   icon: "✈️",
@@ -912,10 +915,14 @@ export default function LandingPage({
                   level: "B1",
                   sample: "Boarding gate & luggage",
                   topicId: "sp_en_1",
-                  hoverBorder: "hover:border-blue-400 dark:hover:border-blue-500/60",
-                  badge: "bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border-blue-200 dark:border-blue-800",
-                  glow: "from-blue-500/15 to-sky-500/5",
-                  activeDot: "bg-blue-500",
+                  arcTransform: "lg:-translate-y-4 lg:rotate-[-1deg]",
+                  borderLight: "border-blue-300/80 hover:border-blue-500",
+                  borderDark: "border-blue-500/30 hover:border-blue-400",
+                  topBar: "from-blue-500 to-sky-500",
+                  iconBg: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+                  badge: "bg-blue-100 text-blue-700 dark:bg-blue-950/90 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+                  glow: "from-blue-500/20 via-blue-500/5 to-transparent",
+                  btnText: "text-blue-600 dark:text-blue-400 group-hover:text-blue-700",
                 },
                 {
                   icon: "🛍️",
@@ -924,10 +931,14 @@ export default function LandingPage({
                   level: "A1",
                   sample: "Do you have this in size M?",
                   topicId: "sp_si_249",
-                  hoverBorder: "hover:border-emerald-400 dark:hover:border-emerald-500/60",
-                  badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
-                  glow: "from-emerald-500/15 to-green-500/5",
-                  activeDot: "bg-emerald-500",
+                  arcTransform: "lg:-translate-y-18 lg:rotate-0",
+                  borderLight: "border-emerald-300/80 hover:border-emerald-500",
+                  borderDark: "border-emerald-500/30 hover:border-emerald-400",
+                  topBar: "from-emerald-500 to-green-500",
+                  iconBg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+                  badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/90 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
+                  glow: "from-emerald-500/20 via-emerald-500/5 to-transparent",
+                  btnText: "text-emerald-600 dark:text-emerald-400 group-hover:text-emerald-700",
                 },
                 {
                   icon: "🩺",
@@ -936,10 +947,14 @@ export default function LandingPage({
                   level: "B2",
                   sample: "Describing symptoms & remedy",
                   topicId: "sp_en_1",
-                  hoverBorder: "hover:border-cyan-400 dark:hover:border-cyan-500/60",
-                  badge: "bg-cyan-100 text-cyan-700 dark:bg-cyan-950/80 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800",
-                  glow: "from-cyan-500/15 to-teal-500/5",
-                  activeDot: "bg-cyan-500",
+                  arcTransform: "lg:-translate-y-18 lg:rotate-0",
+                  borderLight: "border-cyan-300/80 hover:border-cyan-500",
+                  borderDark: "border-cyan-500/30 hover:border-cyan-400",
+                  topBar: "from-cyan-500 to-teal-500",
+                  iconBg: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20",
+                  badge: "bg-cyan-100 text-cyan-700 dark:bg-cyan-950/90 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800",
+                  glow: "from-cyan-500/20 via-cyan-500/5 to-transparent",
+                  btnText: "text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-700",
                 },
                 {
                   icon: "💼",
@@ -948,10 +963,14 @@ export default function LandingPage({
                   level: "C1",
                   sample: "Leading engineering teams",
                   topicId: "sp_en_1",
-                  hoverBorder: "hover:border-purple-400 dark:hover:border-purple-500/60",
-                  badge: "bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border-purple-200 dark:border-purple-800",
-                  glow: "from-purple-500/15 to-indigo-500/5",
-                  activeDot: "bg-purple-500",
+                  arcTransform: "lg:-translate-y-4 lg:rotate-[1deg]",
+                  borderLight: "border-purple-300/80 hover:border-purple-500",
+                  borderDark: "border-purple-500/30 hover:border-purple-400",
+                  topBar: "from-purple-500 to-indigo-500",
+                  iconBg: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+                  badge: "bg-purple-100 text-purple-700 dark:bg-purple-950/90 dark:text-purple-300 border-purple-200 dark:border-purple-800",
+                  glow: "from-purple-500/20 via-purple-500/5 to-transparent",
+                  btnText: "text-purple-600 dark:text-purple-400 group-hover:text-purple-700",
                 },
                 {
                   icon: "🚴",
@@ -960,30 +979,37 @@ export default function LandingPage({
                   level: "B1",
                   sample: "Pacing & nutrition for run",
                   topicId: "sp_1",
-                  hoverBorder: "hover:border-amber-400 dark:hover:border-amber-500/60",
-                  badge: "bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border-amber-200 dark:border-amber-800",
-                  glow: "from-amber-500/15 to-orange-500/5",
-                  activeDot: "bg-amber-500",
+                  arcTransform: "lg:translate-y-8 lg:rotate-[2.5deg]",
+                  borderLight: "border-amber-300/80 hover:border-amber-500",
+                  borderDark: "border-amber-500/30 hover:border-amber-400",
+                  topBar: "from-amber-500 to-orange-500",
+                  iconBg: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+                  badge: "bg-amber-100 text-amber-700 dark:bg-amber-950/90 dark:text-amber-300 border-amber-200 dark:border-amber-800",
+                  glow: "from-amber-500/20 via-amber-500/5 to-transparent",
+                  btnText: "text-amber-600 dark:text-amber-400 group-hover:text-amber-700",
                 },
               ].map((s, idx) => (
                 <div
                   key={idx}
                   onClick={() => onStartCall(s.topicId)}
-                  className={`group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl border text-left transition-all duration-300 cursor-pointer backdrop-blur-md shadow-md ${s.hoverBorder} ${
+                  className={`group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-3xl border-2 text-left transition-all duration-300 cursor-pointer backdrop-blur-xl shadow-lg ${s.arcTransform} ${
                     isLight
-                      ? "bg-white/95 border-slate-200/90 shadow-[0_8px_25px_rgba(0,0,0,0.06)] hover:bg-white hover:-translate-y-1.5 hover:shadow-xl"
-                      : "bg-slate-900/85 border-white/10 shadow-[0_8px_25px_rgba(0,0,0,0.35)] hover:bg-slate-900 hover:-translate-y-1.5 hover:shadow-[0_12px_35px_rgba(0,0,0,0.5)]"
+                      ? `bg-white/95 ${s.borderLight} shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:bg-white hover:-translate-y-2 hover:shadow-2xl`
+                      : `bg-slate-900/90 ${s.borderDark} shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:bg-slate-900 hover:-translate-y-2 hover:shadow-[0_15px_40px_rgba(0,0,0,0.6)]`
                   }`}
                 >
-                  {/* Ambient hover glow inside card */}
-                  <div className={`absolute inset-0 rounded-2xl bg-gradient-to-b ${s.glow} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none -z-10`} />
+                  {/* Top Character Pillar Color Accent Strip */}
+                  <div className={`absolute -top-1 left-4 right-4 h-1.5 rounded-full bg-gradient-to-r ${s.topBar} opacity-90 shadow-sm`} />
 
-                  {/* Top: Icon + Level Badge */}
-                  <div className="flex items-center justify-between gap-1 mb-2">
-                    <span className="text-2xl p-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 group-hover:scale-110 transition-transform">
+                  {/* Ambient Character Aura Glow */}
+                  <div className={`absolute inset-0 rounded-3xl bg-gradient-to-b ${s.glow} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none -z-10`} />
+
+                  {/* Top: Icon in matching bubble + CEFR Level Badge */}
+                  <div className="flex items-center justify-between gap-1 mb-2 pt-0.5">
+                    <span className={`text-xl p-1.5 rounded-2xl border ${s.iconBg} group-hover:scale-110 transition-transform shadow-sm`}>
                       {s.icon}
                     </span>
-                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border ${s.badge}`}>
+                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-lg border shadow-xs ${s.badge}`}>
                       {s.level}
                     </span>
                   </div>
@@ -991,8 +1017,8 @@ export default function LandingPage({
                   {/* Middle: Title & Role */}
                   <div className="space-y-0.5">
                     <h4 className={`text-xs sm:text-sm font-black tracking-tight leading-snug ${
-                      isLight ? "text-[#0F172A] group-hover:text-blue-600" : "text-white group-hover:text-cyan-400"
-                    } transition-colors`}>
+                      isLight ? "text-[#0F172A]" : "text-white"
+                    }`}>
                       {s.title}
                     </h4>
                     <p className={`text-[11px] leading-tight font-medium ${isLight ? "text-slate-500" : "text-slate-400"}`}>
@@ -1004,19 +1030,15 @@ export default function LandingPage({
                   <div className={`mt-2 pt-1.5 border-t text-[10px] italic leading-tight line-clamp-1 ${
                     isLight ? "border-slate-100 text-slate-500" : "border-slate-800 text-slate-400"
                   }`}>
-                    {s.sample}
+                    &ldquo;{s.sample}&rdquo;
                   </div>
 
                   {/* Bottom Action: Practice Now */}
                   <div className="mt-3 flex items-center justify-between pt-1">
-                    <span className={`text-[11px] font-bold ${
-                      isLight ? "text-blue-600 group-hover:text-blue-700" : "text-cyan-400 group-hover:text-cyan-300"
-                    } flex items-center gap-1`}>
+                    <span className={`text-[11px] font-black ${s.btnText} flex items-center gap-1 transition-colors`}>
                       Practice 🎙️
                     </span>
-                    <span className={`text-xs font-black transition-transform group-hover:translate-x-1 ${
-                      isLight ? "text-blue-600" : "text-cyan-400"
-                    }`}>
+                    <span className={`text-xs font-black transition-transform group-hover:translate-x-1.5 ${s.btnText}`}>
                       →
                     </span>
                   </div>
