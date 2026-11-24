@@ -24,6 +24,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool _isDarkMode = true;
+
+  // Adaptive theme color tokens
+  Color get _bgScaffold => _isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+  Color get _bgCard => _isDarkMode ? const Color(0xFF1E293B) : Colors.white;
+  Color get _bgInput => _isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
+  Color get _borderSubtle => _isDarkMode ? Colors.white.withOpacity(0.08) : const Color(0xFFE2E8F0);
+  Color get _textPrimary => _isDarkMode ? Colors.white : const Color(0xFF0F172A);
+  Color get _textSecondary => _isDarkMode ? Colors.white.withOpacity(0.7) : const Color(0xFF475569);
+  Color get _textMuted => _isDarkMode ? Colors.white.withOpacity(0.45) : const Color(0xFF94A3B8);
+
   int _currentTabIndex = 0;
   String _selectedLanguage = 'All';
   String _selectedCategory = 'All';
@@ -1613,7 +1624,7 @@ class _HomeScreenState extends State<HomeScreen> {
           final filteredTopics = _filterTopics(allTopics);
 
           return Scaffold(
-            backgroundColor: const Color(0xFF0F172A),
+            backgroundColor: _bgScaffold,
             body: SafeArea(
               child: _buildActiveTabContent(allTopics, filteredTopics),
             ),
@@ -1647,11 +1658,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildBottomNavigationBar() {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.08))),
+        color: _isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+        border: Border(top: BorderSide(color: _borderSubtle)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: _isDarkMode ? Colors.black.withOpacity(0.4) : Colors.black.withOpacity(0.06),
             blurRadius: 15,
             offset: const Offset(0, -3),
           ),
@@ -1663,8 +1674,8 @@ class _HomeScreenState extends State<HomeScreen> {
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        selectedItemColor: const Color(0xFF818CF8),
-        unselectedItemColor: Colors.white.withOpacity(0.45),
+        selectedItemColor: const Color(0xFF6366F1),
+        unselectedItemColor: _isDarkMode ? Colors.white.withOpacity(0.45) : const Color(0xFF94A3B8),
         selectedFontSize: 11,
         unselectedFontSize: 10,
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
@@ -1702,6 +1713,210 @@ class _HomeScreenState extends State<HomeScreen> {
   // -------------------------------------------------------------
   // TAB 0: HOME TAB (AI COACH DASHBOARD)
   // -------------------------------------------------------------
+  // -------------------------------------------------------------
+  // STICKY TOP HEADER (FIXED ON SCROLL WITH THEME TOGGLE)
+  // -------------------------------------------------------------
+  Widget _buildStickyHomeHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      decoration: BoxDecoration(
+        color: _isDarkMode ? const Color(0xFF0F172A).withOpacity(0.96) : Colors.white.withOpacity(0.96),
+        border: Border(bottom: BorderSide(color: _borderSubtle)),
+        boxShadow: [
+          BoxShadow(
+            color: _isDarkMode ? Colors.black.withOpacity(0.35) : Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // App Logo + SpeakFlow AI Brand
+          Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(11),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF6366F1).withOpacity(0.35),
+                      blurRadius: 12,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(11),
+                  child: Image.asset(
+                    'assets/images/app_logo.png',
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'SpeakFlow',
+                          style: TextStyle(
+                            color: _textPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        const TextSpan(
+                          text: ' AI',
+                          style: TextStyle(
+                            color: Color(0xFF38BDF8),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF10B981),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Voice Coach Online',
+                        style: TextStyle(color: _textMuted, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          Row(
+            children: [
+              // Active Language Switcher Chip
+              InkWell(
+                onTap: () => _showLanguageSetupModal(context, isMandatory: false),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6366F1).withOpacity(_isDarkMode ? 0.18 : 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      _buildFlagBadge(_userTargetLanguage ?? 'English', width: 20, height: 14, radius: 3),
+                      const SizedBox(width: 6),
+                      Text(
+                        _userTargetLanguage ?? 'Set Lang',
+                        style: TextStyle(
+                          color: _isDarkMode ? const Color(0xFF818CF8) : const Color(0xFF4361EE),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 3),
+                      Text('▼', style: TextStyle(color: _isDarkMode ? const Color(0xFF818CF8) : const Color(0xFF4361EE), fontSize: 9)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+
+              // Light / Dark Theme Switcher
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    _isDarkMode = !_isDarkMode;
+                  });
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: _isDarkMode ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _borderSubtle),
+                  ),
+                  child: Icon(
+                    _isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                    color: _isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFF4361EE),
+                    size: 19,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+
+              // Notification Bell Icon with Badge
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('lang_notifications').limit(10).snapshots(),
+                builder: (context, notifSnap) {
+                  final count = notifSnap.data?.docs.length ?? 0;
+                  return InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: _isDarkMode ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: _borderSubtle),
+                      ),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Icon(Icons.notifications_outlined, color: _textPrimary, size: 19),
+                          if (count > 0)
+                            Positioned(
+                              top: -2,
+                              right: -2,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFEF4444),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // -------------------------------------------------------------
+  // TAB 0: HOME TAB (AI COACH DASHBOARD WITH STICKY HEADER)
+  // -------------------------------------------------------------
   Widget _buildHomeTab(List<TopicModel> allTopics) {
     // Pick topics matching the user's active language
     final langTopics = allTopics.where((t) {
@@ -1718,309 +1933,202 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Top Header Bar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 16, 18, 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(11),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF6366F1).withOpacity(0.4),
-                            blurRadius: 12,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(11),
-                        child: Image.asset(
-                          'assets/images/app_logo.png',
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'SpeakFlow AI',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            Container(
-                              width: 7,
-                              height: 7,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF10B981),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 5),
-                            Text(
-                              'Voice Coach Online',
-                              style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+    return Column(
+      children: [
+        // FIXED STICKY TOP HEADER
+        _buildStickyHomeHeader(),
 
-                Row(
-                  children: [
-                    // Active Language Switcher Chip
-                    InkWell(
-                      onTap: () => _showLanguageSetupModal(context, isMandatory: false),
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1).withOpacity(0.18),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.4)),
-                        ),
-                        child: Row(
-                          children: [
-                            _buildFlagBadge(_userTargetLanguage ?? 'English', width: 20, height: 14, radius: 3),
-                            const SizedBox(width: 6),
-                            Text(
-                              _userTargetLanguage ?? 'Set Lang',
-                              style: const TextStyle(
-                                color: Color(0xFF818CF8),
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 3),
-                            const Text('▼', style: TextStyle(color: Color(0xFF818CF8), fontSize: 9)),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-
-                    // Notification Bell Icon with Badge
-                    StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance.collection('lang_notifications').limit(10).snapshots(),
-                      builder: (context, notifSnap) {
-                        final count = notifSnap.data?.docs.length ?? 0;
-                        return InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-                            );
-                          },
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            padding: const EdgeInsets.all(7),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1E293B),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white.withOpacity(0.12)),
-                            ),
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                const Icon(Icons.notifications_outlined, color: Colors.white, size: 20),
-                                if (count > 0)
-                                  Positioned(
-                                    top: -2,
-                                    right: -2,
-                                    child: Container(
-                                      width: 8,
-                                      height: 8,
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFEF4444),
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-
-
-          // Mandatory Language Setup Banner (if not yet configured)
-          if (_userTargetLanguage == null)
-            Container(
-              margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFDC2626), Color(0xFF991B1B)],
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  const Text('⚠️', style: TextStyle(fontSize: 22)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'Language Setup Required',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                        ),
-                        Text(
-                          'ඇමතුම් ගැනීමට පෙර ඔබට පුහුණු වීමට අවශ්‍ය භාෂාව තෝරන්න.',
-                          style: TextStyle(color: Colors.white70, fontSize: 10),
-                        ),
-                      ],
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => _showLanguageSetupModal(context, isMandatory: true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFFDC2626),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-                    ),
-                    child: const Text('Setup'),
-                  ),
-                ],
-              ),
-            ),
-
-          // Daily Free Practice Time & Quota Status Pill
-          _buildDailyQuotaBanner(),
-
-          // Glowing Quick Call Action Hero Box
-          Container(
-            margin: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF312E81), Color(0xFF4C1D95), Color(0xFF1E1B4B)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF6366F1).withOpacity(0.25),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-              border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.3)),
-            ),
+        // SCROLLABLE CONTENT BODY
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(20),
+                // Mandatory Language Setup Banner (if not yet configured)
+                if (_userTargetLanguage == null)
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFDC2626), Color(0xFF991B1B)],
                       ),
-                      child: Text(
-                        '⚡ Spoken AI Call (${_userTargetLanguage ?? "Select Lang"})',
-                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                      ),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    _buildMiniSoundWave(),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Practice Speaking Naturally',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 20,
+                    child: Row(
+                      children: [
+                        const Text('⚠️', style: TextStyle(fontSize: 22)),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                'Language Setup Required',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                              Text(
+                                'ඇමතුම් ගැනීමට පෙර ඔබට පුහුණු වීමට අවශ්‍ය භාෂාව තෝරන්න.',
+                                style: TextStyle(color: Colors.white70, fontSize: 10),
+                              ),
+                            ],
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => _showLanguageSetupModal(context, isMandatory: true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: const Color(0xFFDC2626),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                          ),
+                          child: const Text('Setup'),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                // Daily Free Practice Time & Quota Status Pill
+                _buildDailyQuotaBanner(),
+
+                // Glowing Quick Call Action Hero Box with 3D AI Voice Coach Mascot
+                Container(
+                  margin: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: _isDarkMode
+                          ? const [Color(0xFF312E81), Color(0xFF4C1D95), Color(0xFF1E1B4B)]
+                          : const [Color(0xFF4361EE), Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF6366F1).withOpacity(_isDarkMode ? 0.35 : 0.25),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                    border: Border.all(color: Colors.white.withOpacity(0.2)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        '⚡ Spoken AI Call (${_userTargetLanguage ?? "Select Lang"})',
+                                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildMiniSoundWave(),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'Practice Speaking Naturally',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 19,
+                                    letterSpacing: -0.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'AI talks proactively, analyzes your accent & grammar live, and gives instant pronunciation drills.',
+                                  style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 11.5, height: 1.35),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          // 3D AI Voice Coach Mascot Avatar
+                          Container(
+                            width: 90,
+                            height: 90,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF38BDF8).withOpacity(0.4),
+                                  blurRadius: 16,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: ClipOval(
+                              child: Image.asset(
+                                'assets/images/hero_ai_coach.png',
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                if (_userTargetLanguage == null) {
+                                  _showLanguageSetupModal(context, isMandatory: true);
+                                  return;
+                                }
+                                // Trigger Quick Call in user's target language
+                                final pool = allTopics.where((t) => t.language.toLowerCase() == _userTargetLanguage!.toLowerCase()).toList();
+                                final randomTopic = pool.isNotEmpty ? (pool..shuffle()).first : allTopics.first;
+                                _promptCallDuration(context, randomTopic);
+                              },
+                              icon: const Icon(Icons.call, size: 18),
+                              label: Text('Quick Call (${_userTargetLanguage ?? "Select"})'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF10B981),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                elevation: 4,
+                                textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          InkWell(
+                            onTap: () => setState(() => _currentTabIndex = 1),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.white24),
+                              ),
+                              child: const Icon(Icons.format_list_bulleted, color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  'AI talks proactively, analyzes your accent & grammar live, and gives instant pronunciation drills.',
-                  style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 12, height: 1.4),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          if (_userTargetLanguage == null) {
-                            _showLanguageSetupModal(context, isMandatory: true);
-                            return;
-                          }
-                          // Trigger Quick Call in user's target language
-                          final pool = allTopics.where((t) => t.language.toLowerCase() == _userTargetLanguage!.toLowerCase()).toList();
-                          final randomTopic = pool.isNotEmpty ? (pool..shuffle()).first : allTopics.first;
-                          _promptCallDuration(context, randomTopic);
-                        },
-                        icon: const Icon(Icons.call, size: 18),
-                        label: Text('Quick Call (${_userTargetLanguage ?? "Select"})'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          elevation: 4,
-                          textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    InkWell(
-                      onTap: () => setState(() => _currentTabIndex = 1),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white24),
-                        ),
-                        child: const Icon(Icons.format_list_bulleted, color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-
-
           // User Stats Row
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -2048,9 +2156,9 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
+                color: _bgCard,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withOpacity(0.08)),
+                border: Border.all(color: _borderSubtle),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2061,14 +2169,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 8),
                       Text(
                         'Speak About Any Custom Topic (${_userTargetLanguage ?? "Select Lang"})',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                        style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                     ],
                   ),
                   const SizedBox(height: 6),
                   Text(
                     'කැමති ඕනෑම දෙයක් (Cricket, Travel, AI...) type කර live voice call එකක් ගන්න:',
-                    style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 11),
+                    style: TextStyle(color: _textSecondary, fontSize: 11),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -2076,12 +2184,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       Expanded(
                         child: TextField(
                           controller: _customTopicController,
-                          style: const TextStyle(color: Colors.white, fontSize: 13),
+                          style: TextStyle(color: _textPrimary, fontSize: 13),
                           decoration: InputDecoration(
                             hintText: 'e.g. Cricket World Cup, Traveling in Spain...',
-                            hintStyle: TextStyle(color: Colors.white.withOpacity(0.35), fontSize: 12),
+                            hintStyle: TextStyle(color: _textMuted, fontSize: 12),
                             filled: true,
-                            fillColor: const Color(0xFF0F172A),
+                            fillColor: _bgInput,
                             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
@@ -2120,9 +2228,9 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Explore by Interests',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                  style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
                 ),
                 TextButton(
                   onPressed: () => setState(() => _currentTabIndex = 2),
@@ -2164,8 +2272,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(width: 6),
                     Text(
                       'Featured & Trending Scenarios (${displayTopics.length})',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: _textPrimary,
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                       ),
@@ -2283,8 +2391,11 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 24),
         ],
       ),
-    );
-  }
+    ),
+  ),
+],
+);
+}
 
   Widget _buildMiniSoundWave() {
     return Row(
@@ -2823,19 +2934,18 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF1E293B),
-            Color(0xFF0F172A),
-          ],
+        gradient: LinearGradient(
+          colors: _isDarkMode
+              ? const [Color(0xFF1E293B), Color(0xFF0F172A)]
+              : const [Colors.white, Color(0xFFF8FAFC)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: catColor.withOpacity(0.25), width: 1.1),
+        border: Border.all(color: _isDarkMode ? catColor.withOpacity(0.25) : const Color(0xFFE2E8F0), width: 1.1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.28),
+            color: _isDarkMode ? Colors.black.withOpacity(0.28) : Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -2888,8 +2998,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         topic.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: _textPrimary,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                           letterSpacing: -0.2,
@@ -2900,8 +3010,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         topic.scenario,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFF94A3B8),
+                        style: TextStyle(
+                          color: _textSecondary,
                           fontSize: 11,
                           height: 1.3,
                         ),
