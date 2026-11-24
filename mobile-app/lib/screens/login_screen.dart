@@ -182,6 +182,49 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  /// 1-Click Instant Demo Access for Hackathon Judges & Evaluators
+  Future<void> _signInAsJudgeDemo() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      // 1. Authenticate with Firebase (Anonymous fallback allows instant live DB & session)
+      UserCredential userCred = await _auth.signInAnonymously();
+      final user = userCred.user;
+      if (user != null) {
+        await user.updateDisplayName('Hackathon Judge (VIP Demo)');
+        final userDocRef = _firestore.collection('lang_users').doc(user.uid);
+        final doc = await userDocRef.get();
+        if (!doc.exists) {
+          await userDocRef.set({
+            'email': 'judge.evaluator@google-hackathon.ai',
+            'displayName': 'Hackathon Judge (VIP Demo)',
+            'createdAt': DateTime.now().toIso8601String(),
+            'totalCalls': 12,
+            'totalMinutes': 48,
+            'averageScore': 94,
+            'streak': 5,
+            'isVip': true,
+            'targetLanguages': ['English', 'Spanish', 'Sinhala'],
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('[Judge Demo Auth Fallback]: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        // If modal sheet open, close it
+        Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
+    }
+  }
+
   void _showEmailAuthModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -685,7 +728,78 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 14),
+
+                        // 3. SPECIAL DEMO BUTTON: 1-Click Judge Instant Demo Access
+                        Container(
+                          width: double.infinity,
+                          height: 54,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFEF3C7), Color(0xFFFDE68A)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFF59E0B).withOpacity(0.28),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: _isLoading ? null : _signInAsJudgeDemo,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFD97706),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.flash_on_rounded,
+                                        size: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Text(
+                                      '⚡ 1-Click Judge Instant Demo Access',
+                                      style: TextStyle(
+                                        color: Color(0xFF78350F),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Judges & Evaluators: Instant 1-click bypass straight to User Dashboard',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Color(0xFFB45309),
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
 
                         // FOOTER: Terms of Service & Privacy Policy
                         Wrap(
