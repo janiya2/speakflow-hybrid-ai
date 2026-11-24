@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'terms_policy_screen.dart';
 import '../services/subscription_service.dart';
+import '../services/auth_session_service.dart';
 
 class PaywallScreen extends StatefulWidget {
   final bool isDismissible;
@@ -678,8 +679,13 @@ class _PaywallScreenState extends State<PaywallScreen> {
   // HANDLE SUBSCRIBE / FREE TRIAL ACTIVATION
   // -------------------------------------------------------------
   Future<void> _handleSubscribe() async {
-    final user = FirebaseAuth.instance.currentUser;
+    User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
+      try {
+        user = await AuthSessionService.restoreOrEnsureSession();
+      } catch (_) {}
+    }
+    if (user == null && !AuthSessionService.isDemoVip) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please log in first to activate your free trial.'),

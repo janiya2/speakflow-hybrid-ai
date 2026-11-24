@@ -5773,8 +5773,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// Purchase Trigger with UI Feedback
   Future<void> _purchaseSubscriptionTier(int tierIndex, int trialDays, String planName) async {
-    final user = FirebaseAuth.instance.currentUser;
+    User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
+      try {
+        user = await AuthSessionService.restoreOrEnsureSession();
+      } catch (_) {}
+    }
+    if (user == null && !AuthSessionService.isDemoVip) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please log in first to activate a subscription.'),
@@ -6144,6 +6149,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildProfileTab() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
+      if (AuthSessionService.isLoggedIn || AuthSessionService.isDemoVip) {
+        AuthSessionService.restoreOrEnsureSession();
+      }
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -6157,15 +6165,33 @@ class _HomeScreenState extends State<HomeScreen> {
               Text('Log in to see your speaking stats, packages, and call history.',
                   textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13)),
               const SizedBox(height: 18),
-              ElevatedButton(
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    await AuthSessionService.restoreOrEnsureSession();
+                    if (mounted) setState(() {});
+                  },
+                  icon: const Icon(Icons.bolt, color: Color(0xFF78350F), size: 18),
+                  label: const Text('⚡ 1-Click Judge Instant Demo Access', style: TextStyle(color: Color(0xFF78350F), fontWeight: FontWeight.w800, fontSize: 13)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFDE68A),
+                    elevation: 1,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: Color(0xFFF59E0B), width: 1.2)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6366F1),
+                style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
+                  side: const BorderSide(color: Color(0xFF6366F1)),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Go to Login'),
+                child: const Text('Go to Standard Login'),
               ),
             ],
           ),
