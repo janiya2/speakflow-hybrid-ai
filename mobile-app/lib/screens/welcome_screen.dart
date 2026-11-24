@@ -1,3 +1,5 @@
+import 'home_screen.dart';
+import '../services/auth_session_service.dart';
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'terms_policy_screen.dart';
@@ -260,7 +262,64 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                         ),
 
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 10),
+
+                        // ⚡ 1-Click Judge Instant Demo Access
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: InkWell(
+                            onTap: () async {
+                              await AuthSessionService.restoreOrEnsureSession();
+                              if (context.mounted) {
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(builder: (_) => const HomeScreen()),
+                                );
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFFFEF3C7), Color(0xFFFDE68A)],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFFF59E0B), width: 1.2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFF59E0B).withOpacity(0.18),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(5),
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFD97706),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.bolt, color: Colors.white, size: 14),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    '⚡ 1-Click Judge Instant Demo Access',
+                                    style: TextStyle(
+                                      color: Color(0xFF78350F),
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
 
                         // Already have an account? Log In
                         GestureDetector(

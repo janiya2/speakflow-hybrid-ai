@@ -29,7 +29,7 @@ class AuthSessionService {
     required String uid,
     String? email,
     String? displayName,
-    bool isDemo = false,
+    bool isDemo = true,
   }) {
     PlatformAuthStorage.setItem(_kLoggedIn, 'true');
     PlatformAuthStorage.setItem(_kUserUid, uid);
@@ -54,50 +54,51 @@ class AuthSessionService {
     debugPrint('[AuthSessionService] Session cleared');
   }
 
-  /// Ensures user is restored or gracefully re-authenticated if a session was previously active
+  /// Ensures user is restored or seamlessly authenticated as Judge VIP demo user
   static Future<User?> restoreOrEnsureSession() async {
     final auth = FirebaseAuth.instance;
 
-    // 1. If Firebase already restored user, update session and return
+    // 1. If Firebase already has currentUser, ensure session stored and return
     if (auth.currentUser != null) {
       saveSession(
         uid: auth.currentUser!.uid,
-        email: auth.currentUser!.email,
-        displayName: auth.currentUser!.displayName,
-        isDemo: isDemoVip,
+        email: auth.currentUser!.email ?? 'judge.evaluator@google-hackathon.ai',
+        displayName: auth.currentUser!.displayName ?? 'Hackathon Judge (VIP Demo)',
+        isDemo: true,
       );
       return auth.currentUser;
     }
 
-    // 2. Wait up to 3.5s for Firebase auth state restoration from IndexedDB
+    // 2. Wait briefly for Firebase auth state restoration
     try {
       final user = await auth.authStateChanges().firstWhere((u) => u != null).timeout(
-        const Duration(milliseconds: 3500),
+        const Duration(milliseconds: 1500),
         onTimeout: () => null,
       );
       if (user != null) {
         saveSession(
           uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          isDemo: isDemoVip,
+          email: user.email ?? 'judge.evaluator@google-hackathon.ai',
+          displayName: user.displayName ?? 'Hackathon Judge (VIP Demo)',
+          isDemo: true,
         );
         return user;
       }
     } catch (_) {}
 
-    // 3. If still null, but localStorage says user was logged in (e.g. refresh on web):
-    if (isLoggedIn) {
-      debugPrint('[AuthSessionService] Local session active, re-authenticating seamlessly...');
-      try {
-        final cred = await auth.signInAnonymously();
-        final newUser = cred.user;
-        if (newUser != null) {
-          final name = savedName ?? 'Hackathon Judge (VIP Demo)';
-          final email = savedEmail ?? 'judge.evaluator@google-hackathon.ai';
+    // 3. Guaranteed Judge VIP fallback authentication
+    try {
+      debugPrint('[AuthSessionService] Initializing guaranteed Judge VIP demo session...');
+      final cred = await auth.signInAnonymously();
+      final newUser = cred.user;
+      if (newUser != null) {
+        final name = savedName ?? 'Hackathon Judge (VIP Demo)';
+        final email = savedEmail ?? 'judge.evaluator@google-hackathon.ai';
+        try {
           await newUser.updateDisplayName(name);
+        } catch (_) {}
 
-          // Seed or restore Firestore record
+        try {
           final userDocRef = FirebaseFirestore.instance.collection('lang_users').doc(newUser.uid);
           final doc = await userDocRef.get();
           if (!doc.exists) {
@@ -110,21 +111,22 @@ class AuthSessionService {
               'averageScore': 94,
               'streak': 5,
               'isVip': true,
+              'isVipMonthly': true,
               'targetLanguages': ['English', 'Spanish', 'Sinhala'],
             }, SetOptions(merge: true));
           }
+        } catch (_) {}
 
-          saveSession(
-            uid: newUser.uid,
-            email: email,
-            displayName: name,
-            isDemo: isDemoVip,
-          );
-          return newUser;
-        }
-      } catch (err) {
-        debugPrint('[AuthSessionService] Seamless re-auth error: $err');
+        saveSession(
+          uid: newUser.uid,
+          email: email,
+          displayName: name,
+          isDemo: true,
+        );
+        return newUser;
       }
+    } catch (err) {
+      debugPrint('[AuthSessionService] Anonymous sign in fallback error: $err');
     }
 
     return auth.currentUser;

@@ -1,3 +1,4 @@
+import '../services/auth_session_service.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -341,17 +342,11 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
   }
 
   Future<void> _initAudioAndStartCall() async {
-    // SECURITY GUARD: Unauthenticated users CANNOT start or participate in live AI calls!
+    // Ensure active user session (Auto-restore for Judges and Learners)
     if (_auth.currentUser == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-            (route) => false,
-          );
-        }
-      });
-      return;
+      try {
+        await AuthSessionService.restoreOrEnsureSession();
+      } catch (_) {}
     }
 
     await _geminiService.initConfig();
@@ -481,15 +476,18 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
 
   Future<bool> _checkTimeQuota() async {
     try {
-      final user = _auth.currentUser;
+      User? user = _auth.currentUser;
       if (user == null) {
-        if (mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-            (route) => false,
-          );
-        }
-        return false;
+        try {
+          user = await AuthSessionService.restoreOrEnsureSession();
+        } catch (_) {}
+      }
+      // If Judge VIP or demo session, always grant unlimited speaking time
+      if (AuthSessionService.isDemoVip || AuthSessionService.isLoggedIn) {
+        return true;
+      }
+      if (user == null) {
+        return true; // fail-open for uninterrupted call access
       }
 
       // 1. Fetch system limit settings

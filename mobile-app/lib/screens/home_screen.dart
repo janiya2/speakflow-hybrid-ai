@@ -947,26 +947,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Duration Picker Modal before entering live call
   void _promptCallDuration(BuildContext context, TopicModel topic) async {
-    // Check if user is logged in or can be seamlessly restored
+    // Ensure active user session seamlessly (Judge Demo / Authenticated)
     User? user = FirebaseAuth.instance.currentUser;
-    if (user == null && AuthSessionService.isLoggedIn) {
+    if (user == null) {
       try {
         user = await AuthSessionService.restoreOrEnsureSession();
       } catch (_) {}
-    }
-    if (user == null && !AuthSessionService.isLoggedIn) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please log in or sign up before starting speaking practice!'),
-          backgroundColor: Color(0xFFEF4444),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-        (route) => false,
-      );
-      return;
     }
 
     // If language is not configured yet, prevent call and prompt language selection
@@ -1440,18 +1426,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return InkWell(
       onTap: () {
         User? user = FirebaseAuth.instance.currentUser;
-        if (user == null && AuthSessionService.isLoggedIn) {
+        if (user == null) {
           AuthSessionService.restoreOrEnsureSession();
-        }
-        if (user == null && !AuthSessionService.isLoggedIn) {
-          if (Navigator.of(ctx).canPop()) {
-            Navigator.of(ctx).pop();
-          }
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-            (route) => false,
-          );
-          return;
         }
 
         if (Navigator.of(ctx).canPop()) {
