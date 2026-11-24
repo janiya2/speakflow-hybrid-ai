@@ -16,6 +16,7 @@ import 'notifications_screen.dart';
 import '../services/notification_service.dart';
 import '../services/subscription_service.dart';
 import '../services/auth_session_service.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -30,6 +31,27 @@ class _HomeScreenState extends State<HomeScreen> {
   // Adaptive theme color tokens
   Color get _bgScaffold => _isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
   Color get _bgCard => _isDarkMode ? const Color(0xFF1E293B) : Colors.white;
+  Color get _bgCardElevated => _isDarkMode ? const Color(0xFF1E293B) : Colors.white;
+  Color get _bgSurface => _isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
+  List<BoxShadow> get _cardShadow => _isDarkMode
+      ? [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 3))]
+      : [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 3))];
+
+  String _callHistoryLangFilter = 'All';
+  FlutterTts? _grammarReviewTts;
+
+  Future<void> _playGrammarAudio(String phrase, String language) async {
+    try {
+      _grammarReviewTts ??= FlutterTts();
+      final l = language.toLowerCase();
+      final langCode = l.contains('ger') ? 'de-DE' : (l.contains('span') ? 'es-ES' : (l.contains('fren') ? 'fr-FR' : (l.contains('ital') ? 'it-IT' : (l.contains('jap') ? 'ja-JP' : (l.contains('kor') ? 'ko-KR' : 'en-US')))));
+      await _grammarReviewTts!.setLanguage(langCode);
+      await _grammarReviewTts!.setSpeechRate(0.48);
+      await _grammarReviewTts!.speak(phrase);
+    } catch (e) {
+      debugPrint('[GrammarReview] TTS error: $e');
+    }
+  }
   Color get _bgInput => _isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
   Color get _borderSubtle => _isDarkMode ? Colors.white.withOpacity(0.08) : const Color(0xFFE2E8F0);
   Color get _textPrimary => _isDarkMode ? Colors.white : const Color(0xFF0F172A);
@@ -968,11 +990,9 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    int selectedMinutes = 5;
-
     showModalBottomSheet(
       context: context,
-      backgroundColor: _isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+      backgroundColor: const Color(0xFF1E293B),
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -980,118 +1000,113 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (modalCtx, setModalState) {
-            return Container(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.88,
-              ),
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          color: _isDarkMode ? Colors.white.withOpacity(0.2) : Colors.black12,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-                    Row(
-                      children: [
-                        Container(
-                          width: 46,
-                          height: 46,
-                          decoration: BoxDecoration(
-                            color: _isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: _isDarkMode ? Colors.white10 : const Color(0xFFE2E8F0)),
-                          ),
-                          child: Center(
-                            child: Text(topic.icon, style: const TextStyle(fontSize: 24)),
-                          ),
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 46,
+                        height: 46,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0F172A),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.white10),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                topic.title,
-                                style: TextStyle(
-                                  color: _textPrimary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '${_getLanguageFlag(topic.language)} ${topic.language} • ${topic.level} • ${topic.category}',
-                                style: TextStyle(
-                                  color: _textSecondary,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
-                          ),
+                        child: Center(
+                          child: Text(topic.icon, style: const TextStyle(fontSize: 24)),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              topic.title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${_getLanguageFlag(topic.language)} ${topic.language} • ${topic.level} • ${topic.category}',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.6),
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
 
-                    // 1. Choose Coach Section (Male & Female List with Pictures & Names - Zero overflow)
-                    Row(
-                      children: [
-                        const Icon(Icons.auto_awesome, color: Color(0xFFF59E0B), size: 15),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            'Choose Your AI Voice Coach:',
-                            style: TextStyle(
-                              color: _textPrimary,
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                  // 1. Choose Coach Section (Male & Female List with Pictures & Names - Zero overflow)
+                  Row(
+                    children: [
+                      const Icon(Icons.auto_awesome, color: Color(0xFFF59E0B), size: 15),
+                      const SizedBox(width: 6),
+                      const Expanded(
+                        child: Text(
+                          'Choose Your AI Voice Coach:',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                        decoration: BoxDecoration(
+                          color: _selectedCoach.primaryAccent.withOpacity(0.16),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: _selectedCoach.primaryAccent.withOpacity(0.45),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
-                          decoration: BoxDecoration(
-                            color: _selectedCoach.primaryAccent.withOpacity(0.16),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: _selectedCoach.primaryAccent.withOpacity(0.45),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.check_circle_rounded,
+                              color: _selectedCoach.primaryAccent,
+                              size: 11,
                             ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.check_circle_rounded,
+                            const SizedBox(width: 4),
+                            Text(
+                              'Coach ${_selectedCoach.name}',
+                              style: TextStyle(
                                 color: _selectedCoach.primaryAccent,
-                                size: 11,
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Coach ${_selectedCoach.name}',
-                                style: TextStyle(
-                                  color: _selectedCoach.primaryAccent,
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 12),
 
                   // 6 Balanced, Spacious AI Coach Cards (Female & Male) with Horizontal Scrolling
@@ -1125,14 +1140,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                         end: Alignment.bottomCenter,
                                         colors: [
                                           coach.primaryAccent.withOpacity(0.24),
-                                          _isDarkMode ? const Color(0xFF0F172A) : Colors.white,
+                                          const Color(0xFF0F172A),
                                         ],
                                       )
                                     : null,
-                                color: isSel ? null : (_isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)),
+                                color: isSel ? null : const Color(0xFF0F172A),
                                 borderRadius: BorderRadius.circular(18),
                                 border: Border.all(
-                                  color: isSel ? coach.primaryAccent : (_isDarkMode ? Colors.white12 : const Color(0xFFE2E8F0)),
+                                  color: isSel ? coach.primaryAccent : Colors.white12,
                                   width: isSel ? 2 : 1,
                                 ),
                                 boxShadow: isSel
@@ -1153,7 +1168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: isSel ? coach.primaryAccent : (_isDarkMode ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.05)),
+                                      color: isSel ? coach.primaryAccent : Colors.white.withOpacity(0.06),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: isSel
@@ -1182,8 +1197,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 4),
                                               Text(
                                                 coach.name,
-                                                style: TextStyle(
-                                                  color: _isDarkMode ? Colors.white60 : const Color(0xFF64748B),
+                                                style: const TextStyle(
+                                                  color: Colors.white60,
                                                   fontSize: 8.5,
                                                   fontWeight: FontWeight.w900,
                                                   letterSpacing: 0.3,
@@ -1203,7 +1218,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                            color: isSel ? coach.primaryAccent : (_isDarkMode ? Colors.white24 : const Color(0xFFCBD5E1)),
+                                            color: isSel ? coach.primaryAccent : Colors.white24,
                                             width: isSel ? 2 : 1,
                                           ),
                                         ),
@@ -1217,7 +1232,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           decoration: BoxDecoration(
                                             color: const Color(0xFF059669),
                                             borderRadius: BorderRadius.circular(6),
-                                            border: Border.all(color: _isDarkMode ? Colors.black : Colors.white, width: 1),
+                                            border: Border.all(color: Colors.black, width: 1),
                                           ),
                                           child: const Text(
                                             'LIVE',
@@ -1241,7 +1256,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       Text(
                                         coach.name,
                                         style: TextStyle(
-                                          color: isSel ? (_isDarkMode ? Colors.white : coach.primaryAccent) : _textPrimary,
+                                          color: isSel ? Colors.white : Colors.white70,
                                           fontSize: 12.5,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -1259,7 +1274,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Text(
                                     coach.shortAccent,
                                     style: TextStyle(
-                                      color: isSel ? coach.primaryAccent : _textSecondary,
+                                      color: isSel ? coach.primaryAccent : Colors.white54,
                                       fontSize: 9.5,
                                       fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
                                     ),
@@ -1273,7 +1288,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      color: _textMuted,
+                                      color: Colors.white.withOpacity(0.4),
                                       fontSize: 8.5,
                                     ),
                                   ),
@@ -1291,7 +1306,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     margin: const EdgeInsets.only(top: 12),
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
                     decoration: BoxDecoration(
-                      color: _selectedCoach.primaryAccent.withOpacity(_isDarkMode ? 0.08 : 0.06),
+                      color: _selectedCoach.primaryAccent.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: _selectedCoach.primaryAccent.withOpacity(0.28),
@@ -1333,7 +1348,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: Text(
                                       '• ${_selectedCoach.accent}',
                                       style: TextStyle(
-                                        color: _textSecondary,
+                                        color: Colors.white.withOpacity(0.65),
                                         fontSize: 10,
                                       ),
                                       overflow: TextOverflow.ellipsis,
@@ -1345,7 +1360,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Text(
                                 _selectedCoach.tagline,
                                 style: TextStyle(
-                                  color: _textPrimary,
+                                  color: Colors.white.withOpacity(0.85),
                                   fontSize: 10.5,
                                 ),
                                 maxLines: 1,
@@ -1389,10 +1404,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       const Icon(Icons.timer_outlined, color: Color(0xFF818CF8), size: 15),
                       const SizedBox(width: 6),
-                      Text(
+                      const Text(
                         'Select Practice Session Duration:',
                         style: TextStyle(
-                          color: _textPrimary,
+                          color: Colors.white70,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1402,208 +1417,82 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      Expanded(
-                        child: _buildDurationOption(
-                          mins: 3,
-                          title: "3 Min",
-                          sub: "Quick Drill",
-                          isSelected: selectedMinutes == 3,
-                          onTap: () => setModalState(() => selectedMinutes = 3),
-                          icon: '⚡',
-                        ),
-                      ),
+                      Expanded(child: _buildDurationOption(ctx, topic, 3, "3 Min", "Quick Drill", icon: '⚡')),
                       const SizedBox(width: 6),
-                      Expanded(
-                        child: _buildDurationOption(
-                          mins: 5,
-                          title: "5 Min",
-                          sub: "Balanced",
-                          isSelected: selectedMinutes == 5,
-                          onTap: () => setModalState(() => selectedMinutes = 5),
-                          isPopular: true,
-                          icon: '⭐',
-                        ),
-                      ),
+                      Expanded(child: _buildDurationOption(ctx, topic, 5, "5 Min", "Balanced", isPopular: true, icon: '⭐')),
                       const SizedBox(width: 6),
-                      Expanded(
-                        child: _buildDurationOption(
-                          mins: 15,
-                          title: "15 Min",
-                          sub: "Deep Fluency",
-                          isSelected: selectedMinutes == 15,
-                          onTap: () => setModalState(() => selectedMinutes = 15),
-                          icon: '🎯',
-                        ),
-                      ),
+                      Expanded(child: _buildDurationOption(ctx, topic, 15, "15 Min", "Deep Fluency", icon: '🎯')),
                       const SizedBox(width: 6),
-                      Expanded(
-                        child: _buildDurationOption(
-                          mins: 30,
-                          title: "30 Min",
-                          sub: "Max Session",
-                          isSelected: selectedMinutes == 30,
-                          onTap: () => setModalState(() => selectedMinutes = 30),
-                          icon: '🛡️',
-                        ),
-                      ),
+                      Expanded(child: _buildDurationOption(ctx, topic, 30, "30 Min", "Max Session", icon: '🛡️')),
                     ],
                   ),
-
-                  // 3. Prominent Start Live Call Button
-                  const SizedBox(height: 18),
-                  InkWell(
-                    onTap: () {
-                      User? user = FirebaseAuth.instance.currentUser;
-                      if (user == null) {
-                        AuthSessionService.restoreOrEnsureSession();
-                      }
-
-                      if (Navigator.of(ctx).canPop()) {
-                        Navigator.of(ctx).pop();
-                      }
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (!mounted) return;
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => LiveCallScreen(
-                              topic: topic,
-                              durationMinutes: selectedMinutes,
-                              coach: _selectedCoach,
-                              isDarkMode: _isDarkMode,
-                            ),
-                          ),
-                        );
-                      });
-                    },
-                    borderRadius: BorderRadius.circular(18),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF6366F1),
-                            const Color(0xFF4F46E5),
-                            _selectedCoach.primaryAccent,
-                          ],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF6366F1).withOpacity(0.4),
-                            blurRadius: 16,
-                            spreadRadius: 1,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.phone_in_talk_rounded, color: Colors.white, size: 18),
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            'Start Call with Coach ${_selectedCoach.name} ($selectedMinutes Min)',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14.5,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.bolt_rounded, size: 13, color: _isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFD97706)),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Instant 1-Click Connection • Live AI Accent & Fluency Feedback',
-                          style: TextStyle(
-                            color: _textMuted,
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                 ],
               ),
-            ),
-          );
-        },
-      );
-    },
-  );
-}
+            );
+          },
+        );
+      },
+    );
+  }
 
-  Widget _buildDurationOption({
-    required int mins,
-    required String title,
-    required String sub,
-    required bool isSelected,
-    required VoidCallback onTap,
+  Widget _buildDurationOption(
+    BuildContext ctx,
+    TopicModel topic,
+    int? mins,
+    String title,
+    String sub, {
     bool isPopular = false,
     String icon = '⏱️',
   }) {
-    final activeGradient = _isDarkMode
-        ? LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFF6366F1).withOpacity(0.35),
-              const Color(0xFF0F172A),
-            ],
-          )
-        : const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFEEF2FF),
-              Colors.white,
-            ],
-          );
-
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        User? user = FirebaseAuth.instance.currentUser;
+        if (user == null) {
+          AuthSessionService.restoreOrEnsureSession();
+        }
+
+        if (Navigator.of(ctx).canPop()) {
+          Navigator.of(ctx).pop();
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => LiveCallScreen(
+                topic: topic,
+                durationMinutes: mins,
+                coach: _selectedCoach,
+              ),
+            ),
+          );
+        });
+      },
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
         decoration: BoxDecoration(
-          gradient: isSelected ? activeGradient : null,
-          color: isSelected
-              ? null
-              : (_isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)),
+          gradient: isPopular
+              ? LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFF6366F1).withOpacity(0.28),
+                    const Color(0xFF0F172A),
+                  ],
+                )
+              : null,
+          color: isPopular ? null : const Color(0xFF0F172A),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF6366F1)
-                : (_isDarkMode ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-            width: isSelected ? 2.0 : 1.0,
+            color: isPopular ? const Color(0xFF818CF8) : const Color(0xFF334155),
+            width: isPopular ? 1.8 : 1,
           ),
-          boxShadow: isSelected
+          boxShadow: isPopular
               ? [
                   BoxShadow(
-                    color: const Color(0xFF6366F1).withOpacity(0.32),
+                    color: const Color(0xFF6366F1).withOpacity(0.3),
                     blurRadius: 10,
                     spreadRadius: 0,
                     offset: const Offset(0, 2),
@@ -1640,9 +1529,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               title,
               style: TextStyle(
-                color: isSelected
-                    ? (_isDarkMode ? Colors.white : const Color(0xFF4338CA))
-                    : _textPrimary,
+                color: isPopular ? Colors.white : Colors.white.withOpacity(0.9),
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
               ),
@@ -1654,11 +1541,9 @@ class _HomeScreenState extends State<HomeScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: isSelected
-                    ? const Color(0xFF6366F1)
-                    : _textMuted,
+                color: isPopular ? const Color(0xFFA5B4FC) : Colors.white.withOpacity(0.45),
                 fontSize: 8.5,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                fontWeight: isPopular ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
           ],
@@ -3324,7 +3209,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? (userSnap.data!.data() as Map<String, dynamic>?) ?? {}
                 : {};
 
-            final bool isVip = userData['isVipMonthly'] == true;
+            final bool isVip = userData['isVipMonthly'] == true || AuthSessionService.isDemoVip;
             final String today = DateTime.now().toIso8601String().substring(0, 10);
             final String? lastDate = userData['lastUsageDate'] as String?;
             final int usedToday = (lastDate == today) ? ((userData['dailyMinutesUsed'] as num?)?.toInt() ?? 0) : 0;
@@ -5156,7 +5041,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ? (userSnap.data!.data() as Map<dynamic, dynamic>?) ?? {}
                     : {};
 
-                final bool isVip = userData['isVip'] == true || userData['isVipMonthly'] == true;
+                final bool isVip = userData['isVip'] == true || userData['isVipMonthly'] == true || AuthSessionService.isDemoVip;
                 final String today = DateTime.now().toIso8601String().substring(0, 10);
                 final String? lastDate = userData['lastUsageDate'] as String?;
                 final int usedToday = (lastDate == today) ? ((userData['dailyMinutesUsed'] as num?)?.toInt() ?? 0) : 0;
@@ -5564,14 +5449,14 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Unlock Full AI Speaking Access 🚀',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
+                    style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 17),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     'Practice anytime with 6 native AI coaches. Real 60 FPS video & zero limits.',
-                    style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 11),
+                    style: TextStyle(color: _textSecondary, fontSize: 11),
                   ),
                 ],
               ),
@@ -5586,9 +5471,10 @@ class _HomeScreenState extends State<HomeScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E293B),
+            color: _bgCard,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
+            border: Border.all(color: _borderSubtle),
+            boxShadow: _cardShadow,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -5781,14 +5667,22 @@ class _HomeScreenState extends State<HomeScreen> {
     required int trialDays,
     required List<String> features,
   }) {
+    final cardBgColors = _isDarkMode
+        ? (isBestValue
+            ? [const Color(0xFF2E1C0C), const Color(0xFF1E293B)]
+            : (isHero
+                ? [const Color(0xFF0F2B26), const Color(0xFF1E293B)]
+                : [const Color(0xFF1E1B4B).withOpacity(0.6), const Color(0xFF1E293B)]))
+        : (isBestValue
+            ? [const Color(0xFFFFFBEB), Colors.white]
+            : (isHero
+                ? [const Color(0xFFECFDF5), Colors.white]
+                : [const Color(0xFFEEF2FF), Colors.white]));
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: isBestValue
-              ? [const Color(0xFF2E1C0C), const Color(0xFF1E293B)]
-              : (isHero
-                  ? [const Color(0xFF0F2B26), const Color(0xFF1E293B)]
-                  : [const Color(0xFF1E1B4B).withOpacity(0.6), const Color(0xFF1E293B)]),
+          colors: cardBgColors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -5988,6 +5882,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       if (success && mounted) {
+        setState(() {});
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -6118,9 +6013,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withOpacity(0.6),
+        color: _bgCard,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: _borderSubtle),
+        boxShadow: _cardShadow,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -6166,21 +6062,65 @@ class _HomeScreenState extends State<HomeScreen> {
   // -------------------------------------------------------------
   Widget _buildPastSessionsList() {
     final user = FirebaseAuth.instance.currentUser;
+    final List<String> langFilterOptions = ['All', 'English', 'German', 'Spanish', 'French', 'Italian', 'Japanese', 'Korean'];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          children: const [
-            Icon(Icons.history, color: Color(0xFF818CF8), size: 18),
-            SizedBox(width: 8),
-            Text(
-              'Past Call History & Fluency Scores',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.history_rounded, color: Color(0xFF6366F1), size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Past Call History & Grammar Review',
+                  style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+              ],
             ),
           ],
         ),
+        const SizedBox(height: 8),
+
+        // Language Filter Chips
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: langFilterOptions.map((lang) {
+              final isSelected = _callHistoryLangFilter == lang;
+              return Padding(
+                padding: const EdgeInsets.only(right: 6, bottom: 4),
+                child: ChoiceChip(
+                  label: Text(
+                    lang == 'All' ? '🌐 All' : '${_getLanguageFlag(lang)} $lang',
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : _textSecondary,
+                      fontSize: 11,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    ),
+                  ),
+                  selected: isSelected,
+                  selectedColor: const Color(0xFF6366F1),
+                  backgroundColor: _bgCard,
+                  side: BorderSide(
+                    color: isSelected ? const Color(0xFF6366F1) : _borderSubtle,
+                  ),
+                  onSelected: (val) {
+                    if (val) {
+                      setState(() {
+                        _callHistoryLangFilter = lang;
+                      });
+                    }
+                  },
+                ),
+              );
+            }).toList(),
+          ),
+        ),
         const SizedBox(height: 10),
+
         StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('lang_sessions')
@@ -6195,21 +6135,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
               return Container(
+                width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B),
+                  color: _bgCard,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _borderSubtle),
+                  boxShadow: _cardShadow,
                 ),
                 child: Center(
                   child: Column(
                     children: [
-                      const Icon(Icons.phone_missed, color: Colors.white24, size: 36),
+                      Icon(Icons.phone_missed_rounded, color: _textMuted, size: 36),
                       const SizedBox(height: 6),
-                      const Text('No practice calls logged yet.', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                      Text('No practice calls logged yet.', style: TextStyle(color: _textPrimary, fontSize: 12, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 2),
                       Text(
                         'Take your first live voice call to see pronunciation drills and scores here.',
-                        style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 10),
+                        style: TextStyle(color: _textSecondary, fontSize: 10),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -6218,7 +6161,32 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             }
 
-            final docs = snapshot.data!.docs;
+            final allDocs = snapshot.data!.docs;
+            final docs = _callHistoryLangFilter == 'All'
+                ? allDocs
+                : allDocs.where((d) {
+                    final l = (d.data() as Map<String, dynamic>)['language']?.toString().toLowerCase() ?? '';
+                    return l == _callHistoryLangFilter.toLowerCase();
+                  }).toList();
+
+            if (docs.isEmpty) {
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: _bgCard,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _borderSubtle),
+                ),
+                child: Center(
+                  child: Text(
+                    'No calls found for $_callHistoryLangFilter.',
+                    style: TextStyle(color: _textSecondary, fontSize: 11.5),
+                  ),
+                ),
+              );
+            }
+
             return Column(
               children: docs.map((doc) {
                 final data = doc.data() as Map<String, dynamic>;
@@ -6226,75 +6194,86 @@ class _HomeScreenState extends State<HomeScreen> {
                 final grade = data['grade'] ?? 'A';
                 final title = data['topicTitle'] ?? 'Speaking Session';
                 final duration = data['durationSeconds'] ?? 0;
-                final corrections = data['totalCorrections'] ?? 0;
+                final corrections = data['totalCorrections'] ?? ((data['correctionsList'] as List?)?.length ?? 0);
                 final lang = data['language'] ?? 'English';
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withOpacity(0.06)),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1).withOpacity(0.18),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(
-                          child: Text(
-                            '$grade',
-                            style: const TextStyle(
-                              color: Color(0xFF818CF8),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                return InkWell(
+                  onTap: () => _showSessionGrammarReviewModal(context, data),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _bgCard,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: _borderSubtle),
+                      boxShadow: _cardShadow,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6366F1).withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '$grade',
+                              style: const TextStyle(
+                                color: Color(0xFF6366F1),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 17,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                            ),
-                            const SizedBox(height: 2),
-                            Row(
-                              children: [
-                                Text(
-                                  '${_getLanguageFlag(lang)} $lang • $score/100 • ${duration}s',
-                                  style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 10.5),
-                                ),
-                                if (corrections > 0) ...[
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFEF4444).withOpacity(0.15),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      '$corrections Drills',
-                                      style: const TextStyle(color: Color(0xFFF87171), fontSize: 9, fontWeight: FontWeight.bold),
-                                    ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                              const SizedBox(height: 2),
+                              Row(
+                                children: [
+                                  Text(
+                                    '${_getLanguageFlag(lang)} $lang • $score/100 • ${duration}s',
+                                    style: TextStyle(color: _textSecondary, fontSize: 10.5),
                                   ),
+                                  if (corrections > 0) ...[
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEF4444).withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        '$corrections Drills',
+                                        style: const TextStyle(color: Color(0xFFEF4444), fontSize: 9, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
                                 ],
-                              ],
-                            ),
-                          ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '👉 Tap for grammar correction drills',
+                                style: TextStyle(color: const Color(0xFF6366F1).withOpacity(0.85), fontSize: 9.5, fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                        Icon(Icons.arrow_forward_ios_rounded, color: _textMuted, size: 12),
+                      ],
+                    ),
                   ),
                 );
               }).toList(),
@@ -6302,6 +6281,519 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
       ],
+    );
+  }
+
+  void _showSessionGrammarReviewModal(BuildContext context, Map<String, dynamic> data) {
+    final score = data['score'] ?? 80;
+    final grade = data['grade'] ?? 'A';
+    final title = data['topicTitle'] ?? 'Speaking Session';
+    final duration = data['durationSeconds'] ?? 0;
+    final lang = data['language'] ?? 'English';
+    final coachName = data['coachName'] ?? 'AI Voice Coach';
+    final feedback = data['feedback'] ?? data['coachFeedback'] ?? 'Excellent speaking effort! Keep conversing naturally to build automatic phrasing.';
+
+    List<Map<String, dynamic>> corrections = [];
+    if (data['correctionsList'] is List) {
+      corrections = List<Map<String, dynamic>>.from(
+        (data['correctionsList'] as List).map((x) => x is Map ? Map<String, dynamic>.from(x) : {'correction': x.toString()}),
+      );
+    } else if (data['corrections'] is List) {
+      corrections = List<Map<String, dynamic>>.from(
+        (data['corrections'] as List).map((x) => x is Map ? Map<String, dynamic>.from(x) : {'correction': x.toString()}),
+      );
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bCtx) {
+        return Container(
+          height: MediaQuery.of(bCtx).size.height * 0.85,
+          decoration: BoxDecoration(
+            color: _bgScaffold,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 10, bottom: 8),
+                  width: 44,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: _borderSubtle,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              // Modal Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6366F1).withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.spellcheck_rounded, color: Color(0xFF6366F1), size: 22),
+                        ),
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Grammar & Pronunciation Review',
+                              style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                            Text(
+                              '${_getLanguageFlag(lang)} $lang Call Analysis',
+                              style: TextStyle(color: _textSecondary, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close_rounded, color: _textSecondary),
+                      onPressed: () => Navigator.pop(bCtx),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(height: 1, color: _borderSubtle),
+              // Content List
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 30),
+                  children: [
+                    // Topic Info Card
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: _bgCard,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: _borderSubtle),
+                        boxShadow: _cardShadow,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 15),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981).withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'Grade $grade',
+                                  style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 11),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Coach: $coachName • Duration: ${duration}s',
+                            style: TextStyle(color: _textSecondary, fontSize: 11.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Performance Metrics Row (Fluency, Accuracy, Pronunciation)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildReviewMetricBox(
+                            'Fluency',
+                            '$score%',
+                            const Color(0xFF10B981),
+                            Icons.speed_rounded,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildReviewMetricBox(
+                            'Accuracy',
+                            '${(score + 4).clamp(50, 99)}%',
+                            const Color(0xFF6366F1),
+                            Icons.check_circle_outline,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildReviewMetricBox(
+                            'Pronunciation',
+                            '${(score - 2).clamp(48, 98)}%',
+                            const Color(0xFFF59E0B),
+                            Icons.record_voice_over_outlined,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Coach Feedback Card
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: _bgCard,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: _borderSubtle),
+                        boxShadow: _cardShadow,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.psychology_outlined, color: Color(0xFF6366F1), size: 18),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Coach Insights & Guidance',
+                                style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            feedback.toString(),
+                            style: TextStyle(color: _textSecondary, fontSize: 12, height: 1.45),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Corrections Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.auto_fix_high_rounded, color: Color(0xFFF59E0B), size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Mistake & Pronunciation Drills',
+                              style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: corrections.isEmpty ? const Color(0xFF10B981).withOpacity(0.15) : const Color(0xFFEF4444).withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            corrections.isEmpty ? '0 Slips' : '${corrections.length} Corrections',
+                            style: TextStyle(
+                              color: corrections.isEmpty ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+
+                    if (corrections.isEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.celebration_rounded, color: Color(0xFF10B981), size: 26),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Flawless Speaking Session! 🎉',
+                                    style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'You spoke naturally with zero grammar or vocabulary slips.',
+                                    style: TextStyle(color: _textSecondary, fontSize: 11),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      ...corrections.asMap().entries.map((entry) {
+                        final idx = entry.key;
+                        final c = entry.value;
+                        final original = c['original'] ?? c['studentSpoke'] ?? '...';
+                        final correction = c['correction'] ?? c['targetPhrase'] ?? '...';
+                        final explanation = c['explanation'] ?? c['reason'] ?? 'Use natural grammar phrasing.';
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: _bgCard,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(color: _borderSubtle),
+                            boxShadow: _cardShadow,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Slip number
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF6366F1).withOpacity(0.12),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      'Correction #${idx + 1}',
+                                      style: const TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.bold, fontSize: 10),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.volume_up_rounded, color: Color(0xFF6366F1), size: 20),
+                                    tooltip: 'Listen to correct pronunciation',
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    onPressed: () => _playGrammarAudio(correction.toString(), lang),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+
+                              // Original (Red strikethrough)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEF4444).withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.2)),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('❌ ', style: TextStyle(fontSize: 11)),
+                                    Expanded(
+                                      child: Text(
+                                        original.toString(),
+                                        style: const TextStyle(
+                                          color: Color(0xFFEF4444),
+                                          fontSize: 12,
+                                          decoration: TextDecoration.lineThrough,
+                                          decorationColor: Color(0xFFEF4444),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+
+                              // Correction (Green bold)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFF10B981).withOpacity(0.25)),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('✅ ', style: TextStyle(fontSize: 11)),
+                                    Expanded(
+                                      child: Text(
+                                        correction.toString(),
+                                        style: const TextStyle(
+                                          color: Color(0xFF10B981),
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              // Explanation
+                              Text(
+                                '💡 $explanation',
+                                style: TextStyle(color: _textSecondary, fontSize: 11.5, height: 1.35),
+                              ),
+                              const SizedBox(height: 10),
+
+                              // Interactive Practice Repeat Button
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: () {
+                                    _playGrammarAudio(correction.toString(), lang);
+                                    _showRepeatDrillPracticeDialog(correction.toString(), lang);
+                                  },
+                                  icon: const Icon(Icons.mic_rounded, size: 15),
+                                  label: const Text('Practice Repeating This Drill', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: const Color(0xFF6366F1),
+                                    side: BorderSide(color: const Color(0xFF6366F1).withOpacity(0.4)),
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showRepeatDrillPracticeDialog(String targetPhrase, String lang) {
+    showDialog(
+      context: context,
+      builder: (dCtx) {
+        return Dialog(
+          backgroundColor: _bgCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.record_voice_over_rounded, color: Color(0xFF6366F1), size: 20),
+                        const SizedBox(width: 8),
+                        Text('Pronunciation Drill', style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 15)),
+                      ],
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: _textSecondary, size: 18),
+                      onPressed: () => Navigator.pop(dCtx),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  'Listen carefully, then speak this sentence clearly:',
+                  style: TextStyle(color: _textSecondary, fontSize: 11.5),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6366F1).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.3)),
+                  ),
+                  child: Text(
+                    '"$targetPhrase"',
+                    style: const TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.bold, fontSize: 14.5),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => _playGrammarAudio(targetPhrase, lang),
+                        icon: const Icon(Icons.volume_up_rounded, size: 16),
+                        label: const Text('Listen', style: TextStyle(fontSize: 12)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6366F1),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 11),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(dCtx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('🎯 Excellent pronunciation! Keep practicing to gain natural fluency.'),
+                              backgroundColor: Color(0xFF10B981),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.check_circle_outline, size: 16),
+                        label: const Text('Done Drill', style: TextStyle(fontSize: 12)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 11),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -6512,15 +7004,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: isVip
-                                ? [const Color(0xFF78350F).withOpacity(0.85), const Color(0xFF1E1B4B)]
-                                : [const Color(0xFF1E293B), const Color(0xFF0F172A)],
+                                ? (_isDarkMode
+                                    ? [const Color(0xFF78350F).withOpacity(0.85), const Color(0xFF1E1B4B)]
+                                    : [const Color(0xFFFFFBEB), const Color(0xFFFEF3C7)])
+                                : (_isDarkMode
+                                    ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                                    : [Colors.white, const Color(0xFFF8FAFC)]),
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: isVip ? const Color(0xFFF59E0B).withOpacity(0.5) : const Color(0xFF6366F1).withOpacity(0.35),
+                            color: isVip ? const Color(0xFFF59E0B).withOpacity(0.6) : _borderSubtle,
                           ),
+                          boxShadow: _cardShadow,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -6531,11 +7028,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Row(
                                   children: [
                                     Icon(isVip ? Icons.workspace_premium : Icons.account_balance_wallet_outlined,
-                                        color: isVip ? const Color(0xFFFBBF24) : const Color(0xFF818CF8), size: 18),
+                                        color: isVip ? const Color(0xFFF59E0B) : const Color(0xFF6366F1), size: 18),
                                     const SizedBox(width: 8),
                                     Text(
                                       isVip ? 'VIP Speaking Quota' : 'Daily Free & Extra Balance',
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5),
+                                      style: TextStyle(
+                                        color: isVip
+                                            ? (_isDarkMode ? Colors.white : const Color(0xFF78350F))
+                                            : _textPrimary,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13.5,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -6590,7 +7093,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               isVip
                                   ? 'Enjoy unlimited voice coaching calls with zero latency and priority cloud TTS.'
                                   : 'Free allowance resets nightly at 00:00. Extra minutes never expire.',
-                              style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 10.5),
+                              style: TextStyle(
+                                color: isVip
+                                    ? (_isDarkMode ? Colors.white.withOpacity(0.55) : const Color(0xFF92400E))
+                                    : _textSecondary,
+                                fontSize: 10.5,
+                              ),
                             ),
                           ],
                         ),
@@ -6649,47 +7157,48 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Learning Setup (Language, Coach, Drills)
                       Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B),
+                          color: _bgCard,
                           borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: Colors.white.withOpacity(0.06)),
+                          border: Border.all(color: _borderSubtle),
+                          boxShadow: _cardShadow,
                         ),
                         child: Column(
                           children: [
                             ListTile(
                               leading: _buildFlagBadge(_userTargetLanguage ?? 'English', width: 36, height: 24, radius: 5),
-                              title: const Text('Target Practice Language', style: TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.bold)),
-                              subtitle: Text(_userTargetLanguage ?? 'English', style: const TextStyle(color: Color(0xFF818CF8), fontSize: 11)),
+                              title: Text('Target Practice Language', style: TextStyle(color: _textPrimary, fontSize: 13.5, fontWeight: FontWeight.bold)),
+                              subtitle: Text(_userTargetLanguage ?? 'English', style: const TextStyle(color: Color(0xFF6366F1), fontSize: 11)),
                               trailing: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF6366F1).withOpacity(0.2),
+                                  color: const Color(0xFF6366F1).withOpacity(0.15),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Text('Change', style: TextStyle(color: Color(0xFFA5B4FC), fontSize: 10, fontWeight: FontWeight.bold)),
+                                child: const Text('Change', style: TextStyle(color: Color(0xFF6366F1), fontSize: 10, fontWeight: FontWeight.bold)),
                               ),
                               onTap: () => _showLanguageSetupModal(context, isMandatory: false),
                             ),
-                            const Divider(color: Colors.white10, height: 1),
+                            Divider(color: _borderSubtle, height: 1),
                             ListTile(
                               leading: _selectedCoach.buildAvatar(radius: 18),
-                              title: Text('Voice Coach: ${_selectedCoach.name}', style: const TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.bold)),
+                              title: Text('Voice Coach: ${_selectedCoach.name}', style: TextStyle(color: _textPrimary, fontSize: 13.5, fontWeight: FontWeight.bold)),
                               subtitle: Text('${_selectedCoach.isFemale ? "Female" : "Male"} Persona • ${_selectedCoach.tagline}',
-                                  maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white54, fontSize: 10.5)),
+                                  maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: _textSecondary, fontSize: 10.5)),
                               trailing: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF6366F1).withOpacity(0.2),
+                                  color: const Color(0xFF6366F1).withOpacity(0.15),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Text('Switch', style: TextStyle(color: Color(0xFFA5B4FC), fontSize: 10, fontWeight: FontWeight.bold)),
+                                child: const Text('Switch', style: TextStyle(color: Color(0xFF6366F1), fontSize: 10, fontWeight: FontWeight.bold)),
                               ),
                               onTap: () => _showCoachPickerModal(context),
                             ),
-                            const Divider(color: Colors.white10, height: 1),
+                            Divider(color: _borderSubtle, height: 1),
                             ListTile(
                               leading: const Icon(Icons.psychology, color: Color(0xFFA78BFA), size: 22),
-                              title: const Text('Active Pronunciation Drill Mode', style: TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.bold)),
-                              subtitle: const Text('Live repetition coach on mispronounced words', style: TextStyle(color: Colors.white54, fontSize: 10.5)),
+                              title: Text('Active Pronunciation Drill Mode', style: TextStyle(color: _textPrimary, fontSize: 13.5, fontWeight: FontWeight.bold)),
+                              subtitle: Text('Live repetition coach on mispronounced words', style: TextStyle(color: _textSecondary, fontSize: 10.5)),
                               trailing: const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 20),
                             ),
                           ],
@@ -6706,9 +7215,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Push Notifications Settings Card
                       Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B),
+                          color: _bgCard,
                           borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: Colors.white.withOpacity(0.06)),
+                          border: Border.all(color: _borderSubtle),
+                          boxShadow: _cardShadow,
                         ),
                         child: FutureBuilder<bool>(
                           future: NotificationService.instance.checkPermissionGranted(),
@@ -6727,13 +7237,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   size: 22,
                                 ),
                               ),
-                              title: const Text(
+                              title: Text(
                                 'Push Notifications',
-                                style: TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.bold),
+                                style: TextStyle(color: _textPrimary, fontSize: 13.5, fontWeight: FontWeight.bold),
                               ),
                               subtitle: Text(
                                 isGranted ? 'Enabled • Streak reminders & coach nudges active' : 'Disabled • Tap to enable alerts',
-                                style: TextStyle(color: isGranted ? const Color(0xFF34D399) : Colors.white54, fontSize: 10.5),
+                                style: TextStyle(color: isGranted ? const Color(0xFF10B981) : _textSecondary, fontSize: 10.5),
                               ),
                               trailing: ElevatedButton(
                                 onPressed: () async {
@@ -6772,13 +7282,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Developer & App Contact Card
                       Container(
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
+                          color: _bgCard,
                           borderRadius: BorderRadius.circular(18),
-                          border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.25)),
+                          border: Border.all(color: _borderSubtle),
+                          boxShadow: _cardShadow,
                         ),
                         padding: const EdgeInsets.all(16),
                         child: Column(
@@ -6789,22 +7296,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF6366F1).withOpacity(0.2),
+                                    color: const Color(0xFF6366F1).withOpacity(0.15),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  child: const Icon(Icons.support_agent_rounded, color: Color(0xFF818CF8), size: 22),
+                                  child: const Icon(Icons.support_agent_rounded, color: Color(0xFF6366F1), size: 22),
                                 ),
                                 const SizedBox(width: 10),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Help & Developer Support',
-                                      style: TextStyle(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.bold),
+                                      style: TextStyle(color: _textPrimary, fontSize: 13.5, fontWeight: FontWeight.bold),
                                     ),
                                     Text(
                                       'Direct contact for inquiries & assistance',
-                                      style: TextStyle(color: Colors.white54, fontSize: 10.5),
+                                      style: TextStyle(color: _textSecondary, fontSize: 10.5),
                                     ),
                                   ],
                                 ),
@@ -6827,21 +7334,21 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF0F172A),
+                                  color: _bgSurface,
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.white.withOpacity(0.06)),
+                                  border: Border.all(color: _borderSubtle),
                                 ),
-                                child: const Row(
+                                child: Row(
                                   children: [
-                                    Icon(Icons.mail_outline_rounded, color: Color(0xFF60A5FA), size: 18),
+                                    const Icon(Icons.mail_outline_rounded, color: Color(0xFF60A5FA), size: 18),
                                     SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
                                         'janithad2@gmail.com',
-                                        style: TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w600),
+                                        style: TextStyle(color: _textPrimary, fontSize: 12.5, fontWeight: FontWeight.w600),
                                       ),
                                     ),
-                                    Icon(Icons.copy_rounded, color: Colors.white38, size: 16),
+                                    Icon(Icons.copy_rounded, color: _textMuted, size: 16),
                                   ],
                                 ),
                               ),
@@ -6863,21 +7370,21 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF0F172A),
+                                  color: _bgSurface,
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.white.withOpacity(0.06)),
+                                  border: Border.all(color: _borderSubtle),
                                 ),
-                                child: const Row(
+                                child: Row(
                                   children: [
-                                    Icon(Icons.phone_outlined, color: Color(0xFF34D399), size: 18),
+                                    const Icon(Icons.phone_outlined, color: Color(0xFF34D399), size: 18),
                                     SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
                                         '+94 77 354 3361 (Call / WhatsApp)',
-                                        style: TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w600),
+                                        style: TextStyle(color: _textPrimary, fontSize: 12.5, fontWeight: FontWeight.w600),
                                       ),
                                     ),
-                                    Icon(Icons.copy_rounded, color: Colors.white38, size: 16),
+                                    Icon(Icons.copy_rounded, color: _textMuted, size: 16),
                                   ],
                                 ),
                               ),
@@ -7155,14 +7662,15 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: _bgCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: _borderSubtle),
+        boxShadow: _cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section Title
+          // Section Title & "View All 20 Badges" Button
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -7171,28 +7679,39 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B).withOpacity(0.2),
+                      color: const Color(0xFFF59E0B).withOpacity(0.18),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(Icons.emoji_events_rounded, color: Color(0xFFFBBF24), size: 18),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'Achievements & Badges',
-                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: _textPrimary, fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF06B6D4).withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF06B6D4).withOpacity(0.3)),
-                ),
-                child: Text(
-                  '$unlockedCount / 20 Unlocked',
-                  style: const TextStyle(color: Color(0xFF22D3EE), fontSize: 10.5, fontWeight: FontWeight.bold),
+              InkWell(
+                onTap: () => _showAllBadgesCatalogModal(context),
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6366F1).withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.25)),
+                        ),
+                        child: Text(
+                          '$unlockedCount/20 • View All ➔',
+                          style: const TextStyle(color: Color(0xFF6366F1), fontSize: 10.5, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -7202,10 +7721,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // Unclaimed Banner Alert
           if (unclaimedCount > 0) ...[
             InkWell(
-              onTap: () {
-                final first = _mobileAchievements.firstWhere((b) => b['isUnlocked'] == true && b['isClaimed'] != true);
-                _showAchievementUnlockedDialog(first);
-              },
+              onTap: () => _showAllBadgesCatalogModal(context),
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -7222,7 +7738,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '$unclaimedCount Badges Ready to Claim! Tap to earn XP',
+                        '$unclaimedCount Badges Ready to Claim! Tap to view & claim XP',
                         style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -7247,6 +7763,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 final isClaimed = badge['isClaimed'] == true;
                 final colors = badge['colors'] as List<Color>;
 
+                final itemBg = isClaimed
+                    ? (_isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFECFDF5))
+                    : isUnlocked
+                        ? (_isDarkMode ? const Color(0xFF1E1B4B).withOpacity(0.7) : const Color(0xFFFFFBEB))
+                        : (_isDarkMode ? Colors.white.withOpacity(0.03) : const Color(0xFFF8FAFC));
+
+                final itemBorder = isClaimed
+                    ? const Color(0xFF10B981).withOpacity(0.4)
+                    : isUnlocked
+                        ? const Color(0xFFF59E0B).withOpacity(0.6)
+                        : _borderSubtle;
+
                 return InkWell(
                   onTap: () => _showAchievementUnlockedDialog(badge),
                   borderRadius: BorderRadius.circular(16),
@@ -7254,19 +7782,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 100,
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                     decoration: BoxDecoration(
-                      color: isClaimed
-                          ? const Color(0xFF0F172A)
-                          : isUnlocked
-                              ? const Color(0xFF1E1B4B).withOpacity(0.7)
-                              : Colors.white.withOpacity(0.03),
+                      color: itemBg,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isClaimed
-                            ? const Color(0xFF10B981).withOpacity(0.4)
-                            : isUnlocked
-                                ? const Color(0xFFF59E0B).withOpacity(0.6)
-                                : Colors.white.withOpacity(0.06),
-                      ),
+                      border: Border.all(color: itemBorder),
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -7279,12 +7797,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             gradient: isUnlocked
                                 ? LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight)
                                 : null,
-                            color: isUnlocked ? null : Colors.white.withOpacity(0.08),
+                            color: isUnlocked ? null : (_isDarkMode ? Colors.white.withOpacity(0.08) : Colors.grey.withOpacity(0.15)),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             badge['icon'] as IconData,
-                            color: isUnlocked ? Colors.white : Colors.white30,
+                            color: isUnlocked ? Colors.white : _textMuted,
                             size: 20,
                           ),
                         ),
@@ -7294,7 +7812,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: isUnlocked ? Colors.white : Colors.white54,
+                            color: isUnlocked ? _textPrimary : _textMuted,
                             fontSize: 10.5,
                             fontWeight: FontWeight.bold,
                           ),
@@ -7308,10 +7826,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   : '+${badge['xp']} XP',
                           style: TextStyle(
                             color: isClaimed
-                                ? const Color(0xFF34D399)
+                                ? const Color(0xFF10B981)
                                 : isUnlocked
-                                    ? const Color(0xFFFBBF24)
-                                    : Colors.white38,
+                                    ? const Color(0xFFD97706)
+                                    : _textMuted,
                             fontSize: 9.5,
                             fontWeight: FontWeight.w800,
                           ),
@@ -7328,12 +7846,433 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showAllBadgesCatalogModal(BuildContext context) {
+    String selectedCat = 'All';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bCtx) {
+        return StatefulBuilder(
+          builder: (sCtx, setModalState) {
+            final categories = ['All', 'Onboarding', 'Streaks', 'Speaking Time', 'Accuracy & Mastery', 'Targets & Podium'];
+            final filteredBadges = selectedCat == 'All'
+                ? _mobileAchievements
+                : _mobileAchievements.where((b) => b['category'] == selectedCat).toList();
+
+            final unlockedCount = _mobileAchievements.where((b) => b['isUnlocked'] == true).length;
+            final claimedCount = _mobileAchievements.where((b) => b['isClaimed'] == true).length;
+
+            return Container(
+              height: MediaQuery.of(bCtx).size.height * 0.90,
+              decoration: BoxDecoration(
+                color: _bgScaffold,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Drag handle
+                  Center(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 10, bottom: 6),
+                      width: 44,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: _borderSubtle,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  // Top Bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF59E0B).withOpacity(0.18),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(Icons.emoji_events_rounded, color: Color(0xFFFBBF24), size: 22),
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'All 20 Fluency Badges & XP',
+                                  style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+                                ),
+                                Text(
+                                  '$unlockedCount Unlocked • $claimedCount Claimed • ${_mobileAchievements.length - unlockedCount} Locked',
+                                  style: TextStyle(color: _textSecondary, fontSize: 11),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.close_rounded, color: _textSecondary),
+                          onPressed: () => Navigator.pop(bCtx),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Progress summary card
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: _isDarkMode
+                              ? [const Color(0xFF1E1B4B), const Color(0xFF0F172A)]
+                              : [const Color(0xFFEEF2FF), const Color(0xFFE0E7FF)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF6366F1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 18),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Fluency Mastery Progress',
+                                      style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 12),
+                                    ),
+                                    Text(
+                                      '$unlockedCount / 20 Unlocked',
+                                      style: const TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.w900, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: LinearProgressIndicator(
+                                    value: unlockedCount / 20.0,
+                                    backgroundColor: _borderSubtle,
+                                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+                                    minHeight: 6,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Category Filter Chips
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    child: Row(
+                      children: categories.map((cat) {
+                        final isSelected = selectedCat == cat;
+                        final count = cat == 'All'
+                            ? _mobileAchievements.length
+                            : _mobileAchievements.where((b) => b['category'] == cat).length;
+
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: ChoiceChip(
+                            label: Text(
+                              '$cat ($count)',
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : _textSecondary,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                fontSize: 11,
+                              ),
+                            ),
+                            selected: isSelected,
+                            selectedColor: const Color(0xFF6366F1),
+                            backgroundColor: _bgCard,
+                            side: BorderSide(
+                              color: isSelected ? const Color(0xFF6366F1) : _borderSubtle,
+                            ),
+                            onSelected: (_) {
+                              setModalState(() {
+                                selectedCat = cat;
+                              });
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  // Badges Grid / List
+                  Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 6, 16, 30),
+                      itemCount: filteredBadges.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      itemBuilder: (ctx, i) {
+                        final badge = filteredBadges[i];
+                        final isUnlocked = badge['isUnlocked'] == true;
+                        final isClaimed = badge['isClaimed'] == true;
+                        final colors = badge['colors'] as List<Color>;
+                        final int current = (badge['current'] as num?)?.toInt() ?? 0;
+                        final int target = (badge['target'] as num?)?.toInt() ?? 1;
+                        final double progress = (current / target).clamp(0.0, 1.0);
+
+                        return Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: _bgCard,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: isClaimed
+                                  ? const Color(0xFF10B981).withOpacity(0.4)
+                                  : (isUnlocked
+                                      ? const Color(0xFFF59E0B).withOpacity(0.6)
+                                      : _borderSubtle),
+                              width: (isUnlocked || isClaimed) ? 1.4 : 1,
+                            ),
+                            boxShadow: _cardShadow,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Badge Icon
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  gradient: isUnlocked
+                                      ? LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight)
+                                      : null,
+                                  color: isUnlocked ? null : (_isDarkMode ? Colors.white.withOpacity(0.08) : Colors.grey.withOpacity(0.18)),
+                                  shape: BoxShape.circle,
+                                  boxShadow: isUnlocked
+                                      ? [
+                                          BoxShadow(
+                                            color: colors.first.withOpacity(0.4),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                child: Icon(
+                                  badge['icon'] as IconData,
+                                  color: isUnlocked ? Colors.white : _textMuted,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+
+                              // Middle Info
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            badge['title'] as String,
+                                            style: TextStyle(
+                                              color: _textPrimary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13.5,
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF6366F1).withOpacity(0.12),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            badge['category'] as String,
+                                            style: const TextStyle(
+                                              color: Color(0xFF6366F1),
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      badge['desc'] as String,
+                                      style: TextStyle(color: _textSecondary, fontSize: 11, height: 1.3),
+                                    ),
+                                    const SizedBox(height: 8),
+
+                                    // Progress Bar
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(4),
+                                            child: LinearProgressIndicator(
+                                              value: progress,
+                                              backgroundColor: _borderSubtle,
+                                              valueColor: AlwaysStoppedAnimation<Color>(
+                                                isClaimed
+                                                    ? const Color(0xFF10B981)
+                                                    : (isUnlocked ? const Color(0xFFF59E0B) : const Color(0xFF6366F1)),
+                                              ),
+                                              minHeight: 5,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '$current / $target ${badge['unit']}',
+                                          style: TextStyle(color: _textSecondary, fontSize: 10, fontWeight: FontWeight.w600),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+
+                                    // Reward & Claim Action Row
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF59E0B).withOpacity(0.12),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              const Icon(Icons.auto_awesome, color: Color(0xFFFBBF24), size: 12),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '+${badge['xp']} XP',
+                                                style: const TextStyle(
+                                                  color: Color(0xFFD97706),
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 10.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        // Claim / Unlocked Button
+                                        if (isClaimed)
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF10B981).withOpacity(0.15),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: const Row(
+                                              children: [
+                                                Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 13),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  'Claimed',
+                                                  style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 11),
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        else if (isUnlocked)
+                                          ElevatedButton.icon(
+                                            onPressed: () {
+                                              setModalState(() {
+                                                _claimMobileBadge(badge);
+                                              });
+                                              setState(() {});
+                                            },
+                                            icon: const Icon(Icons.card_giftcard, size: 13),
+                                            label: Text('Claim +${badge['xp']} XP', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(0xFFF59E0B),
+                                              foregroundColor: Colors.white,
+                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                              minimumSize: Size.zero,
+                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              elevation: 1,
+                                            ),
+                                          )
+                                        else
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: _bgSurface,
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: _borderSubtle),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.lock_outline_rounded, color: _textMuted, size: 12),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  'Locked (${(progress * 100).toInt()}%)',
+                                                  style: TextStyle(color: _textMuted, fontSize: 10, fontWeight: FontWeight.w600),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildProfileMetricTile(String label, String value, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
+        color: _isDarkMode ? Colors.white.withOpacity(0.06) : Colors.white.withOpacity(0.9),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _borderSubtle),
       ),
       child: Column(
         children: [
@@ -7344,7 +8283,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 2),
           Text(
             label,
-            style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 9.5),
+            style: TextStyle(color: _textSecondary, fontSize: 9.5),
             textAlign: TextAlign.center,
           ),
         ],
@@ -7356,16 +8295,44 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: _bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: _isDarkMode ? color.withOpacity(0.3) : color.withOpacity(0.2)),
+        boxShadow: _cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 11, fontWeight: FontWeight.w600)),
+          Text(label, style: TextStyle(color: _textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           Text(value, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.w900)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewMetricBox(String title, String value, Color color, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      decoration: BoxDecoration(
+        color: _bgCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withOpacity(0.3)),
+        boxShadow: _cardShadow,
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            title,
+            style: TextStyle(color: _textSecondary, fontSize: 10, fontWeight: FontWeight.w600),
+          ),
         ],
       ),
     );

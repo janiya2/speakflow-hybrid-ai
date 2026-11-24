@@ -27,40 +27,41 @@ service cloud.firestore {
 
     // 2. SpeakFlow Settings & AI Configuration
     match /lang_settings/{settingId} {
-      // Sensitive AI and billing credentials: Strictly Admin Only
-      allow read, write: if settingId == 'ai_config' ? isAdmin() : (isSignedIn() || isAdmin());
+      // Sensitive AI and billing credentials: Admin Only; plans and time limits readable by all
+      allow read: if settingId != 'ai_config' || isAdmin();
+      allow write: if isAdmin();
     }
 
     // 3. User Accounts, Practice Minutes & Streaks
-    // Prevents Client-Side Privilege Escalation: Regular users CANNOT modify 'role', 'isPro', or 'isVipMonthly'
+    // Public read for leaderboard student names/XP
+    // Allow users to update their own profile, learning preferences, stats, and VIP subscriptions
     match /lang_users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId) && (
-        !request.resource.data.keys().hasAny(['role', 'isPro', 'isVipMonthly']) || isAdmin()
-      );
+      allow read: if true;
+      allow create: if isSignedIn();
       allow update: if (
-        isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isPro', 'isVipMonthly'])
+        isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])
       ) || isAdmin();
       allow delete: if isAdmin();
     }
 
     // 4. Completed Voice Call Sessions & Evaluation Logs
-    // Strictly Owner-only isolation (A user can only read and log their own conversation sessions)
+    // Readable for leaderboard and grammar review
     match /lang_sessions/{sessionId} {
-      allow read: if (isSignedIn() && resource.data.userId == request.auth.uid) || isAdmin();
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read: if isSignedIn() || isAdmin();
+      allow create: if isSignedIn();
       allow update, delete: if (isSignedIn() && resource.data.userId == request.auth.uid) || isAdmin();
     }
 
     // 5. Push Notifications Log
     match /lang_notifications/{notificationId} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow write: if isAdmin();
     }
 
     // Default deny for unmapped root paths unless authenticated
     match /{document=**} {
-      allow read, write: if isAdmin();
+      allow read: if isSignedIn() || isAdmin();
+      allow write: if isAdmin();
     }
   }
 }
