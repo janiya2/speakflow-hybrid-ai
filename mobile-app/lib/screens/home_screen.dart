@@ -15,6 +15,7 @@ import 'paywall_screen.dart';
 import 'notifications_screen.dart';
 import '../services/notification_service.dart';
 import '../services/subscription_service.dart';
+import '../services/auth_session_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -945,10 +946,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Duration Picker Modal before entering live call
-  void _promptCallDuration(BuildContext context, TopicModel topic) {
-    // Check if user is logged in
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
+  void _promptCallDuration(BuildContext context, TopicModel topic) async {
+    // Check if user is logged in or can be seamlessly restored
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null && AuthSessionService.isLoggedIn) {
+      try {
+        user = await AuthSessionService.restoreOrEnsureSession();
+      } catch (_) {}
+    }
+    if (user == null && !AuthSessionService.isLoggedIn) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please log in or sign up before starting speaking practice!'),
@@ -1433,8 +1439,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }) {
     return InkWell(
       onTap: () {
-        final user = FirebaseAuth.instance.currentUser;
-        if (user == null) {
+        User? user = FirebaseAuth.instance.currentUser;
+        if (user == null && AuthSessionService.isLoggedIn) {
+          AuthSessionService.restoreOrEnsureSession();
+        }
+        if (user == null && !AuthSessionService.isLoggedIn) {
           if (Navigator.of(ctx).canPop()) {
             Navigator.of(ctx).pop();
           }
@@ -6737,6 +6746,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               if (Navigator.of(context).canPop()) {
                                 Navigator.of(context).pop();
                               }
+                              AuthSessionService.clearSession();
                               await FirebaseAuth.instance.signOut();
                               if (context.mounted) {
                                 Navigator.of(context).pushAndRemoveUntil(

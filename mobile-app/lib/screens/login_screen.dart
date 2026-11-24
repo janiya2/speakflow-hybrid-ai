@@ -6,6 +6,7 @@ import 'terms_policy_screen.dart';
 import 'home_screen.dart';
 import 'welcome_screen.dart';
 import '../services/notification_service.dart';
+import '../services/auth_session_service.dart';
 
 class LoginScreen extends StatefulWidget {
   final bool startInLoginMode;
@@ -100,6 +101,14 @@ class _LoginScreenState extends State<LoginScreen> {
           });
         }
 
+        // Persist session to survive browser refresh
+        AuthSessionService.saveSession(
+          uid: user.uid,
+          email: user.email ?? email,
+          displayName: user.displayName ?? (name.isNotEmpty ? name : 'Student'),
+          isDemo: false,
+        );
+
         // Save FCM Device Token for Push Notifications
         NotificationService.instance.saveTokenForUser(user.uid);
 
@@ -160,6 +169,14 @@ class _LoginScreenState extends State<LoginScreen> {
           });
         }
 
+        // Persist session to survive browser refresh
+        AuthSessionService.saveSession(
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          isDemo: false,
+        );
+
         // Save FCM Device Token for Push Notifications
         NotificationService.instance.saveTokenForUser(user.uid);
 
@@ -210,9 +227,28 @@ class _LoginScreenState extends State<LoginScreen> {
             'targetLanguages': ['English', 'Spanish', 'Sinhala'],
           });
         }
+        AuthSessionService.saveSession(
+          uid: user.uid,
+          email: 'judge.evaluator@google-hackathon.ai',
+          displayName: 'Hackathon Judge (VIP Demo)',
+          isDemo: true,
+        );
+      } else {
+        AuthSessionService.saveSession(
+          uid: 'judge_vip_demo_user',
+          email: 'judge.evaluator@google-hackathon.ai',
+          displayName: 'Hackathon Judge (VIP Demo)',
+          isDemo: true,
+        );
       }
     } catch (e) {
       debugPrint('[Judge Demo Auth Fallback]: $e');
+      AuthSessionService.saveSession(
+        uid: 'judge_vip_demo_user',
+        email: 'judge.evaluator@google-hackathon.ai',
+        displayName: 'Hackathon Judge (VIP Demo)',
+        isDemo: true,
+      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);

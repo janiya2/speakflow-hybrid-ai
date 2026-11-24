@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'home_screen.dart';
 import 'welcome_screen.dart';
+import '../services/auth_session_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -107,17 +108,10 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   Future<User?> _resolveInitialUser() async {
     try {
-      final auth = FirebaseAuth.instance;
-      if (auth.currentUser != null) {
-        return auth.currentUser;
-      }
-      return await auth
-          .authStateChanges()
-          .firstWhere((u) => u != null)
-          .timeout(const Duration(milliseconds: 2200), onTimeout: () => null);
+      return await AuthSessionService.restoreOrEnsureSession();
     } catch (e) {
       debugPrint('Auth initial check notice: $e');
-      return null;
+      return FirebaseAuth.instance.currentUser;
     }
   }
 
@@ -167,7 +161,13 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     }
 
     if (!mounted) return;
-    final Widget nextScreen = (user != null) ? const HomeScreen() : const WelcomeScreen();
+    if (user == null && AuthSessionService.isLoggedIn) {
+      try {
+        user = await AuthSessionService.restoreOrEnsureSession();
+      } catch (_) {}
+    }
+    final bool shouldGoToHome = (user != null) || AuthSessionService.isLoggedIn;
+    final Widget nextScreen = shouldGoToHome ? const HomeScreen() : const WelcomeScreen();
 
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
