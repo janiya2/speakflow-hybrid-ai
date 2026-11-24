@@ -18,12 +18,14 @@ class LiveCallScreen extends StatefulWidget {
   final TopicModel topic;
   final int? durationMinutes; // null = unlimited
   final CoachPersona? coach;
+  final bool isDarkMode;
 
   const LiveCallScreen({
     super.key,
     required this.topic,
     this.durationMinutes,
     this.coach,
+    this.isDarkMode = true,
   });
 
   @override
@@ -31,6 +33,16 @@ class LiveCallScreen extends StatefulWidget {
 }
 
 class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProviderStateMixin {
+  late bool _isDarkMode;
+
+  Color get _bgScaffold => _isDarkMode ? const Color(0xFF060911) : const Color(0xFFF8FAFC);
+  Color get _bgCard => _isDarkMode ? const Color(0xFF0F172A) : Colors.white;
+  Color get _bgCardElevated => _isDarkMode ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
+  Color get _textPrimary => _isDarkMode ? Colors.white : const Color(0xFF0F172A);
+  Color get _textSecondary => _isDarkMode ? Colors.white70 : const Color(0xFF475569);
+  Color get _textMuted => _isDarkMode ? Colors.white38 : const Color(0xFF94A3B8);
+  Color get _borderSubtle => _isDarkMode ? Colors.white.withOpacity(0.08) : const Color(0xFFE2E8F0);
+
   late stt.SpeechToText _speech;
   late FlutterTts _tts;
   AudioPlayer? _cloudAudioPlayer;
@@ -169,6 +181,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
+    _isDarkMode = widget.isDarkMode;
     _coach = widget.coach ?? CoachPersona.defaultCoach;
     _connectingStatus = 'Calling Coach ${_coach.name}...';
     if (kIsWeb) {
@@ -2295,18 +2308,26 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
         ? _coach.themeGradient
         : [const Color(0xFF0F172A), const Color(0xFF1E293B)];
 
+    final gradientColors = _isDarkMode
+        ? [
+            themeGradient[0],
+            themeGradient[1],
+            const Color(0xFF060911),
+          ]
+        : [
+            _coach.primaryAccent.withOpacity(0.18),
+            const Color(0xFFE2E8F0),
+            const Color(0xFFF8FAFC),
+          ];
+
     return Scaffold(
-      backgroundColor: const Color(0xFF060911),
+      backgroundColor: _bgScaffold,
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              themeGradient[0],
-              themeGradient[1],
-              const Color(0xFF060911),
-            ],
+            colors: gradientColors,
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             stops: const [0.0, 0.45, 1.0],
@@ -2326,9 +2347,18 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6.5),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
+                      color: _isDarkMode ? Colors.white.withOpacity(0.08) : Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white12),
+                      border: Border.all(color: _isDarkMode ? Colors.white12 : const Color(0xFFCBD5E1)),
+                      boxShadow: _isDarkMode
+                          ? null
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -2345,7 +2375,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                         Text(
                           'AI SECURE CALL • 60 FPS HD',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.85),
+                            color: _textPrimary,
                             fontSize: 10.5,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.1,
@@ -2426,8 +2456,8 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                   Text(
                     'Coach ${_coach.name}',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: _textPrimary,
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                       letterSpacing: -0.5,
@@ -2452,7 +2482,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                     widget.topic.title,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.55),
+                      color: _textSecondary,
                       fontSize: 12,
                     ),
                     maxLines: 1,
@@ -2468,13 +2498,22 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                     decoration: BoxDecoration(
                       color: _connectingStatus == 'Connected!'
                           ? const Color(0xFF10B981).withOpacity(0.18)
-                          : Colors.white.withOpacity(0.06),
+                          : (_isDarkMode ? Colors.white.withOpacity(0.06) : Colors.white),
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: _connectingStatus == 'Connected!'
                             ? const Color(0xFF10B981)
-                            : _coach.primaryAccent.withOpacity(0.35),
+                            : (_isDarkMode ? _coach.primaryAccent.withOpacity(0.35) : const Color(0xFFCBD5E1)),
                       ),
+                      boxShadow: _isDarkMode
+                          ? null
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -2494,7 +2533,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                           style: TextStyle(
                             color: _connectingStatus == 'Connected!'
                                 ? const Color(0xFF10B981)
-                                : Colors.white,
+                                : _textPrimary,
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                           ),
@@ -2560,18 +2599,26 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
         ? _coach.themeGradient
         : [const Color(0xFF0F172A), const Color(0xFF1E293B)];
 
+    final gradientColors = _isDarkMode
+        ? [
+            themeGradient[0],
+            themeGradient[1],
+            const Color(0xFF060911),
+          ]
+        : [
+            _coach.primaryAccent.withOpacity(0.14),
+            const Color(0xFFEEF2F6),
+            const Color(0xFFF8FAFC),
+          ];
+
     return Scaffold(
-      backgroundColor: const Color(0xFF060911),
+      backgroundColor: _bgScaffold,
       body: AnimatedContainer(
         duration: const Duration(milliseconds: 600),
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              themeGradient[0],
-              themeGradient[1],
-              const Color(0xFF060911),
-            ],
+            colors: gradientColors,
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             stops: const [0.0, 0.45, 1.0],
@@ -2605,11 +2652,11 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                             widget.topic.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                            style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
                           ),
                           Text(
                             widget.topic.language,
-                            style: TextStyle(color: Colors.white.withOpacity(0.65), fontSize: 10.5),
+                            style: TextStyle(color: _textSecondary, fontSize: 10.5),
                           ),
                         ],
                       ),
@@ -2700,13 +2747,51 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                     ),
                     const SizedBox(width: 6),
 
+                    // THEME TOGGLE (Sun/Moon for Light/Dark mode during live call)
+                    InkWell(
+                      onTap: () => setState(() => _isDarkMode = !_isDarkMode),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(5.5),
+                        decoration: BoxDecoration(
+                          color: _isDarkMode ? const Color(0xFF1E293B).withOpacity(0.85) : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: _isDarkMode ? Colors.white12 : const Color(0xFFCBD5E1)),
+                          boxShadow: _isDarkMode
+                              ? null
+                              : [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.04),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
+                        ),
+                        child: Icon(
+                          _isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                          color: _isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFF4361EE),
+                          size: 14,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+
                     // Voice Speed Controller
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E293B).withOpacity(0.85),
+                        color: _isDarkMode ? const Color(0xFF1E293B).withOpacity(0.85) : Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white12),
+                        border: Border.all(color: _isDarkMode ? Colors.white12 : const Color(0xFFCBD5E1)),
+                        boxShadow: _isDarkMode
+                            ? null
+                            : [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.04),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<double>(
@@ -2714,8 +2799,8 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                           isDense: true,
                           iconSize: 14,
                           iconEnabledColor: _coach.primaryAccent,
-                          dropdownColor: const Color(0xFF1E293B),
-                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                          dropdownColor: _isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+                          style: TextStyle(color: _textPrimary, fontSize: 11, fontWeight: FontWeight.bold),
                           items: const [
                             DropdownMenuItem(value: 0.75, child: Text("0.75x")),
                             DropdownMenuItem(value: 0.9, child: Text("0.9x")),
@@ -2745,19 +2830,21 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0F172A).withOpacity(0.9),
+                          color: _isDarkMode ? const Color(0xFF0F172A).withOpacity(0.9) : Colors.white.withOpacity(0.95),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: _geminiService.simulateOffline
-                                ? const Color(0xFFF59E0B).withOpacity(0.4)
-                                : const Color(0xFF06B6D4).withOpacity(0.4),
+                            color: _isDarkMode
+                                ? (_geminiService.simulateOffline
+                                    ? const Color(0xFFF59E0B).withOpacity(0.4)
+                                    : const Color(0xFF06B6D4).withOpacity(0.4))
+                                : const Color(0xFFCBD5E1),
                           ),
                           boxShadow: [
                             BoxShadow(
                               color: (_geminiService.simulateOffline
                                       ? const Color(0xFFF59E0B)
                                       : const Color(0xFF06B6D4))
-                                  .withOpacity(0.12),
+                                  .withOpacity(_isDarkMode ? 0.12 : 0.06),
                               blurRadius: 10,
                             ),
                           ],
@@ -2784,8 +2871,8 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                         : "☁️ CLOUD: GEMINI 2.5 FLASH [${_activeCorrection != null && _activeCorrection!.latencyMs > 0 ? '${_activeCorrection!.latencyMs}ms' : 'Firebase'}]"),
                                 style: TextStyle(
                                   color: (_geminiService.simulateOffline || _activeCorrection?.engineUsed == 'ON_DEVICE_NANO')
-                                      ? const Color(0xFFFCD34D)
-                                      : const Color(0xFF67E8F9),
+                                      ? (_isDarkMode ? const Color(0xFFFCD34D) : const Color(0xFFB45309))
+                                      : (_isDarkMode ? const Color(0xFF67E8F9) : const Color(0xFF0891B2)),
                                   fontWeight: FontWeight.bold,
                                   fontSize: 10.5,
                                   fontFamily: 'monospace',
@@ -2803,20 +2890,20 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                 decoration: BoxDecoration(
                                   color: _geminiService.simulateOffline
                                       ? const Color(0xFFEF4444).withOpacity(0.2)
-                                      : const Color(0xFF1E293B),
+                                      : (_isDarkMode ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: _geminiService.simulateOffline
                                         ? const Color(0xFFEF4444)
-                                        : Colors.white24,
+                                        : (_isDarkMode ? Colors.white24 : const Color(0xFFCBD5E1)),
                                   ),
                                 ),
                                 child: Text(
                                   _geminiService.simulateOffline ? "✈️ Offline: ON" : "✈️ Sim Offline",
                                   style: TextStyle(
                                     color: _geminiService.simulateOffline
-                                        ? const Color(0xFFFCA5A5)
-                                        : Colors.white70,
+                                        ? const Color(0xFFEF4444)
+                                        : _textSecondary,
                                     fontSize: 9.5,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -3151,7 +3238,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0F172A).withOpacity(0.88),
+                          color: _isDarkMode ? const Color(0xFF0F172A).withOpacity(0.88) : Colors.white.withOpacity(0.96),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: _isBotSpeaking
@@ -3161,7 +3248,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.35),
+                              color: Colors.black.withOpacity(_isDarkMode ? 0.35 : 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 3),
                             ),
@@ -3192,7 +3279,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                       ? 'Coach ${_coach.name} (AI):'
                                       : 'You (Learner):',
                                   style: TextStyle(
-                                    color: _isBotSpeaking ? _coach.primaryAccent : const Color(0xFF34D399),
+                                    color: _isBotSpeaking ? _coach.primaryAccent : const Color(0xFF10B981),
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 0.3,
@@ -3246,18 +3333,20 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                 key: ValueKey<String>(
                                   _isBotSpeaking ? 'bot_$_botSubtitle' : 'user_$_userSpeech',
                                 ),
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: _textPrimary,
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w600,
                                   height: 1.35,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black87,
-                                      blurRadius: 4,
-                                      offset: Offset(0, 1),
-                                    ),
-                                  ],
+                                  shadows: _isDarkMode
+                                      ? [
+                                          const Shadow(
+                                            color: Colors.black87,
+                                            blurRadius: 4,
+                                            offset: Offset(0, 1),
+                                          ),
+                                        ]
+                                      : null,
                                 ),
                               ),
                             ),
@@ -3272,10 +3361,15 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [
-                                const Color(0xFF1E293B).withOpacity(0.9),
-                                _coach.primaryAccent.withOpacity(0.15),
-                              ],
+                              colors: _isDarkMode
+                                  ? [
+                                      const Color(0xFF1E293B).withOpacity(0.9),
+                                      _coach.primaryAccent.withOpacity(0.15),
+                                    ]
+                                  : [
+                                      Colors.white,
+                                      _coach.primaryAccent.withOpacity(0.08),
+                                    ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -3283,9 +3377,16 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                             border: Border.all(
                               color: _isBotSpeaking
                                   ? _coach.primaryAccent
-                                  : _coach.primaryAccent.withOpacity(0.35),
+                                  : (_isDarkMode ? _coach.primaryAccent.withOpacity(0.35) : const Color(0xFFCBD5E1)),
                               width: _isBotSpeaking ? 1.5 : 1,
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(_isDarkMode ? 0.25 : 0.04),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -3311,7 +3412,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                               ? '🔁 Repeat Drill:'
                                               : 'Coach ${_coach.name} (AI):',
                                           style: TextStyle(
-                                            color: _isDrillMode ? const Color(0xFF34D399) : _coach.primaryAccent,
+                                            color: _isDrillMode ? const Color(0xFF10B981) : _coach.primaryAccent,
                                             fontSize: 11,
                                             fontWeight: FontWeight.bold,
                                           ),

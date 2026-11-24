@@ -968,9 +968,11 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+    int selectedMinutes = 5;
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1E293B),
+      backgroundColor: _isDarkMode ? const Color(0xFF1E293B) : Colors.white,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -978,113 +980,118 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (modalCtx, setModalState) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(2),
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.88,
+              ),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: _isDarkMode ? Colors.white.withOpacity(0.2) : Colors.black12,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ),
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 46,
-                        height: 46,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0F172A),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: Colors.white10),
+                    Row(
+                      children: [
+                        Container(
+                          width: 46,
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: _isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: _isDarkMode ? Colors.white10 : const Color(0xFFE2E8F0)),
+                          ),
+                          child: Center(
+                            child: Text(topic.icon, style: const TextStyle(fontSize: 24)),
+                          ),
                         ),
-                        child: Center(
-                          child: Text(topic.icon, style: const TextStyle(fontSize: 24)),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              topic.title,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                topic.title,
+                                style: TextStyle(
+                                  color: _textPrimary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${_getLanguageFlag(topic.language)} ${topic.language} • ${topic.level} • ${topic.category}',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.6),
-                                fontSize: 11,
+                              const SizedBox(height: 2),
+                              Text(
+                                '${_getLanguageFlag(topic.language)} ${topic.language} • ${topic.level} • ${topic.category}',
+                                style: TextStyle(
+                                  color: _textSecondary,
+                                  fontSize: 11,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
 
-                  // 1. Choose Coach Section (Male & Female List with Pictures & Names - Zero overflow)
-                  Row(
-                    children: [
-                      const Icon(Icons.auto_awesome, color: Color(0xFFF59E0B), size: 15),
-                      const SizedBox(width: 6),
-                      const Expanded(
-                        child: Text(
-                          'Choose Your AI Voice Coach:',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
-                        decoration: BoxDecoration(
-                          color: _selectedCoach.primaryAccent.withOpacity(0.16),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: _selectedCoach.primaryAccent.withOpacity(0.45),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.check_circle_rounded,
-                              color: _selectedCoach.primaryAccent,
-                              size: 11,
+                    // 1. Choose Coach Section (Male & Female List with Pictures & Names - Zero overflow)
+                    Row(
+                      children: [
+                        const Icon(Icons.auto_awesome, color: Color(0xFFF59E0B), size: 15),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            'Choose Your AI Voice Coach:',
+                            style: TextStyle(
+                              color: _textPrimary,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
                             ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Coach ${_selectedCoach.name}',
-                              style: TextStyle(
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                          decoration: BoxDecoration(
+                            color: _selectedCoach.primaryAccent.withOpacity(0.16),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: _selectedCoach.primaryAccent.withOpacity(0.45),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.check_circle_rounded,
                                 color: _selectedCoach.primaryAccent,
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.bold,
+                                size: 11,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 4),
+                              Text(
+                                'Coach ${_selectedCoach.name}',
+                                style: TextStyle(
+                                  color: _selectedCoach.primaryAccent,
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                   const SizedBox(height: 12),
 
                   // 6 Balanced, Spacious AI Coach Cards (Female & Male) with Horizontal Scrolling
@@ -1118,14 +1125,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                         end: Alignment.bottomCenter,
                                         colors: [
                                           coach.primaryAccent.withOpacity(0.24),
-                                          const Color(0xFF0F172A),
+                                          _isDarkMode ? const Color(0xFF0F172A) : Colors.white,
                                         ],
                                       )
                                     : null,
-                                color: isSel ? null : const Color(0xFF0F172A),
+                                color: isSel ? null : (_isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)),
                                 borderRadius: BorderRadius.circular(18),
                                 border: Border.all(
-                                  color: isSel ? coach.primaryAccent : Colors.white12,
+                                  color: isSel ? coach.primaryAccent : (_isDarkMode ? Colors.white12 : const Color(0xFFE2E8F0)),
                                   width: isSel ? 2 : 1,
                                 ),
                                 boxShadow: isSel
@@ -1146,7 +1153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: isSel ? coach.primaryAccent : Colors.white.withOpacity(0.06),
+                                      color: isSel ? coach.primaryAccent : (_isDarkMode ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.05)),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: isSel
@@ -1175,8 +1182,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 4),
                                               Text(
                                                 coach.name,
-                                                style: const TextStyle(
-                                                  color: Colors.white60,
+                                                style: TextStyle(
+                                                  color: _isDarkMode ? Colors.white60 : const Color(0xFF64748B),
                                                   fontSize: 8.5,
                                                   fontWeight: FontWeight.w900,
                                                   letterSpacing: 0.3,
@@ -1196,7 +1203,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                            color: isSel ? coach.primaryAccent : Colors.white24,
+                                            color: isSel ? coach.primaryAccent : (_isDarkMode ? Colors.white24 : const Color(0xFFCBD5E1)),
                                             width: isSel ? 2 : 1,
                                           ),
                                         ),
@@ -1210,7 +1217,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           decoration: BoxDecoration(
                                             color: const Color(0xFF059669),
                                             borderRadius: BorderRadius.circular(6),
-                                            border: Border.all(color: Colors.black, width: 1),
+                                            border: Border.all(color: _isDarkMode ? Colors.black : Colors.white, width: 1),
                                           ),
                                           child: const Text(
                                             'LIVE',
@@ -1234,7 +1241,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       Text(
                                         coach.name,
                                         style: TextStyle(
-                                          color: isSel ? Colors.white : Colors.white70,
+                                          color: isSel ? (_isDarkMode ? Colors.white : coach.primaryAccent) : _textPrimary,
                                           fontSize: 12.5,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -1252,7 +1259,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Text(
                                     coach.shortAccent,
                                     style: TextStyle(
-                                      color: isSel ? coach.primaryAccent : Colors.white54,
+                                      color: isSel ? coach.primaryAccent : _textSecondary,
                                       fontSize: 9.5,
                                       fontWeight: isSel ? FontWeight.w700 : FontWeight.w500,
                                     ),
@@ -1266,7 +1273,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      color: Colors.white.withOpacity(0.4),
+                                      color: _textMuted,
                                       fontSize: 8.5,
                                     ),
                                   ),
@@ -1284,7 +1291,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     margin: const EdgeInsets.only(top: 12),
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
                     decoration: BoxDecoration(
-                      color: _selectedCoach.primaryAccent.withOpacity(0.08),
+                      color: _selectedCoach.primaryAccent.withOpacity(_isDarkMode ? 0.08 : 0.06),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: _selectedCoach.primaryAccent.withOpacity(0.28),
@@ -1326,7 +1333,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: Text(
                                       '• ${_selectedCoach.accent}',
                                       style: TextStyle(
-                                        color: Colors.white.withOpacity(0.65),
+                                        color: _textSecondary,
                                         fontSize: 10,
                                       ),
                                       overflow: TextOverflow.ellipsis,
@@ -1338,7 +1345,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Text(
                                 _selectedCoach.tagline,
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.85),
+                                  color: _textPrimary,
                                   fontSize: 10.5,
                                 ),
                                 maxLines: 1,
@@ -1382,10 +1389,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       const Icon(Icons.timer_outlined, color: Color(0xFF818CF8), size: 15),
                       const SizedBox(width: 6),
-                      const Text(
+                      Text(
                         'Select Practice Session Duration:',
                         style: TextStyle(
-                          color: Colors.white70,
+                          color: _textPrimary,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1395,82 +1402,208 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      Expanded(child: _buildDurationOption(ctx, topic, 3, "3 Min", "Quick Drill", icon: '⚡')),
+                      Expanded(
+                        child: _buildDurationOption(
+                          mins: 3,
+                          title: "3 Min",
+                          sub: "Quick Drill",
+                          isSelected: selectedMinutes == 3,
+                          onTap: () => setModalState(() => selectedMinutes = 3),
+                          icon: '⚡',
+                        ),
+                      ),
                       const SizedBox(width: 6),
-                      Expanded(child: _buildDurationOption(ctx, topic, 5, "5 Min", "Balanced", isPopular: true, icon: '⭐')),
+                      Expanded(
+                        child: _buildDurationOption(
+                          mins: 5,
+                          title: "5 Min",
+                          sub: "Balanced",
+                          isSelected: selectedMinutes == 5,
+                          onTap: () => setModalState(() => selectedMinutes = 5),
+                          isPopular: true,
+                          icon: '⭐',
+                        ),
+                      ),
                       const SizedBox(width: 6),
-                      Expanded(child: _buildDurationOption(ctx, topic, 15, "15 Min", "Deep Fluency", icon: '🎯')),
+                      Expanded(
+                        child: _buildDurationOption(
+                          mins: 15,
+                          title: "15 Min",
+                          sub: "Deep Fluency",
+                          isSelected: selectedMinutes == 15,
+                          onTap: () => setModalState(() => selectedMinutes = 15),
+                          icon: '🎯',
+                        ),
+                      ),
                       const SizedBox(width: 6),
-                      Expanded(child: _buildDurationOption(ctx, topic, 30, "30 Min", "Max Session", icon: '🛡️')),
+                      Expanded(
+                        child: _buildDurationOption(
+                          mins: 30,
+                          title: "30 Min",
+                          sub: "Max Session",
+                          isSelected: selectedMinutes == 30,
+                          onTap: () => setModalState(() => selectedMinutes = 30),
+                          icon: '🛡️',
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+
+                  // 3. Prominent Start Live Call Button
+                  const SizedBox(height: 18),
+                  InkWell(
+                    onTap: () {
+                      User? user = FirebaseAuth.instance.currentUser;
+                      if (user == null) {
+                        AuthSessionService.restoreOrEnsureSession();
+                      }
+
+                      if (Navigator.of(ctx).canPop()) {
+                        Navigator.of(ctx).pop();
+                      }
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (!mounted) return;
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => LiveCallScreen(
+                              topic: topic,
+                              durationMinutes: selectedMinutes,
+                              coach: _selectedCoach,
+                              isDarkMode: _isDarkMode,
+                            ),
+                          ),
+                        );
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(18),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF6366F1),
+                            const Color(0xFF4F46E5),
+                            _selectedCoach.primaryAccent,
+                          ],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF6366F1).withOpacity(0.4),
+                            blurRadius: 16,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.phone_in_talk_rounded, color: Colors.white, size: 18),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Start Call with Coach ${_selectedCoach.name} ($selectedMinutes Min)',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.bolt_rounded, size: 13, color: _isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFD97706)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Instant 1-Click Connection • Live AI Accent & Fluency Feedback',
+                          style: TextStyle(
+                            color: _textMuted,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
                 ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildDurationOption(
-    BuildContext ctx,
-    TopicModel topic,
-    int? mins,
-    String title,
-    String sub, {
-    bool isPopular = false,
-    String icon = '⏱️',
-  }) {
-    return InkWell(
-      onTap: () {
-        User? user = FirebaseAuth.instance.currentUser;
-        if (user == null) {
-          AuthSessionService.restoreOrEnsureSession();
-        }
-
-        if (Navigator.of(ctx).canPop()) {
-          Navigator.of(ctx).pop();
-        }
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => LiveCallScreen(
-                topic: topic,
-                durationMinutes: mins,
-                coach: _selectedCoach,
               ),
             ),
           );
-        });
-      },
+        },
+      );
+    },
+  );
+}
+
+  Widget _buildDurationOption({
+    required int mins,
+    required String title,
+    required String sub,
+    required bool isSelected,
+    required VoidCallback onTap,
+    bool isPopular = false,
+    String icon = '⏱️',
+  }) {
+    final activeGradient = _isDarkMode
+        ? LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFF6366F1).withOpacity(0.35),
+              const Color(0xFF0F172A),
+            ],
+          )
+        : const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFEEF2FF),
+              Colors.white,
+            ],
+          );
+
+    return InkWell(
+      onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
         decoration: BoxDecoration(
-          gradient: isPopular
-              ? LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    const Color(0xFF6366F1).withOpacity(0.28),
-                    const Color(0xFF0F172A),
-                  ],
-                )
-              : null,
-          color: isPopular ? null : const Color(0xFF0F172A),
+          gradient: isSelected ? activeGradient : null,
+          color: isSelected
+              ? null
+              : (_isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isPopular ? const Color(0xFF818CF8) : const Color(0xFF334155),
-            width: isPopular ? 1.8 : 1,
+            color: isSelected
+                ? const Color(0xFF6366F1)
+                : (_isDarkMode ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+            width: isSelected ? 2.0 : 1.0,
           ),
-          boxShadow: isPopular
+          boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF6366F1).withOpacity(0.3),
+                    color: const Color(0xFF6366F1).withOpacity(0.32),
                     blurRadius: 10,
                     spreadRadius: 0,
                     offset: const Offset(0, 2),
@@ -1507,7 +1640,9 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               title,
               style: TextStyle(
-                color: isPopular ? Colors.white : Colors.white.withOpacity(0.9),
+                color: isSelected
+                    ? (_isDarkMode ? Colors.white : const Color(0xFF4338CA))
+                    : _textPrimary,
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
               ),
@@ -1519,9 +1654,11 @@ class _HomeScreenState extends State<HomeScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: isPopular ? const Color(0xFFA5B4FC) : Colors.white.withOpacity(0.45),
+                color: isSelected
+                    ? const Color(0xFF6366F1)
+                    : _textMuted,
                 fontSize: 8.5,
-                fontWeight: isPopular ? FontWeight.w600 : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
           ],
