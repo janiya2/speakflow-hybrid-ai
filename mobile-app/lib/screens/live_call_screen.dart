@@ -239,6 +239,12 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
 
   void _onBotSpeechStarted() {
     if (!mounted || _callEnded) return;
+    _reconnectTimer?.cancel();
+    try {
+      if (_speech.isListening) {
+        _speech.stop();
+      }
+    } catch (_) {}
     try {
       _idleVideoController?.pause();
       _videoController?.seekTo(Duration.zero);
@@ -658,13 +664,13 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
     });
   }
 
-  // PROACTIVE BOT KEEP-ALIVE (Only prompts if student hasn't spoken a single word for 25 seconds)
+  // PROACTIVE BOT KEEP-ALIVE (Only prompts if student hasn't spoken a single word for 35 seconds)
   void _resetProactiveNudgeTimer() {
     _proactiveNudgeTimer?.cancel();
     if (_hasNudgedForCurrentQuestion || _isBotSpeaking || _isProcessing || _callEnded) return;
 
-    // Generous 25-second wait: Allows learner to think, read, and prepare their answer without interruption!
-    _proactiveNudgeTimer = Timer(const Duration(seconds: 25), () {
+    // Generous 35-second wait: Allows learner to think, read, and prepare their answer without interruption!
+    _proactiveNudgeTimer = Timer(const Duration(seconds: 35), () {
       if (mounted && !_isBotSpeaking && !_isProcessing && !_callEnded && !_hasNudgedForCurrentQuestion) {
         _triggerProactiveSilenceNudge();
       }
@@ -684,17 +690,46 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
 
     _hasNudgedForCurrentQuestion = true;
 
+    final lang = widget.topic.language.toLowerCase().trim();
     String nudge = "Take your time! No rush at all. Would you like me to repeat the question, or give you a hint?";
-    if (widget.topic.language == 'Japanese') {
-      nudge = "ゆっくりで大丈夫ですよ！質問をもう一度言いましょうか？";
-    } else if (widget.topic.language == 'Korean') {
-      nudge = "천천히 생각하고 말씀하셔도 괜찮아요! 질문을 다시 해드릴까요?";
-    } else if (widget.topic.language == 'Spanish') {
-      nudge = "¡Tómate tu tiempo! Sin prisas. ¿Quieres que te repita la pregunta?";
-    } else if (widget.topic.language == 'Arabic') {
-      nudge = "خذ كامل وقتك! لا داعي للاستعجال. هل ترغب في أن أكرر السؤال؟";
-    } else if (widget.topic.language == 'Tamil') {
-      nudge = "பொறுமையாகப் பேசுங்கள், அவசரமில்லை! கேள்வியை மீண்டும் சொல்லவா?";
+    if (lang.contains('german') || lang.contains('deutsch') || lang.startsWith('de')) {
+      nudge = "Lass dir ruhig Zeit! Kein Stress. Möchtest du, dass ich die Frage wiederhole, oder brauchst du einen Tipp?";
+    } else if (lang.contains('french') || lang.contains('fran') || lang.startsWith('fr')) {
+      nudge = "Prenez votre temps ! Rien ne presse. Voulez-vous que je répète la question, ou avez-vous besoin d'un indice ?";
+    } else if (lang.contains('span') || lang.contains('espa') || lang.startsWith('es')) {
+      nudge = "¡Tómate tu tiempo! Sin prisas. ¿Quieres que te repita la pregunta o necesitas una pista?";
+    } else if (lang.contains('ital') || lang.startsWith('it')) {
+      nudge = "Prenditi tutto il tempo! Nessuna fretta. Vuoi che ripeta la domanda o ti serve un aiuto?";
+    } else if (lang.contains('portug') || lang.startsWith('pt')) {
+      nudge = "Com calma! Sem pressa. Quer que eu repita a pergunta ou precisa de uma dica?";
+    } else if (lang.contains('jap') || lang.startsWith('ja')) {
+      nudge = "ゆっくりで大丈夫ですよ！質問をもう一度言いましょうか？それともヒントが必要ですか？";
+    } else if (lang.contains('kor') || lang.startsWith('ko')) {
+      nudge = "천천히 생각하고 말씀하셔도 괜찮아요! 질문을 다시 해드릴까요, 아니면 힌트가 필요하신가요?";
+    } else if (lang.contains('chinese') || lang.contains('mandarin') || lang.startsWith('zh')) {
+      nudge = "慢慢来，不着急！需要我重复一遍问题，还是给您一点提示呢？";
+    } else if (lang.contains('arab') || lang.startsWith('ar')) {
+      nudge = "خذ كامل وقتك! لا داعي للاستعجال. هل ترغب في أن أكرر السؤال أم تحتاج إلى تلميح؟";
+    } else if (lang.contains('russian') || lang.startsWith('ru')) {
+      nudge = "Не спешите, не торопитесь! Хотите, чтобы я повторил вопрос или дал вам подсказку?";
+    } else if (lang.contains('hindi') || lang.startsWith('hi')) {
+      nudge = "आराम से बोलिए, कोई जल्दबाजी नहीं है! क्या आप चाहते हैं कि मैं सवाल दोहराऊं या कोई संकेत दूं?";
+    } else if (lang.contains('dutch') || lang.contains('nederland') || lang.startsWith('nl')) {
+      nudge = "Neem rustig de tijd! Geen haast. Wil je dat ik de vraag herhaal, of heb je een hint nodig?";
+    } else if (lang.contains('turk') || lang.startsWith('tr')) {
+      nudge = "Acele etmeyin, rahat olun! Soruyu tekrarlamamı ister misiniz, yoksa bir ipucu mu istersiniz?";
+    } else if (lang.contains('viet') || lang.startsWith('vi')) {
+      nudge = "Bạn cứ từ từ nhé, không sao đâu! Bạn có muốn tôi lặp lại câu hỏi hay gợi ý không?";
+    } else if (lang.contains('indones') || lang.startsWith('id')) {
+      nudge = "Santai saja, tidak perlu terburu-buru! Mau saya ulangi pertanyaannya atau butuh petunjuk?";
+    } else if (lang.contains('thai') || lang.startsWith('th')) {
+      nudge = "ค่อยๆ คิด ไม่ต้องรีบครับ! อยากให้ทวนคำถาม หรือต้องการคำใบ้ไหมครับ?";
+    } else if (lang.contains('swed') || lang.startsWith('sv') || lang.startsWith('se')) {
+      nudge = "Ta god tid på dig! Ingen stress. Vill du att jag upprepar frågan eller behöver du en ledtråd?";
+    } else if (lang.contains('tamil') || lang.startsWith('ta')) {
+      nudge = "பொறுமையாகப் பேசுங்கள், அவசரமில்லை! கேள்வியை மீண்டும் சொல்லவா, அல்லது குறிப்பு வேண்டுமா?";
+    } else if (lang.contains('sinhala') || lang.startsWith('si')) {
+      nudge = "කලබල වෙන්න එපා, හෙමින් කල්පනා කරලා කියන්න! මම ප්‍රශ්නය ආයෙත් කියන්නද, නැත්නම් ඉඟියක් ඕනෙද?";
     }
 
     _speakText(nudge);
@@ -1215,7 +1250,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
   }
 
   Future<void> _startListening() async {
-    if (!mounted || _callEnded || _isBotSpeaking || _isProcessing || _isMuted) return;
+    if (!mounted || _callEnded || _isBotSpeaking || _isCoachSpeakingVideoPlaying || _isProcessing || _isMuted) return;
     if (_isStartingListening || _speech.isListening) return;
 
     _isStartingListening = true;
@@ -1229,7 +1264,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
         _hasMicPermission = await _speech.hasPermission;
       }
 
-      if (!mounted || _callEnded || _isBotSpeaking || _isProcessing || _isMuted) return;
+      if (!mounted || _callEnded || _isBotSpeaking || _isCoachSpeakingVideoPlaying || _isProcessing || _isMuted) return;
       if (_speech.isListening) {
         if (mounted) setState(() => _isListening = true);
         return;
@@ -1319,14 +1354,13 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       }
     } catch (e) {
       debugPrint('Speech listen exception: $e');
-      final errStr = e.toString().toLowerCase();
-      if (errStr.contains('already started') || errStr.contains('already listening')) {
-        if (mounted) setState(() => _isListening = true);
-        return;
-      }
+      try {
+        await _speech.stop();
+        await _speech.cancel();
+      } catch (_) {}
       if (mounted) setState(() => _isListening = false);
-      if (!_isMuted && !_callEnded && !_isBotSpeaking && !_isProcessing) {
-        _scheduleListeningRestart(delayMs: 600);
+      if (!_isMuted && !_callEnded && !_isBotSpeaking && !_isCoachSpeakingVideoPlaying && !_isProcessing) {
+        _scheduleListeningRestart(delayMs: 400);
       }
     } finally {
       _isStartingListening = false;

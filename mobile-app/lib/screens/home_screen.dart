@@ -1658,59 +1658,84 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // -------------------------------------------------------------
-  // BOTTOM NAVIGATION BAR (5 DEDICATED TABS)
+  // BOTTOM NAVIGATION BAR (5 DEDICATED MODERN TABS)
   // -------------------------------------------------------------
   Widget _buildBottomNavigationBar() {
+    final List<Map<String, dynamic>> navItems = [
+      {'title': 'Home', 'icon': Icons.grid_view_rounded, 'inactiveIcon': Icons.grid_view_outlined},
+      {'title': 'Calls', 'icon': Icons.headset_mic_rounded, 'inactiveIcon': Icons.headset_mic_outlined},
+      {'title': 'Targets', 'icon': Icons.emoji_events_rounded, 'inactiveIcon': Icons.emoji_events_outlined},
+      {'title': 'Plans', 'icon': Icons.workspace_premium_rounded, 'inactiveIcon': Icons.workspace_premium_outlined},
+      {'title': 'Profile', 'icon': Icons.account_circle_rounded, 'inactiveIcon': Icons.account_circle_outlined},
+    ];
+
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: _isDarkMode ? const Color(0xFF1E293B) : Colors.white,
-        border: Border(top: BorderSide(color: _borderSubtle)),
+        border: Border(top: BorderSide(color: _borderSubtle, width: 1.2)),
         boxShadow: [
           BoxShadow(
-            color: _isDarkMode ? Colors.black.withOpacity(0.4) : Colors.black.withOpacity(0.06),
-            blurRadius: 15,
-            offset: const Offset(0, -3),
+            color: _isDarkMode ? Colors.black.withOpacity(0.45) : Colors.black.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
-      child: BottomNavigationBar(
-        currentIndex: _currentTabIndex,
-        onTap: (index) => setState(() => _currentTabIndex = index),
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        selectedItemColor: const Color(0xFF6366F1),
-        unselectedItemColor: _isDarkMode ? Colors.white.withOpacity(0.45) : const Color(0xFF94A3B8),
-        selectedFontSize: 11,
-        unselectedFontSize: 10,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home_filled),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.phone_in_talk_outlined),
-            activeIcon: Icon(Icons.phone_in_talk),
-            label: 'Calls',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.emoji_events_outlined),
-            activeIcon: Icon(Icons.emoji_events),
-            label: 'Targets',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.schedule_outlined),
-            activeIcon: Icon(Icons.schedule),
-            label: 'Plans',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
+      child: SafeArea(
+        top: false,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: List.generate(navItems.length, (index) {
+            final isSelected = _currentTabIndex == index;
+            final item = navItems[index];
+            return InkWell(
+              onTap: () => setState(() => _currentTabIndex = index),
+              borderRadius: BorderRadius.circular(16),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color(0xFF6366F1).withOpacity(_isDarkMode ? 0.22 : 0.12)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(16),
+                  border: isSelected
+                      ? Border.all(
+                          color: const Color(0xFF6366F1).withOpacity(_isDarkMode ? 0.5 : 0.35),
+                          width: 1,
+                        )
+                      : null,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isSelected ? (item['icon'] as IconData) : (item['inactiveIcon'] as IconData),
+                      color: isSelected
+                          ? const Color(0xFF6366F1)
+                          : (_isDarkMode ? Colors.white.withOpacity(0.45) : const Color(0xFF94A3B8)),
+                      size: isSelected ? 22 : 21,
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      item['title'] as String,
+                      style: TextStyle(
+                        color: isSelected
+                            ? const Color(0xFF6366F1)
+                            : (_isDarkMode ? Colors.white.withOpacity(0.5) : const Color(0xFF64748B)),
+                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                        fontSize: 10.5,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ),
       ),
     );
   }
@@ -2848,7 +2873,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 6),
                   Text(
                     '${topics.length} ${_selectedCategory == "All" ? "" : "$_selectedCategory "}Scenarios in ${_userTargetLanguage ?? "English"}',
-                    style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 11.5, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: _textSecondary, fontSize: 11.5, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -3656,9 +3681,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Row(
                               children: [
-                                const Text(
+                                Text(
                                   'Weekly Targets & Podium',
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
+                                  style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 17),
                                 ),
                                 const SizedBox(width: 8),
                                 Container(
@@ -3678,7 +3703,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 2),
                             Text(
                               'Speak daily, level up fluency score & win the Gold Trophy!',
-                              style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 11),
+                              style: TextStyle(color: _textSecondary, fontSize: 11),
                             ),
                           ],
                         ),
@@ -3878,30 +3903,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
-                        children: const [
-                          Icon(Icons.military_tech_rounded, color: Color(0xFFFBBF24), size: 22),
-                          SizedBox(width: 8),
+                        children: [
+                          const Icon(Icons.military_tech_rounded, color: Color(0xFFFBBF24), size: 22),
+                          const SizedBox(width: 8),
                           Text(
                             'Weekly Winners Podium',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                            style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
                           ),
                         ],
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B),
+                          color: _isDarkMode ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.white.withOpacity(0.08)),
+                          border: Border.all(color: _isDarkMode ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.08)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.fiber_manual_record, color: Color(0xFF10B981), size: 8),
-                            SizedBox(width: 4),
+                          children: [
+                            const Icon(Icons.fiber_manual_record, color: Color(0xFF10B981), size: 8),
+                            const SizedBox(width: 4),
                             Text(
                               'Live Leaderboard',
-                              style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: _textSecondary, fontSize: 10, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -3936,18 +3961,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Row(
-                                      children: const [
-                                        Icon(Icons.format_list_numbered_rounded, color: Color(0xFF818CF8), size: 18),
-                                        SizedBox(width: 6),
+                                      children: [
+                                        const Icon(Icons.format_list_numbered_rounded, color: Color(0xFF818CF8), size: 18),
+                                        const SizedBox(width: 6),
                                         Text(
                                           'Active Student Rankings',
-                                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                                          style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
                                         ),
                                       ],
                                     ),
                                     Text(
                                       '${ranks.length} Speakers',
-                                      style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11),
+                                      style: TextStyle(color: _textSecondary, fontSize: 11),
                                     ),
                                   ],
                                 ),
@@ -6310,12 +6335,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 10),
                             Text(
                               userDisplayName,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                              style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 18),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               user.email ?? 'Logged In Student',
-                              style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                              style: TextStyle(color: _textSecondary, fontSize: 12),
                             ),
                             const SizedBox(height: 8),
                             Container(
