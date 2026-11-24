@@ -1463,6 +1463,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 topic: topic,
                 durationMinutes: mins,
                 coach: _selectedCoach,
+                isDarkMode: _isDarkMode,
               ),
             ),
           );
@@ -2895,19 +2896,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 6),
                   Text(
                     '${topics.length} ${_selectedCategory == "All" ? "" : "$_selectedCategory "}Scenarios in ${_userTargetLanguage ?? "English"}',
-                    style: TextStyle(color: _textSecondary, fontSize: 11.5, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: _isDarkMode ? Colors.white70 : const Color(0xFF334155),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.16),
+                  color: const Color(0xFF10B981).withOpacity(_isDarkMode ? 0.16 : 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '${topics.length} Live',
-                  style: const TextStyle(color: Color(0xFF34D399), fontSize: 10, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: _isDarkMode ? const Color(0xFF34D399) : const Color(0xFF059669),
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -2921,9 +2930,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.search_off, color: Colors.white30, size: 48),
+                      Icon(Icons.search_off, color: _isDarkMode ? Colors.white30 : const Color(0xFF94A3B8), size: 48),
                       const SizedBox(height: 8),
-                      const Text('No scenarios found matching your filter.', style: TextStyle(color: Colors.white54)),
+                      Text('No scenarios found matching your filter.', style: TextStyle(color: _textSecondary, fontSize: 13)),
                       const SizedBox(height: 12),
                       ElevatedButton(
                         onPressed: () {
@@ -4817,12 +4826,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               )
-            : const LinearGradient(
-                colors: [Color(0xFF1E293B), Color(0xFF182234)],
+            : LinearGradient(
+                colors: _isDarkMode
+                    ? const [Color(0xFF1E293B), Color(0xFF182234)]
+                    : const [Colors.white, Color(0xFFF8FAFC)],
               ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isCurrentUser ? const Color(0xFF818CF8) : Colors.white.withOpacity(0.07),
+          color: isCurrentUser ? const Color(0xFF818CF8) : _borderSubtle,
           width: isCurrentUser ? 1.6 : 1,
         ),
         boxShadow: isCurrentUser
@@ -4833,7 +4844,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   spreadRadius: 1,
                 ),
               ]
-            : null,
+            : _cardShadow,
       ),
       child: Row(
         children: [
@@ -4845,17 +4856,17 @@ class _HomeScreenState extends State<HomeScreen> {
               gradient: isCurrentUser
                   ? const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)])
                   : null,
-              color: isCurrentUser ? null : const Color(0xFF0F172A),
+              color: isCurrentUser ? null : (_isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFEEF2FF)),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: isCurrentUser ? const Color(0xFFA5B4FC) : const Color(0xFF6366F1).withOpacity(0.25),
+                color: isCurrentUser ? const Color(0xFFA5B4FC) : (_isDarkMode ? const Color(0xFF6366F1).withOpacity(0.25) : const Color(0xFFC7D2FE)),
               ),
             ),
             child: Center(
               child: Text(
                 '#$rankNumber',
                 style: TextStyle(
-                  color: isCurrentUser ? Colors.white : const Color(0xFFA5B4FC),
+                  color: isCurrentUser ? Colors.white : (_isDarkMode ? const Color(0xFFA5B4FC) : const Color(0xFF4F46E5)),
                   fontWeight: FontWeight.w900,
                   fontSize: 12,
                 ),
@@ -4887,8 +4898,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         rank.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: isCurrentUser ? Colors.white : _textPrimary,
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         ),
@@ -4923,9 +4934,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text(
                       '${rank.callsCount} calls logged',
-                      style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 10),
+                      style: TextStyle(color: isCurrentUser ? Colors.white.withOpacity(0.65) : _textSecondary, fontSize: 10),
                     ),
-                    Text(' • ', style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 10)),
+                    Text(' • ', style: TextStyle(color: isCurrentUser ? Colors.white.withOpacity(0.4) : _textMuted, fontSize: 10)),
                     const Icon(Icons.local_fire_department_rounded, color: Color(0xFFF97316), size: 12),
                     Text(
                       '${rank.streak}d streak',
@@ -4985,23 +4996,24 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: _bgCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: _borderSubtle),
+        boxShadow: _cardShadow,
       ),
       child: Center(
         child: Column(
           children: [
-            const Icon(Icons.emoji_events_outlined, color: Colors.white30, size: 48),
+            const Icon(Icons.emoji_events_outlined, color: Color(0xFFFBBF24), size: 48),
             const SizedBox(height: 10),
-            const Text(
+            Text(
               'Be the First Winner This Week!',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+              style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
             ),
             const SizedBox(height: 4),
             Text(
               'Complete your daily speaking session to secure the #1 Gold spot.',
-              style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11),
+              style: TextStyle(color: _textSecondary, fontSize: 11),
             ),
           ],
         ),
@@ -5216,8 +5228,10 @@ class _HomeScreenState extends State<HomeScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF2E1C0C), Color(0xFF1E293B)],
+              gradient: LinearGradient(
+                colors: _isDarkMode
+                    ? const [Color(0xFF2E1C0C), Color(0xFF1E293B)]
+                    : const [Color(0xFFFFFBEB), Colors.white],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -5259,8 +5273,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Text(
                       '$yearlyPrice / yr',
-                      style: const TextStyle(
-                        color: Color(0xFFFBBF24),
+                      style: TextStyle(
+                        color: _isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
                       ),
@@ -5270,8 +5284,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 10),
                 Text(
                   'Upgrade to $yearlyName 👑',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: _textPrimary,
                     fontWeight: FontWeight.bold,
                     fontSize: 17,
                   ),
@@ -5280,7 +5294,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   'Lock in 12 months of unlimited AI speaking practice at the lowest price (~${_calculateWeeklyFromYearly(yearlyPrice)}/wk). Google Play automatically prorates your remaining $planName time.',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: _textSecondary,
                     fontSize: 11.5,
                     height: 1.35,
                   ),
@@ -5313,9 +5327,9 @@ class _HomeScreenState extends State<HomeScreen> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF59E0B).withOpacity(0.12),
+              color: _isDarkMode ? const Color(0xFFF59E0B).withOpacity(0.12) : const Color(0xFFFEF3C7),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.35)),
+              border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.5)),
             ),
             child: Row(
               children: [
@@ -5325,7 +5339,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text(
                     'You are enjoying our top-tier Yearly VIP membership with maximum benefits!',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
+                      color: _isDarkMode ? Colors.white.withOpacity(0.85) : const Color(0xFF78350F),
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
                     ),
@@ -5350,9 +5364,9 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Icon(Icons.star_rounded, color: Color(0xFFFBBF24), size: 16),
             ),
             const SizedBox(width: 10),
-            const Text(
+            Text(
               'Your VIP Privileges & Features',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ],
         ),
@@ -5493,9 +5507,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: const Icon(Icons.timer_outlined, color: Color(0xFF818CF8), size: 16),
                       ),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'Standard Free Tier',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                        style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                     ],
                   ),
@@ -5521,7 +5535,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(6),
                 child: LinearProgressIndicator(
                   value: usedPct,
-                  backgroundColor: Colors.white12,
+                  backgroundColor: _isDarkMode ? Colors.white12 : const Color(0xFFE2E8F0),
                   valueColor: AlwaysStoppedAnimation<Color>(
                     remainingFree <= 2 ? const Color(0xFFEF4444) : const Color(0xFF10B981),
                   ),
@@ -5531,7 +5545,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 8),
               Text(
                 'Used $usedToday of $dailyFreeLimit free daily minutes. Upgrade to VIP to speak without limits.',
-                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 10.5),
+                style: TextStyle(color: _textSecondary, fontSize: 10.5),
               ),
             ],
           ),
@@ -5543,9 +5557,9 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Select a VIP Plan',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
             ),
             if (trialDays > 0)
               Container(
@@ -5737,8 +5751,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 6),
                     Text(
                       title,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: _textPrimary,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
@@ -5748,14 +5762,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.08),
+                    color: _isDarkMode ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    border: Border.all(color: _isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.08)),
                   ),
                   child: Text(
                     price,
                     style: TextStyle(
-                      color: isBestValue ? const Color(0xFFFBBF24) : Colors.white,
+                      color: isBestValue ? (_isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFD97706)) : _textPrimary,
                       fontWeight: FontWeight.w900,
                       fontSize: 15,
                     ),
@@ -5766,7 +5780,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: TextStyle(color: Colors.white.withOpacity(0.65), fontSize: 11.5, height: 1.35),
+              style: TextStyle(color: _textSecondary, fontSize: 11.5, height: 1.35),
             ),
             const SizedBox(height: 12),
             // Feature Bullets
@@ -5783,7 +5797,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: Text(
                       feat,
-                      style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 11.5),
+                      style: TextStyle(color: _textPrimary, fontSize: 11.5),
                     ),
                   ),
                 ],
@@ -5929,9 +5943,10 @@ class _HomeScreenState extends State<HomeScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: _bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: _borderSubtle),
+        boxShadow: _cardShadow,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -5951,12 +5966,12 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.5),
+                  style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 13.5),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   desc,
-                  style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 11, height: 1.3),
+                  style: TextStyle(color: _textSecondary, fontSize: 11, height: 1.3),
                 ),
               ],
             ),
@@ -5970,13 +5985,13 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: _bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
-          children: const [
-            Icon(Icons.workspace_premium, color: Color(0xFFFBBF24), size: 22),
-            SizedBox(width: 8),
-            Text('Manage Subscription', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+          children: [
+            const Icon(Icons.workspace_premium, color: Color(0xFFFBBF24), size: 22),
+            const SizedBox(width: 8),
+            Text('Manage Subscription', style: TextStyle(color: _textPrimary, fontSize: 17, fontWeight: FontWeight.bold)),
           ],
         ),
         content: Column(
@@ -5985,17 +6000,17 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text(
               'Your current active plan:',
-              style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12),
+              style: TextStyle(color: _textSecondary, fontSize: 12),
             ),
             const SizedBox(height: 4),
             Text(
               planName,
-              style: const TextStyle(color: Color(0xFF34D399), fontWeight: FontWeight.bold, fontSize: 15),
+              style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 15),
             ),
             const SizedBox(height: 14),
             Text(
               'Your subscription is managed securely through your Google Play account.\n\nYou can update payment methods, view invoices, or cancel anytime in the Google Play Store under "Subscriptions".',
-              style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12, height: 1.4),
+              style: TextStyle(color: _textSecondary, fontSize: 12, height: 1.4),
             ),
           ],
         ),
@@ -6022,9 +6037,9 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildTrustItem(Icons.verified_user_outlined, 'Google Play\nSecure Checkout', const Color(0xFF10B981)),
-          Container(width: 1, height: 26, color: Colors.white12),
+          Container(width: 1, height: 26, color: _borderSubtle),
           _buildTrustItem(Icons.bolt_rounded, 'Instant\nVIP Activation', const Color(0xFF6366F1)),
-          Container(width: 1, height: 26, color: Colors.white12),
+          Container(width: 1, height: 26, color: _borderSubtle),
           _buildTrustItem(Icons.cancel_outlined, 'Cancel Anytime\nin 1 Tap', const Color(0xFFF59E0B)),
         ],
       ),
@@ -6039,7 +6054,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 9.5, height: 1.2),
+          style: TextStyle(color: _textSecondary, fontSize: 9.5, height: 1.2),
         ),
       ],
     );
@@ -8583,7 +8598,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showCoachPickerModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1E293B),
+      backgroundColor: _bgCard,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -8597,20 +8612,20 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Select Default AI Voice Coach',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(ctx),
-                    icon: const Text('✕', style: TextStyle(color: Colors.white54, fontSize: 16)),
+                    icon: Icon(Icons.close_rounded, color: _textMuted, size: 20),
                   ),
                 ],
               ),
               const SizedBox(height: 4),
               Text(
                 'Choose your personal coach (Female & Male voices available):',
-                style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 11),
+                style: TextStyle(color: _textSecondary, fontSize: 11),
               ),
               const SizedBox(height: 14),
               Flexible(
@@ -8638,10 +8653,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: isSel ? const Color(0xFF6366F1).withOpacity(0.2) : const Color(0xFF0F172A),
+                          color: isSel
+                              ? const Color(0xFF6366F1).withOpacity(_isDarkMode ? 0.2 : 0.1)
+                              : (_isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: isSel ? const Color(0xFF818CF8) : Colors.white12,
+                            color: isSel ? const Color(0xFF818CF8) : _borderSubtle,
                             width: isSel ? 2 : 1,
                           ),
                         ),
@@ -8676,7 +8693,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     children: [
                                       Text(
                                         coach.name,
-                                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                                        style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
                                       ),
                                       const SizedBox(width: 8),
                                       Container(
@@ -8699,7 +8716,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   const SizedBox(height: 2),
                                   Text(
                                     coach.tagline,
-                                    style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 11),
+                                    style: TextStyle(color: _textSecondary, fontSize: 11),
                                   ),
                                 ],
                               ),
@@ -8714,7 +8731,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               )
                             else
-                              Text('›', style: TextStyle(color: Colors.white38, fontSize: 22)),
+                              Text('›', style: TextStyle(color: _textMuted, fontSize: 22)),
                           ],
                         ),
                       ),
