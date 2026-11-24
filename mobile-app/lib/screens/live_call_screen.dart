@@ -439,11 +439,28 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       });
     }
 
-    // Opening prompt: Instant zero-latency selection from topic starter questions or starter prompt!
+    // Opening prompt: Use Gemini 2.5 Flash / Hybrid AI to generate a creative, spontaneous situational greeting!
     String openingText = widget.topic.starterPrompt;
-    if (widget.topic.starterQuestions.isNotEmpty) {
-      final randIndex = DateTime.now().millisecondsSinceEpoch % widget.topic.starterQuestions.length;
-      openingText = widget.topic.starterQuestions[randIndex];
+    try {
+      openingText = await _geminiService.generateDynamicOpening(
+        topicTitle: widget.topic.title,
+        scenarioContext: widget.topic.scenario,
+        targetLanguage: widget.topic.language,
+        coach: _coach,
+        defaultPrompt: widget.topic.starterPrompt,
+        alternateQuestions: widget.topic.starterQuestions,
+      ).timeout(const Duration(milliseconds: 1800), onTimeout: () {
+        if (widget.topic.starterQuestions.isNotEmpty) {
+          final randIndex = DateTime.now().millisecondsSinceEpoch % widget.topic.starterQuestions.length;
+          return widget.topic.starterQuestions[randIndex];
+        }
+        return widget.topic.starterPrompt;
+      });
+    } catch (_) {
+      if (widget.topic.starterQuestions.isNotEmpty) {
+        final randIndex = DateTime.now().millisecondsSinceEpoch % widget.topic.starterQuestions.length;
+        openingText = widget.topic.starterQuestions[randIndex];
+      }
     }
 
     // Snappy phone outgoing connection duration (450ms)
@@ -767,12 +784,26 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
   }
 
   String _getTopicLanguageCode() {
-    final lang = widget.topic.language.toLowerCase();
-    if (lang.contains('jap')) return 'ja-JP';
-    if (lang.contains('kor')) return 'ko-KR';
-    if (lang.contains('span')) return 'es-ES';
-    if (lang.contains('arab')) return 'ar-SA';
-    if (lang.contains('tamil')) return 'ta-IN';
+    final lang = widget.topic.language.toLowerCase().trim();
+    if (lang.contains('jap') || lang.startsWith('ja')) return 'ja-JP';
+    if (lang.contains('kor') || lang.startsWith('ko')) return 'ko-KR';
+    if (lang.contains('span') || lang.contains('espa') || lang.startsWith('es')) return 'es-ES';
+    if (lang.contains('arab') || lang.startsWith('ar')) return 'ar-SA';
+    if (lang.contains('tamil') || lang.startsWith('ta')) return 'ta-IN';
+    if (lang.contains('french') || lang.contains('fran') || lang.startsWith('fr')) return 'fr-FR';
+    if (lang.contains('german') || lang.contains('deutsch') || lang.startsWith('de')) return 'de-DE';
+    if (lang.contains('italian') || lang.contains('ital') || lang.startsWith('it')) return 'it-IT';
+    if (lang.contains('portug') || lang.startsWith('pt')) return 'pt-BR';
+    if (lang.contains('chinese') || lang.contains('mandarin') || lang.startsWith('zh')) return 'zh-CN';
+    if (lang.contains('hindi') || lang.startsWith('hi')) return 'hi-IN';
+    if (lang.contains('russian') || lang.startsWith('ru')) return 'ru-RU';
+    if (lang.contains('sinhala') || lang.startsWith('si')) return 'si-LK';
+    if (lang.contains('dutch') || lang.contains('nederland') || lang.startsWith('nl')) return 'nl-NL';
+    if (lang.contains('turk') || lang.startsWith('tr')) return 'tr-TR';
+    if (lang.contains('viet') || lang.startsWith('vi')) return 'vi-VN';
+    if (lang.contains('indones') || lang.startsWith('id')) return 'id-ID';
+    if (lang.contains('thai') || lang.startsWith('th')) return 'th-TH';
+    if (lang.contains('swed') || lang.startsWith('sv') || lang.startsWith('se')) return 'sv-SE';
     return 'en-US';
   }
 
@@ -1164,6 +1195,25 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
     }
   }
 
+  void _repeatLastCoachAudio() {
+    if (_isBotSpeaking) return;
+    final phraseToRepeat = (_isDrillMode && _targetPhraseToRepeat.isNotEmpty)
+        ? _targetPhraseToRepeat
+        : _lastBotQuestion;
+    if (phraseToRepeat.isNotEmpty) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('🔊 Repeating coach audio...'),
+          duration: Duration(milliseconds: 1400),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Color(0xFF0284C7),
+        ),
+      );
+      _speakText(phraseToRepeat);
+    }
+  }
+
   Future<void> _startListening() async {
     if (!mounted || _callEnded || _isBotSpeaking || _isProcessing || _isMuted) return;
     if (_isStartingListening || _speech.isListening) return;
@@ -1188,28 +1238,12 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       if (_isSttInitialized && mounted) {
         setState(() => _isListening = true);
 
-        String defaultLocaleId = 'en-US';
-        final lang = widget.topic.language.toLowerCase();
-        if (lang.contains('jap')) defaultLocaleId = 'ja-JP';
-        else if (lang.contains('kor')) defaultLocaleId = 'ko-KR';
-        else if (lang.contains('span')) defaultLocaleId = 'es-ES';
-        else if (lang.contains('arab')) defaultLocaleId = 'ar-SA';
-        else if (lang.contains('tamil')) defaultLocaleId = 'ta-IN';
-
+        final langCode = _getTopicLanguageCode();
+        String defaultLocaleId = langCode;
         String localeId = defaultLocaleId;
         try {
           final locales = await _speech.locales();
-          final targetPrefix = (widget.topic.language == 'Japanese')
-              ? 'ja'
-              : (widget.topic.language == 'Korean')
-                  ? 'ko'
-                  : (widget.topic.language == 'Spanish')
-                      ? 'es'
-                      : (widget.topic.language == 'Arabic')
-                          ? 'ar'
-                          : (widget.topic.language == 'Tamil')
-                              ? 'ta'
-                              : 'en';
+          final targetPrefix = langCode.split('-').first.toLowerCase();
           final found = locales.where((l) {
             final loc = l.localeId.toLowerCase().replaceAll('_', '-');
             return loc.startsWith(targetPrefix);
@@ -3241,7 +3275,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                         Text(
                                           _isDrillMode
                                               ? '🔁 Repeat Drill:'
-                                              : 'Coach ${_coach.name}\'s Question (අසන ලද ප්‍රශ්නය):',
+                                              : 'Coach ${_coach.name} (AI):',
                                           style: TextStyle(
                                             color: _isDrillMode ? const Color(0xFF34D399) : _coach.primaryAccent,
                                             fontSize: 11,
@@ -3269,22 +3303,23 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                           )
                                         else
                                           InkWell(
-                                            onTap: () => _speakText(_lastBotQuestion),
+                                            onTap: _repeatLastCoachAudio,
                                             borderRadius: BorderRadius.circular(8),
                                             child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                               decoration: BoxDecoration(
-                                                color: _coach.primaryAccent.withOpacity(0.18),
+                                                color: _coach.primaryAccent.withOpacity(0.22),
                                                 borderRadius: BorderRadius.circular(8),
+                                                border: Border.all(color: _coach.primaryAccent.withOpacity(0.55), width: 1),
                                               ),
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  Icon(Icons.volume_up_rounded, size: 12, color: _coach.primaryAccent),
-                                                  const SizedBox(width: 3),
+                                                  Icon(Icons.volume_up_rounded, size: 13, color: _coach.primaryAccent),
+                                                  const SizedBox(width: 4),
                                                   Text(
-                                                    'Hear',
-                                                    style: TextStyle(color: _coach.primaryAccent, fontSize: 9.5, fontWeight: FontWeight.bold),
+                                                    '🔊 Repeat',
+                                                    style: TextStyle(color: _coach.primaryAccent, fontSize: 10.5, fontWeight: FontWeight.bold),
                                                   ),
                                                 ],
                                               ),
@@ -3397,14 +3432,48 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
                                 ),
-                                child: Text(
-                                  '"$_targetPhraseToRepeat"',
-                                  style: const TextStyle(
-                                    color: Color(0xFF34D399),
-                                    fontSize: 13.5,
-                                    fontWeight: FontWeight.bold,
-                                    height: 1.3,
-                                  ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '"$_targetPhraseToRepeat"',
+                                        style: const TextStyle(
+                                          color: Color(0xFF34D399),
+                                          fontSize: 13.5,
+                                          fontWeight: FontWeight.bold,
+                                          height: 1.3,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    InkWell(
+                                      onTap: () => _speakText(_targetPhraseToRepeat),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF10B981).withOpacity(0.22),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: const Color(0xFF10B981), width: 1),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: const [
+                                            Icon(Icons.volume_up_rounded, color: Color(0xFF34D399), size: 14),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              'Listen',
+                                              style: TextStyle(
+                                                color: Color(0xFF34D399),
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -3553,6 +3622,46 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                               _isMuted ? 'Muted' : 'Mic On',
                               style: TextStyle(
                                 color: _isMuted ? const Color(0xFFEF4444) : Colors.white70,
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // 1.5 REPEAT COACH AUDIO BUTTON
+                      InkWell(
+                        onTap: _repeatLastCoachAudio,
+                        borderRadius: BorderRadius.circular(22),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E293B),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF38BDF8).withOpacity(0.35),
+                                    blurRadius: 8,
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.replay_rounded,
+                                color: Color(0xFF38BDF8),
+                                size: 22,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              'Repeat',
+                              style: TextStyle(
+                                color: Color(0xFF38BDF8),
                                 fontSize: 9.5,
                                 fontWeight: FontWeight.bold,
                               ),

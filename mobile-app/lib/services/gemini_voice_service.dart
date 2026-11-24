@@ -251,6 +251,23 @@ Do not include any explanation or markdown formatting, just the raw JSON.''';
           fallbackPool.add("مرحباً بك! أنا المدرب ${coach.name}. $cleanQ");
         } else if (targetLanguage == 'Tamil') {
           fallbackPool.add("வணக்கம்! நான் உங்கள் பயிற்சியாளர் ${coach.name}. $cleanQ");
+        } else if (targetLanguage == 'German') {
+          fallbackPool.add("Hallo! Hier ist dein Coach ${coach.name}. $cleanQ");
+          fallbackPool.add("Guten Tag! Schön, dass du da bist. $cleanQ");
+        } else if (targetLanguage == 'French') {
+          fallbackPool.add("Bonjour ! C'est ton coach ${coach.name}. $cleanQ");
+          fallbackPool.add("Salut ! Ravi de pratiquer avec toi aujourd'hui. $cleanQ");
+        } else if (targetLanguage == 'Italian') {
+          fallbackPool.add("Ciao! Sono il tuo coach ${coach.name}. $cleanQ");
+          fallbackPool.add("Buongiorno! Che bello parlare insieme oggi. $cleanQ");
+        } else if (targetLanguage == 'Portuguese') {
+          fallbackPool.add("Olá! Aqui é o seu coach ${coach.name}. $cleanQ");
+        } else if (targetLanguage == 'Chinese') {
+          fallbackPool.add("你好！我是你的教练${coach.name}。$cleanQ");
+        } else if (targetLanguage == 'Hindi') {
+          fallbackPool.add("नमस्ते! मैं आपका कोच ${coach.name} हूँ। $cleanQ");
+        } else if (targetLanguage == 'Russian') {
+          fallbackPool.add("Привет! Это твой тренер ${coach.name}. $cleanQ");
         } else if (targetLanguage == 'Sinhala') {
           fallbackPool.add("ආයුබෝවන්! මම ඔබේ පුහුණුකරු ${coach.name}. $cleanQ");
         } else if (targetLanguage == 'Dutch') {
@@ -283,12 +300,16 @@ Do not include any explanation or markdown formatting, just the raw JSON.''';
 
     final prompt = '''
 ${coach.promptPersonality}
-You are starting a live telephone language practice call in $targetLanguage.
+You are starting a live interactive voice practice call in $targetLanguage with a language student.
 Topic: $topicTitle
 Scenario: $scenarioContext
 
-Generate a fresh, creative, and engaging opening greeting and 1 starter question to begin the conversation (maximum 20 words).
-CRITICAL RULE: Speak 100% purely in $targetLanguage native script. DO NOT include English translations, romanizations, pronunciations, or explanations in parentheses or brackets. Reply ONLY with the exact words to speak.
+TASK:
+- Greet the user naturally as Coach ${coach.name}.
+- Ask ONE fresh, engaging, situational opening question directly related to this topic.
+- VARY YOUR QUESTION: Be creative and spontaneous! Never reuse repetitive, cliché openers.
+- Length: strictly 15 to 25 words.
+- CRITICAL RULE: Speak 100% purely in $targetLanguage native script. DO NOT include any English translations, pronunciations, or brackets. Reply ONLY with the exact words to speak.
 ''';
 
     // 1. PRIMARY INFERENCE: Firebase Vertex AI SDK (#BuildHybridAI)
