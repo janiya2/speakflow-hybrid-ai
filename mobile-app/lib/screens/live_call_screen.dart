@@ -558,7 +558,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'ඔබ අද දිනට හිමි නොමිලේ ලැබෙන පුහුණු කාල සීමාව (Daily Free Limit) සම්පූර්ණ කර ඇත.',
+              'You have reached your daily free practice limit.',
               style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
             ),
             const SizedBox(height: 10),
@@ -2027,11 +2027,11 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                   Row(
                     children: [
                       Expanded(
-                        child: _buildMetricTile('Fluency (චතුරතාව)', '$fluency%'),
+                        child: _buildMetricTile('Fluency', '$fluency%'),
                       ),
                       const SizedBox(width: 6),
                       Expanded(
-                        child: _buildMetricTile('Accuracy (නිවැරදි)', '$accuracy%'),
+                        child: _buildMetricTile('Accuracy', '$accuracy%'),
                       ),
                     ],
                   ),
@@ -2039,11 +2039,11 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                   Row(
                     children: [
                       Expanded(
-                        child: _buildMetricTile('Pronunciation (උච්චාරණ)', '$pronunciation%'),
+                        child: _buildMetricTile('Pronunciation', '$pronunciation%'),
                       ),
                       const SizedBox(width: 6),
                       Expanded(
-                        child: _buildMetricTile('Duration (කාලය)', _formatDuration(_callDurationSeconds)),
+                        child: _buildMetricTile('Duration', _formatDuration(_callDurationSeconds)),
                       ),
                     ],
                   ),
@@ -3025,7 +3025,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                             : _isProcessing
                                                 ? 'Thinking response...'
                                                 : _isListening
-                                                    ? 'Listening to you... (කතා කරන්න)'
+                                                    ? 'Listening to your voice...'
                                                     : 'Tap Send / Speak to reply',
                                         style: TextStyle(
                                           color: _isBotSpeaking
@@ -3124,7 +3124,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                 Text(
                                   _isBotSpeaking
                                       ? 'Coach ${_coach.name} (AI):'
-                                      : 'You (ඔබ පැවසූ දෙය):',
+                                      : 'You (Learner):',
                                   style: TextStyle(
                                     color: _isBotSpeaking ? _coach.primaryAccent : const Color(0xFF34D399),
                                     fontSize: 11,
@@ -3175,7 +3175,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                     : (_userSpeech.isEmpty
                                         ? (_hasMicPermission
                                             ? 'Listening to microphone... (Speak freely, AI listens continuously)'
-                                            : 'Tap the Microphone button below to speak (මයික්‍රෆෝනය ඔබා කතා කරන්න)')
+                                            : 'Tap the Microphone button below to speak')
                                         : '"$_userSpeech"'),
                                 key: ValueKey<String>(
                                   _isBotSpeaking ? 'bot_$_botSubtitle' : 'user_$_userSpeech',
@@ -3242,7 +3242,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                       children: [
                                         Text(
                                           _isDrillMode
-                                              ? '🔁 Repeat Drill (නැවත කියන්න):'
+                                              ? '🔁 Repeat Drill:'
                                               : 'Coach ${_coach.name}\'s Question (අසන ලද ප්‍රශ්නය):',
                                           style: TextStyle(
                                             color: _isDrillMode ? const Color(0xFF34D399) : _coach.primaryAccent,
@@ -3334,7 +3334,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                   const Icon(Icons.repeat_rounded, color: Color(0xFF818CF8), size: 16),
                                   const SizedBox(width: 6),
                                   const Text(
-                                    '🔁 Repeat to Continue (නැවත පවසන්න)',
+                                    '🔁 Repeat to Continue',
                                     style: TextStyle(
                                       color: Color(0xFF818CF8),
                                       fontSize: 11,
@@ -3434,7 +3434,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                   Icon(Icons.lightbulb_outline, color: Color(0xFFFBBF24), size: 16),
                                   SizedBox(width: 6),
                                   Text(
-                                    'Coach Feedback (වැරදි නිවැරදි කිරීම)',
+                                    'Coach Feedback',
                                     style: TextStyle(
                                       color: Color(0xFFFBBF24),
                                       fontSize: 11,
@@ -3719,7 +3719,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                 children: [
                   const Expanded(
                     child: Text(
-                      'Choose Voice Coach (පුහුණුකරු)',
+                      'Choose Voice Coach',
                       style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
                       overflow: TextOverflow.ellipsis,
                     ),

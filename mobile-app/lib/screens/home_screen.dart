@@ -733,187 +733,207 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showLanguageSetupModal(BuildContext context, {bool isMandatory = false}) {
     showModalBottomSheet(
       context: context,
-      isDismissible: true,
+      isDismissible: !isMandatory,
       enableDrag: true,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF1E293B),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (ctx) {
         return StatefulBuilder(
           builder: (modalCtx, setModalState) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.85,
+              decoration: BoxDecoration(
+                color: _isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.4),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Center(
                     child: Container(
+                      margin: const EdgeInsets.only(top: 12, bottom: 8),
                       width: 44,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.white24,
+                        color: _isDarkMode ? Colors.white24 : Colors.grey.shade300,
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Choose Practice Language',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 16, 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Choose Practice Language',
+                                style: TextStyle(
+                                  color: _textPrimary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                'Select your target language for speaking practice:',
+                                style: TextStyle(
+                                  color: _textSecondary,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'ඔබ පුහුණු වීමට බලාපොරොත්තු වන භාෂාව තෝරන්න:',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.6),
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (!isMandatory)
-                        IconButton(
-                          onPressed: () => Navigator.pop(modalCtx),
-                          icon: const Icon(Icons.close, color: Colors.white60),
                         ),
-                    ],
+                        if (!isMandatory)
+                          IconButton(
+                            onPressed: () => Navigator.pop(modalCtx),
+                            icon: Icon(Icons.close_rounded, color: _textMuted),
+                          ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  Divider(height: 1, thickness: 1, color: _borderSubtle),
+                  Expanded(
+                    child: ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                      itemCount: supportedLanguagesList.length,
+                      itemBuilder: (context, index) {
+                        final lang = supportedLanguagesList[index];
+                        final isSelected = _userTargetLanguage == lang['name'];
 
-                  // 6 Supported Language Cards
-                  Column(
-                    children: supportedLanguagesList.map((lang) {
-                      final isSelected = _userTargetLanguage == lang['name'];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: InkWell(
+                            onTap: () {
+                              final chosenLang = lang['name']!;
 
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: InkWell(
-                          onTap: () {
-                            final chosenLang = lang['name']!;
+                              // 1. First pop the modal cleanly before state mutation
+                              if (Navigator.of(modalCtx).canPop()) {
+                                Navigator.of(modalCtx).pop();
+                              }
 
-                            // 1. First pop the modal cleanly before state mutation
-                            if (Navigator.of(modalCtx).canPop()) {
-                              Navigator.of(modalCtx).pop();
-                            }
+                              // 2. Safely defer state updates & snackbar
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!mounted) return;
+                                setState(() {
+                                  _userTargetLanguage = chosenLang;
+                                  _selectedLanguage = chosenLang;
+                                  _customTopicLanguage = chosenLang;
+                                });
 
-                            // 2. Safely defer state updates & snackbar to next frame to avoid Navigator rebuild collisions
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (!mounted) return;
-                              setState(() {
-                                _userTargetLanguage = chosenLang;
-                                _selectedLanguage = chosenLang;
-                                _customTopicLanguage = chosenLang;
+                                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Target practice language set to $chosenLang!'),
+                                    backgroundColor: const Color(0xFF10B981),
+                                    behavior: SnackBarBehavior.floating,
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
                               });
 
-                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Target practice language set to $chosenLang!'),
-                                  backgroundColor: const Color(0xFF10B981),
-                                  behavior: SnackBarBehavior.floating,
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
-                            });
-
-                            // 3. Save to Firestore lang_users in background
-                            final user = FirebaseAuth.instance.currentUser;
-                            if (user != null) {
-                              FirebaseFirestore.instance
-                                  .collection('lang_users')
-                                  .doc(user.uid)
-                                  .set({'targetLanguage': chosenLang}, SetOptions(merge: true))
-                                  .catchError((e) => debugPrint('Error saving language: $e'));
-                            }
-                          },
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? const Color(0xFF6366F1).withOpacity(0.18)
-                                  : const Color(0xFF0F172A),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
+                              // 3. Save to Firestore lang_users in background
+                              final user = FirebaseAuth.instance.currentUser;
+                              if (user != null) {
+                                FirebaseFirestore.instance
+                                    .collection('lang_users')
+                                    .doc(user.uid)
+                                    .set({'targetLanguage': chosenLang}, SetOptions(merge: true))
+                                    .catchError((e) => debugPrint('Error saving language: $e'));
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
                                 color: isSelected
-                                    ? const Color(0xFF6366F1)
-                                    : Colors.white.withOpacity(0.08),
-                                width: isSelected ? 1.5 : 1,
+                                    ? const Color(0xFF6366F1).withOpacity(_isDarkMode ? 0.2 : 0.1)
+                                    : (_isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isSelected ? const Color(0xFF6366F1) : _borderSubtle,
+                                  width: isSelected ? 1.5 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  _buildFlagBadge(lang['name']!, width: 44, height: 30, radius: 7),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              lang['name']!,
+                                              style: TextStyle(
+                                                color: _textPrimary,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                            if (lang['native'] != null) ...[
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                '(${lang['native']})',
+                                                style: const TextStyle(
+                                                  color: Color(0xFF818CF8),
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          lang['desc']!,
+                                          style: TextStyle(
+                                            color: _textMuted,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (isSelected)
+                                    Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFF10B981),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Center(
+                                        child: Icon(Icons.check, color: Colors.white, size: 15),
+                                      ),
+                                    )
+                                  else
+                                    Icon(
+                                      Icons.chevron_right_rounded,
+                                      color: _textMuted,
+                                      size: 20,
+                                    ),
+                                ],
                               ),
                             ),
-                            child: Row(
-                              children: [
-                                _buildFlagBadge(lang['name']!, width: 44, height: 30, radius: 7),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            lang['name']!,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            '(${lang['native']})',
-                                            style: TextStyle(
-                                              color: const Color(0xFF818CF8),
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        lang['desc']!,
-                                        style: TextStyle(
-                                          color: Colors.white.withOpacity(0.45),
-                                          fontSize: 10,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                if (isSelected)
-                                  Container(
-                                    width: 22,
-                                    height: 22,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF10B981),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Center(
-                                      child: Text('✓', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                                    ),
-                                  )
-                                else
-                                  Text('›', style: TextStyle(color: Colors.white38, fontSize: 24, fontWeight: FontWeight.w300, height: 1)),
-                              ],
-                            ),
                           ),
-                        ),
-                      );
-                    }).toList(),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -931,7 +951,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('කරුණාකර ඇමතුම් ගැනීමට පෙර Log in හෝ Sign up වන්න! (Please log in to start speaking practice!)'),
+          content: Text('Please log in or sign up before starting speaking practice!'),
           backgroundColor: Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
         ),
@@ -947,7 +967,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_userTargetLanguage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('කරුණාකර ඇමතුම් ගැනීමට පෙර ඔබට පුහුණු වීමට අවශ්‍ය භාෂාව තෝරන්න! (Please set your target language first!)'),
+          content: Text('Please choose your practice language first!'),
           backgroundColor: Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
         ),
@@ -1032,7 +1052,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 6),
                       const Expanded(
                         child: Text(
-                          'Choose Voice Coach (AI පුහුණුකරු):',
+                          'Choose Your AI Voice Coach:',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 12.5,
@@ -1371,7 +1391,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const Icon(Icons.timer_outlined, color: Color(0xFF818CF8), size: 15),
                       const SizedBox(width: 6),
                       const Text(
-                        'Select Call Duration (කතා කරන කාලය තෝරන්න):',
+                        'Select Practice Session Duration:',
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 12,
@@ -1969,7 +1989,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                               ),
                               Text(
-                                'ඇමතුම් ගැනීමට පෙර ඔබට පුහුණු වීමට අවශ්‍ය භාෂාව තෝරන්න.',
+                                'Select your practice language before starting interactive voice calls.',
                                 style: TextStyle(color: Colors.white70, fontSize: 10),
                               ),
                             ],
@@ -2175,7 +2195,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'කැමති ඕනෑම දෙයක් (Cricket, Travel, AI...) type කර live voice call එකක් ගන්න:',
+                    'Type any custom scenario or topic (Cricket, Travel, Tech) for live practice:',
                     style: TextStyle(color: _textSecondary, fontSize: 11),
                   ),
                   const SizedBox(height: 12),
