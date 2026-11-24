@@ -105,22 +105,26 @@ class WelcomeScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          // Hero Image with smooth bottom fade
+                          // Hero Image with smooth organic all-side vignette (No box edges!)
                           SizedBox(
                             width: constraints.maxWidth * 0.88,
                             height: constraints.maxHeight * 0.44,
                             child: ShaderMask(
                               shaderCallback: (rect) {
-                                return const LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [Colors.black, Colors.black, Colors.transparent],
-                                  stops: [0.0, 0.82, 1.0],
+                                return const RadialGradient(
+                                  center: Alignment(0.0, -0.05),
+                                  radius: 0.85,
+                                  colors: [
+                                    Colors.black,
+                                    Colors.black,
+                                    Colors.transparent,
+                                  ],
+                                  stops: [0.0, 0.70, 1.0],
                                 ).createShader(rect);
                               },
                               blendMode: BlendMode.dstIn,
                               child: Image.asset(
-                                'assets/images/robot_tutor_welcome.jpg',
+                                'assets/images/robot_tutor_welcome.png',
                                 fit: BoxFit.contain,
                                 alignment: Alignment.topCenter,
                               ),

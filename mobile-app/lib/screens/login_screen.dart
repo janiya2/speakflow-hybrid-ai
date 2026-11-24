@@ -547,24 +547,49 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(
                       children: [
-                        // Smiling Teacher Portrait (Matching Screenshot 2)
+                        // Smiling Teacher Portrait (Seamless Organic Vignette, No Box Edges!)
                         SizedBox(
                           height: size.height * 0.38,
-                          child: ShaderMask(
-                            shaderCallback: (rect) {
-                              return const LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [Colors.black, Colors.black, Colors.transparent],
-                                stops: [0.0, 0.78, 1.0],
-                              ).createShader(rect);
-                            },
-                            blendMode: BlendMode.dstIn,
-                            child: Image.asset(
-                              'assets/images/teacher_login_hero.jpg',
-                              fit: BoxFit.contain,
-                              alignment: Alignment.topCenter,
-                            ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // Soft Luminous Ambient Halo Glow
+                              Container(
+                                width: size.width * 0.72,
+                                height: size.width * 0.72,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: RadialGradient(
+                                    colors: [
+                                      const Color(0xFF38BDF8).withOpacity(0.28),
+                                      const Color(0xFF6366F1).withOpacity(0.08),
+                                      Colors.transparent,
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              // Organic Feathered Avatar (Radial + Smooth All-Edge Melt)
+                              ShaderMask(
+                                shaderCallback: (rect) {
+                                  return const RadialGradient(
+                                    center: Alignment(0.0, -0.1),
+                                    radius: 0.85,
+                                    colors: [
+                                      Colors.black,
+                                      Colors.black,
+                                      Colors.transparent,
+                                    ],
+                                    stops: [0.0, 0.68, 1.0],
+                                  ).createShader(rect);
+                                },
+                                blendMode: BlendMode.dstIn,
+                                child: Image.asset(
+                                  'assets/images/teacher_login_hero.png',
+                                  fit: BoxFit.contain,
+                                  alignment: Alignment.topCenter,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
 
