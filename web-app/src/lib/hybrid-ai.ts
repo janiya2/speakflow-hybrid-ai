@@ -599,9 +599,15 @@ export async function executeHybridInference(
         ? InferenceMode.ONLY_IN_CLOUD
         : InferenceMode.PREFER_ON_DEVICE;
 
+      const cloudModelName =
+        selectedModel && selectedModel !== "smart-routing" && selectedModel !== "auto"
+          ? selectedModel
+          : "gemini-2.5-flash";
+
       const model = getGenerativeModel(ai, {
-        model: selectedModel || "gemini-1.5-flash",
         mode,
+        inCloudParams: { model: cloudModelName },
+        onDeviceParams: {},
       });
 
       const historyContext = conversationHistory
@@ -656,10 +662,50 @@ Respond strictly with a JSON object matching this schema:
       };
     }
   } catch (sdkErr) {
-    console.warn("[Firebase AI Logic SDK] Primary route fallback:", sdkErr);
-    if (modeSetting === "cloud_only") {
-      throw new Error("Cloud-only inference failed via Firebase AI Logic.");
+    console.warn("[Firebase AI Logic SDK] Route notice (falling back to Cloud API / Local Core):", sdkErr);
+  }
+
+  // RULE 2B: CLOUD SERVER RESILIENCE FAILOVER (/api/chat -> Gemini 2.5 Flash)
+  // Always attempts server-side Gemini Cloud route when online (even if Firebase App Check rejects localhost token with 401)
+  try {
+    const apiRes = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        spokenText,
+        language,
+        scenario,
+        drillModeEnabled,
+        conversationHistory,
+        apiKeys: orderedKeyPool,
+        selectedModel: selectedModel || "gemini-2.5-flash",
+      }),
+    });
+    if (apiRes.ok) {
+      const data = await apiRes.json();
+      if (data && data.spokenReply) {
+        const latency = Math.round(performance.now() - startTime);
+        return {
+          hasCorrection: Boolean(data.hasCorrection),
+          original: data.original || "",
+          correction: data.correction || "",
+          explanation: data.explanation || "",
+          targetPhrase: data.targetPhrase || data.correction || "",
+          spokenReply: data.spokenReply,
+          nextQuestion: data.nextQuestion || "",
+          engineUsed: "CLOUD_GEMINI_FLASH",
+          latencyMs: latency,
+          isOfflineFallback: false,
+          modelIdentifier: `Firebase / Cloud Gemini (${data.modelUsed || "gemini-2.5-flash"})`,
+        };
+      }
     }
+  } catch (cloudErr) {
+    console.warn("[Cloud Failover] /api/chat unavailable:", cloudErr);
+  }
+
+  if (modeSetting === "cloud_only") {
+    throw new Error("Cloud-only inference failed across Firebase AI Logic and Cloud Failover.");
   }
 
   // RULE 3: RESILIENCE FALLBACK -> Local NLP Core

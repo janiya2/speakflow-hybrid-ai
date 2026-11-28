@@ -3170,7 +3170,13 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                               onTap: () {
                                 setState(() {
                                   _geminiService.simulateOffline = !_geminiService.simulateOffline;
+                                  if (!_geminiService.simulateOffline && _activeCorrection?.engineUsed == 'OFFLINE_RESILIENCE_CORE') {
+                                    _activeCorrection = null;
+                                  }
                                 });
+                                debugPrint(_geminiService.simulateOffline
+                                    ? '🛡️ [Hybrid AI Router] Offline Mode ON -> Using Local Offline Resilience NLP Core'
+                                    : '☁️ [Hybrid AI Router] Offline Mode OFF -> Using Cloud Firebase Vertex AI (Gemini 2.5 Flash)');
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
