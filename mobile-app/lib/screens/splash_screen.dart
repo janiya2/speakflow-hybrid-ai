@@ -442,12 +442,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             right: 0,
             child: Center(
               child: Text(
-                'Powered by Gemini AI • v1.0.0',
+                'Powered by InnoXpert • v1.0.0',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.3),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 0.5,
+                  color: Colors.white.withOpacity(0.45),
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.6,
                 ),
               ),
             ),

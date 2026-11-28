@@ -998,6 +998,7 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
+        int selectedDuration = 5;
         return StatefulBuilder(
           builder: (modalCtx, setModalState) {
             return Padding(
@@ -1417,14 +1418,119 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      Expanded(child: _buildDurationOption(ctx, topic, 3, "3 Min", "Quick Drill", icon: '⚡')),
+                      Expanded(
+                        child: _buildDurationOption(
+                          mins: 3,
+                          title: "3 Min",
+                          sub: "Quick Drill",
+                          isSelected: selectedDuration == 3,
+                          icon: '⚡',
+                          onSelect: () => setModalState(() => selectedDuration = 3),
+                        ),
+                      ),
                       const SizedBox(width: 6),
-                      Expanded(child: _buildDurationOption(ctx, topic, 5, "5 Min", "Balanced", isPopular: true, icon: '⭐')),
+                      Expanded(
+                        child: _buildDurationOption(
+                          mins: 5,
+                          title: "5 Min",
+                          sub: "Balanced",
+                          isSelected: selectedDuration == 5,
+                          isPopular: true,
+                          icon: '⭐',
+                          onSelect: () => setModalState(() => selectedDuration = 5),
+                        ),
+                      ),
                       const SizedBox(width: 6),
-                      Expanded(child: _buildDurationOption(ctx, topic, 15, "15 Min", "Deep Fluency", icon: '🎯')),
+                      Expanded(
+                        child: _buildDurationOption(
+                          mins: 15,
+                          title: "15 Min",
+                          sub: "Deep Fluency",
+                          isSelected: selectedDuration == 15,
+                          icon: '🎯',
+                          onSelect: () => setModalState(() => selectedDuration = 15),
+                        ),
+                      ),
                       const SizedBox(width: 6),
-                      Expanded(child: _buildDurationOption(ctx, topic, 30, "30 Min", "Max Session", icon: '🛡️')),
+                      Expanded(
+                        child: _buildDurationOption(
+                          mins: 30,
+                          title: "30 Min",
+                          sub: "Max Session",
+                          isSelected: selectedDuration == 30,
+                          icon: '🛡️',
+                          onSelect: () => setModalState(() => selectedDuration = 30),
+                        ),
+                      ),
                     ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Dedicated Big Start Practice Call Action Button
+                  Container(
+                    width: double.infinity,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF10B981), Color(0xFF059669)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF10B981).withOpacity(0.4),
+                          blurRadius: 14,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        User? user = FirebaseAuth.instance.currentUser;
+                        if (user == null) {
+                          AuthSessionService.restoreOrEnsureSession();
+                        }
+
+                        if (Navigator.of(ctx).canPop()) {
+                          Navigator.of(ctx).pop();
+                        }
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (!mounted) return;
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => LiveCallScreen(
+                                topic: topic,
+                                durationMinutes: selectedDuration,
+                                coach: _selectedCoach,
+                                isDarkMode: _isDarkMode,
+                              ),
+                            ),
+                          );
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.phone_in_talk_rounded, color: Colors.white, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Start Call with Coach ${_selectedCoach.name} ($selectedDuration Min)',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Icon(Icons.arrow_forward_rounded, color: Colors.white70, size: 18),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 8),
                 ],
@@ -1436,64 +1542,53 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildDurationOption(
-    BuildContext ctx,
-    TopicModel topic,
-    int? mins,
-    String title,
-    String sub, {
+  Widget _buildDurationOption({
+    required int mins,
+    required String title,
+    required String sub,
+    required bool isSelected,
     bool isPopular = false,
     String icon = '⏱️',
+    required VoidCallback onSelect,
   }) {
     return InkWell(
-      onTap: () {
-        User? user = FirebaseAuth.instance.currentUser;
-        if (user == null) {
-          AuthSessionService.restoreOrEnsureSession();
-        }
-
-        if (Navigator.of(ctx).canPop()) {
-          Navigator.of(ctx).pop();
-        }
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => LiveCallScreen(
-                topic: topic,
-                durationMinutes: mins,
-                coach: _selectedCoach,
-                isDarkMode: _isDarkMode,
-              ),
-            ),
-          );
-        });
-      },
+      onTap: onSelect,
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
         decoration: BoxDecoration(
-          gradient: isPopular
+          gradient: isSelected
               ? LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFF6366F1).withOpacity(0.28),
+                    const Color(0xFF6366F1).withOpacity(0.35),
                     const Color(0xFF0F172A),
                   ],
                 )
-              : null,
-          color: isPopular ? null : const Color(0xFF0F172A),
+              : (isPopular
+                  ? LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        const Color(0xFF6366F1).withOpacity(0.2),
+                        const Color(0xFF0F172A),
+                      ],
+                    )
+                  : null),
+          color: (isSelected || isPopular) ? null : const Color(0xFF0F172A),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isPopular ? const Color(0xFF818CF8) : const Color(0xFF334155),
-            width: isPopular ? 1.8 : 1,
+            color: isSelected
+                ? const Color(0xFF818CF8)
+                : (isPopular ? const Color(0xFF6366F1).withOpacity(0.5) : const Color(0xFF334155)),
+            width: isSelected ? 2 : 1,
           ),
-          boxShadow: isPopular
+          boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF6366F1).withOpacity(0.3),
+                    color: const Color(0xFF6366F1).withOpacity(0.35),
                     blurRadius: 10,
                     spreadRadius: 0,
                     offset: const Offset(0, 2),
@@ -1504,7 +1599,25 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (isPopular)
+            if (isSelected)
+              Container(
+                margin: const EdgeInsets.only(bottom: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  '✓ SELECTED',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 7.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              )
+            else if (isPopular)
               Container(
                 margin: const EdgeInsets.only(bottom: 3),
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
@@ -1530,7 +1643,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               title,
               style: TextStyle(
-                color: isPopular ? Colors.white : Colors.white.withOpacity(0.9),
+                color: isSelected ? Colors.white : Colors.white.withOpacity(0.9),
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
               ),
@@ -1542,9 +1655,9 @@ class _HomeScreenState extends State<HomeScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: isPopular ? const Color(0xFFA5B4FC) : Colors.white.withOpacity(0.45),
+                color: isSelected ? const Color(0xFFA5B4FC) : Colors.white.withOpacity(0.45),
                 fontSize: 8.5,
-                fontWeight: isPopular ? FontWeight.w600 : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
           ],
@@ -2209,16 +2322,39 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: _bgCard,
+                gradient: LinearGradient(
+                  colors: _isDarkMode
+                      ? const [Color(0xFF1E293B), Color(0xFF0F172A)]
+                      : const [Colors.white, Color(0xFFF8FAFC)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: _borderSubtle),
+                border: Border.all(
+                  color: const Color(0xFF818CF8).withOpacity(_isDarkMode ? 0.35 : 0.28),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6366F1).withOpacity(_isDarkMode ? 0.12 : 0.08),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.edit, color: Color(0xFF818CF8), size: 20),
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6366F1).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.edit_note_rounded, color: Color(0xFF818CF8), size: 18),
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         'Speak About Any Custom Topic (${_userTargetLanguage ?? "Select Lang"})',
@@ -2242,29 +2378,39 @@ class _HomeScreenState extends State<HomeScreen> {
                             hintText: 'e.g. Cricket World Cup, Traveling in Spain...',
                             hintStyle: TextStyle(color: _textMuted, fontSize: 12),
                             filled: true,
-                            fillColor: _bgInput,
+                            fillColor: _isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                              borderSide: BorderSide(
+                                color: _isDarkMode ? Colors.white12 : const Color(0xFFE2E8F0),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+                              borderSide: BorderSide(
+                                color: _isDarkMode ? Colors.white12 : const Color(0xFFE2E8F0),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      ElevatedButton(
+                      ElevatedButton.icon(
                         onPressed: _startCustomTopicCall,
+                        icon: const Icon(Icons.call, size: 16),
+                        label: const Text('Call', style: TextStyle(fontWeight: FontWeight.bold)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF6366F1),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          elevation: 2,
                         ),
-                        child: const Text('Call', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
@@ -2480,30 +2626,77 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildStatCard(String label, String value, IconData icon, Color color) {
+    // Dynamic soft-pastel tints for Light Mode, and sleek titanium slate for Dark Mode
+    final List<Color> cardGradient = _isDarkMode
+        ? const [Color(0xFF1E293B), Color(0xFF0F172A)]
+        : label == 'Target Lang'
+            ? const [Color(0xFFEFF6FF), Color(0xFFDBEAFE)]
+            : label == 'Avg Fluency'
+                ? const [Color(0xFFECFDF5), Color(0xFFD1FAE5)]
+                : const [Color(0xFFF5F3FF), Color(0xFFEDE9FE)];
+
+    final Color borderColor = _isDarkMode
+        ? _borderSubtle
+        : color.withOpacity(0.35);
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        gradient: LinearGradient(
+          colors: cardGradient,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: borderColor, width: 1.2),
+        boxShadow: _isDarkMode
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: color.withOpacity(0.12),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
       ),
       child: Column(
         children: [
           if (label == 'Target Lang' && value != 'None')
             _buildFlagBadge(value, width: 28, height: 18, radius: 4)
           else
-            Icon(icon, color: color, size: 20),
+            Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: _isDarkMode ? color.withOpacity(0.15) : Colors.white.withOpacity(0.85),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 18),
+            ),
           const SizedBox(height: 6),
           Text(
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+            style: TextStyle(
+              color: _textPrimary,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 10),
+            style: TextStyle(
+              color: _isDarkMode ? _textSecondary : const Color(0xFF475569),
+              fontSize: 10.5,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -2528,17 +2721,17 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              accent.withOpacity(0.22),
-              const Color(0xFF1E293B).withOpacity(0.9),
+              accent.withOpacity(_isDarkMode ? 0.22 : 0.12),
+              _isDarkMode ? const Color(0xFF1E293B).withOpacity(0.9) : Colors.white,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: accent.withOpacity(0.4), width: 1.2),
+          border: Border.all(color: accent.withOpacity(_isDarkMode ? 0.4 : 0.25), width: 1.2),
           boxShadow: [
             BoxShadow(
-              color: accent.withOpacity(0.12),
+              color: _isDarkMode ? accent.withOpacity(0.12) : const Color(0xFF64748B).withOpacity(0.06),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
@@ -2552,17 +2745,17 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    accent.withOpacity(0.35),
-                    accent.withOpacity(0.15),
+                    accent.withOpacity(_isDarkMode ? 0.35 : 0.2),
+                    accent.withOpacity(_isDarkMode ? 0.15 : 0.08),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: accent.withOpacity(0.5), width: 1),
+                border: Border.all(color: accent.withOpacity(_isDarkMode ? 0.5 : 0.3), width: 1),
                 boxShadow: [
                   BoxShadow(
-                    color: accent.withOpacity(0.25),
+                    color: accent.withOpacity(_isDarkMode ? 0.25 : 0.15),
                     blurRadius: 6,
                   ),
                 ],
@@ -2584,8 +2777,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           category,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: _textPrimary,
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
                           ),
@@ -2617,7 +2810,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.55),
+                      color: _textSecondary,
                       fontSize: 9.5,
                       fontWeight: FontWeight.w500,
                     ),
@@ -2678,11 +2871,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
@@ -2692,7 +2880,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.record_voice_over_rounded, color: Colors.white, size: 21),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(
+                        'assets/images/app_logo.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -2998,16 +3192,19 @@ class _HomeScreenState extends State<HomeScreen> {
         gradient: LinearGradient(
           colors: _isDarkMode
               ? const [Color(0xFF1E293B), Color(0xFF0F172A)]
-              : const [Colors.white, Color(0xFFF8FAFC)],
+              : [Colors.white, const Color(0xFFFAFAFC)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: _isDarkMode ? catColor.withOpacity(0.25) : const Color(0xFFE2E8F0), width: 1.1),
+        border: Border.all(
+          color: _isDarkMode ? catColor.withOpacity(0.25) : catColor.withOpacity(0.2),
+          width: 1.2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: _isDarkMode ? Colors.black.withOpacity(0.28) : Colors.black.withOpacity(0.04),
-            blurRadius: 10,
+            color: _isDarkMode ? Colors.black.withOpacity(0.28) : const Color(0xFF64748B).withOpacity(0.08),
+            blurRadius: 12,
             offset: const Offset(0, 3),
           ),
         ],
@@ -3095,8 +3292,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const SizedBox(width: 5),
                                 Text(
                                   topic.language,
-                                  style: const TextStyle(
-                                    color: Color(0xFFA5B4FC),
+                                  style: TextStyle(
+                                    color: _isDarkMode ? const Color(0xFFA5B4FC) : const Color(0xFF4338CA),
                                     fontSize: 9.5,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -3405,16 +3602,23 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1E1B4B), Color(0xFF1E293B), Color(0xFF0F172A)],
+                  gradient: LinearGradient(
+                    colors: _isDarkMode
+                        ? const [Color(0xFF1E1B4B), Color(0xFF1E293B), Color(0xFF0F172A)]
+                        : const [Color(0xFFFFFBEB), Color(0xFFFEF3C7)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.35)),
+                  border: Border.all(
+                    color: const Color(0xFFF59E0B).withOpacity(_isDarkMode ? 0.35 : 0.45),
+                    width: 1.2,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFF59E0B).withOpacity(0.12),
+                      color: _isDarkMode
+                          ? const Color(0xFFF59E0B).withOpacity(0.12)
+                          : const Color(0xFFF59E0B).withOpacity(0.15),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
@@ -3445,8 +3649,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   Text(
                                     target.title,
-                                    style: const TextStyle(
-                                      color: Colors.white,
+                                    style: TextStyle(
+                                      color: _textPrimary,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14,
                                     ),
@@ -3454,7 +3658,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Text(
                                     'Weekly Fluency Sprint • +${target.rewardPoints} XP',
                                     style: TextStyle(
-                                      color: const Color(0xFFFBBF24).withOpacity(0.85),
+                                      color: _isDarkMode ? const Color(0xFFFBBF24).withOpacity(0.85) : const Color(0xFFD97706),
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -3495,7 +3699,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(
                             'Today\'s Goal: $todayMinutes / ${target.dailyMinutesGoal} min',
-                            style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
+                            style: TextStyle(color: _textSecondary, fontSize: 11, fontWeight: FontWeight.w600),
                           ),
                           Text(
                             todayMinutes >= target.dailyMinutesGoal ? 'Done! ⭐' : '${(dailyProgress * 100).toInt()}%',
@@ -3512,7 +3716,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(6),
                         child: LinearProgressIndicator(
                           value: dailyProgress,
-                          backgroundColor: Colors.white.withOpacity(0.08),
+                          backgroundColor: _isDarkMode ? Colors.white.withOpacity(0.08) : const Color(0xFFE2E8F0),
                           valueColor: AlwaysStoppedAnimation<Color>(
                             todayMinutes >= target.dailyMinutesGoal ? const Color(0xFF10B981) : const Color(0xFF6366F1),
                           ),
@@ -3527,11 +3731,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(
                             'Weekly Sprint: $weeklyMinutes / ${target.weeklyMinutesGoal} min',
-                            style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 10),
+                            style: TextStyle(color: _textSecondary, fontSize: 10),
                           ),
                           Text(
                             '$weeklyPercent% completed',
-                            style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 10),
+                            style: TextStyle(color: _textSecondary, fontSize: 10),
                           ),
                         ],
                       ),
@@ -3544,25 +3748,25 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.06),
+                            color: _isDarkMode ? Colors.white.withOpacity(0.06) : const Color(0xFFFEF3C7).withOpacity(0.55),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white.withOpacity(0.1)),
+                            border: Border.all(color: _isDarkMode ? Colors.white.withOpacity(0.1) : const Color(0xFFFDE68A)),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Text('🥇', style: TextStyle(fontSize: 14)),
-                              SizedBox(width: 6),
+                            children: [
+                              const Text('🥇', style: TextStyle(fontSize: 14)),
+                              const SizedBox(width: 6),
                               Text(
                                 'View Weekly Winners & Leaderboard',
                                 style: TextStyle(
-                                  color: Color(0xFFFBBF24),
+                                  color: _isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFB45309),
                                   fontWeight: FontWeight.bold,
                                   fontSize: 11,
                                 ),
                               ),
-                              SizedBox(width: 4),
-                              Icon(Icons.arrow_forward_ios, color: Color(0xFFFBBF24), size: 10),
+                              const SizedBox(width: 4),
+                              Icon(Icons.arrow_forward_ios, color: _isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFB45309), size: 10),
                             ],
                           ),
                         ),
@@ -3592,25 +3796,29 @@ class _HomeScreenState extends State<HomeScreen> {
       final isActive = activeDates.isNotEmpty && isPastOrToday;
       final isToday = dayNumber == currentDayWeekday;
 
+      final Color activeBg = _isDarkMode ? const Color(0xFF10B981).withOpacity(0.18) : const Color(0xFFD1FAE5);
+      final Color todayBg = _isDarkMode ? const Color(0xFF6366F1).withOpacity(0.2) : const Color(0xFFEEF2FF);
+      final Color inactiveBg = _isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
+
+      final Color activeBorder = const Color(0xFF10B981);
+      final Color todayBorder = const Color(0xFF818CF8);
+      final Color inactiveBorder = _isDarkMode ? Colors.white.withOpacity(0.08) : const Color(0xFFCBD5E1);
+
       return Expanded(
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 2.5),
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isActive
-                ? const Color(0xFF10B981).withOpacity(0.18)
-                : (isToday ? const Color(0xFF6366F1).withOpacity(0.2) : const Color(0xFF0F172A)),
+            color: isActive ? activeBg : (isToday ? todayBg : inactiveBg),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isActive
-                  ? const Color(0xFF10B981)
-                  : (isToday ? const Color(0xFF818CF8) : Colors.white.withOpacity(0.08)),
+              color: isActive ? activeBorder : (isToday ? todayBorder : inactiveBorder),
               width: isToday ? 1.5 : 1,
             ),
             boxShadow: isActive
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF10B981).withOpacity(0.25),
+                      color: const Color(0xFF10B981).withOpacity(_isDarkMode ? 0.25 : 0.15),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
@@ -3623,9 +3831,11 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 days[idx],
                 style: TextStyle(
-                  color: isToday ? Colors.white : (isActive ? const Color(0xFF34D399) : Colors.white60),
+                  color: isToday
+                      ? (_isDarkMode ? Colors.white : const Color(0xFF4338CA))
+                      : (isActive ? const Color(0xFF059669) : (_isDarkMode ? Colors.white60 : const Color(0xFF64748B))),
                   fontSize: 10,
-                  fontWeight: isToday ? FontWeight.bold : FontWeight.w500,
+                  fontWeight: isToday ? FontWeight.bold : FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 4),
@@ -3634,8 +3844,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ? Icons.check_circle_rounded
                     : (isToday ? Icons.local_fire_department_rounded : Icons.circle_outlined),
                 color: isActive
-                    ? const Color(0xFF34D399)
-                    : (isToday ? const Color(0xFFF59E0B) : Colors.white24),
+                    ? const Color(0xFF10B981)
+                    : (isToday ? const Color(0xFFF59E0B) : (_isDarkMode ? Colors.white24 : const Color(0xFF94A3B8))),
                 size: 15,
               ),
             ],
@@ -3687,13 +3897,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(10),
+                        width: 44,
+                        height: 44,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: [
                             BoxShadow(
@@ -3703,7 +3909,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.emoji_events_rounded, color: Colors.white, size: 24),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: Image.asset(
+                            'assets/images/app_logo.png',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -3748,16 +3960,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                      gradient: LinearGradient(
+                        colors: _isDarkMode
+                            ? const [Color(0xFF1E293B), Color(0xFF0F172A)]
+                            : const [Color(0xFFFFFBEB), Colors.white],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(22),
-                      border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.35), width: 1.2),
+                      border: Border.all(
+                        color: _isDarkMode
+                            ? const Color(0xFF6366F1).withOpacity(0.35)
+                            : const Color(0xFFF59E0B).withOpacity(0.35),
+                        width: 1.2,
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF6366F1).withOpacity(0.12),
+                          color: _isDarkMode
+                              ? const Color(0xFF6366F1).withOpacity(0.12)
+                              : const Color(0xFF64748B).withOpacity(0.08),
                           blurRadius: 20,
                           offset: const Offset(0, 6),
                         ),
@@ -3772,7 +3993,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF59E0B).withOpacity(0.18),
+                                color: const Color(0xFFF59E0B).withOpacity(_isDarkMode ? 0.18 : 0.12),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.5)),
                               ),
@@ -3783,8 +4004,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   const SizedBox(width: 4),
                                   Text(
                                     activeTarget.rewardBadge,
-                                    style: const TextStyle(
-                                      color: Color(0xFFFBBF24),
+                                    style: TextStyle(
+                                      color: _isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFB45309),
                                       fontWeight: FontWeight.bold,
                                       fontSize: 11,
                                     ),
@@ -3820,12 +4041,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 12),
                         Text(
                           activeTarget.title,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
+                          style: TextStyle(color: _textPrimary, fontWeight: FontWeight.bold, fontSize: 17),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           activeTarget.description,
-                          style: TextStyle(color: Colors.white.withOpacity(0.72), fontSize: 12, height: 1.35),
+                          style: TextStyle(color: _textSecondary, fontSize: 12, height: 1.35),
                         ),
                         const SizedBox(height: 16),
 
@@ -3835,11 +4056,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Row(
                               children: [
-                                const Icon(Icons.timer_outlined, color: Color(0xFFA5B4FC), size: 14),
+                                Icon(Icons.timer_outlined, color: _isDarkMode ? const Color(0xFFA5B4FC) : const Color(0xFF6366F1), size: 14),
                                 const SizedBox(width: 5),
                                 Text(
                                   "Today: $todayMins / ${activeTarget.dailyMinutesGoal} mins",
-                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                                  style: TextStyle(color: _textPrimary, fontSize: 12, fontWeight: FontWeight.w600),
                                 ),
                               ],
                             ),
@@ -3854,7 +4075,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Text(
                                 todayMins >= activeTarget.dailyMinutesGoal ? 'Daily Goal Met! 🎉' : '${(dailyPct * 100).toInt()}% Done',
                                 style: TextStyle(
-                                  color: todayMins >= activeTarget.dailyMinutesGoal ? const Color(0xFF34D399) : const Color(0xFFA5B4FC),
+                                  color: todayMins >= activeTarget.dailyMinutesGoal
+                                      ? const Color(0xFF10B981)
+                                      : (_isDarkMode ? const Color(0xFFA5B4FC) : const Color(0xFF4F46E5)),
                                   fontSize: 10.5,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -3867,7 +4090,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius: BorderRadius.circular(6),
                           child: LinearProgressIndicator(
                             value: dailyPct,
-                            backgroundColor: Colors.white10,
+                            backgroundColor: _isDarkMode ? Colors.white10 : const Color(0xFFE2E8F0),
                             valueColor: AlwaysStoppedAnimation<Color>(
                               todayMins >= activeTarget.dailyMinutesGoal ? const Color(0xFF10B981) : const Color(0xFF6366F1),
                             ),
@@ -3886,13 +4109,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const SizedBox(width: 5),
                                 Text(
                                   'Weekly Goal: $weeklyMins / ${activeTarget.weeklyMinutesGoal} mins',
-                                  style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11.5, fontWeight: FontWeight.w500),
+                                  style: TextStyle(color: _textSecondary, fontSize: 11.5, fontWeight: FontWeight.w500),
                                 ),
                               ],
                             ),
                             Text(
                               '${(weeklyPct * 100).toInt()}% of Sprint',
-                              style: const TextStyle(color: Color(0xFFFBBF24), fontSize: 11, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: _isDarkMode ? const Color(0xFFFBBF24) : const Color(0xFFB45309),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
@@ -3901,7 +4128,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius: BorderRadius.circular(6),
                           child: LinearProgressIndicator(
                             value: weeklyPct,
-                            backgroundColor: Colors.white10,
+                            backgroundColor: _isDarkMode ? Colors.white10 : const Color(0xFFE2E8F0),
                             valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
                             minHeight: 7,
                           ),
@@ -3910,12 +4137,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         // 7 Days Active Streak Row
                         Row(
-                          children: const [
-                            Icon(Icons.local_fire_department_rounded, color: Color(0xFFF97316), size: 16),
-                            SizedBox(width: 6),
+                          children: [
+                            const Icon(Icons.local_fire_department_rounded, color: Color(0xFFF97316), size: 16),
+                            const SizedBox(width: 6),
                             Text(
                               '7-Day Speaking Streak Tracker:',
-                              style: TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: _textPrimary, fontSize: 11.5, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -4049,13 +4276,17 @@ class _HomeScreenState extends State<HomeScreen> {
         final score = (data['score'] as num?)?.toInt() ?? 80;
         final name = data['userName']?.toString() ?? 'Student';
         final email = data['userEmail']?.toString() ?? '';
+        final lang = data['language']?.toString() ?? data['targetLanguage']?.toString();
 
         if (!agg.containsKey(uid)) {
-          agg[uid] = _UserAgg(name: name, email: email);
+          agg[uid] = _UserAgg(name: name, email: email, targetLanguage: lang);
         }
         agg[uid]!.totalSeconds += dur;
         agg[uid]!.totalScore += score;
         agg[uid]!.callsCount += 1;
+        if (lang != null && lang.isNotEmpty) {
+          agg[uid]!.targetLanguage = lang;
+        }
       }
     }
 
@@ -4078,15 +4309,21 @@ class _HomeScreenState extends State<HomeScreen> {
       if (uData['displayName'] != null && uData['displayName'].toString().isNotEmpty) {
         agg[uid]!.name = uData['displayName'];
       }
+      if (uData['targetLanguage'] != null && uData['targetLanguage'].toString().isNotEmpty) {
+        agg[uid]!.targetLanguage = uData['targetLanguage'].toString();
+      }
+      if (uData['country'] != null && uData['country'].toString().isNotEmpty) {
+        agg[uid]!.countryCode = uData['country'].toString().toLowerCase();
+      }
     });
 
     // Provide default fallback lively ranks if brand new database
     if (agg.isEmpty) {
       return [
-        _StudentRankData(userId: 'u1', name: 'Kasun Perera', email: 'kasun@gmail.com', totalMinutes: 65, averageScore: 94, callsCount: 8, streak: 5),
-        _StudentRankData(userId: 'u2', name: 'Nadeesha Silva', email: 'nadeesha@gmail.com', totalMinutes: 48, averageScore: 91, callsCount: 6, streak: 4),
-        _StudentRankData(userId: 'u3', name: 'Dinuka Fernando', email: 'dinuka@gmail.com', totalMinutes: 36, averageScore: 87, callsCount: 5, streak: 3),
-        _StudentRankData(userId: 'u4', name: 'Tharushi Jayawardena', email: 'tharushi@gmail.com', totalMinutes: 28, averageScore: 84, callsCount: 4, streak: 2),
+        _StudentRankData(userId: 'u1', name: 'Kasun Perera', email: 'kasun@gmail.com', totalMinutes: 65, averageScore: 94, callsCount: 8, streak: 5, targetLanguage: 'English', countryCode: 'lk'),
+        _StudentRankData(userId: 'u2', name: 'Nadeesha Silva', email: 'nadeesha@gmail.com', totalMinutes: 48, averageScore: 91, callsCount: 6, streak: 4, targetLanguage: 'English', countryCode: 'lk'),
+        _StudentRankData(userId: 'u3', name: 'Dinuka Fernando', email: 'dinuka@gmail.com', totalMinutes: 36, averageScore: 87, callsCount: 5, streak: 3, targetLanguage: 'English', countryCode: 'lk'),
+        _StudentRankData(userId: 'u4', name: 'Tharushi Jayawardena', email: 'tharushi@gmail.com', totalMinutes: 28, averageScore: 84, callsCount: 4, streak: 2, targetLanguage: 'English', countryCode: 'lk'),
       ];
     }
 
@@ -4095,6 +4332,15 @@ class _HomeScreenState extends State<HomeScreen> {
       final totalMins = (e.value.totalSeconds ~/ 60) > 0 ? (e.value.totalSeconds ~/ 60) : e.value.weeklyMinutes;
       final avgScore = e.value.callsCount > 0 ? (e.value.totalScore ~/ e.value.callsCount) : ((uData['lastScore'] as num?)?.toInt() ?? 85);
       final photo = (uData['photoUrl'] as String?) ?? (uData['avatar'] as String?);
+
+      final studentTargetLang = e.value.targetLanguage ??
+          (uData['targetLanguage']?.toString()) ??
+          _inferTargetLanguageForStudent(e.value.name, e.key);
+
+      final studentCountry = e.value.countryCode ??
+          (uData['country']?.toString()?.toLowerCase()) ??
+          _getStudentCountryCode(e.value.name, e.key);
+
       return _StudentRankData(
         userId: e.key,
         name: e.value.name.isNotEmpty ? e.value.name : 'Student Speaker',
@@ -4104,6 +4350,8 @@ class _HomeScreenState extends State<HomeScreen> {
         averageScore: avgScore,
         callsCount: e.value.callsCount > 0 ? e.value.callsCount : 1,
         streak: e.value.streak,
+        targetLanguage: studentTargetLang,
+        countryCode: studentCountry,
       );
     }).toList();
 
@@ -4116,24 +4364,54 @@ class _HomeScreenState extends State<HomeScreen> {
     return list;
   }
 
+  // Helper to infer realistic target language based on student profile or default selection
+  String _inferTargetLanguageForStudent(String name, String userId) {
+    final lower = name.toLowerCase().trim();
+    if (lower.contains('janitha') || lower.contains('dilshan')) {
+      return _userTargetLanguage ?? 'English';
+    }
+    if (lower.contains('admin')) {
+      return 'Spanish';
+    }
+    if (lower.contains('jaji')) {
+      return 'Japanese';
+    }
+    if (lower.contains('ruby') || lower.contains('my ruby')) {
+      return 'English';
+    }
+    if (lower.contains('tamilini') || lower.contains('suranga')) {
+      return 'English';
+    }
+    if (lower.contains('carlos') || lower.contains('mateo')) {
+      return 'English';
+    }
+    if (lower.contains('kenji') || lower.contains('yuki')) {
+      return 'English';
+    }
+    return _userTargetLanguage ?? 'English';
+  }
+
   // -------------------------------------------------------------
   // HELPER: SAFE DETERMINISTIC LUXURY STUDENT AVATAR & FLAGS
   // -------------------------------------------------------------
   String _getStudentCountryCode(String name, String userId) {
     final lower = name.toLowerCase().trim();
-    if (lower.contains('janitha') || lower.contains('dilshan') || lower.contains('kasun') || lower.contains('nadeesha') || lower.contains('dinuka') || lower.contains('tharushi') || lower.contains('perera') || lower.contains('silva')) {
+    if (lower.contains('janitha') || lower.contains('dilshan') || lower.contains('kasun') || lower.contains('nadeesha') || lower.contains('dinuka') || lower.contains('tharushi') || lower.contains('perera') || lower.contains('silva') || lower.contains('suranga') || lower.contains('tamilini') || lower.contains('nakiyaani') || lower.contains('fernando') || lower.contains('jayawardena')) {
       return 'lk';
     }
-    if (lower.contains('admin') || lower.contains('alex') || lower.contains('john') || lower.contains('michael') || lower.contains('james')) {
+    if (lower.contains('admin') || lower.contains('alex') || lower.contains('john') || lower.contains('michael') || lower.contains('james') || lower.contains('sarah')) {
       return 'us';
     }
-    if (lower.contains('jaji') || lower.contains('sarah') || lower.contains('emma') || lower.contains('david') || lower.contains('oliver')) {
+    if (lower.contains('jaji') || lower.contains('ruby') || lower.contains('emma') || lower.contains('david') || lower.contains('oliver')) {
       return 'gb';
+    }
+    if (lower.contains('rahul') || lower.contains('priya') || lower.contains('aravind') || lower.contains('kumar')) {
+      return 'in';
     }
     if (lower.contains('carlos') || lower.contains('mateo') || lower.contains('sofia') || lower.contains('diego')) {
       return 'es';
     }
-    if (lower.contains('kenji') || lower.contains('yuki') || lower.contains('tanaka') || lower.contains('haruto')) {
+    if (lower.contains('kenji') || lower.contains('yuki') || lower.contains('tanaka') || lower.contains('haruto') || lower.contains('aoi')) {
       return 'jp';
     }
     if (lower.contains('min-ho') || lower.contains('ji-woo') || lower.contains('kim') || lower.contains('park')) {
@@ -4142,7 +4420,16 @@ class _HomeScreenState extends State<HomeScreen> {
     if (lower.contains('tariq') || lower.contains('fatima') || lower.contains('omar') || lower.contains('zayed')) {
       return 'sa';
     }
-    const countryList = ['lk', 'us', 'gb', 'es', 'jp', 'kr', 'sa'];
+    if (lower.contains('pierre') || lower.contains('marie') || lower.contains('camille')) {
+      return 'fr';
+    }
+    if (lower.contains('hans') || lower.contains('lukas') || lower.contains('anna')) {
+      return 'de';
+    }
+    if (lower.contains('marco') || lower.contains('matteo')) {
+      return 'it';
+    }
+    const countryList = ['lk', 'us', 'gb', 'es', 'jp', 'fr', 'de', 'in', 'it', 'kr'];
     final int hash = (userId.isNotEmpty ? userId.hashCode : name.hashCode).abs();
     return countryList[hash % countryList.length];
   }
@@ -4181,6 +4468,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Color? accentColor,
     int? rankNumber,
     bool showFlag = false,
+    String? countryCode,
   }) {
     // Completely avoid Dicebear calls which trigger 429 rate limit CORS errors in DevTools
     final bool isDicebear = photoUrl != null && photoUrl.contains('dicebear.com');
@@ -4255,7 +4543,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (!showFlag) return avatarWidget;
 
-    final String countryCode = _getStudentCountryCode(name, userId);
+    final String cCode = (countryCode != null && countryCode.isNotEmpty)
+        ? countryCode.toLowerCase()
+        : _getStudentCountryCode(name, userId);
     final double flagW = size >= 50 ? 18 : 14;
     final double flagH = size >= 50 ? 12.5 : 9.5;
 
@@ -4266,7 +4556,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Positioned(
           bottom: -2,
           right: -2,
-          child: _buildStudentFlagBadge(countryCode, width: flagW, height: flagH),
+          child: _buildStudentFlagBadge(cCode, width: flagW, height: flagH),
         ),
       ],
     );
@@ -4411,18 +4701,18 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xFFF59E0B).withOpacity(0.35),
-          width: 1.2,
+          color: const Color(0xFFF59E0B).withOpacity(_isDarkMode ? 0.35 : 0.5),
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF59E0B).withOpacity(0.12),
+            color: const Color(0xFFF59E0B).withOpacity(_isDarkMode ? 0.12 : 0.18),
             blurRadius: 24,
             spreadRadius: 2,
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.45),
-            blurRadius: 16,
+            color: Colors.black.withOpacity(_isDarkMode ? 0.45 : 0.22),
+            blurRadius: 18,
             offset: const Offset(0, 8),
           ),
         ],
@@ -4593,25 +4883,26 @@ class _HomeScreenState extends State<HomeScreen> {
     final bool isSilver = place == 2;
     final double avatarSize = isGold ? 60 : 48;
 
+    // Metallic Facet Gradients for the 3D Pedestal
     final List<Color> pedestalGradient = isGold
         ? [
-            const Color(0xFFFEF08A),
-            const Color(0xFFF59E0B),
-            const Color(0xFFB45309),
-            const Color(0xFF78350F),
+            const Color(0xFFFDE047), // bright gold highlight
+            const Color(0xFFF59E0B), // rich amber gold
+            const Color(0xFFB45309), // deep gold
+            const Color(0xFF78350F), // burnished gold base
           ]
         : isSilver
             ? [
-                const Color(0xFFFFFFFF),
-                const Color(0xFFCBD5E1),
-                const Color(0xFF64748B),
-                const Color(0xFF334155),
+                const Color(0xFFF8FAFC), // bright platinum highlight
+                const Color(0xFFCBD5E1), // polished chrome
+                const Color(0xFF64748B), // steel slate
+                const Color(0xFF1E293B), // deep titanium base
               ]
             : [
-                const Color(0xFFFFEDD5),
-                const Color(0xFFEA580C),
-                const Color(0xFF9A3412),
-                const Color(0xFF431407),
+                const Color(0xFFFFEDD5), // copper highlight
+                const Color(0xFFEA580C), // glowing amber copper
+                const Color(0xFF9A3412), // deep bronze
+                const Color(0xFF431407), // dark bronze base
               ];
 
     final Color topBevelColor = isGold
@@ -4620,13 +4911,31 @@ class _HomeScreenState extends State<HomeScreen> {
             ? Colors.white
             : const Color(0xFFFFEDD5);
 
+    final Color medallionOuterRing = isGold
+        ? const Color(0xFFFEF08A)
+        : isSilver
+            ? Colors.white
+            : const Color(0xFFFFEDD5);
+
+    final Color medallionInnerBg = isGold
+        ? const Color(0xFF1E1B4B)
+        : isSilver
+            ? const Color(0xFF0F172A)
+            : const Color(0xFF1F0D05);
+
+    final Color rankTextColor = isGold
+        ? const Color(0xFFFDE68A)
+        : isSilver
+            ? const Color(0xFFF8FAFC)
+            : const Color(0xFFFFEDD5);
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         // Crown / Medal tightly positioned above avatar
         if (isGold)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
@@ -4643,23 +4952,29 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: const [
-                Text('✨', style: TextStyle(fontSize: 9)),
+                Text('✨', style: TextStyle(fontSize: 10)),
                 SizedBox(width: 2),
-                Text('👑', style: TextStyle(fontSize: 16)),
+                Text('👑', style: TextStyle(fontSize: 18)),
                 SizedBox(width: 2),
-                Text('✨', style: TextStyle(fontSize: 9)),
+                Text('✨', style: TextStyle(fontSize: 10)),
               ],
             ),
           )
         else
           Container(
-            padding: const EdgeInsets.all(3),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isSilver ? const Color(0xFF475569) : const Color(0xFF7C2D12),
-              border: Border.all(color: topBevelColor, width: 1.2),
+              color: isSilver ? const Color(0xFF334155) : const Color(0xFF7C2D12),
+              border: Border.all(color: topBevelColor, width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 4,
+                ),
+              ],
             ),
-            child: Text(isSilver ? '🥈' : '🥉', style: const TextStyle(fontSize: 15)),
+            child: Text(isSilver ? '🥈' : '🥉', style: const TextStyle(fontSize: 16)),
           ),
 
         const SizedBox(height: 4),
@@ -4673,9 +4988,10 @@ class _HomeScreenState extends State<HomeScreen> {
           accentColor: accentColor,
           rankNumber: place,
           showFlag: true,
+          countryCode: student.countryCode,
         ),
 
-        const SizedBox(height: 6),
+        const SizedBox(height: 5),
 
         // Name
         Padding(
@@ -4688,42 +5004,71 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
-              fontSize: isGold ? 12 : 11,
+              fontSize: isGold ? 12.5 : 11,
               shadows: const [
-                Shadow(color: Colors.black, blurRadius: 4),
+                Shadow(color: Colors.black, blurRadius: 4, offset: Offset(0, 1)),
               ],
             ),
           ),
         ),
 
-        const SizedBox(height: 3),
+        const SizedBox(height: 2),
+
+        // Target Language Badge on Podium
+        Container(
+          margin: const EdgeInsets.only(bottom: 3),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.45),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: isGold ? const Color(0xFFF59E0B).withOpacity(0.6) : Colors.white24,
+              width: 0.8,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildFlagBadge(student.targetLanguage, width: 12, height: 8.5, radius: 1.5),
+              const SizedBox(width: 3.5),
+              Text(
+                student.targetLanguage,
+                style: TextStyle(
+                  color: isGold ? const Color(0xFFFDE68A) : Colors.white.withOpacity(0.9),
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
 
         // Stat Pill
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
           decoration: BoxDecoration(
             color: isGold
-                ? const Color(0xFFF59E0B).withOpacity(0.2)
-                : Colors.white.withOpacity(0.08),
+                ? const Color(0xFFF59E0B).withOpacity(0.25)
+                : Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: isGold
-                  ? const Color(0xFFF59E0B).withOpacity(0.5)
-                  : Colors.white.withOpacity(0.15),
+                  ? const Color(0xFFF59E0B).withOpacity(0.6)
+                  : Colors.white.withOpacity(0.2),
               width: 0.8,
             ),
           ),
           child: Text(
             '${student.totalMinutes}m • ${student.averageScore}%',
             style: TextStyle(
-              color: isGold ? const Color(0xFFFDE68A) : Colors.white70,
+              color: isGold ? const Color(0xFFFDE68A) : Colors.white,
               fontSize: 9.5,
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
 
         // 3D Metallic Stepped Pedestal Block
         Container(
@@ -4737,46 +5082,64 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             borderRadius: BorderRadius.vertical(top: Radius.circular(isGold ? 16 : 13)),
             border: Border(
-              top: BorderSide(color: topBevelColor, width: isGold ? 3.5 : 2.5),
-              left: BorderSide(color: topBevelColor.withOpacity(0.4), width: 1),
-              right: BorderSide(color: Colors.black.withOpacity(0.3), width: 1),
+              top: BorderSide(color: topBevelColor, width: isGold ? 4.0 : 3.0),
+              left: BorderSide(color: topBevelColor.withOpacity(0.5), width: 1.2),
+              right: BorderSide(color: Colors.black.withOpacity(0.35), width: 1.2),
             ),
             boxShadow: [
               BoxShadow(
                 color: isGold
-                    ? const Color(0xFFF59E0B).withOpacity(0.3)
-                    : Colors.black.withOpacity(0.25),
-                blurRadius: isGold ? 14 : 8,
-                offset: const Offset(0, -2),
+                    ? const Color(0xFFF59E0B).withOpacity(0.35)
+                    : Colors.black.withOpacity(0.3),
+                blurRadius: isGold ? 16 : 10,
+                offset: const Offset(0, -3),
               ),
             ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Embossed Rank Number
-              Text(
-                '#$place',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: isGold ? 32 : (isSilver ? 25 : 23),
-                  letterSpacing: -0.5,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withOpacity(0.7),
+              // 3D Medallion Disc with Rank Numeral
+              Container(
+                width: isGold ? 48 : (isSilver ? 40 : 36),
+                height: isGold ? 48 : (isSilver ? 40 : 36),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: medallionInnerBg,
+                  border: Border.all(color: medallionOuterRing, width: isGold ? 2.5 : 1.8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.4),
+                      blurRadius: 6,
                       offset: const Offset(0, 2),
-                      blurRadius: 4,
                     ),
                   ],
                 ),
+                child: Center(
+                  child: Text(
+                    '#$place',
+                    style: TextStyle(
+                      color: rankTextColor,
+                      fontWeight: FontWeight.w900,
+                      fontSize: isGold ? 22 : (isSilver ? 17 : 15),
+                      letterSpacing: -0.5,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.8),
+                          offset: const Offset(0, 1),
+                          blurRadius: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
 
-              const SizedBox(height: 2),
+              const SizedBox(height: 5),
 
               // Ribbon Badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                padding: EdgeInsets.symmetric(horizontal: isGold ? 8 : 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: isGold ? const Color(0xFF1E1B4B) : const Color(0xFF0F172A),
                   borderRadius: BorderRadius.circular(6),
@@ -4786,7 +5149,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withOpacity(0.35),
                       blurRadius: 3,
                     ),
                   ],
@@ -4795,7 +5158,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   badgeText,
                   style: TextStyle(
                     color: isGold ? const Color(0xFFFDE68A) : Colors.white,
-                    fontSize: isGold ? 8.5 : 7.5,
+                    fontSize: isGold ? 9 : 8,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 0.8,
                   ),
@@ -4803,8 +5166,17 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               if (isGold) ...[
-                const SizedBox(height: 4),
-                const Text('⭐ ⭐ ⭐', style: TextStyle(fontSize: 8)),
+                const SizedBox(height: 5),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Text('⭐', style: TextStyle(fontSize: 8)),
+                    SizedBox(width: 2),
+                    Text('⭐', style: TextStyle(fontSize: 9)),
+                    SizedBox(width: 2),
+                    Text('⭐', style: TextStyle(fontSize: 8)),
+                  ],
+                ),
               ],
             ],
           ),
@@ -4883,6 +5255,7 @@ class _HomeScreenState extends State<HomeScreen> {
             size: 40,
             rankNumber: rankNumber,
             showFlag: true,
+            countryCode: rank.countryCode,
           ),
           const SizedBox(width: 12),
 
@@ -4932,8 +5305,42 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 3),
                 Row(
                   children: [
+                    // Target Language Pill with Official Flag Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: isCurrentUser
+                            ? Colors.white.withOpacity(0.18)
+                            : (_isDarkMode ? const Color(0xFF0F172A) : const Color(0xFFEEF2FF)),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: isCurrentUser
+                              ? Colors.white24
+                              : (_isDarkMode ? const Color(0xFF334155) : const Color(0xFFC7D2FE)),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildFlagBadge(rank.targetLanguage, width: 14, height: 10, radius: 2),
+                          const SizedBox(width: 4),
+                          Text(
+                            rank.targetLanguage,
+                            style: TextStyle(
+                              color: isCurrentUser
+                                  ? const Color(0xFFA5B4FC)
+                                  : (_isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF4338CA)),
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
                     Text(
-                      '${rank.callsCount} calls logged',
+                      '${rank.callsCount} calls',
                       style: TextStyle(color: isCurrentUser ? Colors.white.withOpacity(0.65) : _textSecondary, fontSize: 10),
                     ),
                     Text(' • ', style: TextStyle(color: isCurrentUser ? Colors.white.withOpacity(0.4) : _textMuted, fontSize: 10)),
@@ -8756,6 +9163,8 @@ class _StudentRankData {
   final int averageScore;
   final int callsCount;
   final int streak;
+  final String targetLanguage;
+  final String countryCode;
 
   _StudentRankData({
     required this.userId,
@@ -8766,6 +9175,8 @@ class _StudentRankData {
     required this.averageScore,
     required this.callsCount,
     required this.streak,
+    this.targetLanguage = 'English',
+    this.countryCode = 'us',
   });
 }
 
@@ -8777,6 +9188,8 @@ class _UserAgg {
   int callsCount;
   int weeklyMinutes;
   int streak;
+  String? targetLanguage;
+  String? countryCode;
 
   _UserAgg({
     required this.name,
@@ -8786,5 +9199,7 @@ class _UserAgg {
     this.callsCount = 0,
     this.weeklyMinutes = 0,
     this.streak = 1,
+    this.targetLanguage,
+    this.countryCode,
   });
 }

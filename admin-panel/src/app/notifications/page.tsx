@@ -129,13 +129,19 @@ export default function NotificationsPage() {
     }
   };
 
+  const [customPromptTopic, setCustomPromptTopic] = useState("");
+  const [triggeringCron, setTriggeringCron] = useState(false);
+
   const handleGenerateAi = async (campaignType: string) => {
     setGeneratingAi(true);
     try {
       const res = await fetch("/api/notifications/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ campaignType }),
+        body: JSON.stringify({ 
+          campaignType,
+          promptTopic: customPromptTopic.trim() || undefined
+        }),
       });
 
       if (res.ok) {
@@ -144,7 +150,7 @@ export default function NotificationsPage() {
           setTitle(data.title);
           setBody(data.body);
           if (campaignType === "pro_promo") setActionRoute("/paywall");
-          if (campaignType === "tutor_voice") setActionRoute("/topics");
+          if (campaignType === "tutor_voice" || customPromptTopic) setActionRoute("/topics");
         }
       }
     } catch (err) {
@@ -156,19 +162,28 @@ export default function NotificationsPage() {
 
   const handleTriggerCron = async () => {
     try {
-      setLoading(true);
-      const res = await fetch("/api/cron/notifications");
+      setTriggeringCron(true);
+      setStatusMessage(null);
+      const res = await fetch("/api/cron/notifications", {
+        method: "POST",
+      });
+      const data = await res.json();
       if (res.ok) {
         setStatusMessage({
-          text: "Auto-Pilot Cron successfully executed! Campaign dispatched.",
+          text: `Auto-Pilot executed! ${data.campaign?.isAiGenerated ? "✨ AI Generated:" : "Curated:"} "${data.campaign?.title}". ${data.message || ""}`,
           type: "success",
         });
         loadData();
+      } else {
+        setStatusMessage({
+          text: data.error || "Failed to trigger auto-pilot cron.",
+          type: "error",
+        });
       }
     } catch (e: any) {
       setStatusMessage({ text: "Cron execution error: " + e.message, type: "error" });
     } finally {
-      setLoading(false);
+      setTriggeringCron(false);
     }
   };
 
@@ -300,36 +315,50 @@ export default function NotificationsPage() {
           </div>
         </div>
 
-        {/* WEBHOOK URL DISPLAY WITH COPY BUTTON */}
-        <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2">
-          <Terminal className="w-4 h-4 text-slate-500 shrink-0" />
-          <input
-            type="text"
-            readOnly
-            value="https://speakflow.innoxtools.com/api/cron/notifications"
-            className="flex-1 bg-transparent text-xs text-slate-300 font-mono focus:outline-none select-all"
-          />
-          <button
-            type="button"
-            onClick={() => {
-              navigator.clipboard.writeText("https://speakflow.innoxtools.com/api/cron/notifications");
-              setCronCopied(true);
-              setTimeout(() => setCronCopied(false), 2500);
-            }}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
-          >
-            {cronCopied ? (
-              <>
-                <Check className="w-3 h-3 text-emerald-400" />
-                <span className="text-emerald-400">Copied!</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-3 h-3 text-slate-400" />
-                <span>Copy URL</span>
-              </>
-            )}
-          </button>
+        {/* WEBHOOK URL DISPLAY WITH COPY & TRIGGER BUTTON */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Terminal className="w-4 h-4 text-slate-500 shrink-0" />
+            <input
+              type="text"
+              readOnly
+              value="https://speakflow.innoxtools.com/api/cron/notifications"
+              className="flex-1 bg-transparent text-xs text-slate-300 font-mono focus:outline-none select-all truncate"
+            />
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText("https://speakflow.innoxtools.com/api/cron/notifications");
+                setCronCopied(true);
+                setTimeout(() => setCronCopied(false), 2500);
+              }}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+            >
+              {cronCopied ? (
+                <>
+                  <Check className="w-3 h-3 text-emerald-400" />
+                  <span className="text-emerald-400">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3 h-3 text-slate-400" />
+                  <span>Copy URL</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleTriggerCron}
+              disabled={triggeringCron}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-md shadow-emerald-900/30 disabled:opacity-50"
+            >
+              <Sparkles className={`w-3.5 h-3.5 ${triggeringCron ? "animate-spin" : ""}`} />
+              <span>{triggeringCron ? "Running Cron..." : "Trigger Auto-Pilot Now"}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -355,7 +384,7 @@ export default function NotificationsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* COMPOSER FORM (2 cols) */}
         <div className="lg:col-span-2 bg-slate-900/40 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
                 <Send className="w-4 h-4" />
@@ -367,8 +396,8 @@ export default function NotificationsPage() {
             </div>
 
             {/* AI GENERATOR PRESETS */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-slate-400 font-semibold mr-1 hidden sm:inline">AI Generate:</span>
+            <div className="flex items-center flex-wrap gap-1.5">
+              <span className="text-[11px] text-slate-400 font-semibold mr-1">AI Fast:</span>
               <button
                 type="button"
                 onClick={() => handleGenerateAi("streak")}
@@ -394,9 +423,29 @@ export default function NotificationsPage() {
                 className="px-2.5 py-1 rounded-lg text-xs font-medium bg-pink-500/10 text-pink-300 border border-pink-500/30 hover:bg-pink-500/20 transition-all flex items-center gap-1"
               >
                 <Mic className="w-3 h-3 text-pink-400" />
-                Elena
+                Coach
               </button>
             </div>
+          </div>
+
+          {/* CUSTOM TOPIC AI INPUT */}
+          <div className="flex items-center gap-2 p-2.5 bg-slate-950/80 border border-slate-800 rounded-xl">
+            <Sparkles className="w-4 h-4 text-indigo-400 shrink-0 ml-1" />
+            <input
+              type="text"
+              value={customPromptTopic}
+              onChange={(e) => setCustomPromptTopic(e.target.value)}
+              placeholder="Custom AI Campaign Idea (e.g. Ordering sushi in Tokyo, Cricket match chat...)"
+              className="flex-1 bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={() => handleGenerateAi("custom")}
+              disabled={generatingAi || !customPromptTopic.trim()}
+              className="px-3 py-1 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-all disabled:opacity-40 shrink-0"
+            >
+              {generatingAi ? "Generating..." : "Generate with Gemini"}
+            </button>
           </div>
 
           <form onSubmit={handleSendNotification} className="space-y-4">

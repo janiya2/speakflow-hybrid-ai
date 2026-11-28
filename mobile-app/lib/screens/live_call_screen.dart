@@ -271,6 +271,15 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       });
     }
     _proactiveNudgeTimer?.cancel();
+
+    // Reset watchdog to generous 35s timer once audio is actually live so coach is never cut off
+    _speechWatchdogTimer?.cancel();
+    _speechWatchdogTimer = Timer(const Duration(seconds: 35), () {
+      if (mounted && _isBotSpeaking && !_callEnded) {
+        debugPrint('TTS Watchdog triggered: unlocking microphone');
+        _onBotSpeechFinished();
+      }
+    });
   }
 
   void _onBotSpeechFinished() {
@@ -316,9 +325,9 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
 
       if (!_isBotSpeaking && !_isProcessing && !_callEnded && !_isMuted) {
         if (_userSpeech.trim().isNotEmpty) {
-          // If microphone stopped and student spoke, promptly dispatch within 600ms!
+          // If microphone stopped and student spoke, promptly dispatch within 350ms!
           _silenceTimer?.cancel();
-          _silenceTimer = Timer(const Duration(milliseconds: 600), () {
+          _silenceTimer = Timer(const Duration(milliseconds: 350), () {
             if (_userSpeech.trim().isNotEmpty && !_isProcessing && !_isBotSpeaking && !_callEnded) {
               final textToSubmit = _userSpeech.trim();
               _accumulatedSpeech = '';
@@ -458,7 +467,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       });
     }
 
-    // Opening prompt: Use Gemini 2.5 Flash / Hybrid AI to generate a creative, spontaneous situational greeting!
+    // Opening prompt: Instant call connection (< 1.5s total time to voice output)
     String openingText = widget.topic.starterPrompt;
     try {
       openingText = await _geminiService.generateDynamicOpening(
@@ -468,7 +477,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
         coach: _coach,
         defaultPrompt: widget.topic.starterPrompt,
         alternateQuestions: widget.topic.starterQuestions,
-      ).timeout(const Duration(milliseconds: 1800), onTimeout: () {
+      ).timeout(const Duration(milliseconds: 350), onTimeout: () {
         if (widget.topic.starterQuestions.isNotEmpty) {
           final randIndex = DateTime.now().millisecondsSinceEpoch % widget.topic.starterQuestions.length;
           return widget.topic.starterQuestions[randIndex];
@@ -482,8 +491,8 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       }
     }
 
-    // Snappy phone outgoing connection duration (450ms)
-    await Future.delayed(const Duration(milliseconds: 450));
+    // Ultra-snappy phone outgoing connection duration (200ms)
+    await Future.delayed(const Duration(milliseconds: 200));
 
     if (mounted) {
       setState(() {
@@ -491,7 +500,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       });
     }
 
-    await Future.delayed(const Duration(milliseconds: 150));
+    await Future.delayed(const Duration(milliseconds: 80));
 
     if (kIsWeb) {
       try {
@@ -505,7 +514,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
         _lastBotQuestion = openingText;
       });
       _startTimer();
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 60));
       await _speakText(openingText);
     }
   }
@@ -677,13 +686,18 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
     });
   }
 
-  // PROACTIVE BOT KEEP-ALIVE (Only prompts if student hasn't spoken a single word for 35 seconds)
+  // PROACTIVE BOT KEEP-ALIVE (30-second silence re-engagement; NEVER interrupts actively speaking learner)
   void _resetProactiveNudgeTimer() {
     _proactiveNudgeTimer?.cancel();
     if (_hasNudgedForCurrentQuestion || _isBotSpeaking || _isProcessing || _callEnded) return;
 
-    // Generous 35-second wait: Allows learner to think, read, and prepare their answer without interruption!
-    _proactiveNudgeTimer = Timer(const Duration(seconds: 35), () {
+    // Strict speech guard: If learner is already speaking or words are pending, do not start nudge
+    if (_userSpeech.trim().isNotEmpty || _accumulatedSpeech.trim().isNotEmpty || _lastRecognizedWords.trim().isNotEmpty) {
+      return;
+    }
+
+    // 30-second inactivity re-engagement
+    _proactiveNudgeTimer = Timer(const Duration(seconds: 30), () {
       if (mounted && !_isBotSpeaking && !_isProcessing && !_callEnded && !_hasNudgedForCurrentQuestion) {
         _triggerProactiveSilenceNudge();
       }
@@ -691,58 +705,61 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
   }
 
   void _triggerProactiveSilenceNudge() {
-    // If student has already spoken ANY words, or is currently speaking, or already nudged, NEVER interrupt!
+    // STRICT SPEECH GUARD: If student is actively speaking, words have arrived, or user just answered, NEVER interrupt!
     if (_isBotSpeaking ||
         _isProcessing ||
         _callEnded ||
         _hasNudgedForCurrentQuestion ||
         _userSpeech.trim().isNotEmpty ||
-        _accumulatedSpeech.trim().isNotEmpty) {
+        _accumulatedSpeech.trim().isNotEmpty ||
+        _lastRecognizedWords.trim().isNotEmpty) {
       return;
     }
 
     _hasNudgedForCurrentQuestion = true;
 
     final lang = widget.topic.language.toLowerCase().trim();
-    String nudge = "Take your time! No rush at all. Would you like me to repeat the question, or give you a hint?";
+    final question = _lastBotQuestion.isNotEmpty ? _lastBotQuestion : widget.topic.starterPrompt;
+
+    String nudge = "Are you still there? Don't worry at all, take your time! Let me ask you again: $question";
     if (lang.contains('german') || lang.contains('deutsch') || lang.startsWith('de')) {
-      nudge = "Lass dir ruhig Zeit! Kein Stress. Möchtest du, dass ich die Frage wiederhole, oder brauchst du einen Tipp?";
+      nudge = "Bist du noch da? Keine Sorge, lass dir ruhig Zeit! Ich frage dich noch einmal: $question";
     } else if (lang.contains('french') || lang.contains('fran') || lang.startsWith('fr')) {
-      nudge = "Prenez votre temps ! Rien ne presse. Voulez-vous que je répète la question, ou avez-vous besoin d'un indice ?";
+      nudge = "Vous êtes toujours là ? Ne vous inquiétez pas, prenez votre temps ! Je vous redemande : $question";
     } else if (lang.contains('span') || lang.contains('espa') || lang.startsWith('es')) {
-      nudge = "¡Tómate tu tiempo! Sin prisas. ¿Quieres que te repita la pregunta o necesitas una pista?";
+      nudge = "¿Sigues ahí? No te preocupes por equivocarte, ¡tómate tu tiempo! Te pregunto de nuevo: $question";
     } else if (lang.contains('ital') || lang.startsWith('it')) {
-      nudge = "Prenditi tutto il tempo! Nessuna fretta. Vuoi che ripeta la domanda o ti serve un aiuto?";
+      nudge = "Sei ancora lì? Nessuna preoccupazione, prenditi tutto il tempo! Te lo richiedo: $question";
     } else if (lang.contains('portug') || lang.startsWith('pt')) {
-      nudge = "Com calma! Sem pressa. Quer que eu repita a pergunta ou precisa de uma dica?";
+      nudge = "Ainda está aí? Não se preocupe, com calma! Deixe-me perguntar de novo: $question";
     } else if (lang.contains('jap') || lang.startsWith('ja')) {
-      nudge = "ゆっくりで大丈夫ですよ！質問をもう一度言いましょうか？それともヒントが必要ですか？";
+      nudge = "まだいらっしゃいますか？全然心配しないで、ゆっくり考えてくださいね！もう一度聞きますね：$question";
     } else if (lang.contains('kor') || lang.startsWith('ko')) {
-      nudge = "천천히 생각하고 말씀하셔도 괜찮아요! 질문을 다시 해드릴까요, 아니면 힌트가 필요하신가요?";
+      nudge = "듣고 계신가요? 전혀 걱정하지 마시고 천천히 말씀하세요! 다시 한번 질문드릴게요: $question";
     } else if (lang.contains('chinese') || lang.contains('mandarin') || lang.startsWith('zh')) {
-      nudge = "慢慢来，不着急！需要我重复一遍问题，还是给您一点提示呢？";
+      nudge = "您还在吗？完全不用担心，慢慢来！我再问您一遍：$question";
     } else if (lang.contains('arab') || lang.startsWith('ar')) {
-      nudge = "خذ كامل وقتك! لا داعي للاستعجال. هل ترغب في أن أكرر السؤال أم تحتاج إلى تلميح؟";
+      nudge = "هل ما زلت معي؟ لا تقلق أبداً، خذ كامل وقتك! دعني أسألك مرة أخرى: $question";
     } else if (lang.contains('russian') || lang.startsWith('ru')) {
-      nudge = "Не спешите, не торопитесь! Хотите, чтобы я повторил вопрос или дал вам подсказку?";
+      nudge = "Вы ещё здесь? Не волнуйтесь, не спешите! Позвольте мне повторить вопрос: $question";
     } else if (lang.contains('hindi') || lang.startsWith('hi')) {
-      nudge = "आराम से बोलिए, कोई जल्दबाजी नहीं है! क्या आप चाहते हैं कि मैं सवाल दोहराऊं या कोई संकेत दूं?";
+      nudge = "क्या आप अभी भी सुन रहे हैं? बिल्कुल चिंता न करें, आराम से समय लें! मैं फिर से पूछता हूँ: $question";
     } else if (lang.contains('dutch') || lang.contains('nederland') || lang.startsWith('nl')) {
-      nudge = "Neem rustig de tijd! Geen haast. Wil je dat ik de vraag herhaal, of heb je een hint nodig?";
+      nudge = "Ben je er nog? Geen zorgen, neem rustig de tijd! Ik vraag het nog eens: $question";
     } else if (lang.contains('turk') || lang.startsWith('tr')) {
-      nudge = "Acele etmeyin, rahat olun! Soruyu tekrarlamamı ister misiniz, yoksa bir ipucu mu istersiniz?";
+      nudge = "Hala orada mısınız? Hiç endişelenmeyin, acele etmeyin! Tekrar soruyorum: $question";
     } else if (lang.contains('viet') || lang.startsWith('vi')) {
-      nudge = "Bạn cứ từ từ nhé, không sao đâu! Bạn có muốn tôi lặp lại câu hỏi hay gợi ý không?";
+      nudge = "Bạn vẫn ở đó chứ? Đừng lo lắng, cứ từ từ nhé! Tôi xin hỏi lại: $question";
     } else if (lang.contains('indones') || lang.startsWith('id')) {
-      nudge = "Santai saja, tidak perlu terburu-buru! Mau saya ulangi pertanyaannya atau butuh petunjuk?";
+      nudge = "Apakah kamu masih di sana? Jangan khawatir, santai saja! Biar saya tanyakan lagi: $question";
     } else if (lang.contains('thai') || lang.startsWith('th')) {
-      nudge = "ค่อยๆ คิด ไม่ต้องรีบครับ! อยากให้ทวนคำถาม หรือต้องการคำใบ้ไหมครับ?";
+      nudge = "ยังอยู่ไหมครับ? ไม่ต้องกังวลเลย ค่อยๆ คิดนะ! ขอถามใหม่อีกรอบนะครับ: $question";
     } else if (lang.contains('swed') || lang.startsWith('sv') || lang.startsWith('se')) {
-      nudge = "Ta god tid på dig! Ingen stress. Vill du att jag upprepar frågan eller behöver du en ledtråd?";
+      nudge = "Är du kvar? Ingen fara alls, ta det lugnt! Jag frågar igen: $question";
     } else if (lang.contains('tamil') || lang.startsWith('ta')) {
-      nudge = "பொறுமையாகப் பேசுங்கள், அவசரமில்லை! கேள்வியை மீண்டும் சொல்லவா, அல்லது குறிப்பு வேண்டுமா?";
+      nudge = "நீங்கள் இன்னும் இருக்கிறீர்களா? கவலைப்படாதீர்கள், பொறுமையாகச் சொல்லுங்கள்! மீண்டும் கேட்கிறேன்: $question";
     } else if (lang.contains('sinhala') || lang.startsWith('si')) {
-      nudge = "කලබල වෙන්න එපා, හෙමින් කල්පනා කරලා කියන්න! මම ප්‍රශ්නය ආයෙත් කියන්නද, නැත්නම් ඉඟියක් ඕනෙද?";
+      nudge = "ඔයා තාම ඉන්නවද? කිසිම කලබලයක් වෙන්න එපා, හෙමින් කල්පනා කරලා කියන්න! මම ආයෙත් අහන්නම්: $question";
     }
 
     _speakText(nudge);
@@ -1175,7 +1192,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       final charDuration = cleanText.length * 90;
       durationEstMs = (wordDuration > charDuration ? wordDuration : charDuration) + 4000;
     }
-    final maxSpeechDurationMs = (durationEstMs + 8000).clamp(20000, 45000);
+    final maxSpeechDurationMs = (durationEstMs + 8000).clamp(15000, 45000);
     _speechWatchdogTimer = Timer(Duration(milliseconds: maxSpeechDurationMs), () {
       if (mounted && _isBotSpeaking && !_callEnded) {
         debugPrint('TTS Watchdog triggered: unlocking microphone');
@@ -1331,10 +1348,10 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                 _userSpeech = combinedText;
               });
 
-              // Words updated: set responsive 1100ms silence timer
+              // Words updated: set responsive 750ms silence timer
               _silenceTimer?.cancel();
               if (combinedText.isNotEmpty) {
-                _silenceTimer = Timer(const Duration(milliseconds: 1100), () {
+                _silenceTimer = Timer(const Duration(milliseconds: 750), () {
                   if (_userSpeech.trim().isNotEmpty && !_isProcessing && !_isBotSpeaking && !_callEnded) {
                     final textToSubmit = _userSpeech.trim();
                     _accumulatedSpeech = '';
@@ -1346,14 +1363,14 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
             }
 
             if (result.finalResult && currentSegment.isNotEmpty) {
-              // Final segment recognized: promptly submit in 500ms
+              // Final segment recognized: promptly submit in 350ms
               if (_accumulatedSpeech.isEmpty) {
                 _accumulatedSpeech = currentSegment;
               } else if (!_accumulatedSpeech.contains(currentSegment)) {
                 _accumulatedSpeech = '$_accumulatedSpeech $currentSegment';
               }
               _silenceTimer?.cancel();
-              _silenceTimer = Timer(const Duration(milliseconds: 500), () {
+              _silenceTimer = Timer(const Duration(milliseconds: 350), () {
                 if (_userSpeech.trim().isNotEmpty && !_isProcessing && !_isBotSpeaking && !_callEnded) {
                   final textToSubmit = _userSpeech.trim();
                   _accumulatedSpeech = '';
@@ -1963,6 +1980,31 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
     }
   }
 
+  String _getLanguageFlagEmoji(String lang) {
+    switch (lang.toLowerCase()) {
+      case 'french': return '🇫🇷';
+      case 'spanish': return '🇪🇸';
+      case 'german': return '🇩🇪';
+      case 'italian': return '🇮🇹';
+      case 'japanese': return '🇯🇵';
+      case 'korean': return '🇰🇷';
+      case 'chinese': return '🇨🇳';
+      case 'arabic': return '🇸🇦';
+      case 'russian': return '🇷🇺';
+      case 'hindi': return '🇮🇳';
+      case 'sinhala': return '🇱🇰';
+      case 'tamil': return '🇮🇳';
+      case 'portuguese': return '🇧🇷';
+      case 'dutch': return '🇳🇱';
+      case 'turkish': return '🇹🇷';
+      case 'vietnamese': return '🇻🇳';
+      case 'indonesian': return '🇮🇩';
+      case 'thai': return '🇹🇭';
+      case 'swedish': return '🇸🇪';
+      default: return '🌐';
+    }
+  }
+
   void _showScoreDialog(Map<String, dynamic> scoreData) {
     final int score = scoreData['totalScore'];
     final String grade = scoreData['grade'];
@@ -1971,164 +2013,398 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
     final int accuracy = scoreData['accuracy'];
     final int pronunciation = scoreData['pronunciation'];
     final String feedback = scoreData['feedback'];
-    final String feedbackSinhala = scoreData['feedbackSinhala'];
+
+    // Luxury Benchmark Badge & Header Icon
+    final String performanceTitle;
+    final IconData headerIcon;
+    if (score >= 90) {
+      performanceTitle = '🏆 MASTER ACHIEVED';
+      headerIcon = Icons.workspace_premium_rounded;
+    } else if (score >= 80) {
+      performanceTitle = '⭐ FLUENT SPEAKER';
+      headerIcon = Icons.emoji_events_rounded;
+    } else if (score >= 70) {
+      performanceTitle = '🎯 SOLID COMMUNICATOR';
+      headerIcon = Icons.military_tech_rounded;
+    } else if (score >= 60) {
+      performanceTitle = '💡 DEVELOPING SPEAKER';
+      headerIcon = Icons.stars_rounded;
+    } else {
+      performanceTitle = '🚀 PRACTICE MAKES PERFECT';
+      headerIcon = Icons.bolt_rounded;
+    }
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) {
         return Dialog(
-          backgroundColor: const Color(0xFF1E293B),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-          child: ConstrainedBox(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child: Container(
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.85,
+              maxHeight: MediaQuery.of(context).size.height * 0.88,
               maxWidth: 420,
             ),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF1E293B),
+                  Color(0xFF0F172A),
+                  Color(0xFF0A0F1D),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: gradeColor.withOpacity(0.35), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: gradeColor.withOpacity(0.22),
+                  blurRadius: 30,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 8),
+                ),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.65),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(22),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Circular Trophy Badge with dynamic grade color
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          gradeColor,
-                          gradeColor.withOpacity(0.7),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                  // 1. Multi-Ring Glowing Medal Header
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 76,
+                        height: 76,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: gradeColor.withOpacity(0.12),
+                        ),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: gradeColor.withOpacity(0.35),
-                          blurRadius: 18,
-                          spreadRadius: 2,
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [
+                              gradeColor,
+                              gradeColor.withOpacity(0.75),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: gradeColor.withOpacity(0.45),
+                              blurRadius: 18,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          headerIcon,
+                          color: Colors.white,
+                          size: 34,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  const Text(
+                    'Call Completed! 🎉',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 20,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Topic Title & Language Pill (Clean, International)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(_getLanguageFlagEmoji(widget.topic.language), style: const TextStyle(fontSize: 12)),
+                        const SizedBox(width: 5),
+                        Flexible(
+                          child: Text(
+                            '${widget.topic.title} • ${widget.topic.language}',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.85),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
-                    child: Icon(
-                      (score >= 80)
-                          ? Icons.emoji_events_rounded
-                          : (score >= 70)
-                              ? Icons.military_tech_rounded
-                              : (score >= 60)
-                                  ? Icons.star_rounded
-                                  : Icons.psychology_rounded,
-                      color: Colors.white,
-                      size: 34,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  const Text(
-                    'Call Completed! 🎉',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 19),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '${widget.topic.title} • ${widget.topic.language}',
-                    style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 11),
                   ),
                   const SizedBox(height: 16),
 
-                  // Comprehensive Score Card with Grade Badge
+                  // 2. High-Fidelity Score Showcase Card
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F172A),
-                      borderRadius: BorderRadius.circular(20),
+                      gradient: LinearGradient(
+                        colors: [
+                          gradeColor.withOpacity(0.12),
+                          const Color(0xFF0F172A),
+                          const Color(0xFF0F172A),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: BorderRadius.circular(22),
                       border: Border.all(color: gradeColor.withOpacity(0.4), width: 1.5),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '$score',
-                          style: TextStyle(color: gradeColor, fontSize: 44, fontWeight: FontWeight.w900),
-                        ),
-                        const Text(
-                          ' / 100',
-                          style: TextStyle(color: Colors.white38, fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(width: 16),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: gradeColor.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: gradeColor, width: 1.2),
-                          ),
-                          child: Text(
-                            'Grade $grade',
-                            style: TextStyle(color: gradeColor, fontWeight: FontWeight.bold, fontSize: 14),
-                          ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: gradeColor.withOpacity(0.12),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
                         ),
                       ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Coach Advice (English + Sinhala)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0F172A).withOpacity(0.6),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.white10),
                     ),
                     child: Column(
                       children: [
-                        Text(
-                          '"$feedback"',
-                          style: const TextStyle(color: Colors.white, fontSize: 12, fontStyle: FontStyle.italic, height: 1.35),
-                          textAlign: TextAlign.center,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '$score',
+                              style: TextStyle(
+                                color: gradeColor,
+                                fontSize: 48,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -1,
+                                shadows: [
+                                  Shadow(
+                                    color: gradeColor.withOpacity(0.5),
+                                    blurRadius: 14,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Text(
+                              ' / 100',
+                              style: TextStyle(
+                                color: Colors.white38,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    gradeColor.withOpacity(0.3),
+                                    gradeColor.withOpacity(0.15),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: gradeColor, width: 1.5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: gradeColor.withOpacity(0.25),
+                                    blurRadius: 8,
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                'Grade $grade',
+                                style: TextStyle(
+                                  color: gradeColor,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          feedbackSinhala,
-                          style: TextStyle(color: Colors.white.withOpacity(0.65), fontSize: 10.5, height: 1.3),
-                          textAlign: TextAlign.center,
+                        const SizedBox(height: 8),
+
+                        // Performance Benchmark Pill
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                          decoration: BoxDecoration(
+                            color: gradeColor.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: gradeColor.withOpacity(0.3), width: 0.8),
+                          ),
+                          child: Text(
+                            performanceTitle,
+                            style: TextStyle(
+                              color: gradeColor,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        // Animated Micro Progress Bar
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: LinearProgressIndicator(
+                            value: (score / 100.0).clamp(0.05, 1.0),
+                            minHeight: 5,
+                            backgroundColor: Colors.white.withOpacity(0.08),
+                            valueColor: AlwaysStoppedAnimation<Color>(gradeColor),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // 4-Metric Grid (Fluency, Accuracy, Pronunciation, Duration)
+                  // 3. AI Coach Debrief Card (Pure Native/English, Sinhala Removed)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: Colors.white.withOpacity(0.09)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 14,
+                              backgroundImage: AssetImage(_coach.assetAvatar),
+                              backgroundColor: const Color(0xFF334155),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Coach ${_coach.name}\'s Debrief',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF6366F1).withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.4)),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.auto_awesome, color: Color(0xFF818CF8), size: 10),
+                                  SizedBox(width: 3),
+                                  Text(
+                                    'AI Analysis',
+                                    style: TextStyle(
+                                      color: Color(0xFF818CF8),
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          '"$feedback"',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // 4. Luxury 4-Metric Grid (Fluency, Accuracy, Pronunciation, Duration)
                   Row(
                     children: [
                       Expanded(
-                        child: _buildMetricTile('Fluency', '$fluency%'),
+                        child: _buildMetricTile(
+                          label: 'Fluency',
+                          value: '$fluency%',
+                          icon: Icons.speed_rounded,
+                          accentColor: const Color(0xFF38BDF8),
+                          progress: fluency / 100.0,
+                          subtitle: 'Flow & Pace',
+                        ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 8),
                       Expanded(
-                        child: _buildMetricTile('Accuracy', '$accuracy%'),
+                        child: _buildMetricTile(
+                          label: 'Accuracy',
+                          value: '$accuracy%',
+                          icon: Icons.verified_user_rounded,
+                          accentColor: const Color(0xFF34D399),
+                          progress: accuracy / 100.0,
+                          subtitle: 'Grammar',
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
-                        child: _buildMetricTile('Pronunciation', '$pronunciation%'),
+                        child: _buildMetricTile(
+                          label: 'Pronunciation',
+                          value: '$pronunciation%',
+                          icon: Icons.record_voice_over_rounded,
+                          accentColor: const Color(0xFFA78BFA),
+                          progress: pronunciation / 100.0,
+                          subtitle: 'Clarity',
+                        ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 8),
                       Expanded(
-                        child: _buildMetricTile('Duration', _formatDuration(_callDurationSeconds)),
+                        child: _buildMetricTile(
+                          label: 'Duration',
+                          value: _formatDuration(_callDurationSeconds),
+                          icon: Icons.timer_rounded,
+                          accentColor: const Color(0xFFFBBF24),
+                          progress: 1.0,
+                          subtitle: '$_userSpeechTurnsCount turns spoken',
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // Corrections List / Review Section
+                  // 5. Corrections List / Review Section
                   if (_sessionCorrections.isNotEmpty) ...[
                     Container(
                       width: double.infinity,
@@ -2200,7 +2476,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                   ] else ...[
                     Container(
                       width: double.infinity,
@@ -2223,24 +2499,58 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                   ],
 
-                  // Action Button: Done & Return
-                  SizedBox(
+                  // 6. Action Button: Luxury Gradient CTA
+                  Container(
                     width: double.infinity,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF6366F1),
+                          Color(0xFF4F46E5),
+                          Color(0xFF4338CA),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF6366F1).withOpacity(0.4),
+                          blurRadius: 14,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.pop(ctx);
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6366F1),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
-                      child: const Text('Done & Return to Topics', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Done & Return to Topics',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13.5,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 17),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -2252,26 +2562,89 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildMetricTile(String label, String value) {
+  Widget _buildMetricTile({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color accentColor,
+    required double progress,
+    required String subtitle,
+  }) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        color: const Color(0xFF0F172A).withOpacity(0.92),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: accentColor.withOpacity(0.25), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white38, fontSize: 9.5, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: accentColor.withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(icon, color: accentColor, size: 12),
+              ),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.65),
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 3),
-          Text(
-            value,
-            style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                value,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.4),
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 5),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: LinearProgressIndicator(
+              value: progress.clamp(0.05, 1.0),
+              minHeight: 3.5,
+              backgroundColor: Colors.white.withOpacity(0.08),
+              valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+            ),
           ),
         ],
       ),
@@ -3465,8 +3838,8 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                     const SizedBox(height: 4),
                                     Text(
                                       '"$_lastBotQuestion"',
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      style: TextStyle(
+                                        color: _textPrimary,
                                         fontSize: 12.5,
                                         fontWeight: FontWeight.w600,
                                         height: 1.35,
@@ -3554,7 +3927,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                                   const SizedBox(height: 4),
                                   Text(
                                     _activeCorrection!.explanation,
-                                    style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 11),
+                                    style: TextStyle(color: _textSecondary, fontSize: 11),
                                   ),
                                 ],
                               ],

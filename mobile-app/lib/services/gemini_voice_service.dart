@@ -558,7 +558,7 @@ Reply ONLY with valid JSON:
                         'thinkingBudget': 0,
                       },
                       'temperature': 0.7,
-                      'maxOutputTokens': 800,
+                      'maxOutputTokens': 250,
                     }
                   }),
                 )

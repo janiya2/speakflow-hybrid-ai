@@ -195,13 +195,16 @@
     window.speakWebText = function(text, lang, coach, gender) {
       try {
         console.log("🔊 speakWebText called with text:", text, "(lang:", lang, "coach:", coach, "gender:", gender, ")");
-        if (!text || text.trim() === '') return;
+        if (!text || text.trim() === '') {
+          window.dispatchEvent(new CustomEvent('coachSpeechEnded'));
+          return;
+        }
 
         // Stop any previous audio if playing
         if (window._coachAudio) {
           try {
             window._coachAudio.pause();
-            window._coachAudio.currentTime = 0;
+            window._coachAudio.removeAttribute('src');
             window._coachAudio = null;
           } catch (_) {}
         }
@@ -210,27 +213,55 @@
         }
 
         // PRIMARY: Stream Microsoft Edge Neural TTS directly from Next.js server (Port 3001)
-        const coachParam = encodeURIComponent(coach || 'sarah');
-        const genderParam = encodeURIComponent(gender || 'female');
+        const coachParam = encodeURIComponent(coach || 'alex');
+        const genderParam = encodeURIComponent(gender || 'male');
         const ttsUrl = 'http://localhost:3001/api/tts?text=' + encodeURIComponent(text) + '&coach=' + coachParam + '&gender=' + genderParam + '&language=' + encodeURIComponent(lang || 'English');
-        const audio = new Audio();
+        
+        const audio = new Audio(ttsUrl);
         audio.crossOrigin = 'anonymous';
         audio.volume = 1.0;
-        audio.src = ttsUrl;
         window._coachAudio = audio;
 
         let hasEnded = false;
         let hasStarted = false;
+        let safetyTimeout = null;
+        let loadTimeout = null;
 
         function notifySpeechStarted() {
           if (!hasStarted) {
             hasStarted = true;
+            // Playback has officially started, clear the load/buffer timeout!
+            if (loadTimeout) {
+              clearTimeout(loadTimeout);
+              loadTimeout = null;
+            }
             console.log("🔊 Edge Neural TTS playback actually started! Dispatching coachSpeechStarted");
             window.dispatchEvent(new CustomEvent('coachSpeechStarted'));
+
+            // Set generous playback safety timeout based on actual audio duration or text length
+            const estPlaySec = (audio.duration && !isNaN(audio.duration) && audio.duration > 0)
+              ? Math.ceil(audio.duration) + 5
+              : Math.max(15, Math.ceil(text.length / 8) + 8);
+
+            if (safetyTimeout) clearTimeout(safetyTimeout);
+            safetyTimeout = setTimeout(function() {
+              if (!hasEnded) {
+                console.warn("⚠️ Audio playback watchdog (" + estPlaySec + "s), forcing finishSpeech");
+                finishSpeech("playback_watchdog");
+              }
+            }, estPlaySec * 1000);
           }
         }
 
         function finishSpeech(reason) {
+          if (loadTimeout) {
+            clearTimeout(loadTimeout);
+            loadTimeout = null;
+          }
+          if (safetyTimeout) {
+            clearTimeout(safetyTimeout);
+            safetyTimeout = null;
+          }
           if (!hasEnded) {
             hasEnded = true;
             console.log("🔊 Edge Neural TTS speech finished. Reason:", reason, "currentTime:", audio.currentTime, "duration:", audio.duration);
@@ -238,26 +269,18 @@
           }
         }
 
-        audio.onplay = function() {
+        // ONLY notify speech started when audio is ACTUALLY rendering sound through speakers!
+        // 'playing' fires when playback begins after buffering/download completes.
+        audio.onplaying = function() {
           notifySpeechStarted();
         };
 
-        // Stream audio playback immediately without waiting for buffer delay
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-          playPromise.then(function() {
+        // Precision verification on timeupdate: once currentTime advances past 0.04s, sound is live
+        audio.ontimeupdate = function() {
+          if (audio.currentTime > 0.04) {
             notifySpeechStarted();
-          }).catch(function(err) {
-            console.warn("Direct play pending buffer, waiting for canplay event:", err);
-            audio.oncanplay = function() {
-              audio.oncanplay = null;
-              audio.play().then(notifySpeechStarted).catch(function(e) {
-                console.warn("Audio autoplay blocked by browser:", e);
-                finishSpeech("play_catch");
-              });
-            };
-          });
-        }
+          }
+        };
 
         audio.onended = function() {
           finishSpeech("track_ended");
@@ -268,7 +291,25 @@
           fallbackWebSpeech(text, lang, () => finishSpeech("error_fallback"), () => notifySpeechStarted());
         };
 
-        audio.load();
+        // Generous 12-second network buffering timeout: If TTS download fails completely or stalls without ever starting
+        loadTimeout = setTimeout(function() {
+          if (!hasStarted && !hasEnded) {
+            console.warn("⚠️ Edge Neural TTS buffer stalled (>12s), switching to local speech synthesis fallback");
+            fallbackWebSpeech(text, lang, () => finishSpeech("buffer_timeout_fallback"), () => notifySpeechStarted());
+          }
+        }, 12000);
+
+        // Immediate audio playback without calling .load() which would abort the pending play promise
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(function() {
+            // Wait for onplaying / ontimeupdate before declaring speech started so video mouth doesn't move in silence
+          }).catch(function(err) {
+            console.warn("audio.play() rejected (autoplay or buffer wait):", err);
+            // If browser autoplay blocks or aborts, instantly fallback to SpeechSynthesis
+            fallbackWebSpeech(text, lang, () => finishSpeech("autoplay_fallback"), () => notifySpeechStarted());
+          });
+        }
       } catch (e) {
         console.error("speakWebText exception:", e);
         window.dispatchEvent(new CustomEvent('coachSpeechEnded'));
@@ -281,8 +322,10 @@
         return;
       }
       try {
+        window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
         u.lang = lang || 'en-US';
+        u.rate = 1.0;
         u.onstart = function() {
           if (onStart) onStart();
         };
