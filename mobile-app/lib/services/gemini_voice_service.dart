@@ -800,8 +800,8 @@ Reply ONLY with valid JSON:
       spokenReply: spokenReply,
       targetPhrase: targetPhrase,
       nextQuestion: nextQuestion,
-      modelUsed: 'Gemini Nano (On-Device Client Core)',
-      engineUsed: 'ON_DEVICE_NANO',
+      modelUsed: 'Local Offline Resilience NLP Core',
+      engineUsed: 'OFFLINE_RESILIENCE_CORE',
       latencyMs: stopwatch.elapsedMilliseconds,
       isOfflineFallback: isFallback,
     );

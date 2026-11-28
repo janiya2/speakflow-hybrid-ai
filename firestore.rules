@@ -11,11 +11,13 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    // High-security Admin Check: strictly validates known admin emails to prevent privilege escalation
     function isAdmin() {
       return isSignedIn() && (
         request.auth.token.email in ['janithad2@gmail.com', 'admin@speakflow.ai'] ||
         (exists(/databases/$(database)/documents/lang_users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/lang_users/$(request.auth.uid)).data.role == 'admin')
+         get(/databases/$(database)/documents/lang_users/$(request.auth.uid)).data.role == 'admin' &&
+         request.auth.token.email in ['janithad2@gmail.com', 'admin@speakflow.ai'])
       );
     }
 
@@ -27,38 +29,38 @@ service cloud.firestore {
 
     // 2. SpeakFlow Settings & AI Configuration
     match /lang_settings/{settingId} {
-      // Sensitive AI and billing credentials: Admin Only; plans and time limits readable by all
-      allow read: if settingId != 'ai_config' || isAdmin();
+      // Sensitive AI and billing credentials: Admin Only; plans and time limits readable by authenticated users
+      allow read: if (settingId != 'ai_config' && isSignedIn()) || isAdmin();
       allow write: if isAdmin();
     }
 
     // 3. User Accounts, Practice Minutes & Streaks
-    // Public read for leaderboard student names/XP
-    // Allow users to update their own profile, learning preferences, stats, and VIP subscriptions
+    // Authenticated read for leaderboard rankings and progress tracking
+    // Strict guards prevent privilege escalation (cannot forge role: 'admin')
     match /lang_users/{userId} {
-      allow read: if true;
-      allow create: if isSignedIn();
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId) && (!('role' in request.resource.data) || request.resource.data.role != 'admin');
       allow update: if (
-        isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])
+        isOwner(userId) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || isAdmin())
       ) || isAdmin();
       allow delete: if isAdmin();
     }
 
     // 4. Completed Voice Call Sessions & Evaluation Logs
-    // Readable for leaderboard and grammar review
+    // Authenticated users can view sessions and create sessions ONLY for their own verified userId
     match /lang_sessions/{sessionId} {
-      allow read: if isSignedIn() || isAdmin();
-      allow create: if isSignedIn();
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if (isSignedIn() && resource.data.userId == request.auth.uid) || isAdmin();
     }
 
     // 5. Push Notifications Log
     match /lang_notifications/{notificationId} {
-      allow read: if true;
+      allow read: if isSignedIn();
       allow write: if isAdmin();
     }
 
-    // Default deny for unmapped root paths unless authenticated
+    // Default deny for unmapped root paths unless explicitly authenticated
     match /{document=**} {
       allow read: if isSignedIn() || isAdmin();
       allow write: if isAdmin();

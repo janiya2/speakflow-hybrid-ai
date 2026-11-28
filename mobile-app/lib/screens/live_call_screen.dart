@@ -3238,14 +3238,18 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                             Expanded(
                               child: Text(
                                 _geminiService.simulateOffline
-                                    ? "⚡ ON-DEVICE: GEMINI NANO [0ms • Offline]"
+                                    ? "🛡️ OFFLINE: RESILIENCE NLP CORE [0ms • Local]"
                                     : (_activeCorrection?.engineUsed == 'ON_DEVICE_NANO'
-                                        ? "⚡ ON-DEVICE: GEMINI NANO [${_activeCorrection!.latencyMs}ms • Auto-Fallback]"
-                                        : "☁️ CLOUD: GEMINI 2.5 FLASH [${_activeCorrection != null && _activeCorrection!.latencyMs > 0 ? '${_activeCorrection!.latencyMs}ms' : 'Firebase'}]"),
+                                        ? "⚡ ON-DEVICE: GEMINI NANO [${_activeCorrection!.latencyMs}ms • Prompt API]"
+                                        : (_activeCorrection?.engineUsed == 'OFFLINE_RESILIENCE_CORE'
+                                            ? "🛡️ OFFLINE: RESILIENCE NLP CORE [${_activeCorrection!.latencyMs}ms • Local]"
+                                            : "☁️ CLOUD: GEMINI 2.5 FLASH [${_activeCorrection != null && _activeCorrection!.latencyMs > 0 ? '${_activeCorrection!.latencyMs}ms' : 'Firebase Vertex AI'}]")),
                                 style: TextStyle(
-                                  color: (_geminiService.simulateOffline || _activeCorrection?.engineUsed == 'ON_DEVICE_NANO')
+                                  color: (_geminiService.simulateOffline || _activeCorrection?.engineUsed == 'OFFLINE_RESILIENCE_CORE')
                                       ? (_isDarkMode ? const Color(0xFFFCD34D) : const Color(0xFFB45309))
-                                      : (_isDarkMode ? const Color(0xFF67E8F9) : const Color(0xFF0891B2)),
+                                      : (_activeCorrection?.engineUsed == 'ON_DEVICE_NANO')
+                                          ? const Color(0xFF10B981)
+                                          : (_isDarkMode ? const Color(0xFF67E8F9) : const Color(0xFF0891B2)),
                                   fontWeight: FontWeight.bold,
                                   fontSize: 10.5,
                                   fontFamily: 'monospace',

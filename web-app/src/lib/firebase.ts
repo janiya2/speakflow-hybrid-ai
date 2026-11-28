@@ -3,6 +3,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
+import { getAI, GoogleAIBackend } from "firebase/ai";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAXlKI0I8yNMtHIFxKk3lC_hixfuZkj5_Y",
@@ -19,6 +20,17 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+// Official Firebase AI Logic Initialization (#BuildHybridAI Core Engine)
+let ai: any = null;
+if (typeof window !== "undefined") {
+  try {
+    ai = getAI(app, { backend: new GoogleAIBackend() });
+  } catch (err) {
+    console.warn("[Firebase AI Logic] Client init notice:", err);
+  }
+}
+export { ai };
 
 // Official Firebase App Check initialization (#BuildHybridAI Requirement)
 let appCheck: any = null;
