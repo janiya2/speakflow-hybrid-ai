@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_vertexai/firebase_vertexai.dart';
 import '../models/coach_persona.dart';
 import 'web_speech_bridge.dart' as web_speech;
+import 'language_pack_20.dart';
 
 class GrammarCorrection {
   final bool hasCorrection;
@@ -415,46 +416,7 @@ TASK:
         'gemini-1.5-flash',
       ];
 
-      String correctionTemplate = "Good effort! In English, we say: '[exact targetPhrase]'. Can you repeat that for me?";
-      if (targetLanguage == 'Japanese') {
-        correctionTemplate = "惜しいですね！日本語では「[exact targetPhrase]」と言います。リピートしてみてください！";
-      } else if (targetLanguage == 'Korean') {
-        correctionTemplate = "좋은 시도였어요! 한국어로는 '[exact targetPhrase]'(이)라고 해요. 다시 따라 해보시겠어요?";
-      } else if (targetLanguage == 'Spanish') {
-        correctionTemplate = "¡Buen intento! En español decimos: '[exact targetPhrase]'. ¿Puedes repetirlo conmigo?";
-      } else if (targetLanguage == 'French') {
-        correctionTemplate = "Bon essai ! En français, on dit : '[exact targetPhrase]'. Peux-tu répéter avec moi ?";
-      } else if (targetLanguage == 'German') {
-        correctionTemplate = "Guter Versuch! Auf Deutsch sagen wir: '[exact targetPhrase]'. Kannst du das nachsprechen?";
-      } else if (targetLanguage == 'Italian') {
-        correctionTemplate = "Ottimo tentativo! In italiano diciamo: '[exact targetPhrase]'. Puoi ripeterlo con me?";
-      } else if (targetLanguage == 'Portuguese') {
-        correctionTemplate = "Boa tentativa! Em português dizemos: '[exact targetPhrase]'. Pode repetir comigo?";
-      } else if (targetLanguage == 'Chinese') {
-        correctionTemplate = "很棒的尝试！中文里我们说：'[exact targetPhrase]'。你能跟我重复一遍吗？";
-      } else if (targetLanguage == 'Arabic') {
-        correctionTemplate = "محاولة جيدة! باللغة العربية نقول: '[exact targetPhrase]'. هل يمكنك تكرار ذلك معي؟";
-      } else if (targetLanguage == 'Hindi') {
-        correctionTemplate = "अच्छा प्रयास! हिंदी में हम कहते हैं: '[exact targetPhrase]'. क्या आप मेरे साथ दोहरा सकते हैं?";
-      } else if (targetLanguage == 'Russian') {
-        correctionTemplate = "Хорошая попытка! По-русски мы говорим: '[exact targetPhrase]'. Повтори со мной, пожалуйста?";
-      } else if (targetLanguage == 'Tamil') {
-        correctionTemplate = "நல்ல முயற்சி! தமிழில் நாம் '[exact targetPhrase]' என்று சொல்வோம். அதைத் திரும்பச் சொல்ல முடியுமா?";
-      } else if (targetLanguage == 'Sinhala') {
-        correctionTemplate = "හොඳ උත්සාහයක්! සිංහලෙන් අපි කියන්නේ: '[exact targetPhrase]'. මාත් එක්ක ආයෙත් කියන්න පුළුවන්ද?";
-      } else if (targetLanguage == 'Dutch') {
-        correctionTemplate = "Goede poging! In het Nederlands zeggen we: '[exact targetPhrase]'. Kun je dat herhalen?";
-      } else if (targetLanguage == 'Turkish') {
-        correctionTemplate = "Güzel deneme! Türkçede şöyle deriz: '[exact targetPhrase]'. Benimle tekrar edebilir misin?";
-      } else if (targetLanguage == 'Vietnamese') {
-        correctionTemplate = "Cố gắng rất tốt! Trong tiếng Việt chúng ta nói: '[exact targetPhrase]'. Bạn có thể nhắc lại cùng tôi không?";
-      } else if (targetLanguage == 'Indonesian') {
-        correctionTemplate = "Usaha yang bagus! Dalam bahasa Indonesia kita bilang: '[exact targetPhrase]'. Bisa ulangi bersama saya?";
-      } else if (targetLanguage == 'Thai') {
-        correctionTemplate = "พยายามได้ดีมาก! ในภาษาไทยเราพูดว่า: '[exact targetPhrase]'. ลองพูดตามอีกครั้งได้ไหม?";
-      } else if (targetLanguage == 'Swedish') {
-        correctionTemplate = "Bra försök! På svenska säger vi: '[exact targetPhrase]'. Kan du upprepa det med mig?";
-      }
+      final String correctionTemplate = LanguagePack20.resolve(targetLanguage).correctionPromptTemplate('[exact targetPhrase]');
 
       final prompt = '''
 ${activeCoach.promptPersonality}
@@ -748,81 +710,28 @@ Reply ONLY with valid JSON:
       }
     }
 
-    final lang = targetLanguage.toLowerCase();
-    final isFrench = lang.contains('french') || lang.contains('français');
-    final isSpanish = lang.contains('spanish') || lang.contains('español');
-    final isGerman = lang.contains('german') || lang.contains('deutsch');
-    final isItalian = lang.contains('italian') || lang.contains('italiano');
-    final isJapanese = lang.contains('japanese') || lang.contains('nihongo');
-    final isKorean = lang.contains('korean');
+    final bundle = LanguagePack20.resolve(targetLanguage);
 
     if (hasCorrection) {
       targetPhrase = correction;
-      if (isJapanese) {
-        spokenReply = "惜しいですね！日本語では「$correction」と言います。もう一度言ってみてください！";
-        nextQuestion = "「$targetPhrase」とリピートしてください。";
-      } else if (isKorean) {
-        spokenReply = "좋은 시도였어요! 한국어로는 '$correction'(이)라고 해요. 다시 따라 해보시겠어요?";
-        nextQuestion = "'$targetPhrase'(을)를 따라 해주세요.";
-      } else if (isFrench) {
-        spokenReply = "Bien essayé ! En français, on dit '$correction'. Pouvez-vous répéter pour moi ?";
-        nextQuestion = "Pouvez-vous répéter : '$targetPhrase' ?";
-      } else if (isSpanish) {
-        spokenReply = "¡Buen intento! En español decimos '$correction'. ¿Puedes repetirlo conmigo?";
-        nextQuestion = "¿Puedes repetir: '$targetPhrase'?";
-      } else if (isGerman) {
-        spokenReply = "Guter Versuch! Auf Deutsch sagt man '$correction'. Können Sie das wiederholen?";
-        nextQuestion = "Können Sie wiederholen: '$targetPhrase'?";
-      } else if (isItalian) {
-        spokenReply = "Ottimo tentativo! In italiano diciamo '$correction'. Puoi ripetere per favore?";
-        nextQuestion = "Puoi ripetere: '$targetPhrase'?";
-      } else {
-        spokenReply = "Good try! In English, we say '$correction'. Could you repeat that for me?";
-        nextQuestion = "Can you repeat: '$targetPhrase'?";
-      }
+      spokenReply = bundle.correctionPromptTemplate(correction);
+      nextQuestion = bundle.drillPromptTemplate(targetPhrase);
     } else {
-      // B. Contextual Conversational Dialogue NLP Generator (Language-adaptive follow-ups)
-      if (isFrench) {
-        if (lower.contains('café') || lower.contains('crème') || lower.contains('croissant') || lower.contains('pain') || lower.contains('carte') || lower.contains('boire') || lower.contains('manger') || lower.contains('voudrais')) {
-          spokenReply = "Très bien ! Désirez-vous également une viennoiserie fraîche ou un verre d'eau avec cela ?";
-          nextQuestion = "Désirez-vous une viennoiserie fraîche avec cela ?";
-        } else if (lower.contains('oui') || lower.contains('d\'accord') || lower.contains('volontiers') || lower.contains('merci')) {
-          spokenReply = "Parfait, c'est noté avec plaisir ! Comment se passe votre journée à Paris jusqu'ici ?";
-          nextQuestion = "Comment se passe votre journée à Paris ?";
-        } else if (lower.contains('non') || lower.contains('pas')) {
-          spokenReply = "Très bien, sans souci ! Que puis-je vous servir d'autre aujourd'hui ?";
-          nextQuestion = "Que puis-je vous servir d'autre ?";
-        } else {
-          spokenReply = "C'est un plaisir de vous écouter ! Pourriez-vous m'en dire un peu plus à ce sujet ?";
-          nextQuestion = "Pourriez-vous m'en dire un peu plus ?";
-        }
-      } else if (isSpanish) {
-        if (lower.contains('café') || lower.contains('tapa') || lower.contains('comida') || lower.contains('agua') || lower.contains('carta') || lower.contains('quisiera')) {
-          spokenReply = "¡Excelente elección! ¿Te gustaría acompañarlo con un postre o algo dulce?";
-          nextQuestion = "¿Te gustaría acompañarlo con un postre?";
-        } else if (lower.contains('sí') || lower.contains('si') || lower.contains('claro') || lower.contains('gracias')) {
-          spokenReply = "¡Estupendo! ¿Cómo ha estado tu experiencia aquí hasta ahora?";
-          nextQuestion = "¿Cómo ha estado tu experiencia aquí?";
-        } else {
-          spokenReply = "¡Qué interesante! ¿Podrías contarme un poco más sobre eso?";
-          nextQuestion = "¿Podrías contarme un poco más sobre eso?";
-        }
-      } else if (isGerman) {
-        if (lower.contains('kaffee') || lower.contains('bitte') || lower.contains('essen') || lower.contains('wasser')) {
-          spokenReply = "Ausgezeichnete Wahl! Möchten Sie vielleicht noch ein Gebäck oder Kuchen dazu?";
-          nextQuestion = "Möchten Sie noch etwas dazu?";
-        } else {
-          spokenReply = "Das klingt wirklich spannend! Könnten Sie mir ein bisschen mehr darüber erzählen?";
-          nextQuestion = "Könnten Sie mir mehr darüber erzählen?";
-        }
-      } else if (isJapanese) {
-        spokenReply = "なるほど、とても興味深いですね！もう少し詳しく教えていただけますか？";
-        nextQuestion = "それからどうなりましたか？";
-      } else if (isKorean) {
-        spokenReply = "정말 흥미로운 이야기네요! 조금 더 자세히 말씀해 주시겠어요?";
-        nextQuestion = "그 다음엔 어떻게 되었나요?";
-      } else {
-        // English Dialogue Generator
+      // B. Contextual Conversational Dialogue NLP Generator (20-Language Adaptive Follow-ups)
+      if (bundle.code == 'fr' &&
+          (lower.contains('café') || lower.contains('crème') || lower.contains('croissant') || lower.contains('pain') || lower.contains('carte') || lower.contains('boire') || lower.contains('manger') || lower.contains('voudrais'))) {
+        spokenReply = "Très bien ! Désirez-vous également une viennoiserie fraîche ou un verre d'eau avec cela ?";
+        nextQuestion = "Désirez-vous une viennoiserie fraîche avec cela ?";
+      } else if (bundle.code == 'es' &&
+          (lower.contains('café') || lower.contains('tapa') || lower.contains('comida') || lower.contains('agua') || lower.contains('carta') || lower.contains('quisiera'))) {
+        spokenReply = "¡Excelente elección! ¿Te gustaría acompañarlo con un postre o algo dulce?";
+        nextQuestion = "¿Te gustaría acompañarlo con un postre?";
+      } else if (bundle.code == 'de' &&
+          (lower.contains('kaffee') || lower.contains('bitte') || lower.contains('essen') || lower.contains('wasser'))) {
+        spokenReply = "Ausgezeichnete Wahl! Möchten Sie vielleicht noch ein Gebäck oder Kuchen dazu?";
+        nextQuestion = "Möchten Sie noch etwas dazu?";
+      } else if (bundle.code == 'en') {
+        // English Contextual Dialogue Generator
         if (lower.contains('cricket') || lower.contains('match') || lower.contains('t20') || lower.contains('sport') || lower.contains('player')) {
           spokenReply = "Cricket is such an exhilarating game! Which format do you enjoy most, T20 or One Day matches?";
           nextQuestion = "Which format do you enjoy most, T20 or One Day matches?";
@@ -842,9 +751,14 @@ Reply ONLY with valid JSON:
           spokenReply = "That is a fair viewpoint. What would you prefer instead in that kind of situation?";
           nextQuestion = "What would you prefer instead?";
         } else {
-          spokenReply = "That is really insightful! Could you tell me a little more about how you got started with that?";
-          nextQuestion = "Could you tell me a little more about that?";
+          spokenReply = bundle.offlineReplies.first;
+          nextQuestion = bundle.defaultFollowUpQuestion;
         }
+      } else {
+        // All remaining 19 languages strictly stay in their native language! Zero English bleeding!
+        final idx = DateTime.now().millisecond % bundle.offlineReplies.length;
+        spokenReply = bundle.offlineReplies[idx];
+        nextQuestion = bundle.defaultFollowUpQuestion;
       }
     }
 

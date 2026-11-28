@@ -9,6 +9,7 @@
 
 import { getAI, getGenerativeModel, GoogleAIBackend, InferenceMode, InferenceSource } from "firebase/ai";
 import app, { ai as firebaseAIInstance } from "./firebase";
+import { resolveLanguageBundle } from "./language-pack-20";
 
 export interface GrammarCorrectionResult {
   hasCorrection: boolean;
@@ -492,8 +493,9 @@ async function executeOnDeviceInference(
   let nextQuestion = "";
 
   const langLower = language.toLowerCase();
+  const bundle = resolveLanguageBundle(language);
 
-  if (langLower.includes("jap") || langLower.includes("ja")) {
+  if (langLower.includes("jap") || langLower === "ja") {
     if (lower.includes("tabeta") && !lower.includes("mashita")) {
       hasCorrection = true;
       original = spokenText;
@@ -503,17 +505,10 @@ async function executeOnDeviceInference(
       spokenReply = "いいですね！丁寧に話す時は「食べました」と言ってみましょう。リピートしてみてください！";
       nextQuestion = "何を食べましたか？";
     } else {
-      spokenReply = pickNonRepeating(
-        [
-          "なるほど！よく伝わりました。次は具体的にどうしますか？",
-          "分かりました！自然な日本語ですね。もう少し詳しく教えていただけますか？",
-          "ありがとうございます。では、次のご希望は何ですか？"
-        ],
-        recentBotTexts
-      );
-      nextQuestion = "";
+      spokenReply = pickNonRepeating(bundle.offlineReplies, recentBotTexts);
+      nextQuestion = bundle.defaultFollowUpQuestion;
     }
-  } else if (langLower.includes("kor") || langLower.includes("ko")) {
+  } else if (langLower.includes("kor") || langLower === "ko") {
     if (lower.includes("bogo") && !lower.includes("sipoyo")) {
       hasCorrection = true;
       original = spokenText;
@@ -523,106 +518,12 @@ async function executeOnDeviceInference(
       spokenReply = "좋은 시도였어요! 한국어로는 '보고 싶어요'라고 해요. 다시 따라 해보시겠어요?";
       nextQuestion = "언제 만날까요?";
     } else {
-      spokenReply = pickNonRepeating(
-        [
-          "잘 이해했어요! 이어서 조금만 더 자세히 말씀해 주시겠어요?",
-          "자연스럽게 잘 말씀하셨어요. 다음으로는 무엇을 원하시나요?",
-          "네, 알겠습니다! 그 다음 상황은 어떻게 진행할까요?"
-        ],
-        recentBotTexts
-      );
-      nextQuestion = "";
+      spokenReply = pickNonRepeating(bundle.offlineReplies, recentBotTexts);
+      nextQuestion = bundle.defaultFollowUpQuestion;
     }
-  } else if (langLower.includes("sinhala") || langLower.includes("sinha") || langLower === "si") {
-    spokenReply = pickNonRepeating(
-      [
-        "හොඳයි, මට පැහැදිලිව තේරුණා! අපි සංවාදය ඉදිරියට කරගෙන යමු.",
-        "ස්තූතියි! ඔබේ අදහස පැහැදිලියි. ඊළඟට මොකක්ද ඔබ කරන්න කැමති?",
-        "හරිම පැහැදිලියි! මේ ගැන තව ටිකක් විස්තර කරන්න පුළුවන්ද?"
-      ],
-      recentBotTexts
-    );
-    nextQuestion = "";
-  } else if (langLower.includes("span") || langLower.includes("espa") || langLower === "es") {
-    spokenReply = pickNonRepeating(
-      [
-        "¡Muy bien! Te he entendido perfectamente. Continuemos con la conversación.",
-        "¡Excelente! Suena muy natural. ¿Qué más te gustaría añadir?",
-        "Entendido. Sigamos explorando la situación."
-      ],
-      recentBotTexts
-    );
-    nextQuestion = "";
-  } else if (langLower.includes("french") || langLower.includes("fran") || langLower === "fr") {
-    spokenReply = pickNonRepeating(
-      [
-        "Très bien, j'ai parfaitement compris ! Poursuivons notre échange.",
-        "C'est très clair et naturel ! Que souhaitez-vous faire ensuite ?",
-        "Compris ! Continuons la conversation."
-      ],
-      recentBotTexts
-    );
-    nextQuestion = "";
-  } else if (langLower.includes("dutch") || langLower.includes("nederland") || langLower === "nl") {
-    spokenReply = pickNonRepeating(
-      [
-        "Heel goed, dat klinkt duidelijk! Laten we verdergaan met het gesprek.",
-        "Begrepen! Wat zou je hierna willen doen?",
-        "Duidelijk en natuurlijk! Vertel me daar gerust meer over."
-      ],
-      recentBotTexts
-    );
-    nextQuestion = "";
-  } else if (langLower.includes("turk") || langLower === "tr") {
-    spokenReply = pickNonRepeating(
-      [
-        "Çok iyi, sizi gayet net anladım! Sohbete devam edelim.",
-        "Anlaşıldı! Bundan sonra ne yapmak istersiniz?",
-        "Harika ve çok doğal! Devam edelim."
-      ],
-      recentBotTexts
-    );
-    nextQuestion = "";
-  } else if (langLower.includes("vietnam") || langLower === "vi") {
-    spokenReply = pickNonRepeating(
-      [
-        "Rất tốt, tôi đã hiểu ý bạn! Chúng ta tiếp tục nhé.",
-        "Rất tự nhiên và rõ ràng! Bạn muốn làm gì tiếp theo?",
-        "Tuyệt vời! Hãy cùng chia sẻ thêm nào."
-      ],
-      recentBotTexts
-    );
-    nextQuestion = "";
-  } else if (langLower.includes("indones") || langLower === "id") {
-    spokenReply = pickNonRepeating(
-      [
-        "Bagus sekali, saya paham dengan jelas! Mari kita lanjutkan.",
-        "Sangat natural! Apa yang ingin Anda lakukan selanjutnya?",
-        "Dipahami dengan baik! Ayo kita lanjutkan percakapannya."
-      ],
-      recentBotTexts
-    );
-    nextQuestion = "";
-  } else if (langLower.includes("thai") || langLower === "th") {
-    spokenReply = pickNonRepeating(
-      [
-        "ดีมากเลยครับ เข้าใจชัดเจนเลย! เรามาคุยกันต่อเลยครับ",
-        "เป็นธรรมชาติมากครับ! ต่อไปอยากจะทำอะไรต่อดีครับ?",
-        "เข้าใจแล้วครับ! เล่าเพิ่มเติมให้ฟังหน่อยได้ไหมครับ"
-      ],
-      recentBotTexts
-    );
-    nextQuestion = "";
-  } else if (langLower.includes("swed") || langLower.includes("svensk") || langLower === "sv" || langLower === "se") {
-    spokenReply = pickNonRepeating(
-      [
-        "Jättebra, jag förstod precis vad du menade! Låt oss fortsätta.",
-        "Väldigt naturligt! Vad vill du göra härnäst?",
-        "Uppfattat! Berätta gärna lite mer om det."
-      ],
-      recentBotTexts
-    );
-    nextQuestion = "";
+  } else if (bundle.code !== "en") {
+    spokenReply = pickNonRepeating(bundle.offlineReplies, recentBotTexts);
+    nextQuestion = bundle.defaultFollowUpQuestion;
   } else {
     const analyzed = analyzeEnglishLocally(spokenText, scenario, recentBotTexts);
     hasCorrection = analyzed.hasCorrection;

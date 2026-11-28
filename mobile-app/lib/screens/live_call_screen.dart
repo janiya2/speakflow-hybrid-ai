@@ -11,6 +11,7 @@ import 'package:video_player/video_player.dart';
 import '../models/topic.dart';
 import '../models/coach_persona.dart';
 import '../services/gemini_voice_service.dart';
+import '../services/language_pack_20.dart';
 import '../services/web_speech_bridge.dart' as web_speech;
 import 'welcome_screen.dart';
 
@@ -665,18 +666,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
     _proactiveNudgeTimer?.cancel();
     _silenceTimer?.cancel();
 
-    String wrapUpMsg = "Our practice time for this call has concluded! You did an amazing job today. Let's see your results!";
-    if (widget.topic.language == 'Japanese') {
-      wrapUpMsg = "今日の通話練習時間は終了しました！素晴らしい練習ができましたね。結果を見てみましょう！";
-    } else if (widget.topic.language == 'Korean') {
-      wrapUpMsg = "오늘 연습 통화 시간이 모두 끝났어요! 정말 잘하셨습니다. 결과를 확인해 볼까요?";
-    } else if (widget.topic.language == 'Spanish') {
-      wrapUpMsg = "¡Nuestro tiempo de práctica ha concluido! Hiciste un trabajo increíble hoy. ¡Veamos tus resultados!";
-    } else if (widget.topic.language == 'Arabic') {
-      wrapUpMsg = "انتهى وقت تدريبنا لهذا اليوم! لقد قمت بعمل رائع حقاً. لنستعرض نتائجك الآن!";
-    } else if (widget.topic.language == 'Tamil') {
-      wrapUpMsg = "இன்றைய பயிற்சி நேரம் முடிவடைந்தது! நீங்கள் மிகச் சிறப்பாகப் பேசினீர்கள். உங்கள் முடிவுகளைப் பார்ப்போம்!";
-    }
+    final wrapUpMsg = LanguagePack20.resolve(widget.topic.language).wrapUp;
 
     _speakText(wrapUpMsg);
     Future.delayed(const Duration(seconds: 4), () {
@@ -1524,24 +1514,9 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
               _isProcessing = false;
             });
 
-            String praise = "Awesome! Perfect pronunciation! 🎉";
-            String fallbackQ = "What else would you like to share?";
-            if (widget.topic.language == 'Japanese') {
-              praise = "素晴らしい！完璧な発音です！🎉";
-              fallbackQ = "他にはいかがですか？";
-            } else if (widget.topic.language == 'Korean') {
-              praise = "아주 좋아요! 완벽한 발음이에요! 🎉";
-              fallbackQ = "더 이야기하고 싶은 것이 있으신가요?";
-            } else if (widget.topic.language == 'Spanish') {
-              praise = "¡Genial! ¡Pronunciación perfecta! 🎉";
-              fallbackQ = "¿Qué más te gustaría compartir?";
-            } else if (widget.topic.language == 'Arabic') {
-              praise = "رائع! نطقك ممتاز جداً! 🎉";
-              fallbackQ = "ما الذي ترغب في التحدث عنه أيضاً؟";
-            } else if (widget.topic.language == 'Tamil') {
-              praise = "அருமை! மிகச் சரியான உச்சரிப்பு! 🎉";
-              fallbackQ = "வேறென்ன சொல்ல விரும்புகிறீர்கள்?";
-            }
+            final bundle = LanguagePack20.resolve(widget.topic.language);
+            final String praise = bundle.praise;
+            final String fallbackQ = bundle.praiseQuestion;
 
             final followUp = _nextScenarioQuestion.isNotEmpty
                 ? "$praise $_nextScenarioQuestion"
@@ -1564,24 +1539,9 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                 _isProcessing = false;
               });
 
-              String grace = "Good effort! Don't worry, you'll master it next time. Let's keep going!";
-              String fallbackGraceQ = "Tell me more!";
-              if (widget.topic.language == 'Japanese') {
-                grace = "よく頑張りました！大丈夫です、続けていきましょう！";
-                fallbackGraceQ = "もっと教えてください！";
-              } else if (widget.topic.language == 'Korean') {
-                grace = "좋은 시도였어요! 괜찮아요, 계속해서 이야기해 봐요!";
-                fallbackGraceQ = "더 자세히 말씀해 주세요!";
-              } else if (widget.topic.language == 'Spanish') {
-                grace = "¡Buen intento! No te preocupes, lo dominarás la próxima vez. ¡Sigamos!";
-                fallbackGraceQ = "¡Cuéntame más!";
-              } else if (widget.topic.language == 'Arabic') {
-                grace = "محاولة رائعة! لا تقلق، سنتعلمها معاً. دعنا نواصل حديثنا!";
-                fallbackGraceQ = "أخبرني بالمزيد!";
-              } else if (widget.topic.language == 'Tamil') {
-                grace = "நல்ல முயற்சி! கவலைப்படாதீர்கள், தொடர்ந்து பேசுவோம்!";
-                fallbackGraceQ = "இன்னும் கொஞ்சம் சொல்லுங்கள்!";
-              }
+              final bundle = LanguagePack20.resolve(widget.topic.language);
+              final String grace = bundle.grace;
+              final String fallbackGraceQ = bundle.graceQuestion;
 
               final followUp = _nextScenarioQuestion.isNotEmpty
                   ? "$grace $_nextScenarioQuestion"
@@ -1597,24 +1557,9 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
             if (mounted) {
               setState(() => _isProcessing = false);
 
-              String retryMsg = "Very close! Listen carefully: '$_targetPhraseToRepeat'. Try once more!";
-              String drillPrompt = "Please repeat: '$_targetPhraseToRepeat'";
-              if (widget.topic.language == 'Japanese') {
-                retryMsg = "惜しいです！よく聞いてもう一度言ってみてください:「$_targetPhraseToRepeat」";
-                drillPrompt = "リピートしてください:「$_targetPhraseToRepeat」";
-              } else if (widget.topic.language == 'Korean') {
-                retryMsg = "아쉬워요! 잘 듣고 한 번 더 말해보세요: '$_targetPhraseToRepeat'";
-                drillPrompt = "따라 해보세요: '$_targetPhraseToRepeat'";
-              } else if (widget.topic.language == 'Spanish') {
-                retryMsg = "¡Muy cerca! Escucha atentamente: '$_targetPhraseToRepeat'. ¡Inténtalo una vez más!";
-                drillPrompt = "Por favor repite: '$_targetPhraseToRepeat'";
-              } else if (widget.topic.language == 'Arabic') {
-                retryMsg = "قريب جداً! استمع جيداً: '$_targetPhraseToRepeat'. حاول مرة أخرى!";
-                drillPrompt = "من فضلك كرر: '$_targetPhraseToRepeat'";
-              } else if (widget.topic.language == 'Tamil') {
-                retryMsg = "மிகவும் நெருங்கிவிட்டீர்கள்! கவனமாகக் கேட்டு மீண்டும் சொல்லுங்கள்: '$_targetPhraseToRepeat'";
-                drillPrompt = "திரும்பச் சொல்லுங்கள்: '$_targetPhraseToRepeat'";
-              }
+              final bundle = LanguagePack20.resolve(widget.topic.language);
+              final String retryMsg = bundle.retryTemplate(_targetPhraseToRepeat);
+              final String drillPrompt = bundle.drillPromptTemplate(_targetPhraseToRepeat);
               _lastBotQuestion = drillPrompt;
               await _speakText(retryMsg, overrideQuestion: drillPrompt);
             }
@@ -1645,34 +1590,13 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
         }
 
         if (correction.hasCorrection && _geminiService.drillModeEnabled && correction.targetPhrase.isNotEmpty) {
-          String drillPrompt = "Please repeat: '${correction.targetPhrase}'";
-          if (widget.topic.language == 'Japanese') {
-            drillPrompt = "リピートしてください:「${correction.targetPhrase}」";
-          } else if (widget.topic.language == 'Korean') {
-            drillPrompt = "따라 해보세요: '${correction.targetPhrase}'";
-          } else if (widget.topic.language == 'Spanish') {
-            drillPrompt = "Por favor repite: '${correction.targetPhrase}'";
-          } else if (widget.topic.language == 'Arabic') {
-            drillPrompt = "من فضلك كرر: '${correction.targetPhrase}'";
-          } else if (widget.topic.language == 'Tamil') {
-            drillPrompt = "திரும்பச் சொல்லுங்கள்: '${correction.targetPhrase}'";
-          }
+          final bundle = LanguagePack20.resolve(widget.topic.language);
+          final String drillPrompt = bundle.drillPromptTemplate(correction.targetPhrase);
 
           // Use the pure native spoken reply generated by Gemini
           String drillSpoken = correction.spokenReply.trim();
           if (drillSpoken.isEmpty) {
-            drillSpoken = "Good try! In English, we say: '${correction.targetPhrase}'. Please repeat that for me!";
-            if (widget.topic.language == 'Japanese') {
-              drillSpoken = "惜しいですね！日本語では「${correction.targetPhrase}」と言います。リピートしてみてください！";
-            } else if (widget.topic.language == 'Korean') {
-              drillSpoken = "좋은 시도였어요! 한국어로는 '${correction.targetPhrase}'(이)라고 해요. 다시 따라 해보시겠어요?";
-            } else if (widget.topic.language == 'Spanish') {
-              drillSpoken = "¡Buen intento! En español decimos: '${correction.targetPhrase}'. ¿Puedes repetirlo conmigo?";
-            } else if (widget.topic.language == 'Arabic') {
-              drillSpoken = "محاولة جيدة! باللغة العربية نقول: '${correction.targetPhrase}'. هل يمكنك تكرار ذلك معي؟";
-            } else if (widget.topic.language == 'Tamil') {
-              drillSpoken = "நல்ல முயற்சி! தமிழில் நாம் '${correction.targetPhrase}' என்று சொல்வோம். அதைத் திரும்பச் சொல்ல முடியுமா?";
-            }
+            drillSpoken = bundle.correctionPromptTemplate(correction.targetPhrase);
           }
 
           setState(() {
@@ -1681,17 +1605,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
             _targetPhraseToRepeat = correction.targetPhrase;
             _nextScenarioQuestion = correction.nextQuestion.isNotEmpty
                 ? correction.nextQuestion
-                : (widget.topic.language == 'Japanese'
-                    ? "それについてどう思いますか？"
-                    : widget.topic.language == 'Korean'
-                        ? "그 점에 대해 어떻게 생각하세요?"
-                        : widget.topic.language == 'Spanish'
-                            ? "¿Qué opinas sobre eso?"
-                            : widget.topic.language == 'Arabic'
-                                ? "ما رأيك في ذلك؟"
-                                : widget.topic.language == 'Tamil'
-                                    ? "அதைப் பற்றி நீங்கள் என்ன நினைக்கிறீர்கள்?"
-                                    : "What else do you think about that?");
+                : bundle.defaultFollowUpQuestion;
             _drillAttempts = 0;
             _lastBotQuestion = drillPrompt;
           });
@@ -1728,18 +1642,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       debugPrint('Error in utterance handling: $e');
       if (mounted) {
         setState(() => _isProcessing = false);
-        String errReply = "I understood! What else would you like to say?";
-        if (widget.topic.language == 'Japanese') {
-          errReply = "よく分かりました！他にはいかがですか？";
-        } else if (widget.topic.language == 'Korean') {
-          errReply = "잘 이해했어요! 더 이야기하고 싶은 것이 있으신가요?";
-        } else if (widget.topic.language == 'Spanish') {
-          errReply = "¡Entendido! ¿Qué más te gustaría decir?";
-        } else if (widget.topic.language == 'Arabic') {
-          errReply = "فهمت عليك! ما الذي ترغب في قوله أيضاً؟";
-        } else if (widget.topic.language == 'Tamil') {
-          errReply = "புரிந்தது! வேறென்ன சொல்ல விரும்புகிறீர்கள்?";
-        }
+        final errReply = LanguagePack20.resolve(widget.topic.language).errorFallback;
         await _speakText(errReply);
       }
     }
@@ -4240,20 +4143,8 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                             _handleUserUtterance(textToSubmit);
                           } else if (!_isProcessing && !_isBotSpeaking) {
                             // If mic is already listening or encountered an STT network error in browser,
-                            // clicking "Speak Now" immediately injects a native sample response for the scenario!
-                            String sample = "I would like to order a coffee, please.";
-                            final lang = widget.topic.language.toLowerCase();
-                            if (lang.contains('french') || lang.contains('français')) {
-                              sample = "Je voudrais un café crème, s'il vous plaît.";
-                            } else if (lang.contains('spanish') || lang.contains('español')) {
-                              sample = "Quisiera un café con leche, por favor.";
-                            } else if (lang.contains('japanese') || lang.contains('nihongo')) {
-                              sample = "コーヒーを一杯お願いします。";
-                            } else if (lang.contains('korean')) {
-                              sample = "커피 한 잔 부탁드립니다.";
-                            } else if (lang.contains('german')) {
-                              sample = "Ich hätte gerne einen Kaffee, bitte.";
-                            }
+                            // clicking "Speak Now" immediately injects a native sample response in ANY of the 20 languages!
+                            final sample = LanguagePack20.resolve(widget.topic.language).sampleUtterance;
 
                             _accumulatedSpeech = '';
                             _lastRecognizedWords = '';

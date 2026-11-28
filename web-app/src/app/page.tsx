@@ -33,6 +33,7 @@ import {
   executeHybridInference,
   checkOnDeviceNanoAvailability
 } from "@/lib/hybrid-ai";
+import { resolveLanguageBundle } from "@/lib/language-pack-20";
 import { FULL_MOBILE_TOPICS_CATALOG } from "./topicsCatalog";
 import { FULL_VOCABULARY_CATALOG, FULL_GRAMMAR_CATALOG, VocabCatalogItem, GrammarCatalogItem } from "./vocabAndGrammarCatalog";
 import LandingPage from "@/components/LandingPage";
@@ -3827,18 +3828,7 @@ export default function StudentWebApp() {
             : selectedLanguage !== "All"
             ? selectedLanguage
             : "English") || "English";
-        let nudge = "I'm listening! Take your time and share your thoughts whenever you're ready.";
-        if (lang === "Japanese") nudge = "聞いていますよ！どう思いますか？";
-        else if (lang === "Korean") nudge = "듣고 있어요! 어떻게 생각하세요?";
-        else if (lang === "Spanish") nudge = "¡Te estoy escuchando! ¿Qué opinas?";
-        else if (lang === "French") nudge = "Je vous écoute ! Qu'en pensez-vous ?";
-        else if (lang === "Sinhala") nudge = "මම අහගෙන ඉන්නේ! සන්සුන්ව ඔබේ අදහස කියන්න.";
-        else if (lang === "Dutch") nudge = "Ik luister! Neem gerust de tijd om je gedachten te delen.";
-        else if (lang === "Turkish") nudge = "Sizi dinliyorum! Hazır olduğunuzda fikrinizi paylaşabilirsiniz.";
-        else if (lang === "Vietnamese") nudge = "Tôi đang lắng nghe đây! Bạn hãy cứ thoải mái chia sẻ nhé.";
-        else if (lang === "Indonesian") nudge = "Saya mendengarkan! Silakan santai dan sampaikan pendapat Anda.";
-        else if (lang === "Thai") nudge = "ผมกำลังฟังอยู่นะครับ! สบายๆ แล้วแชร์ความคิดเห็นได้เลยครับ";
-        else if (lang === "Swedish") nudge = "Jag lyssnar! Ta god tid på dig och berätta vad du tycker.";
+        const nudge = resolveLanguageBundle(lang).nudge;
         speakText(nudge, lang);
       }
     }, 18000);
@@ -4210,16 +4200,11 @@ export default function StudentWebApp() {
         setDrillAttempts(0);
         setIsProcessing(false);
 
-        let praise = "Awesome! Perfect pronunciation! 🎉";
-        if (lang === "Japanese") praise = "素晴らしい！完璧な発音です！ 🎉";
-        else if (lang === "Korean") praise = "아주 좋아요! 완벽한 발음이에요! 🎉";
-        else if (lang === "Sinhala") praise = "ඉතා විශිෂ්ටයි! නිවැරදි උච්චාරණය! 🎉";
-        else if (lang === "Spanish") praise = "¡Excelente! ¡Pronunciación perfecta! 🎉";
-        else if (lang === "French") praise = "Magnifique ! Prononciation parfaite ! 🎉";
-
+        const bundle = resolveLanguageBundle(lang);
+        const praise = bundle.praise;
         const continuation = nextScenarioQuestion
           ? `${praise} ${nextScenarioQuestion}`
-          : `${praise} What else would you like to share?`;
+          : `${praise} ${bundle.praiseQuestion}`;
 
         speakText(continuation, lang);
         return;
@@ -4227,29 +4212,23 @@ export default function StudentWebApp() {
         const nextAttempt = drillAttempts + 1;
         setDrillAttempts(nextAttempt);
 
+        const bundle = resolveLanguageBundle(lang);
         if (nextAttempt >= 2) {
           setIsDrillMode(false);
           setActiveCorrection(null);
           setDrillAttempts(0);
           setIsProcessing(false);
 
-          let grace = "Good effort! Don't worry, you'll master it next time. Let's keep going!";
-          if (lang === "Japanese") grace = "よく頑張りました！大丈夫です、続けていきましょう！";
-          else if (lang === "Korean") grace = "좋은 시도였어요! 괜찮아요, 계속해서 이야기해 봐요!";
-          else if (lang === "Sinhala") grace = "හොඳ උත්සාහයක්! බයවෙන්න එපා, අපි දිගටම කරමු!";
-
+          const grace = bundle.grace;
           const continuation = nextScenarioQuestion
             ? `${grace} ${nextScenarioQuestion}`
-            : `${grace} Tell me more!`;
+            : `${grace} ${bundle.graceQuestion}`;
 
           speakText(continuation, lang);
           return;
         } else {
           setIsProcessing(false);
-          let retry = `Very close! Listen carefully: '${targetPhraseToRepeat}'. Try once more!`;
-          if (lang === "Japanese") retry = `惜しいです！よく聞いてもう一度言ってみてください:「${targetPhraseToRepeat}」`;
-          else if (lang === "Korean") retry = `아쉬워요! 잘 듣고 한 번 더 말해보세요: '${targetPhraseToRepeat}'`;
-          else if (lang === "Sinhala") retry = `ඉතා ආසන්නයි! හොඳින් අහලා ආයෙත් කියලා බලන්න: '${targetPhraseToRepeat}'`;
+          const retry = bundle.retryTemplate(targetPhraseToRepeat);
 
           speakText(retry, lang);
           return;
