@@ -155,6 +155,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
   bool _isDrillMode = false;
   bool _hasMicPermission = true;
   bool _hasNudgedForCurrentQuestion = false;
+  int _consecutiveSpeechAborts = 0;
   String _accumulatedSpeech = '';
   String _targetPhraseToRepeat = '';
   String _nextScenarioQuestion = '';
@@ -337,8 +338,10 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
             }
           });
         } else {
-          // ALWAYS-ON MICROPHONE: Immediately restart listening so the microphone never goes idle!
-          _scheduleListeningRestart(delayMs: 250);
+          // ALWAYS-ON MICROPHONE: Back off if browser aborted repeatedly (e.g. another tab holds mic lock)
+          if (_consecutiveSpeechAborts < 2) {
+            _scheduleListeningRestart(delayMs: 350);
+          }
         }
       }
     }
@@ -357,9 +360,12 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       return;
     }
 
-    // Aborted is fired intentionally when stopping microphone for bot speech.
-    // Do NOT trigger an aggressive restart loop on aborted!
-    if (msg.contains('aborted') || msg.contains('not-allowed')) {
+    // Aborted or network errors: avoid tight restart loops in browser when another tab holds the mic
+    if (msg.contains('aborted') || msg.contains('not-allowed') || msg.contains('network')) {
+      _consecutiveSpeechAborts++;
+      if (_consecutiveSpeechAborts == 2) {
+        debugPrint('Microphone temporarily held or aborted repeatedly; pausing auto-restart until user interaction.');
+      }
       return;
     }
 
@@ -1323,6 +1329,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
             if (_isProcessing || _isBotSpeaking || _isCoachSpeakingVideoPlaying || _callEnded) return;
 
             _proactiveNudgeTimer?.cancel();
+            _consecutiveSpeechAborts = 0;
 
             final currentSegment = result.recognizedWords.trim();
             final combinedText = _accumulatedSpeech.isEmpty

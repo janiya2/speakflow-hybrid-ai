@@ -2929,6 +2929,7 @@ export default function StudentWebApp() {
   // 1. Load Landing & Mobile Subscription Settings from Firestore (Synced with Admin Panel CMS)
   useEffect(() => {
     async function fetchLandingAndSubscriptions() {
+      if (!auth.currentUser) return;
       try {
         const [landingSnap, subSnap] = await Promise.all([
           getDoc(doc(db, COLLECTIONS.SETTINGS, "landing_page")),
@@ -2991,38 +2992,42 @@ export default function StudentWebApp() {
     }
 
     // Real-time Push Notification History listener synced with Mobile App & Admin Panel (lang_notifications)
-    const notifQuery = query(collection(db, COLLECTIONS.NOTIFICATIONS), limit(30));
-    const unsubscribeNotifs = onSnapshot(
-      notifQuery,
-      (snap) => {
-        const items = snap.docs
-          .map((d) => {
-            const data = d.data() as any;
-            const rawSent =
-              data.sentAt?.toDate?.()?.toISOString?.() ||
-              data.createdAt?.toDate?.()?.toISOString?.() ||
-              data.sentAt ||
-              data.createdAt ||
-              new Date().toISOString();
-            return {
-              id: d.id,
-              title: data.title || "SpeakFlow Notification",
-              body: data.body || "",
-              audience: data.targetAudience || data.audience || "all",
-              actionRoute: data.actionRoute || "/home",
-              sentAt: String(rawSent),
-              status: data.status || "Delivered"
-            };
-          })
-          .sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
-        setPushNotifications(items);
-        setNotificationsLoading(false);
-      },
-      (err) => {
-        console.warn("Could not subscribe to lang_notifications:", err);
-        setNotificationsLoading(false);
-      }
-    );
+    let unsubscribeNotifs = () => {};
+    if (auth.currentUser) {
+      const notifQuery = query(collection(db, COLLECTIONS.NOTIFICATIONS), limit(30));
+      unsubscribeNotifs = onSnapshot(
+        notifQuery,
+        (snap) => {
+          const items = snap.docs
+            .map((d) => {
+              const data = d.data() as any;
+              const rawSent =
+                data.sentAt?.toDate?.()?.toISOString?.() ||
+                data.createdAt?.toDate?.()?.toISOString?.() ||
+                data.sentAt ||
+                data.createdAt ||
+                new Date().toISOString();
+              return {
+                id: d.id,
+                title: data.title || "SpeakFlow Notification",
+                body: data.body || "",
+                audience: data.targetAudience || data.audience || "all",
+                actionRoute: data.actionRoute || "/home",
+                sentAt: String(rawSent),
+                status: data.status || "Delivered"
+              };
+            })
+            .sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
+          setPushNotifications(items);
+          setNotificationsLoading(false);
+        },
+        () => {
+          setNotificationsLoading(false);
+        }
+      );
+    } else {
+      setNotificationsLoading(false);
+    }
 
     return () => {
       if (removeKeyListener) removeKeyListener();
@@ -3143,6 +3148,7 @@ export default function StudentWebApp() {
   // 4. Load API Keys from Firestore
   useEffect(() => {
     async function loadApiKeys() {
+      if (!auth.currentUser) return;
       try {
         const docRef = doc(db, COLLECTIONS.SETTINGS, "api_keys");
         const docSnap = await getDoc(docRef);
@@ -3157,9 +3163,7 @@ export default function StudentWebApp() {
           }
           if (data.activeModel) setSelectedModel(data.activeModel);
         }
-      } catch (err) {
-        console.warn("Could not load API keys settings from Firestore:", err);
-      }
+      } catch (_) {}
     }
     loadApiKeys();
   }, []);
@@ -3222,10 +3226,10 @@ export default function StudentWebApp() {
 
   // 5B. Load Real User Sessions History from Firestore lang_sessions (No composite index required)
   const loadUserSessions = async (userId: string) => {
-    if (userId === "demo-jury") {
+    if (userId === "demo-jury" || userId === "jury_judge_buildhybridai_2026" || !auth.currentUser) {
       if (typeof window !== "undefined") {
         try {
-          const demoStored = localStorage.getItem("speakflow_user_sessions_demo-jury");
+          const demoStored = localStorage.getItem(`speakflow_user_sessions_${userId}`);
           if (demoStored) {
             const parsed = JSON.parse(demoStored);
             if (Array.isArray(parsed) && parsed.length > 0) {
@@ -4699,7 +4703,7 @@ export default function StudentWebApp() {
         uid: "jury_judge_buildhybridai_2026",
         displayName: "Guest Judge",
         email: "judge@buildhybridai.google.com",
-        photoURL: "/images/landing/judge_avatar.png"
+        photoURL: "/images/landing/student_1.webp"
       };
       try {
         localStorage.setItem("speakflow_demo_user", JSON.stringify(demoJudgeUser));
@@ -6244,7 +6248,18 @@ export default function StudentWebApp() {
                 {/* Hybrid Engine Telemetry HUD + Call Timer */}
                 <div className="flex items-center gap-2 flex-wrap">
                   {/* Real-Time Engine Indicator */}
-                  {simulateOffline || hybridEngine === "ON_DEVICE_NANO" ? (
+                  {simulateOffline ? (
+                    <div
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono font-bold ${
+                        isLight
+                          ? "bg-amber-50 border-amber-200 text-amber-800"
+                          : "bg-amber-500/20 border-amber-400 text-amber-300 shadow-md shadow-amber-500/30"
+                      }`}
+                    >
+                      <Shield className={`w-3.5 h-3.5 ${isLight ? "text-amber-600" : "text-amber-400"}`} />
+                      <span>🛡️ OFFLINE: RESILIENCE NLP CORE ({hybridLatency || 0}ms • Local)</span>
+                    </div>
+                  ) : hybridEngine === "ON_DEVICE_NANO" ? (
                     <div
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono font-bold ${
                         isLight
@@ -6253,7 +6268,7 @@ export default function StudentWebApp() {
                       }`}
                     >
                       <Zap className={`w-3.5 h-3.5 animate-bounce ${isLight ? "text-emerald-600 fill-emerald-600" : "text-emerald-400 fill-emerald-400"}`} />
-                      <span>⚡ SpeakFlow Edge Neural ({hybridLatency || 12}ms • On-Device)</span>
+                      <span>⚡ ON-DEVICE: GEMINI NANO ({hybridLatency || 12}ms • Firebase AI)</span>
                     </div>
                   ) : (
                     <div
@@ -6264,13 +6279,21 @@ export default function StudentWebApp() {
                       }`}
                     >
                       <Activity className={`w-3.5 h-3.5 animate-pulse ${isLight ? "text-sky-600" : "text-cyan-400"}`} />
-                      <span>☁️ SpeakFlow Cloud Neural ({hybridLatency || 140}ms)</span>
+                      <span>☁️ CLOUD: GEMINI FLASH [Firebase AI Logic • {hybridLatency || 140}ms]</span>
                     </div>
                   )}
 
                   {/* Flight Mode Toggle (For Hackathon Demonstration) */}
                   <button
-                    onClick={() => setSimulateOffline(!simulateOffline)}
+                    onClick={() => {
+                      const nextOffline = !simulateOffline;
+                      setSimulateOffline(nextOffline);
+                      console.info(
+                        nextOffline
+                          ? "🛡️ [Firebase AI Logic Router] Flight Mode ON -> Routing locally to Offline Resilience NLP Core"
+                          : "☁️ [Firebase AI Logic Router] Flight Mode OFF -> Routing via InferenceMode.PREFER_ON_DEVICE (Nano ⇄ Cloud Flash)"
+                      );
+                    }}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
                       simulateOffline
                         ? isLight
@@ -6412,10 +6435,8 @@ export default function StudentWebApp() {
                             autoPlay
                             loop
                             muted
-                            {...({ "defaultMuted": true } as any)}
                             playsInline
                             disablePictureInPicture
-                            {...({ "disablepictureinpicture": "true", "x-webkit-airplay": "deny" } as any)}
                             controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
                             onContextMenu={(e) => e.preventDefault()}
                             onLoadedMetadata={(e) => {
@@ -6466,10 +6487,8 @@ export default function StudentWebApp() {
                             preload="auto"
                             loop
                             muted
-                            {...({ "defaultMuted": true } as any)}
                             playsInline
                             disablePictureInPicture
-                            {...({ "disablepictureinpicture": "true", "x-webkit-airplay": "deny" } as any)}
                             controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
                             onContextMenu={(e) => e.preventDefault()}
                             onLoadedMetadata={(e) => {
@@ -6865,7 +6884,6 @@ export default function StudentWebApp() {
                         playsInline
                         muted
                         disablePictureInPicture
-                        {...({ "disablepictureinpicture": "true", "x-webkit-airplay": "deny" } as any)}
                         controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"
                         onContextMenu={(e) => e.preventDefault()}
                         className={`w-full h-full object-cover pointer-events-none select-none ${isCameraActive ? "block" : "hidden"}`}
