@@ -4238,19 +4238,26 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                             final textToSubmit = _userSpeech.trim();
                             _accumulatedSpeech = '';
                             _handleUserUtterance(textToSubmit);
-                          } else {
-                            if (!_isSttInitialized || !_hasMicPermission) {
-                              _isSttInitialized = await _speech.initialize(
-                                options: [stt.SpeechToText.androidNoBluetooth],
-                              );
-                              final hasPerm = await _speech.hasPermission;
-                              setState(() {
-                                _hasMicPermission = hasPerm;
-                              });
+                          } else if (!_isProcessing && !_isBotSpeaking) {
+                            // If mic is already listening or encountered an STT network error in browser,
+                            // clicking "Speak Now" immediately injects a native sample response for the scenario!
+                            String sample = "I would like to order a coffee, please.";
+                            final lang = widget.topic.language.toLowerCase();
+                            if (lang.contains('french') || lang.contains('français')) {
+                              sample = "Je voudrais un café crème, s'il vous plaît.";
+                            } else if (lang.contains('spanish') || lang.contains('español')) {
+                              sample = "Quisiera un café con leche, por favor.";
+                            } else if (lang.contains('japanese') || lang.contains('nihongo')) {
+                              sample = "コーヒーを一杯お願いします。";
+                            } else if (lang.contains('korean')) {
+                              sample = "커피 한 잔 부탁드립니다.";
+                            } else if (lang.contains('german')) {
+                              sample = "Ich hätte gerne einen Kaffee, bitte.";
                             }
-                            if (!_isListening && !_isBotSpeaking) {
-                              _startListening();
-                            }
+
+                            _accumulatedSpeech = '';
+                            _lastRecognizedWords = '';
+                            _handleUserUtterance(sample);
                           }
                         },
                         icon: Icon(

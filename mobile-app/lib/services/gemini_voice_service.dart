@@ -748,43 +748,99 @@ Reply ONLY with valid JSON:
       }
     }
 
+    final lang = targetLanguage.toLowerCase();
+    final isFrench = lang.contains('french') || lang.contains('français');
+    final isSpanish = lang.contains('spanish') || lang.contains('español');
+    final isGerman = lang.contains('german') || lang.contains('deutsch');
+    final isItalian = lang.contains('italian') || lang.contains('italiano');
+    final isJapanese = lang.contains('japanese') || lang.contains('nihongo');
+    final isKorean = lang.contains('korean');
+
     if (hasCorrection) {
       targetPhrase = correction;
-      if (targetLanguage == 'Japanese') {
+      if (isJapanese) {
         spokenReply = "惜しいですね！日本語では「$correction」と言います。もう一度言ってみてください！";
-      } else if (targetLanguage == 'Korean') {
+        nextQuestion = "「$targetPhrase」とリピートしてください。";
+      } else if (isKorean) {
         spokenReply = "좋은 시도였어요! 한국어로는 '$correction'(이)라고 해요. 다시 따라 해보시겠어요?";
+        nextQuestion = "'$targetPhrase'(을)를 따라 해주세요.";
+      } else if (isFrench) {
+        spokenReply = "Bien essayé ! En français, on dit '$correction'. Pouvez-vous répéter pour moi ?";
+        nextQuestion = "Pouvez-vous répéter : '$targetPhrase' ?";
+      } else if (isSpanish) {
+        spokenReply = "¡Buen intento! En español decimos '$correction'. ¿Puedes repetirlo conmigo?";
+        nextQuestion = "¿Puedes repetir: '$targetPhrase'?";
+      } else if (isGerman) {
+        spokenReply = "Guter Versuch! Auf Deutsch sagt man '$correction'. Können Sie das wiederholen?";
+        nextQuestion = "Können Sie wiederholen: '$targetPhrase'?";
+      } else if (isItalian) {
+        spokenReply = "Ottimo tentativo! In italiano diciamo '$correction'. Puoi ripetere per favore?";
+        nextQuestion = "Puoi ripetere: '$targetPhrase'?";
       } else {
         spokenReply = "Good try! In English, we say '$correction'. Could you repeat that for me?";
+        nextQuestion = "Can you repeat: '$targetPhrase'?";
       }
-      nextQuestion = "Can you repeat: '$targetPhrase'?";
     } else {
-      // B. Contextual Conversational Dialogue NLP Generator (Topic-adaptive follow-ups)
-      if (lower.contains('cricket') || lower.contains('match') || lower.contains('t20') || lower.contains('sport') || lower.contains('player')) {
-        spokenReply = "Cricket is such an exhilarating game! Which format do you enjoy most, T20 or One Day matches?";
-        nextQuestion = "Which format do you enjoy most, T20 or One Day matches?";
-      } else if (lower.contains('travel') || lower.contains('trip') || lower.contains('visit') || lower.contains('country') || lower.contains('city') || lower.contains('flight')) {
-        spokenReply = "Traveling opens up so many great perspectives! What was the most memorable place you have visited so far?";
-        nextQuestion = "What was the most memorable place you have visited so far?";
-      } else if (lower.contains('coffee') || lower.contains('tea') || lower.contains('food') || lower.contains('restaurant') || lower.contains('dinner') || lower.contains('cook')) {
-        spokenReply = "That sounds lovely! Do you prefer cooking at home or exploring new cafes and restaurants?";
-        nextQuestion = "Do you prefer cooking at home or exploring new cafes?";
-      } else if (lower.contains('job') || lower.contains('work') || lower.contains('interview') || lower.contains('career') || lower.contains('office') || lower.contains('company')) {
-        spokenReply = "Professional growth is so rewarding. What would you say is your greatest strength in a professional team?";
-        nextQuestion = "What would you say is your greatest strength in a professional team?";
-      } else if (lower.contains('yes') || lower.contains('sure') || lower.contains('definitely') || lower.contains('agree') || lower.contains('of course')) {
-        spokenReply = "I completely agree with you! Could you share a quick example or experience about that?";
-        nextQuestion = "Could you share a quick example of that?";
-      } else if (lower.contains('no') || lower.contains('never') || lower.contains('disagree') || lower.contains('not really')) {
-        spokenReply = "That is a fair viewpoint. What would you prefer instead in that kind of situation?";
-        nextQuestion = "What would you prefer instead?";
+      // B. Contextual Conversational Dialogue NLP Generator (Language-adaptive follow-ups)
+      if (isFrench) {
+        if (lower.contains('café') || lower.contains('crème') || lower.contains('croissant') || lower.contains('pain') || lower.contains('carte') || lower.contains('boire') || lower.contains('manger') || lower.contains('voudrais')) {
+          spokenReply = "Très bien ! Désirez-vous également une viennoiserie fraîche ou un verre d'eau avec cela ?";
+          nextQuestion = "Désirez-vous une viennoiserie fraîche avec cela ?";
+        } else if (lower.contains('oui') || lower.contains('d\'accord') || lower.contains('volontiers') || lower.contains('merci')) {
+          spokenReply = "Parfait, c'est noté avec plaisir ! Comment se passe votre journée à Paris jusqu'ici ?";
+          nextQuestion = "Comment se passe votre journée à Paris ?";
+        } else if (lower.contains('non') || lower.contains('pas')) {
+          spokenReply = "Très bien, sans souci ! Que puis-je vous servir d'autre aujourd'hui ?";
+          nextQuestion = "Que puis-je vous servir d'autre ?";
+        } else {
+          spokenReply = "C'est un plaisir de vous écouter ! Pourriez-vous m'en dire un peu plus à ce sujet ?";
+          nextQuestion = "Pourriez-vous m'en dire un peu plus ?";
+        }
+      } else if (isSpanish) {
+        if (lower.contains('café') || lower.contains('tapa') || lower.contains('comida') || lower.contains('agua') || lower.contains('carta') || lower.contains('quisiera')) {
+          spokenReply = "¡Excelente elección! ¿Te gustaría acompañarlo con un postre o algo dulce?";
+          nextQuestion = "¿Te gustaría acompañarlo con un postre?";
+        } else if (lower.contains('sí') || lower.contains('si') || lower.contains('claro') || lower.contains('gracias')) {
+          spokenReply = "¡Estupendo! ¿Cómo ha estado tu experiencia aquí hasta ahora?";
+          nextQuestion = "¿Cómo ha estado tu experiencia aquí?";
+        } else {
+          spokenReply = "¡Qué interesante! ¿Podrías contarme un poco más sobre eso?";
+          nextQuestion = "¿Podrías contarme un poco más sobre eso?";
+        }
+      } else if (isGerman) {
+        if (lower.contains('kaffee') || lower.contains('bitte') || lower.contains('essen') || lower.contains('wasser')) {
+          spokenReply = "Ausgezeichnete Wahl! Möchten Sie vielleicht noch ein Gebäck oder Kuchen dazu?";
+          nextQuestion = "Möchten Sie noch etwas dazu?";
+        } else {
+          spokenReply = "Das klingt wirklich spannend! Könnten Sie mir ein bisschen mehr darüber erzählen?";
+          nextQuestion = "Könnten Sie mir mehr darüber erzählen?";
+        }
+      } else if (isJapanese) {
+        spokenReply = "なるほど、とても興味深いですね！もう少し詳しく教えていただけますか？";
+        nextQuestion = "それからどうなりましたか？";
+      } else if (isKorean) {
+        spokenReply = "정말 흥미로운 이야기네요! 조금 더 자세히 말씀해 주시겠어요?";
+        nextQuestion = "그 다음엔 어떻게 되었나요?";
       } else {
-        if (targetLanguage == 'Japanese') {
-          spokenReply = "なるほど、とても興味深いですね！もう少し詳しく教えていただけますか？";
-          nextQuestion = "それからどうなりましたか？";
-        } else if (targetLanguage == 'Korean') {
-          spokenReply = "정말 흥미로운 이야기네요! 조금 더 자세히 말씀해 주시겠어요?";
-          nextQuestion = "그 다음엔 어떻게 되었나요?";
+        // English Dialogue Generator
+        if (lower.contains('cricket') || lower.contains('match') || lower.contains('t20') || lower.contains('sport') || lower.contains('player')) {
+          spokenReply = "Cricket is such an exhilarating game! Which format do you enjoy most, T20 or One Day matches?";
+          nextQuestion = "Which format do you enjoy most, T20 or One Day matches?";
+        } else if (lower.contains('travel') || lower.contains('trip') || lower.contains('visit') || lower.contains('country') || lower.contains('city') || lower.contains('flight')) {
+          spokenReply = "Traveling opens up so many great perspectives! What was the most memorable place you have visited so far?";
+          nextQuestion = "What was the most memorable place you have visited so far?";
+        } else if (lower.contains('coffee') || lower.contains('tea') || lower.contains('food') || lower.contains('restaurant') || lower.contains('dinner') || lower.contains('cook')) {
+          spokenReply = "That sounds lovely! Do you prefer cooking at home or exploring new cafes and restaurants?";
+          nextQuestion = "Do you prefer cooking at home or exploring new cafes?";
+        } else if (lower.contains('job') || lower.contains('work') || lower.contains('interview') || lower.contains('career') || lower.contains('office') || lower.contains('company')) {
+          spokenReply = "Professional growth is so rewarding. What would you say is your greatest strength in a professional team?";
+          nextQuestion = "What would you say is your greatest strength in a professional team?";
+        } else if (lower.contains('yes') || lower.contains('sure') || lower.contains('definitely') || lower.contains('agree') || lower.contains('of course')) {
+          spokenReply = "I completely agree with you! Could you share a quick example or experience about that?";
+          nextQuestion = "Could you share a quick example of that?";
+        } else if (lower.contains('no') || lower.contains('never') || lower.contains('disagree') || lower.contains('not really')) {
+          spokenReply = "That is a fair viewpoint. What would you prefer instead in that kind of situation?";
+          nextQuestion = "What would you prefer instead?";
         } else {
           spokenReply = "That is really insightful! Could you tell me a little more about how you got started with that?";
           nextQuestion = "Could you tell me a little more about that?";
