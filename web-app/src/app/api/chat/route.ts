@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const VERIFIED_MODEL_PRIORITY = [
-  "gemini-3.1-flash-lite",
-  "gemini-3.5-flash-lite",
   "gemini-flash-lite-latest",
-  "gemini-3-flash-preview",
-  "gemini-3.5-flash",
-  "gemini-flash-latest",
   "gemini-2.5-flash",
+  "gemini-3-flash-preview",
+  "gemini-flash-latest",
 ];
 
 const RETIRED_MODELS = new Set([
