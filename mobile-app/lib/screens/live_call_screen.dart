@@ -169,6 +169,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
   int _totalDrillsAttempted = 0;
   int _totalWordsSpoken = 0;
   final List<Map<String, String>> _sessionCorrections = [];
+  final List<String> _conversationTurnsLog = [];
 
   // Voice speed
   double _voiceSpeed = 0.9;
@@ -223,8 +224,8 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
 
-    // Continuous Keep-Alive Watchdog for Always-On Microphone
-    _micKeepAliveTimer = Timer.periodic(const Duration(milliseconds: 2500), (timer) {
+    // Continuous Keep-Alive Watchdog for Always-On Microphone (relaxed interval avoids fighting Web Speech cleanup)
+    _micKeepAliveTimer = Timer.periodic(const Duration(seconds: 6), (timer) {
       if (!mounted || _callEnded) {
         timer.cancel();
         return;
@@ -233,7 +234,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
         return;
       }
       if (!_isMuted && !_isBotSpeaking && !_isProcessing && !_speech.isListening && !_isStartingListening) {
-        _scheduleListeningRestart(delayMs: 100);
+        _scheduleListeningRestart(delayMs: 350);
       }
     });
 
@@ -343,7 +344,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
         } else {
           // ALWAYS-ON MICROPHONE: Back off if browser aborted repeatedly (e.g. another tab holds mic lock)
           if (_consecutiveSpeechAborts < 2) {
-            _scheduleListeningRestart(delayMs: 350);
+            _scheduleListeningRestart(delayMs: 950);
           }
         }
       }
@@ -477,11 +478,15 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       });
     }
 
-    // Opening prompt: Fresh, randomized, non-repeating opener across all 20 languages
+    // Opening prompt: Fresh, randomized, category-locked non-repeating opener across all 20 languages
     String openingText = LanguagePack20.buildVariedOpeningQuestion(
       language: widget.topic.language,
       defaultPrompt: widget.topic.starterPrompt,
       alternateQuestions: widget.topic.starterQuestions,
+      category: widget.topic.category,
+      subCategory: widget.topic.subCategory,
+      title: widget.topic.title,
+      scenario: widget.topic.scenario,
     );
     try {
       openingText = await _geminiService.generateDynamicOpening(
@@ -491,6 +496,8 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
         coach: _coach,
         defaultPrompt: widget.topic.starterPrompt,
         alternateQuestions: widget.topic.starterQuestions,
+        category: widget.topic.category,
+        subCategory: widget.topic.subCategory,
       ).timeout(const Duration(milliseconds: 1100), onTimeout: () => openingText);
     } catch (_) {}
 
@@ -1343,14 +1350,21 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
         );
       }
     } catch (e) {
+      final errStr = e.toString().toLowerCase();
+      if (errStr.contains('already started')) {
+        // Web SpeechRecognition is already running natively — sync flag cleanly without stopping/looping!
+        if (mounted) setState(() => _isListening = true);
+        return;
+      }
       debugPrint('Speech listen exception: $e');
+      _consecutiveSpeechAborts++;
       try {
         await _speech.stop();
         await _speech.cancel();
       } catch (_) {}
       if (mounted) setState(() => _isListening = false);
-      if (!_isMuted && !_callEnded && !_isBotSpeaking && !_isCoachSpeakingVideoPlaying && !_isProcessing) {
-        _scheduleListeningRestart(delayMs: 400);
+      if (!_isMuted && !_callEnded && !_isBotSpeaking && !_isCoachSpeakingVideoPlaying && !_isProcessing && _consecutiveSpeechAborts < 2) {
+        _scheduleListeningRestart(delayMs: 1200);
       }
     } finally {
       _isStartingListening = false;
@@ -1539,11 +1553,25 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       }
 
       // 2. NORMAL SPEECH PROCESSING VIA GEMINI
+      _conversationTurnsLog.add('LEARNER: $cleanUtterance');
+      if (_lastBotQuestion.isNotEmpty &&
+          !_conversationTurnsLog.any((e) => e.contains(_lastBotQuestion))) {
+        _conversationTurnsLog.add('COACH: $_lastBotQuestion');
+      }
+      if (_conversationTurnsLog.length > 10) {
+        _conversationTurnsLog.removeRange(0, _conversationTurnsLog.length - 10);
+      }
+
       final correction = await _geminiService.analyzeAndRespond(
         userSpeech: utterance,
         targetLanguage: widget.topic.language,
         scenarioContext: widget.topic.scenario,
         coach: _coach,
+        topicTitle: widget.topic.title,
+        category: widget.topic.category,
+        subCategory: widget.topic.subCategory,
+        starterQuestions: widget.topic.starterQuestions,
+        conversationHistory: List<String>.from(_conversationTurnsLog),
       );
 
       if (mounted) {
@@ -1604,6 +1632,10 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
           // Top pinned banner shows the active scenario question
           final questionToDisplay = nextQ.isNotEmpty ? nextQ : fullReply;
           _lastBotQuestion = questionToDisplay;
+          _conversationTurnsLog.add('COACH: $fullReply');
+          if (_conversationTurnsLog.length > 10) {
+            _conversationTurnsLog.removeRange(0, _conversationTurnsLog.length - 10);
+          }
 
           await _speakText(fullReply, overrideQuestion: questionToDisplay);
         }

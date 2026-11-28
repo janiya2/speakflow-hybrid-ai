@@ -7,6 +7,8 @@
  * 4. Comprehensive offline grammar & politeness error detection across major languages
  */
 
+import { pickCategoryQuestion } from "./category-questions-20";
+
 export interface DialoguePair {
   reply: string;
   question: string;
@@ -730,7 +732,8 @@ export function buildVariedOpeningQuestion(
   language: string,
   starterPrompt: string,
   starterQuestions: string[] = [],
-  lastUsedOpening = ""
+  lastUsedOpening = "",
+  topicMeta?: { category?: string; subCategory?: string; title?: string; scenario?: string }
 ): string {
   const bundle = resolveLanguageBundle(language);
   const candidates: string[] = [];
@@ -745,11 +748,21 @@ export function buildVariedOpeningQuestion(
     }
   }
 
-  // Also add fresh dialogue turn questions combined with greeting prefixes so even single-prompt topics vary every call!
-  for (let i = 0; i < Math.min(3, bundle.dialogueTurns.length); i++) {
-    const turn = bundle.dialogueTurns[i];
-    const prefix = bundle.openingPrefixes[(i + Math.floor(Math.random() * bundle.openingPrefixes.length)) % bundle.openingPrefixes.length];
-    candidates.push(`${prefix} ${turn.question}`);
+  // Always include 2 randomized category-locked native questions so repeating calls stay on-topic yet varied!
+  for (let i = 0; i < 2; i++) {
+    const catQ = pickCategoryQuestion({
+      langCode: bundle.code,
+      category: topicMeta?.category,
+      subCategory: topicMeta?.subCategory,
+      title: topicMeta?.title,
+      scenario: topicMeta?.scenario || cleanStarter,
+      starterQuestions,
+      recentBotTexts: [lastUsedOpening, ...candidates],
+    });
+    if (catQ) {
+      const prefix = bundle.openingPrefixes[(i + Math.floor(Math.random() * bundle.openingPrefixes.length)) % bundle.openingPrefixes.length];
+      candidates.push(`${prefix} ${catQ}`);
+    }
   }
 
   const fresh = candidates.filter((c) => c !== lastUsedOpening);

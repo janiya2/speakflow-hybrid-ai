@@ -6,6 +6,7 @@ import 'package:firebase_vertexai/firebase_vertexai.dart';
 import '../models/coach_persona.dart';
 import 'web_speech_bridge.dart' as web_speech;
 import 'language_pack_20.dart';
+import 'category_questions_20.dart';
 
 class GrammarCorrection {
   final bool hasCorrection;
@@ -236,13 +237,19 @@ Do not include any explanation or markdown formatting, just the raw JSON.''';
     required CoachPersona coach,
     required String defaultPrompt,
     List<String> alternateQuestions = const [],
+    String category = '',
+    String subCategory = '',
   }) async {
-    // 1. Prepare diverse, non-repeating 20-language local opening question
+    // 1. Prepare diverse, non-repeating 20-language category-locked opening question
     final localFallback = LanguagePack20.buildVariedOpeningQuestion(
       language: targetLanguage,
       defaultPrompt: defaultPrompt,
       alternateQuestions: alternateQuestions,
       lastUsedOpening: _lastOpeningUsed,
+      category: category,
+      subCategory: subCategory,
+      title: topicTitle,
+      scenario: scenarioContext,
     );
     _lastOpeningUsed = localFallback;
 
@@ -261,12 +268,13 @@ Do not include any explanation or markdown formatting, just the raw JSON.''';
 ${coach.promptPersonality}
 You are starting a live interactive voice practice call in $targetLanguage with a language student.
 Topic: $topicTitle
+Category: ${category.isNotEmpty ? category : 'General'} ${subCategory.isNotEmpty ? '($subCategory)' : ''}
 Scenario: $scenarioContext
 
 TASK:
 - Greet the user naturally as Coach ${coach.name}.
-- Ask ONE fresh, engaging, situational opening question directly related to this topic.
-- VARY YOUR QUESTION: Be creative and spontaneous! Never reuse repetitive, cliché openers.
+- Ask ONE fresh, engaging, situational opening question strictly grounded in BOTH Topic and Category above.
+- VARY YOUR QUESTION: Be creative, imagine a realistic angle within "$category" ($topicTitle), and NEVER reuse repetitive cliché openers.
 - Length: strictly 15 to 25 words.
 - CRITICAL RULE: Speak 100% purely in $targetLanguage native script. DO NOT include any English translations, pronunciations, or brackets. Reply ONLY with the exact words to speak.
 ''';
@@ -346,6 +354,11 @@ TASK:
     required String targetLanguage,
     required String scenarioContext,
     CoachPersona? coach,
+    String topicTitle = '',
+    String category = '',
+    String subCategory = '',
+    List<String> starterQuestions = const [],
+    List<String> conversationHistory = const [],
   }) async {
     final stopwatch = Stopwatch()..start();
 
@@ -354,6 +367,12 @@ TASK:
       return await _executeOnDeviceNanoInference(
         userSpeech: userSpeech,
         targetLanguage: targetLanguage,
+        scenarioContext: scenarioContext,
+        topicTitle: topicTitle,
+        category: category,
+        subCategory: subCategory,
+        starterQuestions: starterQuestions,
+        conversationHistory: conversationHistory,
         stopwatch: stopwatch,
         isFallback: simulateOffline,
       );
@@ -375,17 +394,26 @@ TASK:
       ];
 
       final String correctionTemplate = LanguagePack20.resolve(targetLanguage).correctionPromptTemplate('[exact targetPhrase]');
+      final String historySection = conversationHistory.isNotEmpty
+          ? '\nRECENT CONVERSATION HISTORY (do NOT repeat any prior question or phrase):\n${conversationHistory.join("\n")}\n'
+          : '';
 
       final prompt = '''
 ${activeCoach.promptPersonality}
 Conducting a live interactive telephone language practice call in $targetLanguage.
+Topic: ${topicTitle.isNotEmpty ? topicTitle : 'Conversation Practice'}
+Category: ${category.isNotEmpty ? category : 'General'}${subCategory.isNotEmpty ? ' ($subCategory)' : ''}
 Scenario: $scenarioContext
+$historySection
 Learner said: "$userSpeech"
 Drill Mode: $_drillModeEnabled
 
 Evaluate learner's speech carefully.
 IMPORTANT LOGIC RULES:
-1. IF LEARNER MADE A GRAMMAR/VOCAB ERROR (hasCorrection == true):
+1. STAY 100% LOCKED TO TOPIC & CATEGORY + ZERO REPETITION:
+   - Your reply and follow-up question MUST relate specifically to "$category" / "$topicTitle".
+   - NEVER repeat a question already shown in RECENT CONVERSATION HISTORY; think creatively of a fresh, natural new angle every turn!
+2. IF LEARNER MADE A GRAMMAR/VOCAB ERROR (hasCorrection == true):
    - Set "hasCorrection": true
    - Set "original": the learner's flawed phrase
    - Set "correction": the natural correct phrasing in $targetLanguage
@@ -534,6 +562,12 @@ Reply ONLY with valid JSON:
     return await _executeOnDeviceNanoInference(
       userSpeech: userSpeech,
       targetLanguage: targetLanguage,
+      scenarioContext: scenarioContext,
+      topicTitle: topicTitle,
+      category: category,
+      subCategory: subCategory,
+      starterQuestions: starterQuestions,
+      conversationHistory: conversationHistory,
       stopwatch: stopwatch,
       isFallback: true,
     );
@@ -544,6 +578,12 @@ Reply ONLY with valid JSON:
     required String targetLanguage,
     required Stopwatch stopwatch,
     required bool isFallback,
+    String scenarioContext = '',
+    String topicTitle = '',
+    String category = '',
+    String subCategory = '',
+    List<String> starterQuestions = const [],
+    List<String> conversationHistory = const [],
   }) async {
     // 1. CHROME PROMPT API / NATIVE GEMINI NANO CHECK (Web Platform)
     if (kIsWeb) {
@@ -653,14 +693,30 @@ Reply ONLY with valid JSON:
         spokenReply = contextualReply;
         nextQuestion = contextualQuestion!;
       } else {
-        // Strictly rotate through unused DialoguePair turns in this language so the coach NEVER repeats!
+        // Pick a fresh, non-repeating reaction + a 100% category-locked follow-up question across ALL 20 languages!
         final unusedTurns = bundle.dialogueTurns
-            .where((t) => !_recentOfflineReplies.contains('${t.reply} ${t.question}') && !_recentOfflineReplies.contains(t.question))
+            .where((t) => !_recentOfflineReplies.any((prev) => prev.contains(t.reply)))
             .toList();
-        final pool = unusedTurns.isNotEmpty ? unusedTurns : bundle.dialogueTurns;
-        final chosen = pool[DateTime.now().microsecondsSinceEpoch % pool.length];
-        spokenReply = '${chosen.reply} ${chosen.question}';
-        nextQuestion = chosen.question;
+        final turnPool = unusedTurns.isNotEmpty ? unusedTurns : bundle.dialogueTurns;
+        final chosenReply = turnPool[DateTime.now().microsecondsSinceEpoch % turnPool.length].reply;
+
+        final recentBotHistory = [
+          ..._recentOfflineReplies,
+          ...conversationHistory,
+        ];
+        final categoryQ = CategoryQuestions20.pickQuestion(
+          langCode: bundle.code,
+          category: category,
+          subCategory: subCategory,
+          title: topicTitle,
+          scenario: scenarioContext,
+          userSpeech: userSpeech,
+          starterQuestions: starterQuestions,
+          recentBotTexts: recentBotHistory,
+        );
+
+        spokenReply = '$chosenReply $categoryQ';
+        nextQuestion = categoryQ;
       }
 
       _recentOfflineReplies.add(spokenReply);

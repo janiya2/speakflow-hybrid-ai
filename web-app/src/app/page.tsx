@@ -4240,7 +4240,13 @@ export default function StudentWebApp() {
       langToUse,
       topic.starterPrompt,
       topic.starterQuestions || [],
-      lastOpeningQuestionRef.current
+      lastOpeningQuestionRef.current,
+      {
+        category: topic.category,
+        subCategory: topic.subCategory,
+        title: topic.title,
+        scenario: topic.scenario,
+      }
     );
     lastOpeningQuestionRef.current = dynamicStarter;
     speakText(dynamicStarter, langToUse);
@@ -4362,6 +4368,10 @@ export default function StudentWebApp() {
       spokenText: spokenText,
       language: lang,
       scenario: activeCallTopic?.scenario || "",
+      topicTitle: activeCallTopic?.title || "",
+      category: activeCallTopic?.category || "",
+      subCategory: activeCallTopic?.subCategory || "",
+      starterQuestions: activeCallTopic?.starterQuestions || [],
       drillModeEnabled: drillModeEnabled,
       orderedKeyPool: orderedKeyPool,
       selectedModel: selectedModel,

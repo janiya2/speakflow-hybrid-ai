@@ -14,6 +14,7 @@ import {
   detectOfflineGrammarMistake,
   buildVariedOpeningQuestion,
 } from "./language-pack-20";
+import { pickCategoryQuestion } from "./category-questions-20";
 
 export { buildVariedOpeningQuestion };
 
@@ -40,6 +41,10 @@ export interface HybridInferenceOptions {
   spokenText: string;
   language: string;
   scenario: string;
+  topicTitle?: string;
+  category?: string;
+  subCategory?: string;
+  starterQuestions?: string[];
   drillModeEnabled: boolean;
   orderedKeyPool: string[];
   selectedModel: string;
@@ -101,19 +106,14 @@ function getScenarioQuestions(scenario: string, lowerText: string): string[] {
       "How would you like that prepared, and can I bring anything else to the table?"
     ];
   }
-  if (s.includes("hotel") || s.includes("ski") || s.includes("chalet") || s.includes("check")) {
+    if (s.includes("hotel") || s.includes("ski") || s.includes("chalet") || s.includes("check")) {
     return [
       "Would you like a high-floor room away from the elevator, and do you need ski passes activated today?",
       "What time are you planning to check out, and can I reserve a shuttle or breakfast slot for you?",
       "Have you already arranged your rental gear, or should I connect you with our concierge?"
     ];
   }
-  return [
-    "Could you walk me through the details in one or two complete sentences?",
-    "What would be the first thing you say or ask next in this situation?",
-    "How would you explain your preference clearly to someone right in front of you?",
-    "Tell me a bit more about what happened next or why that matters here."
-  ];
+  return [];
 }
 
 /**
@@ -122,7 +122,8 @@ function getScenarioQuestions(scenario: string, lowerText: string): string[] {
 function analyzeEnglishLocally(
   spokenText: string,
   scenario: string,
-  recentBotTexts: string[]
+  recentBotTexts: string[],
+  topicMeta?: { category?: string; subCategory?: string; title?: string; starterQuestions?: string[] }
 ): {
   hasCorrection: boolean;
   original: string;
@@ -135,7 +136,17 @@ function analyzeEnglishLocally(
   const lower = spokenText.toLowerCase().trim();
   const cleanWords = lower.replace(/[^\w\s']/g, "").split(/\s+/).filter(Boolean);
   const scenarioQuestions = getScenarioQuestions(scenario, lower);
-  const nextQ = pickNonRepeating(scenarioQuestions, recentBotTexts);
+  const categoryQ = pickCategoryQuestion({
+    langCode: "en",
+    category: topicMeta?.category,
+    subCategory: topicMeta?.subCategory,
+    title: topicMeta?.title,
+    scenario,
+    userSpeech: spokenText,
+    starterQuestions: topicMeta?.starterQuestions,
+    recentBotTexts,
+  });
+  const nextQ = scenarioQuestions.length > 0 ? pickNonRepeating(scenarioQuestions, recentBotTexts) : categoryQ;
 
   // 1. Common missing-verb / broken infinitive fragments like "I like to that." / "I want to that"
   const brokenInfMatch = lower.match(/\b(i|you|we|they)\s+(like|want|need|love|hate)\s+to\s+(that|this|it)\b/);
@@ -448,7 +459,8 @@ async function executeOnDeviceInference(
   drillModeEnabled: boolean,
   isFallback: boolean,
   startTime: number,
-  conversationHistory: ConversationTurnInput[] = []
+  conversationHistory: ConversationTurnInput[] = [],
+  topicMeta?: { topicTitle?: string; category?: string; subCategory?: string; starterQuestions?: string[] }
 ): Promise<GrammarCorrectionResult> {
   const win = typeof window !== "undefined" ? (window as any) : null;
   const lower = spokenText.toLowerCase().trim();
@@ -511,7 +523,12 @@ async function executeOnDeviceInference(
     spokenReply = bundle.correctionPromptTemplate(grammarMatch.correction);
     nextQuestion = bundle.retryTemplate(grammarMatch.targetPhrase);
   } else if (bundle.code === "en") {
-    const analyzed = analyzeEnglishLocally(spokenText, scenario, recentBotTexts);
+    const analyzed = analyzeEnglishLocally(spokenText, scenario, recentBotTexts, {
+      category: topicMeta?.category,
+      subCategory: topicMeta?.subCategory,
+      title: topicMeta?.topicTitle,
+      starterQuestions: topicMeta?.starterQuestions,
+    });
     hasCorrection = analyzed.hasCorrection;
     original = analyzed.original;
     correction = analyzed.correction;
@@ -520,17 +537,22 @@ async function executeOnDeviceInference(
     spokenReply = analyzed.spokenReply;
     nextQuestion = analyzed.nextQuestion;
   } else {
-    // Pick a fresh, non-repeating native reply + follow-up question across all 19 non-English languages
-    const freshTurns = bundle.dialogueTurns.filter(
-      (t) =>
-        !recentBotTexts.some(
-          (hist) => hist.includes(t.question.slice(0, 14)) || hist.includes(t.reply.slice(0, 14))
-        )
+    // Pick a fresh, non-repeating reaction + a 100% category-locked follow-up question across ALL 19 non-English languages!
+    const freshReplies = bundle.dialogueTurns.filter(
+      (t) => !recentBotTexts.some((hist) => hist.includes(t.reply.slice(0, 14).toLowerCase()))
     );
-    const pool = freshTurns.length > 0 ? freshTurns : bundle.dialogueTurns;
-    const chosen = pool[Math.floor(Math.random() * pool.length)];
-    spokenReply = chosen.reply;
-    nextQuestion = chosen.question;
+    const replyPool = freshReplies.length > 0 ? freshReplies : bundle.dialogueTurns;
+    spokenReply = replyPool[Math.floor(Math.random() * replyPool.length)].reply;
+    nextQuestion = pickCategoryQuestion({
+      langCode: bundle.code,
+      category: topicMeta?.category,
+      subCategory: topicMeta?.subCategory,
+      title: topicMeta?.topicTitle,
+      scenario,
+      userSpeech: spokenText,
+      starterQuestions: topicMeta?.starterQuestions,
+      recentBotTexts,
+    });
   }
 
   const latency = Math.round(performance.now() - startTime);
@@ -565,6 +587,10 @@ export async function executeHybridInference(
     spokenText,
     language,
     scenario,
+    topicTitle = "",
+    category = "",
+    subCategory = "",
+    starterQuestions = [],
     drillModeEnabled,
     orderedKeyPool,
     selectedModel,
@@ -572,6 +598,14 @@ export async function executeHybridInference(
     simulateOffline,
     conversationHistory = [],
   } = options;
+
+  const richScenario = [
+    topicTitle ? `Topic: ${topicTitle}` : "",
+    category ? `Category: ${category}${subCategory ? ` (${subCategory})` : ""}` : "",
+    scenario ? `Scenario: ${scenario}` : "",
+  ]
+    .filter(Boolean)
+    .join(" | ");
 
   const isPhysicallyOffline = typeof navigator !== "undefined" && !navigator.onLine;
   const isOffline = isPhysicallyOffline || simulateOffline;
@@ -581,11 +615,12 @@ export async function executeHybridInference(
     return await executeOnDeviceInference(
       spokenText,
       language,
-      scenario,
+      richScenario || scenario,
       drillModeEnabled,
       isOffline,
       startTime,
-      conversationHistory
+      conversationHistory,
+      { topicTitle, category, subCategory, starterQuestions }
     );
   }
 
@@ -609,19 +644,20 @@ export async function executeHybridInference(
       });
 
       const historyContext = conversationHistory
-        .slice(-3)
+        .slice(-5)
         .map((h) => `${h.sender}: ${h.text}`)
         .join("\n");
 
       const prompt = `You are a native ${language} speaking tutor conducting an immersive conversation drill.
-Scenario Context: "${scenario}"
+Topic & Category Context: "${richScenario || scenario}"
 Student's latest speech: "${spokenText}"
-${historyContext ? `Recent conversation context:\n${historyContext}\n` : ""}
+${historyContext ? `Recent conversation history (NEVER repeat prior questions or stock phrases):\n${historyContext}\n` : ""}
 
 Evaluate the student's speech:
-1. Detect any grammatical errors or unnatural phrasing.
-2. Formulate a natural, conversational response in ${language}.
-3. Ask a follow-up question in ${language} to keep the conversation going.
+1. Stay 100% locked inside the chosen Category (${category || "Conversation"}) & Topic (${topicTitle || scenario}).
+2. Detect any grammatical errors or unnatural phrasing in ${language}.
+3. Formulate a natural, spontaneous conversational response strictly in ${language} native script (zero English unless target language is English).
+4. Ask a fresh, creative, category-specific follow-up question in ${language} exploring a new angle — NEVER repeat previous questions.
 
 Respond strictly with a JSON object matching this schema:
 {
@@ -672,7 +708,7 @@ Respond strictly with a JSON object matching this schema:
       body: JSON.stringify({
         spokenText,
         language,
-        scenario,
+        scenario: richScenario || scenario,
         drillModeEnabled,
         conversationHistory,
         apiKeys: orderedKeyPool,
@@ -711,10 +747,11 @@ Respond strictly with a JSON object matching this schema:
   return await executeOnDeviceInference(
     spokenText,
     language,
-    scenario,
+    richScenario || scenario,
     drillModeEnabled,
     true,
     startTime,
-    conversationHistory
+    conversationHistory,
+    { topicTitle, category, subCategory, starterQuestions }
   );
 }

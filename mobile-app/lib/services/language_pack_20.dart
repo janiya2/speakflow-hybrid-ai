@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'category_questions_20.dart';
 
 /// Unified 20-Language Native Pack for SpeakFlow AI Mobile App
 /// Provides:
@@ -802,6 +803,10 @@ class LanguagePack20 {
     required String defaultPrompt,
     required List<String> alternateQuestions,
     String lastUsedOpening = '',
+    String category = '',
+    String subCategory = '',
+    String title = '',
+    String scenario = '',
   }) {
     final bundle = resolve(language);
     final List<String> pool = [];
@@ -816,10 +821,20 @@ class LanguagePack20 {
       }
     }
 
-    for (var i = 0; i < min(4, bundle.dialogueTurns.length); i++) {
-      final turn = bundle.dialogueTurns[i];
-      final prefix = bundle.openingPrefixes[_rand.nextInt(bundle.openingPrefixes.length)];
-      pool.add('$prefix ${turn.question}');
+    for (var i = 0; i < 2; i++) {
+      final catQ = CategoryQuestions20.pickQuestion(
+        langCode: bundle.code,
+        category: category,
+        subCategory: subCategory,
+        title: title,
+        scenario: scenario.isNotEmpty ? scenario : cleanDefault,
+        starterQuestions: alternateQuestions,
+        recentBotTexts: [lastUsedOpening, ...pool],
+      );
+      if (catQ.isNotEmpty) {
+        final prefix = bundle.openingPrefixes[_rand.nextInt(bundle.openingPrefixes.length)];
+        pool.add('$prefix $catQ');
+      }
     }
 
     final fresh = pool.where((p) => p != lastUsedOpening).toList();

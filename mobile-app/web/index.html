@@ -335,13 +335,13 @@
           triggerSingleFallback("error_fallback");
         };
 
-        // Fast 4.5-second network buffering timeout: if TTS stream stalls, kill audio & fall back cleanly
+        // Generous 7-second network buffering timeout: if TTS stream stalls, kill audio & fall back cleanly
         loadTimeout = setTimeout(function() {
           if (!hasStarted && !hasEnded && !fallbackActivated && speechId === window._activeSpeechId) {
-            console.warn("⚠️ Edge Neural TTS buffer stalled (>4.5s), aborting stream & switching cleanly to single fallback voice");
+            console.info("🔊 Edge Neural TTS slow (>7s), switching smoothly to local speech voice.");
             triggerSingleFallback("buffer_timeout_fallback");
           }
-        }, 4500);
+        }, 7000);
 
         const playPromise = audio.play();
         if (playPromise !== undefined) {
@@ -350,7 +350,11 @@
               destroyCoachAudio();
             }
           }).catch(function(err) {
-            console.warn("audio.play() rejected:", err);
+            const errName = String(err && err.name || '');
+            if (fallbackActivated || speechId !== window._activeSpeechId || errName === 'AbortError') {
+              return;
+            }
+            console.warn("audio.play() fallback:", err);
             triggerSingleFallback("autoplay_fallback");
           });
         }
