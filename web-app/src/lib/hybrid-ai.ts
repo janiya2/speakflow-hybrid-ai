@@ -574,6 +574,9 @@ async function executeOnDeviceInference(
   };
 }
 
+let isFirebaseAppCheckBlocked = false;
+let cloudFailoverCooldownUntil = 0;
+
 /**
  * Main Hybrid Inference Router:
  * Powered by Google's Official Firebase AI Logic (`firebase/ai`) SDK.
@@ -625,9 +628,10 @@ export async function executeHybridInference(
   }
 
   // RULE 2: OFFICIAL FIREBASE AI LOGIC HYBRID INFERENCE SDK (#BuildHybridAI Requirement)
-  try {
-    const ai = firebaseAIInstance || (typeof window !== "undefined" ? getAI(app, { backend: new GoogleAIBackend() }) : null);
-    if (ai) {
+  if (!isFirebaseAppCheckBlocked) {
+    try {
+      const ai = firebaseAIInstance || (typeof window !== "undefined" ? getAI(app, { backend: new GoogleAIBackend() }) : null);
+      if (ai) {
       const mode = modeSetting === "cloud_only"
         ? InferenceMode.ONLY_IN_CLOUD
         : InferenceMode.PREFER_ON_DEVICE;
@@ -695,47 +699,57 @@ Respond strictly with a JSON object matching this schema:
           : `Firebase AI Logic (Cloud ${selectedModel || "gemini-1.5-flash"})`,
       };
     }
-  } catch (sdkErr) {
-    console.warn("[Firebase AI Logic SDK] Route notice (falling back to Cloud API / Local Core):", sdkErr);
+    } catch (sdkErr: any) {
+      const msg = String(sdkErr?.message || sdkErr || "");
+      if (msg.includes("401") || msg.toLowerCase().includes("app check")) {
+        isFirebaseAppCheckBlocked = true;
+      }
+      console.info("[Firebase AI Logic SDK] Skipping to Cloud Failover / Local Core for this session:", msg.slice(0, 120));
+    }
   }
 
   // RULE 2B: CLOUD SERVER RESILIENCE FAILOVER (/api/chat -> Gemini 2.5 Flash)
-  // Always attempts server-side Gemini Cloud route when online (even if Firebase App Check rejects localhost token with 401)
-  try {
-    const apiRes = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        spokenText,
-        language,
-        scenario: richScenario || scenario,
-        drillModeEnabled,
-        conversationHistory,
-        apiKeys: orderedKeyPool,
-        selectedModel: selectedModel || "gemini-2.5-flash",
-      }),
-    });
-    if (apiRes.ok) {
-      const data = await apiRes.json();
-      if (data && data.spokenReply) {
-        const latency = Math.round(performance.now() - startTime);
-        return {
-          hasCorrection: Boolean(data.hasCorrection),
-          original: data.original || "",
-          correction: data.correction || "",
-          explanation: data.explanation || "",
-          targetPhrase: data.targetPhrase || data.correction || "",
-          spokenReply: data.spokenReply,
-          nextQuestion: data.nextQuestion || "",
-          engineUsed: "CLOUD_GEMINI_FLASH",
-          latencyMs: latency,
-          isOfflineFallback: false,
-          modelIdentifier: `Firebase / Cloud Gemini (${data.modelUsed || "gemini-2.5-flash"})`,
-        };
+  // Always attempts server-side Gemini Cloud route when online (unless recently failed and in 60s cooldown)
+  if (Date.now() >= cloudFailoverCooldownUntil) {
+    try {
+      const apiRes = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          spokenText,
+          language,
+          scenario: richScenario || scenario,
+          drillModeEnabled,
+          conversationHistory,
+          apiKeys: orderedKeyPool,
+          selectedModel: selectedModel || "gemini-2.5-flash",
+        }),
+      });
+      if (apiRes.ok) {
+        const data = await apiRes.json();
+        if (data && data.spokenReply) {
+          const latency = Math.round(performance.now() - startTime);
+          return {
+            hasCorrection: Boolean(data.hasCorrection),
+            original: data.original || "",
+            correction: data.correction || "",
+            explanation: data.explanation || "",
+            targetPhrase: data.targetPhrase || data.correction || "",
+            spokenReply: data.spokenReply,
+            nextQuestion: data.nextQuestion || "",
+            engineUsed: "CLOUD_GEMINI_FLASH",
+            latencyMs: latency,
+            isOfflineFallback: false,
+            modelIdentifier: `Firebase / Cloud Gemini (${data.modelUsed || "gemini-2.5-flash"})`,
+          };
+        }
+      } else {
+        cloudFailoverCooldownUntil = Date.now() + 60000;
       }
+    } catch (cloudErr) {
+      cloudFailoverCooldownUntil = Date.now() + 60000;
+      console.info("[Cloud Failover] /api/chat unavailable, routing to Local Resilience Engine:", cloudErr);
     }
-  } catch (cloudErr) {
-    console.warn("[Cloud Failover] /api/chat unavailable:", cloudErr);
   }
 
   if (modeSetting === "cloud_only") {

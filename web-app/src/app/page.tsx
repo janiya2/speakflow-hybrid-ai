@@ -3150,28 +3150,33 @@ export default function StudentWebApp() {
     loadTopics();
   }, []);
 
-  // 4. Load API Keys from Firestore
+  // 4. Load API Keys from Firestore when authenticated
   useEffect(() => {
     async function loadApiKeys() {
       if (!auth.currentUser) return;
-      try {
-        const docRef = doc(db, COLLECTIONS.SETTINGS, "api_keys");
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.geminiApiKey) setGeminiApiKey(data.geminiApiKey);
-          if (data.fallbackKeys && Array.isArray(data.fallbackKeys)) {
-            setFallbackKeys(data.fallbackKeys);
+      for (const docId of ["api_keys", "ai_config"]) {
+        try {
+          const docRef = doc(db, COLLECTIONS.SETTINGS, docId);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.geminiApiKey) setGeminiApiKey(data.geminiApiKey);
+            if (data.fallbackKeys && Array.isArray(data.fallbackKeys)) {
+              setFallbackKeys(data.fallbackKeys);
+            }
+            if (data.keyRotationStrategy) {
+              setKeyRotationStrategy(data.keyRotationStrategy);
+            }
+            if (data.activeModel || data.selectedModel) {
+              setSelectedModel(data.activeModel || data.selectedModel);
+            }
+            break;
           }
-          if (data.keyRotationStrategy) {
-            setKeyRotationStrategy(data.keyRotationStrategy);
-          }
-          if (data.activeModel) setSelectedModel(data.activeModel);
-        }
-      } catch (_) {}
+        } catch (_) {}
+      }
     }
     loadApiKeys();
-  }, []);
+  }, [user]);
 
   // 5A. Load & Sync User Profile Doc from Firestore lang_users/{uid}
   const loadUserProfileFromFirestore = async (firebaseUser: User) => {
@@ -4659,9 +4664,12 @@ export default function StudentWebApp() {
       return updated;
     });
 
-    if (user && user.uid !== "demo-jury") {
+    if (auth.currentUser && user && user.uid === auth.currentUser.uid) {
       try {
-        await addDoc(collection(db, COLLECTIONS.SESSIONS), sessionRecord);
+        await addDoc(collection(db, COLLECTIONS.SESSIONS), {
+          ...sessionRecord,
+          userId: auth.currentUser.uid,
+        });
         const nextTotalSec = realAnalytics.totalSeconds + callDuration;
         const nextLast24Sec = realAnalytics.last24hSeconds + callDuration;
         const nextWeeklyMins = Math.max(1, Math.round((realAnalytics.weeklySeconds + callDuration) / 60));
