@@ -2900,8 +2900,10 @@ export default function StudentWebApp() {
         const level = Math.min(100, Math.round((avg / 128) * 100));
         setMicVolumeLevel(level);
 
-        if (level > 14 && !isBotSpeakingRef.current && !isProcessingRef.current) {
+        if (level > 16 && !isBotSpeakingRef.current && !isProcessingRef.current) {
           setIsUserSpeaking(true);
+        } else if (level <= 8 && !userCaption) {
+          setIsUserSpeaking(false);
         }
 
         animFrameRef.current = requestAnimationFrame(checkVolume);
@@ -3898,25 +3900,42 @@ export default function StudentWebApp() {
   };
 
   // 8. Speech Recognition (STT) - Unbreakable Continuous Recognition Loop with Echo Cancellation
-  const startListening = () => {
+  const consecutiveSttFailuresRef = useRef(0);
+  const startListenTimerRef = useRef<any>(null);
+  const [sttAlertMessage, setSttAlertMessage] = useState<string | null>(null);
+  const [manualSpeechDraft, setManualSpeechDraft] = useState("");
+
+  const startListening = (manualRetry = false) => {
     if (isMutedRef.current || !isCallActiveRef.current || isBotSpeakingRef.current || isVoicePreparingRef.current || isProcessingRef.current) return;
     if (typeof window === "undefined") return;
     if (activeAudioRef.current && !activeAudioRef.current.paused) return;
     if ("speechSynthesis" in window && window.speechSynthesis.speaking) return;
 
+    if (manualRetry) {
+      consecutiveSttFailuresRef.current = 0;
+      setSttAlertMessage(null);
+    }
+
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      console.warn("Speech recognition is not supported in this browser.");
+      console.warn("[Web STT] SpeechRecognition API is not supported in this browser.");
+      setSttAlertMessage("Browser Speech-to-Text unavailable here — type your reply or tap a chip below.");
       return;
     }
 
     isListeningIntentRef.current = true;
     startMicVolumeMonitor();
 
+    if (startListenTimerRef.current) {
+      clearTimeout(startListenTimerRef.current);
+      startListenTimerRef.current = null;
+    }
+
     if (recognitionRef.current) {
       try {
+        recognitionRef.current.onstart = null;
         recognitionRef.current.onresult = null;
         recognitionRef.current.onend = null;
         recognitionRef.current.onerror = null;
@@ -3926,7 +3945,8 @@ export default function StudentWebApp() {
     }
 
     // Brief 120ms stagger after abort() so Chromium reliably acquires mic focus for SpeechRecognition
-    setTimeout(() => {
+    startListenTimerRef.current = setTimeout(() => {
+      startListenTimerRef.current = null;
       if (!isListeningIntentRef.current || !isCallActiveRef.current || isBotSpeakingRef.current || isVoicePreparingRef.current || isMutedRef.current || isProcessingRef.current) {
         return;
       }
@@ -3948,12 +3968,16 @@ export default function StudentWebApp() {
         recognition.lang = targetLang;
 
         recognition.onstart = () => {
+          if (recognitionRef.current !== recognition) return;
           setIsUserSpeaking(false);
           isUserSpeakingRef.current = false;
           setMicPermissionError(false);
+          setSttAlertMessage(null);
+          console.info(`[Web STT] Listening active (${targetLang})`);
         };
 
         recognition.onresult = (event: any) => {
+          if (recognitionRef.current !== recognition) return;
           if (
             !isCallActiveRef.current ||
             !isListeningIntentRef.current ||
@@ -3993,6 +4017,10 @@ export default function StudentWebApp() {
             return;
           }
 
+          // Student speech confirmed! Reset STT failure counter
+          consecutiveSttFailuresRef.current = 0;
+          setSttAlertMessage(null);
+
           // Student is actively speaking: cancel any pending idle coach nudge so coach NEVER talks over student
           if (proactiveNudgeTimerRef.current) {
             clearTimeout(proactiveNudgeTimerRef.current);
@@ -4018,6 +4046,7 @@ export default function StudentWebApp() {
                 phraseToSubmit.length >= 2 &&
                 !isAcousticEchoOfBot(phraseToSubmit)
               ) {
+                console.info(`[Web STT] Submitting speech (${hasFinalPhrase ? "final" : "interim"}):`, phraseToSubmit);
                 handleUserSpeech(phraseToSubmit);
               }
             }, debounceMs);
@@ -4025,15 +4054,33 @@ export default function StudentWebApp() {
         };
 
         recognition.onerror = (event: any) => {
-          if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+          if (recognitionRef.current !== recognition) return;
+          const errCode = String(event?.error || "unknown");
+          console.warn(`[Web STT] Recognition error: ${errCode}`, event?.message || "");
+          if (errCode === "not-allowed" || errCode === "service-not-allowed") {
             setMicPermissionError(true);
             isListeningIntentRef.current = false;
+            setSttAlertMessage("Microphone permission blocked in browser.");
             return;
           }
           setIsUserSpeaking(false);
           isUserSpeakingRef.current = false;
+
+          if (errCode === "aborted" || errCode === "network" || errCode === "language-not-supported") {
+            consecutiveSttFailuresRef.current += 1;
+            if (errCode === "network") {
+              setSttAlertMessage("Browser Speech-to-Text network unavailable (online STT needed for mic) — use Quick Chips or type below.");
+            } else if (errCode === "aborted" && consecutiveSttFailuresRef.current >= 2) {
+              setSttAlertMessage("Mic STT held by another tab (e.g. localhost:8085) — close/mute other tab & click Refresh Mic, or type below.");
+            }
+            if (consecutiveSttFailuresRef.current >= 2) {
+              isListeningIntentRef.current = false;
+              return;
+            }
+          }
+
           if (
-            (event.error === "no-speech" || event.error === "audio-capture") &&
+            (errCode === "no-speech" || errCode === "audio-capture" || errCode === "aborted") &&
             isListeningIntentRef.current &&
             isCallActiveRef.current &&
             !isBotSpeakingRef.current &&
@@ -4043,15 +4090,30 @@ export default function StudentWebApp() {
           ) {
             setTimeout(() => {
               try {
-                if (isListeningIntentRef.current && !isBotSpeakingRef.current && !isVoicePreparingRef.current) recognition.start();
-              } catch (_) {}
-            }, 250);
+                if (
+                  recognitionRef.current === recognition &&
+                  isListeningIntentRef.current &&
+                  !isBotSpeakingRef.current &&
+                  !isVoicePreparingRef.current &&
+                  !isProcessingRef.current &&
+                  !isMutedRef.current
+                ) {
+                  recognition.start();
+                }
+              } catch (restartErr) {
+                console.warn("[Web STT] Restart after error skipped:", restartErr);
+              }
+            }, 300);
           }
         };
 
         recognition.onend = () => {
+          if (recognitionRef.current !== recognition) return;
           setIsUserSpeaking(false);
           isUserSpeakingRef.current = false;
+          if (consecutiveSttFailuresRef.current >= 2) {
+            return;
+          }
           if (
             isListeningIntentRef.current &&
             isCallActiveRef.current &&
@@ -4062,15 +4124,26 @@ export default function StudentWebApp() {
           ) {
             setTimeout(() => {
               try {
-                if (isListeningIntentRef.current && !isBotSpeakingRef.current && !isVoicePreparingRef.current) recognition.start();
-              } catch (_) {}
-            }, 180);
+                if (
+                  recognitionRef.current === recognition &&
+                  isListeningIntentRef.current &&
+                  !isBotSpeakingRef.current &&
+                  !isVoicePreparingRef.current &&
+                  !isProcessingRef.current &&
+                  !isMutedRef.current
+                ) {
+                  recognition.start();
+                }
+              } catch (endRestartErr) {
+                console.warn("[Web STT] Restart on end skipped:", endRestartErr);
+              }
+            }, 220);
           }
         };
 
         recognition.start();
       } catch (e: any) {
-        console.warn("Failed to start speech recognition:", e);
+        console.warn("[Web STT] Failed to start speech recognition:", e);
         setIsUserSpeaking(false);
       }
     }, 120);
@@ -4078,12 +4151,17 @@ export default function StudentWebApp() {
 
   const stopListening = () => {
     isListeningIntentRef.current = false;
+    if (startListenTimerRef.current) {
+      clearTimeout(startListenTimerRef.current);
+      startListenTimerRef.current = null;
+    }
     if (speechDebounceTimerRef.current) {
       clearTimeout(speechDebounceTimerRef.current);
       speechDebounceTimerRef.current = null;
     }
     if (recognitionRef.current) {
       try {
+        recognitionRef.current.onstart = null;
         recognitionRef.current.onresult = null;
         recognitionRef.current.onend = null;
         recognitionRef.current.onerror = null;
@@ -6752,7 +6830,7 @@ export default function StudentWebApp() {
                         {!isBotSpeaking && !isVoicePreparing && !isProcessing && !isMuted && (
                           <button
                             type="button"
-                            onClick={() => startListening()}
+                            onClick={() => startListening(true)}
                             className={`px-2.5 py-1 rounded-full border text-[10px] font-bold flex items-center gap-1 transition-all ${
                               isLight
                                 ? "bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700"
@@ -6765,6 +6843,47 @@ export default function StudentWebApp() {
                           </button>
                         )}
                       </div>
+
+                      {/* Speech-to-Text Diagnostics & Direct Reply Fallback */}
+                      {sttAlertMessage && (
+                        <div className="mt-0.5 px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-400 text-[10px] font-bold flex items-center gap-1.5 max-w-xl text-center">
+                          <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                          <span>{sttAlertMessage}</span>
+                        </div>
+                      )}
+
+                      {!isBotSpeaking && !isVoicePreparing && !isProcessing && (
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            const trimmed = manualSpeechDraft.trim();
+                            if (!trimmed) return;
+                            setManualSpeechDraft("");
+                            handleUserSpeech(trimmed);
+                          }}
+                          className="flex items-center gap-1.5 w-full max-w-md px-2"
+                        >
+                          <input
+                            type="text"
+                            value={manualSpeechDraft}
+                            onChange={(e) => setManualSpeechDraft(e.target.value)}
+                            placeholder="Speak into mic or type your reply here..."
+                            className={`flex-1 px-3 py-1 rounded-full text-[11px] border outline-none transition-all ${
+                              isLight
+                                ? "bg-white border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-emerald-400"
+                                : "bg-slate-900/90 border-slate-700 text-slate-100 placeholder:text-slate-500 focus:border-emerald-500"
+                            }`}
+                          />
+                          <button
+                            type="submit"
+                            disabled={!manualSpeechDraft.trim()}
+                            className="px-2.5 py-1 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-slate-950 font-black text-[10px] flex items-center gap-1 transition-all"
+                          >
+                            <Send className="w-3 h-3" />
+                            <span>Send</span>
+                          </button>
+                        </form>
+                      )}
 
                       {/* Manual Submit Button if user spoke something */}
                       {userCaption && !isBotSpeaking && !isProcessing && (

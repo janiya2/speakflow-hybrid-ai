@@ -229,6 +229,9 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
         timer.cancel();
         return;
       }
+      if (_consecutiveSpeechAborts >= 2) {
+        return;
+      }
       if (!_isMuted && !_isBotSpeaking && !_isProcessing && !_speech.isListening && !_isStartingListening) {
         _scheduleListeningRestart(delayMs: 100);
       }
@@ -239,11 +242,11 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
 
   void _scheduleListeningRestart({int delayMs = 250}) {
     _reconnectTimer?.cancel();
-    if (!mounted || _callEnded || _isMuted || _isBotSpeaking || _isProcessing) {
+    if (!mounted || _callEnded || _isMuted || _isBotSpeaking || _isProcessing || _consecutiveSpeechAborts >= 2) {
       return;
     }
     _reconnectTimer = Timer(Duration(milliseconds: delayMs), () {
-      if (!mounted || _callEnded || _isMuted || _isBotSpeaking || _isProcessing) {
+      if (!mounted || _callEnded || _isMuted || _isBotSpeaking || _isProcessing || _consecutiveSpeechAborts >= 2) {
         return;
       }
       if (!_speech.isListening && !_isStartingListening) {
@@ -3961,6 +3964,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                       InkWell(
                         onTap: () async {
                           if (!_isSttInitialized || !_hasMicPermission) {
+                            _consecutiveSpeechAborts = 0;
                             _isSttInitialized = await _speech.initialize(
                               options: [stt.SpeechToText.androidNoBluetooth],
                             );
@@ -3980,6 +3984,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
                               _speech.stop();
                               _isListening = false;
                             } else {
+                              _consecutiveSpeechAborts = 0;
                               _scheduleListeningRestart(delayMs: 100);
                             }
                           });
