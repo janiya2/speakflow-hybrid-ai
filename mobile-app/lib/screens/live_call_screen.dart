@@ -1183,7 +1183,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
 
     if (kIsWeb) {
       try {
-        web_speech.speakWeb(cleanText, langCode, coach: _coach.id, gender: _coach.gender);
+        web_speech.speakWeb(cleanText, langCode, coach: '${_coach.id}_offline', gender: _coach.gender);
       } catch (e) {
         debugPrint('Web speech bridge error: $e');
       }

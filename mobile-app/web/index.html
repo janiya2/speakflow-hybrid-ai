@@ -191,7 +191,22 @@
       }
     }
 
-    // High-fidelity Multilingual Voice Synthesis for AI Coach Voice (All 6 Languages)
+    // High-fidelity Multilingual Voice Synthesis for AI Coach Voice (All 20 Languages)
+    function destroyCoachAudio() {
+      if (window._coachAudio) {
+        try {
+          window._coachAudio.onplaying = null;
+          window._coachAudio.ontimeupdate = null;
+          window._coachAudio.onended = null;
+          window._coachAudio.onerror = null;
+          window._coachAudio.pause();
+          window._coachAudio.removeAttribute('src');
+          window._coachAudio.load();
+          window._coachAudio = null;
+        } catch (_) {}
+      }
+    }
+
     window.speakWebText = function(text, lang, coach, gender) {
       try {
         console.log("🔊 speakWebText called with text:", text, "(lang:", lang, "coach:", coach, "gender:", gender, ")");
@@ -200,52 +215,39 @@
           return;
         }
 
-        // Stop any previous audio if playing
-        if (window._coachAudio) {
-          try {
-            window._coachAudio.pause();
-            window._coachAudio.removeAttribute('src');
-            window._coachAudio = null;
-          } catch (_) {}
-        }
+        const speechId = (window._activeSpeechId || 0) + 1;
+        window._activeSpeechId = speechId;
+
+        // Stop any previous audio or fallback synthesis immediately
+        destroyCoachAudio();
         if ('speechSynthesis' in window) {
           try { window.speechSynthesis.cancel(); } catch (_) {}
         }
 
-        // PRIMARY: Stream Microsoft Edge Neural TTS directly from Next.js server (Port 3001)
-        const coachParam = encodeURIComponent(coach || 'alex');
-        const genderParam = encodeURIComponent(gender || 'male');
-        const ttsUrl = 'http://localhost:3001/api/tts?text=' + encodeURIComponent(text) + '&coach=' + coachParam + '&gender=' + genderParam + '&language=' + encodeURIComponent(lang || 'English');
-        
-        const audio = new Audio(ttsUrl);
-        audio.crossOrigin = 'anonymous';
-        audio.volume = 1.0;
-        window._coachAudio = audio;
-
         let hasEnded = false;
         let hasStarted = false;
+        let fallbackActivated = false;
         let safetyTimeout = null;
         let loadTimeout = null;
 
         function notifySpeechStarted() {
+          if (speechId !== window._activeSpeechId) return;
           if (!hasStarted) {
             hasStarted = true;
-            // Playback has officially started, clear the load/buffer timeout!
             if (loadTimeout) {
               clearTimeout(loadTimeout);
               loadTimeout = null;
             }
-            console.log("🔊 Edge Neural TTS playback actually started! Dispatching coachSpeechStarted");
+            console.log("🔊 TTS playback actually started! Dispatching coachSpeechStarted");
             window.dispatchEvent(new CustomEvent('coachSpeechStarted'));
 
-            // Set generous playback safety timeout based on actual audio duration or text length
-            const estPlaySec = (audio.duration && !isNaN(audio.duration) && audio.duration > 0)
-              ? Math.ceil(audio.duration) + 5
+            const estPlaySec = (window._coachAudio && window._coachAudio.duration && !isNaN(window._coachAudio.duration) && window._coachAudio.duration > 0)
+              ? Math.ceil(window._coachAudio.duration) + 5
               : Math.max(15, Math.ceil(text.length / 8) + 8);
 
             if (safetyTimeout) clearTimeout(safetyTimeout);
             safetyTimeout = setTimeout(function() {
-              if (!hasEnded) {
+              if (!hasEnded && speechId === window._activeSpeechId) {
                 console.warn("⚠️ Audio playback watchdog (" + estPlaySec + "s), forcing finishSpeech");
                 finishSpeech("playback_watchdog");
               }
@@ -262,52 +264,94 @@
             clearTimeout(safetyTimeout);
             safetyTimeout = null;
           }
-          if (!hasEnded) {
+          if (!hasEnded && speechId === window._activeSpeechId) {
             hasEnded = true;
-            console.log("🔊 Edge Neural TTS speech finished. Reason:", reason, "currentTime:", audio.currentTime, "duration:", audio.duration);
+            console.log("🔊 TTS speech finished. Reason:", reason);
             window.dispatchEvent(new CustomEvent('coachSpeechEnded'));
           }
         }
 
-        // ONLY notify speech started when audio is ACTUALLY rendering sound through speakers!
-        // 'playing' fires when playback begins after buffering/download completes.
+        function triggerSingleFallback(reason) {
+          if (fallbackActivated || hasStarted || hasEnded || speechId !== window._activeSpeechId) return;
+          fallbackActivated = true;
+          if (loadTimeout) {
+            clearTimeout(loadTimeout);
+            loadTimeout = null;
+          }
+          // CRITICAL: Abort & destroy network Audio stream BEFORE speaking fallback so TWO VOICES NEVER OVERLAP!
+          destroyCoachAudio();
+          fallbackWebSpeech(
+            text,
+            lang,
+            gender || 'female',
+            () => finishSpeech(reason),
+            () => {
+              if (speechId === window._activeSpeechId && !hasEnded) {
+                hasStarted = true;
+                window.dispatchEvent(new CustomEvent('coachSpeechStarted'));
+              }
+            }
+          );
+        }
+
+        const rawCoach = String(coach || 'alex');
+        const isOfflineOnly = rawCoach.endsWith('_offline');
+        const cleanCoach = rawCoach.replace(/_offline$/, '');
+
+        // In Offline / In-Flight Mode, speak instantaneously via local speechSynthesis (0ms wait, zero network calls!)
+        if (isOfflineOnly) {
+          triggerSingleFallback("offline_local_tts");
+          return;
+        }
+
+        // PRIMARY: Stream Microsoft Edge Neural TTS directly from Next.js server (Port 3001)
+        const coachParam = encodeURIComponent(cleanCoach);
+        const genderParam = encodeURIComponent(gender || 'female');
+        const ttsUrl = 'http://localhost:3001/api/tts?text=' + encodeURIComponent(text) + '&coach=' + coachParam + '&gender=' + genderParam + '&language=' + encodeURIComponent(lang || 'English');
+        
+        const audio = new Audio(ttsUrl);
+        audio.crossOrigin = 'anonymous';
+        audio.volume = 1.0;
+        window._coachAudio = audio;
+
         audio.onplaying = function() {
+          if (fallbackActivated || speechId !== window._activeSpeechId) { destroyCoachAudio(); return; }
           notifySpeechStarted();
         };
 
-        // Precision verification on timeupdate: once currentTime advances past 0.04s, sound is live
         audio.ontimeupdate = function() {
+          if (fallbackActivated || speechId !== window._activeSpeechId) { destroyCoachAudio(); return; }
           if (audio.currentTime > 0.04) {
             notifySpeechStarted();
           }
         };
 
         audio.onended = function() {
-          finishSpeech("track_ended");
+          if (!fallbackActivated) finishSpeech("track_ended");
         };
 
         audio.onerror = function(err) {
-          console.warn("🔊 Edge Neural TTS error, falling back to speech synthesis:", err);
-          fallbackWebSpeech(text, lang, () => finishSpeech("error_fallback"), () => notifySpeechStarted());
+          console.warn("🔊 Edge Neural TTS error, switching to local speech synthesis:", err);
+          triggerSingleFallback("error_fallback");
         };
 
-        // Generous 12-second network buffering timeout: If TTS download fails completely or stalls without ever starting
+        // Fast 4.5-second network buffering timeout: if TTS stream stalls, kill audio & fall back cleanly
         loadTimeout = setTimeout(function() {
-          if (!hasStarted && !hasEnded) {
-            console.warn("⚠️ Edge Neural TTS buffer stalled (>12s), switching to local speech synthesis fallback");
-            fallbackWebSpeech(text, lang, () => finishSpeech("buffer_timeout_fallback"), () => notifySpeechStarted());
+          if (!hasStarted && !hasEnded && !fallbackActivated && speechId === window._activeSpeechId) {
+            console.warn("⚠️ Edge Neural TTS buffer stalled (>4.5s), aborting stream & switching cleanly to single fallback voice");
+            triggerSingleFallback("buffer_timeout_fallback");
           }
-        }, 12000);
+        }, 4500);
 
-        // Immediate audio playback without calling .load() which would abort the pending play promise
         const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise.then(function() {
-            // Wait for onplaying / ontimeupdate before declaring speech started so video mouth doesn't move in silence
+            if (fallbackActivated || speechId !== window._activeSpeechId) {
+              destroyCoachAudio();
+            }
           }).catch(function(err) {
-            console.warn("audio.play() rejected (autoplay or buffer wait):", err);
-            // If browser autoplay blocks or aborts, instantly fallback to SpeechSynthesis
-            fallbackWebSpeech(text, lang, () => finishSpeech("autoplay_fallback"), () => notifySpeechStarted());
+            console.warn("audio.play() rejected:", err);
+            triggerSingleFallback("autoplay_fallback");
           });
         }
       } catch (e) {
@@ -316,7 +360,7 @@
       }
     };
 
-    function fallbackWebSpeech(text, lang, onFinish, onStart) {
+    function fallbackWebSpeech(text, lang, gender, onFinish, onStart) {
       if (!('speechSynthesis' in window)) {
         if (onFinish) onFinish();
         return;
@@ -324,8 +368,26 @@
       try {
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
+        const targetLang = String(lang || 'en-US').toLowerCase();
+        const targetPrefix = targetLang.split(/[-_]/)[0];
+        const wantFemale = String(gender || 'female').toLowerCase() === 'female';
+
+        const voices = window.speechSynthesis.getVoices() || [];
+        const langVoices = voices.filter((v) => String(v.lang || '').toLowerCase().startsWith(targetPrefix));
+        if (langVoices.length > 0) {
+          const femaleHints = ['zira', 'aria', 'jenny', 'sonia', 'hazel', 'susan', 'denise', 'elsa', 'katja', 'elvira', 'nanami', 'sunhi', 'xiaoxiao', 'female', 'woman'];
+          const maleHints = ['david', 'mark', 'guy', 'ryan', 'george', 'henri', 'keita', 'injoon', 'alvaro', 'diego', 'killian', 'male', 'man'];
+          const matchedVoice = langVoices.find((v) => {
+            const vn = v.name.toLowerCase();
+            if (wantFemale) return femaleHints.some((h) => vn.includes(h)) && !maleHints.some((m) => vn.includes(m));
+            return maleHints.some((h) => vn.includes(h)) && !femaleHints.some((f) => vn.includes(f));
+          });
+          u.voice = matchedVoice || langVoices[0];
+        }
+
         u.lang = lang || 'en-US';
-        u.rate = 1.0;
+        u.rate = 0.98;
+        u.pitch = wantFemale ? 1.05 : 0.95;
         u.onstart = function() {
           if (onStart) onStart();
         };
@@ -339,14 +401,11 @@
 
     window.stopWebSpeech = function() {
       try {
+        window._activeSpeechId = (window._activeSpeechId || 0) + 1;
         if ('speechSynthesis' in window) {
           window.speechSynthesis.cancel();
         }
-        if (window._coachAudio) {
-          window._coachAudio.pause();
-          window._coachAudio.currentTime = 0;
-          window._coachAudio = null;
-        }
+        destroyCoachAudio();
       } catch (_) {}
     };
 

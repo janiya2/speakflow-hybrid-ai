@@ -3676,11 +3676,12 @@ export default function StudentWebApp() {
       }, 450);
     };
 
-    try {
-      const ttsUrl = `/api/tts?text=${encodeURIComponent(pureText)}&coach=${activeCoachSnap.id}&gender=${activeCoachSnap.gender}&language=${encodeURIComponent(langName)}`;
-      const controller = new AbortController();
-      activeTtsAbortRef.current = controller;
-      const fetchTimer = setTimeout(() => controller.abort(), 15000);
+    if (!simulateOffline) {
+      try {
+        const ttsUrl = `/api/tts?text=${encodeURIComponent(pureText)}&coach=${activeCoachSnap.id}&gender=${activeCoachSnap.gender}&language=${encodeURIComponent(langName)}`;
+        const controller = new AbortController();
+        activeTtsAbortRef.current = controller;
+        const fetchTimer = setTimeout(() => controller.abort(), 4500);
 
       const response = await fetch(ttsUrl, { signal: controller.signal });
       clearTimeout(fetchTimer);
@@ -3719,8 +3720,9 @@ export default function StudentWebApp() {
           return;
         }
       }
-    } catch (_) {
-      if (requestId !== ttsSessionIdRef.current) return;
+      } catch (_) {
+        if (requestId !== ttsSessionIdRef.current) return;
+      }
     }
 
     fallbackBrowserTts(pureText, langName, onVoiceStart, onVoiceEnd, requestId, activeCoachSnap);
