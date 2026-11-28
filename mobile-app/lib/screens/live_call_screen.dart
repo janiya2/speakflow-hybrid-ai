@@ -154,7 +154,7 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
   // Active Pronunciation Drill Loop State
   bool _isDrillMode = false;
   bool _hasMicPermission = true;
-  bool _hasNudgedForCurrentQuestion = false;
+  int _nudgeCountForCurrentQuestion = 0;
   int _consecutiveSpeechAborts = 0;
   String _accumulatedSpeech = '';
   String _targetPhraseToRepeat = '';
@@ -474,8 +474,12 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
       });
     }
 
-    // Opening prompt: Instant call connection (< 1.5s total time to voice output)
-    String openingText = widget.topic.starterPrompt;
+    // Opening prompt: Fresh, randomized, non-repeating opener across all 20 languages
+    String openingText = LanguagePack20.buildVariedOpeningQuestion(
+      language: widget.topic.language,
+      defaultPrompt: widget.topic.starterPrompt,
+      alternateQuestions: widget.topic.starterQuestions,
+    );
     try {
       openingText = await _geminiService.generateDynamicOpening(
         topicTitle: widget.topic.title,
@@ -484,19 +488,8 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
         coach: _coach,
         defaultPrompt: widget.topic.starterPrompt,
         alternateQuestions: widget.topic.starterQuestions,
-      ).timeout(const Duration(milliseconds: 350), onTimeout: () {
-        if (widget.topic.starterQuestions.isNotEmpty) {
-          final randIndex = DateTime.now().millisecondsSinceEpoch % widget.topic.starterQuestions.length;
-          return widget.topic.starterQuestions[randIndex];
-        }
-        return widget.topic.starterPrompt;
-      });
-    } catch (_) {
-      if (widget.topic.starterQuestions.isNotEmpty) {
-        final randIndex = DateTime.now().millisecondsSinceEpoch % widget.topic.starterQuestions.length;
-        openingText = widget.topic.starterQuestions[randIndex];
-      }
-    }
+      ).timeout(const Duration(milliseconds: 1100), onTimeout: () => openingText);
+    } catch (_) {}
 
     // Ultra-snappy phone outgoing connection duration (200ms)
     await Future.delayed(const Duration(milliseconds: 200));
@@ -682,19 +675,19 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
     });
   }
 
-  // PROACTIVE BOT KEEP-ALIVE (30-second silence re-engagement; NEVER interrupts actively speaking learner)
+  // PROACTIVE BOT KEEP-ALIVE (25-second silence re-engagement with rotating varied prompts; NEVER interrupts actively speaking learner)
   void _resetProactiveNudgeTimer() {
     _proactiveNudgeTimer?.cancel();
-    if (_hasNudgedForCurrentQuestion || _isBotSpeaking || _isProcessing || _callEnded) return;
+    if (_nudgeCountForCurrentQuestion >= 3 || _isBotSpeaking || _isProcessing || _callEnded) return;
 
     // Strict speech guard: If learner is already speaking or words are pending, do not start nudge
     if (_userSpeech.trim().isNotEmpty || _accumulatedSpeech.trim().isNotEmpty || _lastRecognizedWords.trim().isNotEmpty) {
       return;
     }
 
-    // 30-second inactivity re-engagement
-    _proactiveNudgeTimer = Timer(const Duration(seconds: 30), () {
-      if (mounted && !_isBotSpeaking && !_isProcessing && !_callEnded && !_hasNudgedForCurrentQuestion) {
+    // 25-second inactivity re-engagement (rotates up to 3 different nudges if student stays silent)
+    _proactiveNudgeTimer = Timer(const Duration(seconds: 25), () {
+      if (mounted && !_isBotSpeaking && !_isProcessing && !_callEnded && _nudgeCountForCurrentQuestion < 3) {
         _triggerProactiveSilenceNudge();
       }
     });
@@ -705,60 +698,23 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
     if (_isBotSpeaking ||
         _isProcessing ||
         _callEnded ||
-        _hasNudgedForCurrentQuestion ||
+        _nudgeCountForCurrentQuestion >= 3 ||
         _userSpeech.trim().isNotEmpty ||
         _accumulatedSpeech.trim().isNotEmpty ||
         _lastRecognizedWords.trim().isNotEmpty) {
       return;
     }
 
-    _hasNudgedForCurrentQuestion = true;
-
-    final lang = widget.topic.language.toLowerCase().trim();
+    final bundle = LanguagePack20.resolve(widget.topic.language);
+    final rawNudge = bundle.nudges[_nudgeCountForCurrentQuestion % bundle.nudges.length];
     final question = _lastBotQuestion.isNotEmpty ? _lastBotQuestion : widget.topic.starterPrompt;
+    // On the first nudge, remind them gently of the active question; on subsequent nudges, vary naturally!
+    final nudge = _nudgeCountForCurrentQuestion == 0 && question.isNotEmpty
+        ? '$rawNudge $question'
+        : rawNudge;
+    _nudgeCountForCurrentQuestion++;
 
-    String nudge = "Are you still there? Don't worry at all, take your time! Let me ask you again: $question";
-    if (lang.contains('german') || lang.contains('deutsch') || lang.startsWith('de')) {
-      nudge = "Bist du noch da? Keine Sorge, lass dir ruhig Zeit! Ich frage dich noch einmal: $question";
-    } else if (lang.contains('french') || lang.contains('fran') || lang.startsWith('fr')) {
-      nudge = "Vous êtes toujours là ? Ne vous inquiétez pas, prenez votre temps ! Je vous redemande : $question";
-    } else if (lang.contains('span') || lang.contains('espa') || lang.startsWith('es')) {
-      nudge = "¿Sigues ahí? No te preocupes por equivocarte, ¡tómate tu tiempo! Te pregunto de nuevo: $question";
-    } else if (lang.contains('ital') || lang.startsWith('it')) {
-      nudge = "Sei ancora lì? Nessuna preoccupazione, prenditi tutto il tempo! Te lo richiedo: $question";
-    } else if (lang.contains('portug') || lang.startsWith('pt')) {
-      nudge = "Ainda está aí? Não se preocupe, com calma! Deixe-me perguntar de novo: $question";
-    } else if (lang.contains('jap') || lang.startsWith('ja')) {
-      nudge = "まだいらっしゃいますか？全然心配しないで、ゆっくり考えてくださいね！もう一度聞きますね：$question";
-    } else if (lang.contains('kor') || lang.startsWith('ko')) {
-      nudge = "듣고 계신가요? 전혀 걱정하지 마시고 천천히 말씀하세요! 다시 한번 질문드릴게요: $question";
-    } else if (lang.contains('chinese') || lang.contains('mandarin') || lang.startsWith('zh')) {
-      nudge = "您还在吗？完全不用担心，慢慢来！我再问您一遍：$question";
-    } else if (lang.contains('arab') || lang.startsWith('ar')) {
-      nudge = "هل ما زلت معي؟ لا تقلق أبداً، خذ كامل وقتك! دعني أسألك مرة أخرى: $question";
-    } else if (lang.contains('russian') || lang.startsWith('ru')) {
-      nudge = "Вы ещё здесь? Не волнуйтесь, не спешите! Позвольте мне повторить вопрос: $question";
-    } else if (lang.contains('hindi') || lang.startsWith('hi')) {
-      nudge = "क्या आप अभी भी सुन रहे हैं? बिल्कुल चिंता न करें, आराम से समय लें! मैं फिर से पूछता हूँ: $question";
-    } else if (lang.contains('dutch') || lang.contains('nederland') || lang.startsWith('nl')) {
-      nudge = "Ben je er nog? Geen zorgen, neem rustig de tijd! Ik vraag het nog eens: $question";
-    } else if (lang.contains('turk') || lang.startsWith('tr')) {
-      nudge = "Hala orada mısınız? Hiç endişelenmeyin, acele etmeyin! Tekrar soruyorum: $question";
-    } else if (lang.contains('viet') || lang.startsWith('vi')) {
-      nudge = "Bạn vẫn ở đó chứ? Đừng lo lắng, cứ từ từ nhé! Tôi xin hỏi lại: $question";
-    } else if (lang.contains('indones') || lang.startsWith('id')) {
-      nudge = "Apakah kamu masih di sana? Jangan khawatir, santai saja! Biar saya tanyakan lagi: $question";
-    } else if (lang.contains('thai') || lang.startsWith('th')) {
-      nudge = "ยังอยู่ไหมครับ? ไม่ต้องกังวลเลย ค่อยๆ คิดนะ! ขอถามใหม่อีกรอบนะครับ: $question";
-    } else if (lang.contains('swed') || lang.startsWith('sv') || lang.startsWith('se')) {
-      nudge = "Är du kvar? Ingen fara alls, ta det lugnt! Jag frågar igen: $question";
-    } else if (lang.contains('tamil') || lang.startsWith('ta')) {
-      nudge = "நீங்கள் இன்னும் இருக்கிறீர்களா? கவலைப்படாதீர்கள், பொறுமையாகச் சொல்லுங்கள்! மீண்டும் கேட்கிறேன்: $question";
-    } else if (lang.contains('sinhala') || lang.startsWith('si')) {
-      nudge = "ඔයා තාම ඉන්නවද? කිසිම කලබලයක් වෙන්න එපා, හෙමින් කල්පනා කරලා කියන්න! මම ආයෙත් අහන්නම්: $question";
-    }
-
-    _speakText(nudge);
+    _speakText(nudge, isNudge: true);
   }
 
   String _formatDuration(int seconds) {
@@ -1135,10 +1091,12 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
     }
   }
 
-  Future<void> _speakText(String text, {String? overrideQuestion}) async {
+  Future<void> _speakText(String text, {String? overrideQuestion, bool isNudge = false}) async {
     if (!mounted || _callEnded) return;
     _proactiveNudgeTimer?.cancel();
-    _hasNudgedForCurrentQuestion = false;
+    if (!isNudge) {
+      _nudgeCountForCurrentQuestion = 0;
+    }
 
     // 1. Immediately turn off speech-to-text listener so microphone doesn't capture bot output
     try {
@@ -1148,7 +1106,9 @@ class _LiveCallScreenState extends State<LiveCallScreen> with SingleTickerProvid
 
     setState(() {
       _botSubtitle = text;
-      _lastBotQuestion = overrideQuestion ?? text;
+      if (!isNudge) {
+        _lastBotQuestion = overrideQuestion ?? text;
+      }
       _isBotSpeaking = true;
       _isCoachSpeakingVideoPlaying = false; // Video will engage strictly when audio playback begins!
       _isProcessing = false;

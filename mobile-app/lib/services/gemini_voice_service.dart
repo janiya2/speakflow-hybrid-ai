@@ -54,6 +54,8 @@ class GeminiVoiceService {
   // When a key encounters HTTP 429 (Rate Limit) or Quota Exceeded, it is placed on a
   // 60-second cooldown so subsequent user turns skip it instantaneously with ZERO delay!
   static final Map<String, DateTime> _keyCooldowns = {};
+  final List<String> _recentOfflineReplies = [];
+  static String _lastOpeningUsed = '';
 
   bool get drillModeEnabled => _drillModeEnabled;
 
@@ -235,62 +237,18 @@ Do not include any explanation or markdown formatting, just the raw JSON.''';
     required String defaultPrompt,
     List<String> alternateQuestions = const [],
   }) async {
-    // 1. Prepare diverse local fallback pool first with pure native script
-    String cleanPrompt = defaultPrompt.replaceAll(RegExp(r'\([^)]*\)'), '').replaceAll(RegExp(r'\[[^\]]*\]'), '').trim();
-    final List<String> fallbackPool = [cleanPrompt];
+    // 1. Prepare diverse, non-repeating 20-language local opening question
+    final localFallback = LanguagePack20.buildVariedOpeningQuestion(
+      language: targetLanguage,
+      defaultPrompt: defaultPrompt,
+      alternateQuestions: alternateQuestions,
+      lastUsedOpening: _lastOpeningUsed,
+    );
+    _lastOpeningUsed = localFallback;
 
-    for (final q in alternateQuestions) {
-      final cleanQ = q.replaceAll(RegExp(r'\([^)]*\)'), '').replaceAll(RegExp(r'\[[^\]]*\]'), '').trim();
-      if (cleanQ.isNotEmpty) {
-        if (targetLanguage == 'Japanese') {
-          fallbackPool.add("こんにちは！コーチの${coach.name}です。$cleanQ");
-        } else if (targetLanguage == 'Korean') {
-          fallbackPool.add("안녕하세요! ${coach.name} 코치입니다. $cleanQ");
-        } else if (targetLanguage == 'Spanish') {
-          fallbackPool.add("¡Hola! Aquí el coach ${coach.name}. $cleanQ");
-        } else if (targetLanguage == 'Arabic') {
-          fallbackPool.add("مرحباً بك! أنا المدرب ${coach.name}. $cleanQ");
-        } else if (targetLanguage == 'Tamil') {
-          fallbackPool.add("வணக்கம்! நான் உங்கள் பயிற்சியாளர் ${coach.name}. $cleanQ");
-        } else if (targetLanguage == 'German') {
-          fallbackPool.add("Hallo! Hier ist dein Coach ${coach.name}. $cleanQ");
-          fallbackPool.add("Guten Tag! Schön, dass du da bist. $cleanQ");
-        } else if (targetLanguage == 'French') {
-          fallbackPool.add("Bonjour ! C'est ton coach ${coach.name}. $cleanQ");
-          fallbackPool.add("Salut ! Ravi de pratiquer avec toi aujourd'hui. $cleanQ");
-        } else if (targetLanguage == 'Italian') {
-          fallbackPool.add("Ciao! Sono il tuo coach ${coach.name}. $cleanQ");
-          fallbackPool.add("Buongiorno! Che bello parlare insieme oggi. $cleanQ");
-        } else if (targetLanguage == 'Portuguese') {
-          fallbackPool.add("Olá! Aqui é o seu coach ${coach.name}. $cleanQ");
-        } else if (targetLanguage == 'Chinese') {
-          fallbackPool.add("你好！我是你的教练${coach.name}。$cleanQ");
-        } else if (targetLanguage == 'Hindi') {
-          fallbackPool.add("नमस्ते! मैं आपका कोच ${coach.name} हूँ। $cleanQ");
-        } else if (targetLanguage == 'Russian') {
-          fallbackPool.add("Привет! Это твой тренер ${coach.name}. $cleanQ");
-        } else if (targetLanguage == 'Sinhala') {
-          fallbackPool.add("ආයුබෝවන්! මම ඔබේ පුහුණුකරු ${coach.name}. $cleanQ");
-        } else if (targetLanguage == 'Dutch') {
-          fallbackPool.add("Hallo! Ik ben je coach ${coach.name}. $cleanQ");
-        } else if (targetLanguage == 'Turkish') {
-          fallbackPool.add("Merhaba! Ben koçunuz ${coach.name}. $cleanQ");
-        } else if (targetLanguage == 'Vietnamese') {
-          fallbackPool.add("Xin chào! Tôi là huấn luyện viên ${coach.name}. $cleanQ");
-        } else if (targetLanguage == 'Indonesian') {
-          fallbackPool.add("Halo! Saya pelatih Anda ${coach.name}. $cleanQ");
-        } else if (targetLanguage == 'Thai') {
-          fallbackPool.add("สวัสดีครับ! ผมคือโค้ช ${coach.name}. $cleanQ");
-        } else if (targetLanguage == 'Swedish') {
-          fallbackPool.add("Hej! Jag är din coach ${coach.name}. $cleanQ");
-        } else {
-          fallbackPool.add("Hello! Coach ${coach.name} here. $cleanQ");
-          fallbackPool.add("Hi there! Great to chat with you today. $cleanQ");
-        }
-      }
+    if (simulateOffline || hybridMode == 'nano_only') {
+      return localFallback;
     }
-    fallbackPool.shuffle();
-    final localFallback = fallbackPool.first;
 
     if (_apiKey == null || _fallbackKeys.isEmpty) {
       await initConfig();
@@ -626,80 +584,23 @@ Reply ONLY with valid JSON:
     String spokenReply = '';
     String nextQuestion = '';
 
-    // A. English Grammar Rules (Tenses, Subject-Verb Agreement, Prepositions, Quantifiers)
-    if (targetLanguage == 'English') {
-      if (lower.contains('i go yesterday') || lower.contains('we go yesterday') || lower.contains('they go yesterday')) {
-        hasCorrection = true;
-        original = 'go yesterday';
-        correction = 'went yesterday';
-        explanation = "Use the past tense 'went' for actions completed in the past.";
-      } else if (lower.contains('i did went') || lower.contains('did saw') || lower.contains('did ate')) {
-        hasCorrection = true;
-        original = 'did + past tense verb';
-        correction = 'did go / did see / did eat';
-        explanation = "After auxiliary 'did', always use the base form of the verb.";
-      } else if (lower.contains('i have saw') || lower.contains('i have went') || lower.contains('have ate')) {
-        hasCorrection = true;
-        original = 'have + simple past';
-        correction = 'have seen / have gone / have eaten';
-        explanation = "Use the past participle (3rd form) with 'have' in the present perfect.";
-      } else if (lower.contains('he don\'t') || lower.contains('she don\'t') || lower.contains('it don\'t') || lower.contains('he dont') || lower.contains('she dont')) {
-        hasCorrection = true;
-        original = "don't with 3rd-person singular";
-        correction = "doesn't";
-        explanation = "Use 'doesn't' with third-person singular subjects (he, she, it).";
-      } else if (lower.contains('he have') || lower.contains('she have') || lower.contains('it have')) {
-        hasCorrection = true;
-        original = 'have with 3rd-person singular';
-        correction = 'has';
-        explanation = "Use 'has' instead of 'have' with third-person singular subjects.";
-      } else if (lower.contains('they is') || lower.contains('we is') || lower.contains('you is')) {
-        hasCorrection = true;
-        original = 'is with plural';
-        correction = 'are';
-        explanation = "Use 'are' with plural pronouns (we, they, you).";
-      } else if (lower.contains('married with')) {
-        hasCorrection = true;
-        original = 'married with';
-        correction = 'married to';
-        explanation = "In English, we say 'married to someone', not 'married with'.";
-      } else if (lower.contains('listen music')) {
-        hasCorrection = true;
-        original = 'listen music';
-        correction = 'listen to music';
-        explanation = "The verb 'listen' requires the preposition 'to' before an object.";
-      } else if (lower.contains('depend of')) {
-        hasCorrection = true;
-        original = 'depend of';
-        correction = 'depend on';
-        explanation = "In English, the verb 'depend' is always followed by 'on'.";
-      } else if (lower.contains('explain me')) {
-        hasCorrection = true;
-        original = 'explain me';
-        correction = 'explain to me';
-        explanation = "Use 'explain to someone', not 'explain someone'.";
-      } else if (lower.contains('much peoples') || lower.contains('many persons')) {
-        hasCorrection = true;
-        original = 'much peoples / many persons';
-        correction = 'many people';
-        explanation = "'People' is already plural and is used with 'many', not 'much'.";
-      } else if (lower.contains('informations')) {
-        hasCorrection = true;
-        original = 'informations';
-        correction = 'information';
-        explanation = "'Information' is an uncountable noun with no plural 's'.";
-      }
+    final bundle = LanguagePack20.resolve(targetLanguage);
+
+    // A. Comprehensive 20-Language Grammar & Politeness Detection
+    final match = LanguagePack20.detectGrammarMistake(userSpeech, targetLanguage);
+    if (match.hasCorrection) {
+      hasCorrection = true;
+      original = match.original;
+      correction = match.correction;
+      explanation = match.explanation;
+      targetPhrase = match.targetPhrase;
     } else if (targetLanguage == 'Japanese') {
-      if (lower.contains('食べますでした') || lower.contains('行きますでした') || lower.contains('見ますでした')) {
-        hasCorrection = true;
-        original = 'ますでした';
-        correction = 'ました';
-        explanation = '丁寧な過去形は「〜ますでした」ではなく「〜ました」を使います。';
-      } else if (lower.contains('綺麗かった') || lower.contains('静かかった')) {
+      if (lower.contains('綺麗かった') || lower.contains('静かかった')) {
         hasCorrection = true;
         original = 'な形容詞 + かった';
         correction = '綺麗でした';
         explanation = 'な形容詞の過去形は「〜かった」ではなく「〜でした」を使います。';
+        targetPhrase = '綺麗でした';
       }
     } else if (targetLanguage == 'Korean') {
       if (lower.contains('가았어요') || lower.contains('먹었요')) {
@@ -707,58 +608,65 @@ Reply ONLY with valid JSON:
         original = '불규칙 축약 오류';
         correction = '갔어요 / 먹었어요';
         explanation = '모음 조화에 따라 올바른 과거 시제 어미(-았/었어요)를 결합해야 합니다.';
+        targetPhrase = '갔어요';
       }
     }
 
-    final bundle = LanguagePack20.resolve(targetLanguage);
-
     if (hasCorrection) {
-      targetPhrase = correction;
+      targetPhrase = targetPhrase.isNotEmpty ? targetPhrase : correction;
       spokenReply = bundle.correctionPromptTemplate(correction);
       nextQuestion = bundle.drillPromptTemplate(targetPhrase);
     } else {
-      // B. Contextual Conversational Dialogue NLP Generator (20-Language Adaptive Follow-ups)
+      // B. Contextual & Anti-Repeat Conversational Dialogue Generator (All 20 Languages)
+      String? contextualReply;
+      String? contextualQuestion;
+
       if (bundle.code == 'fr' &&
           (lower.contains('café') || lower.contains('crème') || lower.contains('croissant') || lower.contains('pain') || lower.contains('carte') || lower.contains('boire') || lower.contains('manger') || lower.contains('voudrais'))) {
-        spokenReply = "Très bien ! Désirez-vous également une viennoiserie fraîche ou un verre d'eau avec cela ?";
-        nextQuestion = "Désirez-vous une viennoiserie fraîche avec cela ?";
+        contextualReply = "Très bien ! Désirez-vous également une viennoiserie fraîche ou un verre d'eau avec cela ?";
+        contextualQuestion = "Désirez-vous une viennoiserie fraîche avec cela ?";
       } else if (bundle.code == 'es' &&
           (lower.contains('café') || lower.contains('tapa') || lower.contains('comida') || lower.contains('agua') || lower.contains('carta') || lower.contains('quisiera'))) {
-        spokenReply = "¡Excelente elección! ¿Te gustaría acompañarlo con un postre o algo dulce?";
-        nextQuestion = "¿Te gustaría acompañarlo con un postre?";
+        contextualReply = "¡Excelente elección! ¿Te gustaría acompañarlo con un postre o algo dulce?";
+        contextualQuestion = "¿Te gustaría acompañarlo con un postre?";
       } else if (bundle.code == 'de' &&
           (lower.contains('kaffee') || lower.contains('bitte') || lower.contains('essen') || lower.contains('wasser'))) {
-        spokenReply = "Ausgezeichnete Wahl! Möchten Sie vielleicht noch ein Gebäck oder Kuchen dazu?";
-        nextQuestion = "Möchten Sie noch etwas dazu?";
+        contextualReply = "Ausgezeichnete Wahl! Möchten Sie vielleicht noch ein Gebäck oder Kuchen dazu?";
+        contextualQuestion = "Möchten Sie noch etwas dazu?";
       } else if (bundle.code == 'en') {
-        // English Contextual Dialogue Generator
         if (lower.contains('cricket') || lower.contains('match') || lower.contains('t20') || lower.contains('sport') || lower.contains('player')) {
-          spokenReply = "Cricket is such an exhilarating game! Which format do you enjoy most, T20 or One Day matches?";
-          nextQuestion = "Which format do you enjoy most, T20 or One Day matches?";
+          contextualReply = "Cricket is such an exhilarating game! Which format do you enjoy most, T20 or One Day matches?";
+          contextualQuestion = "Which format do you enjoy most, T20 or One Day matches?";
         } else if (lower.contains('travel') || lower.contains('trip') || lower.contains('visit') || lower.contains('country') || lower.contains('city') || lower.contains('flight')) {
-          spokenReply = "Traveling opens up so many great perspectives! What was the most memorable place you have visited so far?";
-          nextQuestion = "What was the most memorable place you have visited so far?";
+          contextualReply = "Traveling opens up so many great perspectives! What was the most memorable place you have visited so far?";
+          contextualQuestion = "What was the most memorable place you have visited so far?";
         } else if (lower.contains('coffee') || lower.contains('tea') || lower.contains('food') || lower.contains('restaurant') || lower.contains('dinner') || lower.contains('cook')) {
-          spokenReply = "That sounds lovely! Do you prefer cooking at home or exploring new cafes and restaurants?";
-          nextQuestion = "Do you prefer cooking at home or exploring new cafes?";
+          contextualReply = "That sounds lovely! Do you prefer cooking at home or exploring new cafes and restaurants?";
+          contextualQuestion = "Do you prefer cooking at home or exploring new cafes?";
         } else if (lower.contains('job') || lower.contains('work') || lower.contains('interview') || lower.contains('career') || lower.contains('office') || lower.contains('company')) {
-          spokenReply = "Professional growth is so rewarding. What would you say is your greatest strength in a professional team?";
-          nextQuestion = "What would you say is your greatest strength in a professional team?";
-        } else if (lower.contains('yes') || lower.contains('sure') || lower.contains('definitely') || lower.contains('agree') || lower.contains('of course')) {
-          spokenReply = "I completely agree with you! Could you share a quick example or experience about that?";
-          nextQuestion = "Could you share a quick example of that?";
-        } else if (lower.contains('no') || lower.contains('never') || lower.contains('disagree') || lower.contains('not really')) {
-          spokenReply = "That is a fair viewpoint. What would you prefer instead in that kind of situation?";
-          nextQuestion = "What would you prefer instead?";
-        } else {
-          spokenReply = bundle.offlineReplies.first;
-          nextQuestion = bundle.defaultFollowUpQuestion;
+          contextualReply = "Professional growth is so rewarding. What would you say is your greatest strength in a professional team?";
+          contextualQuestion = "What would you say is your greatest strength in a professional team?";
         }
+      }
+
+      if (contextualReply != null && !_recentOfflineReplies.contains(contextualReply)) {
+        spokenReply = contextualReply;
+        nextQuestion = contextualQuestion!;
       } else {
-        // All remaining 19 languages strictly stay in their native language! Zero English bleeding!
-        final idx = DateTime.now().millisecond % bundle.offlineReplies.length;
-        spokenReply = bundle.offlineReplies[idx];
-        nextQuestion = bundle.defaultFollowUpQuestion;
+        // Strictly rotate through unused DialoguePair turns in this language so the coach NEVER repeats!
+        final unusedTurns = bundle.dialogueTurns
+            .where((t) => !_recentOfflineReplies.contains('${t.reply} ${t.question}') && !_recentOfflineReplies.contains(t.question))
+            .toList();
+        final pool = unusedTurns.isNotEmpty ? unusedTurns : bundle.dialogueTurns;
+        final chosen = pool[DateTime.now().microsecondsSinceEpoch % pool.length];
+        spokenReply = '${chosen.reply} ${chosen.question}';
+        nextQuestion = chosen.question;
+      }
+
+      _recentOfflineReplies.add(spokenReply);
+      _recentOfflineReplies.add(nextQuestion);
+      if (_recentOfflineReplies.length > 24) {
+        _recentOfflineReplies.removeRange(0, _recentOfflineReplies.length - 24);
       }
     }
 

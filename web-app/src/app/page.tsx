@@ -31,7 +31,8 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { auth, db, storage, COLLECTIONS } from "@/lib/firebase";
 import {
   executeHybridInference,
-  checkOnDeviceNanoAvailability
+  checkOnDeviceNanoAvailability,
+  buildVariedOpeningQuestion
 } from "@/lib/hybrid-ai";
 import { resolveLanguageBundle } from "@/lib/language-pack-20";
 import { FULL_MOBILE_TOPICS_CATALOG } from "./topicsCatalog";
@@ -1484,6 +1485,8 @@ export default function StudentWebApp() {
   const userVideoRef = useRef<HTMLVideoElement | null>(null);
   const talkingVideoRef = useRef<HTMLVideoElement | null>(null);
   const idleVideoRef = useRef<HTMLVideoElement | null>(null);
+  const lastOpeningQuestionRef = useRef<string>("");
+  const nudgeCounterRef = useRef<number>(0);
 
   const startCoachTalkingVideo = () => {
     isBotSpeakingRef.current = true;
@@ -3816,6 +3819,7 @@ export default function StudentWebApp() {
 
   const scheduleProactiveNudge = () => {
     if (proactiveNudgeTimerRef.current) clearTimeout(proactiveNudgeTimerRef.current);
+    if (nudgeCounterRef.current >= 3) return; // Cap gentle nudges at 3 per turn so coach never overwhelms student
     proactiveNudgeTimerRef.current = setTimeout(() => {
       // Strictly check live Refs (never stale closure React state!) so coach NEVER interrupts while student speaks
       if (
@@ -3824,7 +3828,8 @@ export default function StudentWebApp() {
         !isProcessingRef.current &&
         !isUserSpeakingRef.current &&
         isCallActiveRef.current &&
-        activeCallTopic
+        activeCallTopic &&
+        nudgeCounterRef.current < 3
       ) {
         const lang =
           (activeCallTopic.language && activeCallTopic.language !== "All"
@@ -3832,10 +3837,12 @@ export default function StudentWebApp() {
             : selectedLanguage !== "All"
             ? selectedLanguage
             : "English") || "English";
-        const nudge = resolveLanguageBundle(lang).nudge;
+        const bundle = resolveLanguageBundle(lang);
+        const nudge = bundle.nudges[nudgeCounterRef.current % bundle.nudges.length];
+        nudgeCounterRef.current += 1;
         speakText(nudge, lang);
       }
-    }, 18000);
+    }, 24000);
   };
 
   // Helper: Detect if recognized microphone audio is actually an acoustic echo of the Coach's own voice
@@ -4148,7 +4155,15 @@ export default function StudentWebApp() {
         : selectedLanguage !== "All"
         ? selectedLanguage
         : "English") || "English";
-    speakText(topic.starterPrompt, langToUse);
+    nudgeCounterRef.current = 0;
+    const dynamicStarter = buildVariedOpeningQuestion(
+      langToUse,
+      topic.starterPrompt,
+      topic.starterQuestions || [],
+      lastOpeningQuestionRef.current
+    );
+    lastOpeningQuestionRef.current = dynamicStarter;
+    speakText(dynamicStarter, langToUse);
   };
 
   // 10. Repeat Match Helper
@@ -4177,6 +4192,7 @@ export default function StudentWebApp() {
     stopCoachTalkingVideo();
     setIsProcessing(true);
     setUserSpeechTurnsCount((prev) => prev + 1);
+    nudgeCounterRef.current = 0;
     if (proactiveNudgeTimerRef.current) clearTimeout(proactiveNudgeTimerRef.current);
 
     // Record student turn into live messenger dialogue history

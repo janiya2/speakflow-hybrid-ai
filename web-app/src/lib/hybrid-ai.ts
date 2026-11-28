@@ -9,7 +9,13 @@
 
 import { getAI, getGenerativeModel, GoogleAIBackend, InferenceMode, InferenceSource } from "firebase/ai";
 import app, { ai as firebaseAIInstance } from "./firebase";
-import { resolveLanguageBundle } from "./language-pack-20";
+import {
+  resolveLanguageBundle,
+  detectOfflineGrammarMistake,
+  buildVariedOpeningQuestion,
+} from "./language-pack-20";
+
+export { buildVariedOpeningQuestion };
 
 export interface GrammarCorrectionResult {
   hasCorrection: boolean;
@@ -492,39 +498,19 @@ async function executeOnDeviceInference(
   let spokenReply = "";
   let nextQuestion = "";
 
-  const langLower = language.toLowerCase();
   const bundle = resolveLanguageBundle(language);
 
-  if (langLower.includes("jap") || langLower === "ja") {
-    if (lower.includes("tabeta") && !lower.includes("mashita")) {
-      hasCorrection = true;
-      original = spokenText;
-      correction = "食べました (Tabemashita)";
-      explanation = "丁寧な会話では「食べた」より「食べました」が自然です。";
-      targetPhrase = "食べました";
-      spokenReply = "いいですね！丁寧に話す時は「食べました」と言ってみましょう。リピートしてみてください！";
-      nextQuestion = "何を食べましたか？";
-    } else {
-      spokenReply = pickNonRepeating(bundle.offlineReplies, recentBotTexts);
-      nextQuestion = bundle.defaultFollowUpQuestion;
-    }
-  } else if (langLower.includes("kor") || langLower === "ko") {
-    if (lower.includes("bogo") && !lower.includes("sipoyo")) {
-      hasCorrection = true;
-      original = spokenText;
-      correction = "보고 싶어요 (Bogo sipeoyo)";
-      explanation = "존댓말 표현으로 '보고 싶어요'가 더 자연스럽습니다.";
-      targetPhrase = "보고 싶어요";
-      spokenReply = "좋은 시도였어요! 한국어로는 '보고 싶어요'라고 해요. 다시 따라 해보시겠어요?";
-      nextQuestion = "언제 만날까요?";
-    } else {
-      spokenReply = pickNonRepeating(bundle.offlineReplies, recentBotTexts);
-      nextQuestion = bundle.defaultFollowUpQuestion;
-    }
-  } else if (bundle.code !== "en") {
-    spokenReply = pickNonRepeating(bundle.offlineReplies, recentBotTexts);
-    nextQuestion = bundle.defaultFollowUpQuestion;
-  } else {
+  // Check comprehensive grammar/politeness mistakes across all languages FIRST!
+  const grammarMatch = detectOfflineGrammarMistake(spokenText, language);
+  if (grammarMatch.hasCorrection) {
+    hasCorrection = true;
+    original = grammarMatch.original;
+    correction = grammarMatch.correction;
+    explanation = grammarMatch.explanation;
+    targetPhrase = grammarMatch.targetPhrase;
+    spokenReply = bundle.correctionPromptTemplate(grammarMatch.correction);
+    nextQuestion = bundle.retryTemplate(grammarMatch.targetPhrase);
+  } else if (bundle.code === "en") {
     const analyzed = analyzeEnglishLocally(spokenText, scenario, recentBotTexts);
     hasCorrection = analyzed.hasCorrection;
     original = analyzed.original;
@@ -533,6 +519,18 @@ async function executeOnDeviceInference(
     targetPhrase = analyzed.targetPhrase;
     spokenReply = analyzed.spokenReply;
     nextQuestion = analyzed.nextQuestion;
+  } else {
+    // Pick a fresh, non-repeating native reply + follow-up question across all 19 non-English languages
+    const freshTurns = bundle.dialogueTurns.filter(
+      (t) =>
+        !recentBotTexts.some(
+          (hist) => hist.includes(t.question.slice(0, 14)) || hist.includes(t.reply.slice(0, 14))
+        )
+    );
+    const pool = freshTurns.length > 0 ? freshTurns : bundle.dialogueTurns;
+    const chosen = pool[Math.floor(Math.random() * pool.length)];
+    spokenReply = chosen.reply;
+    nextQuestion = chosen.question;
   }
 
   const latency = Math.round(performance.now() - startTime);

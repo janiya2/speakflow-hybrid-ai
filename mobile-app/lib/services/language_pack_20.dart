@@ -1,11 +1,39 @@
+import 'dart:math';
+
 /// Unified 20-Language Native Pack for SpeakFlow AI Mobile App
-/// Guarantees zero English leakage across all 20 supported languages in
-/// offline resilience mode, pronunciation drills, wrap-up prompts, and test utterances.
+/// Provides:
+/// 1. 8+ distinct non-repeating conversational (reply, question) turns per language
+/// 2. 4 varied gentle silence nudges per language (never repeats same nudge)
+/// 3. Dynamic opening generators across all 20 languages (never starts every call with the same question)
+/// 4. Comprehensive offline grammar & politeness detection across major languages
+
+class DialoguePair {
+  final String reply;
+  final String question;
+  const DialoguePair({required this.reply, required this.question});
+}
+
+class OfflineGrammarMatch {
+  final bool hasCorrection;
+  final String original;
+  final String correction;
+  final String explanation;
+  final String targetPhrase;
+
+  const OfflineGrammarMatch({
+    required this.hasCorrection,
+    this.original = '',
+    this.correction = '',
+    this.explanation = '',
+    this.targetPhrase = '',
+  });
+}
 
 class NativeLanguageBundle {
   final String code;
-  final List<String> offlineReplies;
-  final String defaultFollowUpQuestion;
+  final List<DialoguePair> dialogueTurns;
+  final List<String> nudges;
+  final List<String> openingPrefixes;
   final String praise;
   final String praiseQuestion;
   final String grace;
@@ -19,8 +47,9 @@ class NativeLanguageBundle {
 
   const NativeLanguageBundle({
     required this.code,
-    required this.offlineReplies,
-    required this.defaultFollowUpQuestion,
+    required this.dialogueTurns,
+    required this.nudges,
+    required this.openingPrefixes,
     required this.praise,
     required this.praiseQuestion,
     required this.grace,
@@ -32,17 +61,39 @@ class NativeLanguageBundle {
     required this.drillPromptTemplate,
     required this.correctionPromptTemplate,
   });
+
+  List<String> get offlineReplies => dialogueTurns.map((t) => '${t.reply} ${t.question}').toList();
+  String get defaultFollowUpQuestion => dialogueTurns.first.question;
 }
 
 class LanguagePack20 {
+  static final Random _rand = Random();
+
   static final Map<String, NativeLanguageBundle> _bundles = {
     'ja': NativeLanguageBundle(
       code: 'ja',
-      offlineReplies: [
-        'なるほど、とても興味深いですね！もう少し詳しく教えていただけますか？',
-        'よく伝わりました！自然な日本語ですね。次は具体的にどうしますか？',
+      dialogueTurns: [
+        DialoguePair(reply: 'なるほど、よく伝わりました！', question: '次に具体的に何をしたいですか？'),
+        DialoguePair(reply: 'とても自然な日本語ですね！', question: '普段も同じような経験がありますか？'),
+        DialoguePair(reply: '素敵な考え方ですね！', question: '一番印象に残っていることは何ですか？'),
+        DialoguePair(reply: '分かりました、その通りですね！', question: 'もう少し詳しく教えていただけますか？'),
+        DialoguePair(reply: '素晴らしい表現です！', question: '別の選択肢があるとしたら、どれを選びますか？'),
+        DialoguePair(reply: 'おっしゃる通りです！', question: 'それについて友達はどう思いますか？'),
+        DialoguePair(reply: 'すごく興味深いお話ですね！', question: '今後どのように活かしていきたいですか？'),
+        DialoguePair(reply: 'なるほど、そういう見方もありますね！', question: '一番好きなポイントはどこですか？'),
       ],
-      defaultFollowUpQuestion: 'それについてどう思いますか？',
+      nudges: [
+        '聞いていますよ！ゆっくり考えて、思いついたことから話してみてくださいね。',
+        '大丈夫ですよ、間違えても全然平気です！短い一言からでも大丈夫ですよ。',
+        'もし難しければ、まずは「はい」か「いいえ」から答えてみてくださいね！',
+        'お時間のある時に、今一番気になっていることを教えていただけますか？',
+      ],
+      openingPrefixes: [
+        'こんにちは！今日も楽しく日本語を練習しましょう。',
+        'やあ！お話しできて嬉しいです。準備はいいですか？',
+        'お疲れ様です！リラックスして自然な会話から始めましょう。',
+        'ようこそ！今日はこのテーマでしっかり会話力を伸ばしましょう。',
+      ],
       praise: '素晴らしい！完璧な発音です！ 🎉',
       praiseQuestion: '他にはいかがですか？',
       grace: 'よく頑張りました！大丈夫です、続けていきましょう！',
@@ -56,11 +107,28 @@ class LanguagePack20 {
     ),
     'ko': NativeLanguageBundle(
       code: 'ko',
-      offlineReplies: [
-        '정말 흥미로운 이야기네요! 조금 더 자세히 말씀해 주시겠어요?',
-        '자연스럽게 잘 말씀하셨어요! 다음으로는 무엇을 원하시나요?',
+      dialogueTurns: [
+        DialoguePair(reply: '잘 이해했어요! 정말 자연스럽게 말씀하셨네요.', question: '그 다음에는 무엇을 하고 싶으신가요?'),
+        DialoguePair(reply: '좋은 의견이에요!', question: '예전에도 비슷한 경험이 있으신가요?'),
+        DialoguePair(reply: '와, 정말 흥미로운 이야기네요!', question: '가장 기억에 남는 순간은 언제였나요?'),
+        DialoguePair(reply: '그렇군요, 충분히 공감돼요.', question: '조금만 더 자세히 설명해 주실 수 있나요?'),
+        DialoguePair(reply: '표현력이 정말 좋으시네요!', question: '만약 다시 선택할 수 있다면 어떤 걸 고르실 건가요?'),
+        DialoguePair(reply: '맞아요, 저도 그렇게 생각해요!', question: '주변 친구들은 보통 어떻게 말하나요?'),
+        DialoguePair(reply: '아주 명확하게 잘 말씀하셨어요.', question: '그 중에서 가장 좋아하는 부분은 무엇인가요?'),
+        DialoguePair(reply: '네, 알겠습니다!', question: '앞으로의 계획은 어떻게 되시나요?'),
       ],
-      defaultFollowUpQuestion: '그 점에 대해 어떻게 생각하세요?',
+      nudges: [
+        '듣고 있어요! 틀려도 괜찮으니 편하게 말씀해 주세요.',
+        '천천히 생각하셔도 돼요! 짧은 문장부터 시작해 볼까요?',
+        '어려우시다면 간단히 느낌부터 말씀해 주셔도 좋아요!',
+        '지금 머릿속에 가장 먼저 떠오르는 단어가 무엇인가요?',
+      ],
+      openingPrefixes: [
+        '안녕하세요! 오늘도 재미있게 한국어 연습해 봐요.',
+        '반가워요! 오늘 대화가 정말 기대되네요.',
+        '편안하게 숨 한 번 쉬고, 자연스럽게 시작해 볼까요?',
+        '환영합니다! 오늘 주제에 대해 함께 이야기해 봐요.',
+      ],
       praise: '아주 좋아요! 완벽한 발음이에요! 🎉',
       praiseQuestion: '더 이야기하고 싶은 것이 있으신가요?',
       grace: '좋은 시도였어요! 괜찮아요, 계속해서 이야기해 봐요!',
@@ -74,11 +142,28 @@ class LanguagePack20 {
     ),
     'zh': NativeLanguageBundle(
       code: 'zh',
-      offlineReplies: [
-        '我完全明白了！您可以再多介绍一下具体细节吗？',
-        '说得非常地道自然！接下来您打算怎么做呢？',
+      dialogueTurns: [
+        DialoguePair(reply: '我完全明白了，表达得很自然！', question: '接下来您打算怎么做呢？'),
+        DialoguePair(reply: '这个想法很有意思！', question: '您以前有过类似的经历吗？'),
+        DialoguePair(reply: '说得非常地道！', question: '这其中您最喜欢哪个部分？'),
+        DialoguePair(reply: '很有道理，我同意您的看法。', question: '能再多分享一些细节吗？'),
+        DialoguePair(reply: '您的进步真快！', question: '如果是和朋友一起，您会怎么安排？'),
+        DialoguePair(reply: '好的，没问题！', question: '除此之外，您还有其他偏好吗？'),
+        DialoguePair(reply: '听起来非常棒！', question: '这件事对您有什么特别的启发吗？'),
+        DialoguePair(reply: '我理解您的意思了。', question: '您未来对此有什么计划？'),
       ],
-      defaultFollowUpQuestion: '您对此有什么看法？',
+      nudges: [
+        '我在听呢！不用紧张，想到什么就说什么。',
+        '慢慢来，哪怕只说一个词或短句也完全可以！',
+        '您可以先告诉我您最简单的第一反应吗？',
+        '别担心语法对错，勇敢说出来就是进步！',
+      ],
+      openingPrefixes: [
+        '你好！很高兴今天能陪你一起练习中文。',
+        '嗨！准备好开始今天轻松有趣的对话了吗？',
+        '欢迎回来！我们放松心情，自然地聊一聊吧。',
+        '今天的话题非常实用，让我们直接开始吧！',
+      ],
       praise: '太棒了！发音非常标准！ 🎉',
       praiseQuestion: '您还想分享什么吗？',
       grace: '很好的尝试！别担心，我们继续练习吧！',
@@ -92,11 +177,28 @@ class LanguagePack20 {
     ),
     'ar': NativeLanguageBundle(
       code: 'ar',
-      offlineReplies: [
-        'ممتاز، فهمت قصدك تماماً! هل يمكنك إخباري بالمزيد عن ذلك؟',
-        'تعبير رائع وطبيعي جداً! ماذا تفضل أن تفعل بعد ذلك؟',
+      dialogueTurns: [
+        DialoguePair(reply: 'ممتاز، فهمت قصدك تماماً!', question: 'كيف تود أن نتابع الحديث بعد ذلك؟'),
+        DialoguePair(reply: 'تعبير رائع وطبيعي جداً!', question: 'هل مررت بتجربة مشابهة من قبل؟'),
+        DialoguePair(reply: 'أحسنت، فكرة جميلة حقاً!', question: 'ما أكثر شيء أعجبك في هذا الأمر؟'),
+        DialoguePair(reply: 'هذا واضح جداً ومقنع.', question: 'هل يمكنك إخباري بمزيد من التفاصيل؟'),
+        DialoguePair(reply: 'نطقك يتحسن بسرعة!', question: 'ماذا كنت ستفعل لو تغير الموقف؟'),
+        DialoguePair(reply: 'بالتأكيد، أتفق معك تماماً!', question: 'ما خطتك للخطوة القادمة؟'),
+        DialoguePair(reply: 'جميل جداً!', question: 'من الشخص الذي تحب مشاركة هذا معه؟'),
+        DialoguePair(reply: 'رائع، استمر بهذا الأسلوب!', question: 'هل هناك خيار آخر تفضله عادةً؟'),
       ],
-      defaultFollowUpQuestion: 'ما رأيك في ذلك؟',
+      nudges: [
+        'أنا أستمع إليك! خذ وقتك ولا تقلق من الأخطاء.',
+        'لا بأس، يمكنك البدء بجملة قصيرة جداً!',
+        'فكر بهدوء، ما أول شيء يخطر ببالك الآن؟',
+        'أنا هنا لمساعدتك، جرب أن تجيب بكلمات بسيطة.',
+      ],
+      openingPrefixes: [
+        'مرحباً بك! يسعدني جداً التدرب معك اليوم.',
+        'أهلاً! لنبدأ محادثة طبيعية وممتعة باللغة العربية.',
+        'أهلاً وسهلاً! خذ نفساً عميقاً ولنبدأ هذا التمرين الرائع.',
+        'مرحباً! هذا الموضوع شيق جداً، هل أنت مستعد؟',
+      ],
       praise: 'رائع! نطقك ممتاز جداً! 🎉',
       praiseQuestion: 'ما الذي ترغب في التحدث عنه أيضاً؟',
       grace: 'محاولة رائعة! لا تقلق، سنتعلمها معاً. دعنا نواصل حديثنا!',
@@ -110,11 +212,28 @@ class LanguagePack20 {
     ),
     'es': NativeLanguageBundle(
       code: 'es',
-      offlineReplies: [
-        '¡Qué interesante! ¿Podrías contarme un poco más sobre eso?',
-        '¡Excelente! Suena muy natural. ¿Qué te gustaría hacer a continuación?',
+      dialogueTurns: [
+        DialoguePair(reply: '¡Muy bien! Te he entendido perfectamente.', question: '¿Qué te gustaría hacer a continuación?'),
+        DialoguePair(reply: '¡Suena muy natural y fluido!', question: '¿Has tenido alguna experiencia parecida antes?'),
+        DialoguePair(reply: '¡Excelente punto de vista!', question: '¿Qué es lo que más te gusta de esa idea?'),
+        DialoguePair(reply: '¡Claro que sí, tienes toda la razón!', question: '¿Podrías contarme un poco más de detalle?'),
+        DialoguePair(reply: '¡Qué buena respuesta!', question: '¿Y cómo reaccionarías si la situación cambiara?'),
+        DialoguePair(reply: 'Entendido perfectamente.', question: '¿Cuál sería tu opción favorita en este caso?'),
+        DialoguePair(reply: '¡Me encanta cómo lo expresaste!', question: '¿Con qué frecuencia sueles practicar o hacer esto?'),
+        DialoguePair(reply: '¡Buen trabajo!', question: '¿Qué más te gustaría añadir sobre este tema?'),
       ],
-      defaultFollowUpQuestion: '¿Qué opinas sobre eso?',
+      nudges: [
+        '¡Te estoy escuchando! Tómate tu tiempo y responde cuando quieras.',
+        'No te preocupes por cometer errores, ¡intenta con una frase corta!',
+        '¿Qué es lo primero que se te viene a la mente ahora mismo?',
+        'Tómalo con calma, estoy aquí para ayudarte. ¿Qué opinas?',
+      ],
+      openingPrefixes: [
+        '¡Hola! Qué alegría practicar español contigo hoy.',
+        '¡Buenas! Vamos a tener una conversación muy natural y divertida.',
+        '¡Bienvenido! Relájate y charlemos como si estuviéramos ahí mismo.',
+        '¡Qué gusto escucharte! Empecemos con este escenario práctico.',
+      ],
       praise: '¡Genial! ¡Pronunciación perfecta! 🎉',
       praiseQuestion: '¿Qué más te gustaría compartir?',
       grace: '¡Buen intento! No te preocupes, lo dominarás la próxima vez. ¡Sigamos!',
@@ -128,11 +247,28 @@ class LanguagePack20 {
     ),
     'fr': NativeLanguageBundle(
       code: 'fr',
-      offlineReplies: [
-        "C'est un plaisir de vous écouter ! Pourriez-vous m'en dire un peu plus à ce sujet ?",
-        'Très bien, c’est noté avec plaisir ! Que souhaitez-vous faire ensuite ?',
+      dialogueTurns: [
+        DialoguePair(reply: "Très bien, j'ai parfaitement compris !", question: 'Que souhaitez-vous faire ou commander ensuite ?'),
+        DialoguePair(reply: "C'est très clair et naturel !", question: "Avez-vous l'habitude de vivre ce genre de situation ?"),
+        DialoguePair(reply: "Excellent choix, j'adore votre façon de le dire !", question: "Qu'est-ce qui vous plaît le plus dans cette option ?"),
+        DialoguePair(reply: "Parfait, c'est noté avec plaisir !", question: 'Souhaitez-vous ajouter un petit détail ou une préférence ?'),
+        DialoguePair(reply: 'Votre accent devient de plus en plus fluide !', question: 'Et comment réagiriez-vous si cela changeait ?'),
+        DialoguePair(reply: "C'est une excellente idée !", question: 'Pouvez-vous m’expliquer pourquoi vous préférez cela ?'),
+        DialoguePair(reply: "Tout à fait d'accord avec vous !", question: "Quel est votre prochain objectif aujourd'hui ?"),
+        DialoguePair(reply: "C'est un plaisir de vous écouter !", question: 'Y a-t-il autre chose que vous aimeriez partager ?'),
       ],
-      defaultFollowUpQuestion: "Qu'en pensez-vous ?",
+      nudges: [
+        'Je vous écoute ! Prenez votre temps et dites-moi ce que vous en pensez.',
+        "N'ayez aucune crainte de faire des erreurs, essayez même une phrase courte !",
+        "Quelle est la première réponse qui vous vient à l'esprit ?",
+        'Tout va bien, prenez votre temps. Voulez-vous que je reformule plus simplement ?',
+      ],
+      openingPrefixes: [
+        'Bonjour ! Je suis ravi de pratiquer le français avec vous aujourd’hui.',
+        'Salut ! Plongeons tout de suite dans cette conversation réaliste.',
+        'Bienvenue ! Détendez-vous et parlons naturellement comme à Paris.',
+        'Enchanté de vous retrouver ! Commençons sans attendre.',
+      ],
       praise: 'Magnifique ! Prononciation parfaite ! 🎉',
       praiseQuestion: "Que souhaitez-vous partager d'autre ?",
       grace: 'Bel effort ! Ne vous inquiétez pas, vous maîtriserez cela la prochaine fois. Continuons !',
@@ -146,11 +282,28 @@ class LanguagePack20 {
     ),
     'de': NativeLanguageBundle(
       code: 'de',
-      offlineReplies: [
-        'Das klingt wirklich spannend! Könnten Sie mir ein bisschen mehr darüber erzählen?',
-        'Sehr gut, das habe ich genau verstanden! Was möchten Sie als Nächstes tun?',
+      dialogueTurns: [
+        DialoguePair(reply: 'Sehr gut, das habe ich genau verstanden!', question: 'Was möchten Sie als Nächstes tun?'),
+        DialoguePair(reply: 'Das klingt wirklich natürlich und flüssig!', question: 'Haben Sie das schon einmal erlebt?'),
+        DialoguePair(reply: 'Eine großartige Ansicht!', question: 'Was gefällt Ihnen daran besonders gut?'),
+        DialoguePair(reply: 'Verstanden, das macht absolut Sinn.', question: 'Könnten Sie mir noch ein Beispiel dazu nennen?'),
+        DialoguePair(reply: 'Ihre Aussprache klingt sehr sicher!', question: 'Welche Alternative würden Sie sonst wählen?'),
+        DialoguePair(reply: 'Das ist ein spannender Punkt!', question: 'Wie gehen Sie normalerweise in solchen Situationen vor?'),
+        DialoguePair(reply: 'Wunderbar formuliert!', question: 'Haben Sie noch weitere Wünsche oder Fragen dazu?'),
+        DialoguePair(reply: 'Ja, da stimme ich völlig zu!', question: 'Wie geht Ihre Geschichte weiter?'),
       ],
-      defaultFollowUpQuestion: 'Was denken Sie darüber?',
+      nudges: [
+        'Ich höre Ihnen zu! Lassen Sie sich ruhig Zeit.',
+        'Keine Angst vor Fehlern — fangen Sie einfach mit einem kurzen Satz an!',
+        'Was fällt Ihnen als Erstes zu dieser Situation ein?',
+        'Alles gut, nehmen Sie sich einen Moment. Soll ich die Frage anders stellen?',
+      ],
+      openingPrefixes: [
+        'Hallo! Schön, heute mit Ihnen Deutsch zu üben.',
+        'Guten Tag! Lassen Sie uns direkt in ein natürliches Gespräch starten.',
+        'Willkommen! Machen wir eine lockere, praxisnahe Übung zusammen.',
+        'Freut mich sehr! Sind Sie bereit für unser heutiges Szenario?',
+      ],
       praise: 'Wunderbar! Perfekte Aussprache! 🎉',
       praiseQuestion: 'Was möchten Sie noch teilen?',
       grace: 'Guter Versuch! Keine Sorge, beim nächsten Mal klappt es. Machen wir weiter!',
@@ -164,11 +317,28 @@ class LanguagePack20 {
     ),
     'it': NativeLanguageBundle(
       code: 'it',
-      offlineReplies: [
-        'Benissimo, ho capito perfettamente! Potresti raccontarmi qualcosa in più a riguardo?',
-        'Molto naturale e chiaro! Cosa ti piacerebbe fare adesso?',
+      dialogueTurns: [
+        DialoguePair(reply: 'Benissimo, ho capito perfettamente!', question: 'Cosa ti piacerebbe fare adesso?'),
+        DialoguePair(reply: 'Suona molto naturale ed elegante!', question: 'Hai già avuto un’esperienza simile?'),
+        DialoguePair(reply: 'Ottimo punto di vista!', question: 'Qual è la cosa che preferisci di più?'),
+        DialoguePair(reply: 'Chiarissimo, ha molto senso!', question: 'Potresti raccontarmi qualche dettaglio in più?'),
+        DialoguePair(reply: 'Stai parlando con molta sicurezza!', question: "E se dovessi scegliere un'alternativa?"),
+        DialoguePair(reply: "Perfetto, sono proprio d'accordo!", question: 'Come ti organizzi di solito in questi casi?'),
+        DialoguePair(reply: 'Bellissima risposta!', question: "C'è qualcos'altro che vorresti aggiungere?"),
+        DialoguePair(reply: 'Fantastico!', question: 'Qual è il prossimo passo secondo te?'),
       ],
-      defaultFollowUpQuestion: 'Cosa ne pensi?',
+      nudges: [
+        'Ti sto ascoltando! Prenditi il tuo tempo e rispondi con calma.',
+        'Non temere di sbagliare, inizia pure con una frase breve!',
+        'Qual è la prima cosa che ti viene in mente?',
+        'Tutto bene, siamo qui per fare pratica. Vuoi che ripeta la domanda?',
+      ],
+      openingPrefixes: [
+        'Ciao! Che bello esercitarci in italiano oggi.',
+        'Buongiorno! Iniziamo subito una conversazione naturale e piacevole.',
+        'Benvenuto! Rilassati e chiacchieriamo come in un vero incontro.',
+        'Piacere mio! Cominciamo questo nuovo scenario insieme.',
+      ],
       praise: 'Fantastico! Pronuncia perfetta! 🎉',
       praiseQuestion: "Cos'altro vorresti condividere?",
       grace: 'Ottimo tentativo! Non preoccuparti, ci riuscirai la prossima volta. Continuiamo!',
@@ -182,11 +352,28 @@ class LanguagePack20 {
     ),
     'pt': NativeLanguageBundle(
       code: 'pt',
-      offlineReplies: [
-        'Muito bem, entendi perfeitamente! Você poderia me contar um pouco mais sobre isso?',
-        'Soa muito natural! O que você gostaria de fazer em seguida?',
+      dialogueTurns: [
+        DialoguePair(reply: 'Muito bem, entendi perfeitamente!', question: 'O que você gostaria de fazer em seguida?'),
+        DialoguePair(reply: 'Soa muito natural e espontâneo!', question: 'Você já passou por uma situação parecida?'),
+        DialoguePair(reply: 'Excelente ideia!', question: 'O que você mais gosta nessa escolha?'),
+        DialoguePair(reply: 'Faz todo sentido!', question: 'Você poderia me dar mais um detalhe sobre isso?'),
+        DialoguePair(reply: 'Sua pronúncia está ótima!', question: 'Qual seria a sua segunda opção?'),
+        DialoguePair(reply: 'Concordo plenamente!', question: 'Como você costuma lidar com isso no dia a dia?'),
+        DialoguePair(reply: 'Muito bom!', question: 'Gostaria de acrescentar mais alguma coisa?'),
+        DialoguePair(reply: 'Perfeito!', question: 'Para onde vamos a partir daqui?'),
       ],
-      defaultFollowUpQuestion: 'O que você acha disso?',
+      nudges: [
+        'Estou ouvindo! Fique à vontade para responder quando estiver pronto.',
+        'Sem pressa e sem medo de errar — tente uma frase bem curtinha!',
+        'Qual é a primeira resposta que vem à sua mente?',
+        "Tudo bem, estou aqui para ajudar. Quer tentar responder com 'sim' ou 'não' primeiro?",
+      ],
+      openingPrefixes: [
+        'Olá! Que ótimo praticar português com você hoje.',
+        'Oi! Vamos ter uma conversa bem natural e leve agora.',
+        'Seja bem-vindo! Relaxe e vamos conversar como amigos.',
+        'Que bom falar com você! Vamos começar este cenário prático.',
+      ],
       praise: 'Incrível! Pronúncia perfeita! 🎉',
       praiseQuestion: 'O que mais você gostaria de compartilhar?',
       grace: 'Bom esforço! Não se preocupe, você vai dominar na próxima. Vamos continuar!',
@@ -200,11 +387,28 @@ class LanguagePack20 {
     ),
     'ru': NativeLanguageBundle(
       code: 'ru',
-      offlineReplies: [
-        'Отлично, я вас прекрасно понял! Не могли бы вы рассказать об этом немного подробнее?',
-        'Звучит очень естественно! Что бы вы хотели сделать дальше?',
+      dialogueTurns: [
+        DialoguePair(reply: 'Отлично, я вас прекрасно понял!', question: 'Что бы вы хотели сделать дальше?'),
+        DialoguePair(reply: 'Звучит очень естественно!', question: 'У вас уже был похожий опыт раньше?'),
+        DialoguePair(reply: 'Замечательная мысль!', question: 'Что вам нравится в этом больше всего?'),
+        DialoguePair(reply: 'Да, это звучит очень логично.', question: 'Не могли бы вы рассказать немного подробнее?'),
+        DialoguePair(reply: 'Вы говорите всё увереннее!', question: 'Какой другой вариант вы бы рассмотрели?'),
+        DialoguePair(reply: 'Совершенно с вами согласен!', question: 'Как вы обычно поступаете в такой ситуации?'),
+        DialoguePair(reply: 'Хорошо сформулировано!', question: 'Что бы вы хотели добавить к этому?'),
+        DialoguePair(reply: 'Понятно!', question: 'Какой будет наш следующий шаг?'),
       ],
-      defaultFollowUpQuestion: 'Что вы об этом думаете?',
+      nudges: [
+        'Я вас слушаю! Не спешите и поделитесь своими мыслями.',
+        'Не бойтесь ошибиться — попробуйте сказать хотя бы короткую фразу!',
+        'Что первым приходит вам в голову по этому поводу?',
+        'Всё в порядке, я здесь. Хотите, я задам вопрос немного проще?',
+      ],
+      openingPrefixes: [
+        'Привет! Рад попрактиковаться с вами в русском языке сегодня.',
+        'Здравствуйте! Давайте начнём живой и естественный разговор.',
+        'Добро пожаловать! Расслабьтесь и представьте себя в этой ситуации.',
+        'Отлично, начинаем! Готовы к сегодняшнему диалогу?',
+      ],
       praise: 'Замечательно! Идеальное произношение! 🎉',
       praiseQuestion: 'Что бы вы ещё хотели добавить?',
       grace: 'Хорошая попытка! Не переживайте, в следующий раз всё получится. Продолжаем!',
@@ -218,11 +422,28 @@ class LanguagePack20 {
     ),
     'hi': NativeLanguageBundle(
       code: 'hi',
-      offlineReplies: [
-        'बहुत बढ़िया, मैं आपकी बात पूरी तरह समझ गया! क्या आप इस बारे में थोड़ा और बता सकते हैं?',
-        'यह बहुत स्वाभाविक लगा! आगे आप क्या करना चाहेंगे?',
+      dialogueTurns: [
+        DialoguePair(reply: 'बहुत बढ़िया, मैं आपकी बात पूरी तरह समझ गया!', question: 'आगे आप क्या करना चाहेंगे?'),
+        DialoguePair(reply: 'यह बहुत स्वाभाविक और स्पष्ट लगा!', question: 'क्या आपको पहले भी ऐसा अनुभव हुआ है?'),
+        DialoguePair(reply: 'बहुत अच्छा विचार है!', question: 'इसमें आपको सबसे ज़्यादा क्या पसंद आया?'),
+        DialoguePair(reply: 'बिल्कुल सही कहा आपने!', question: 'क्या आप इसके बारे में थोड़ा और विस्तार से बता सकते हैं?'),
+        DialoguePair(reply: 'आपका आत्मविश्वास शानदार है!', question: 'अगर आपके पास दूसरा विकल्प होता, तो आप क्या चुनते?'),
+        DialoguePair(reply: 'समझ गया, बहुत अच्छी बात है!', question: 'आम तौर पर आप ऐसी स्थिति में क्या करते हैं?'),
+        DialoguePair(reply: 'वाह, बहुत बढ़िया जवाब!', question: 'क्या आप इसमें कुछ और जोड़ना चाहेंगे?'),
+        DialoguePair(reply: 'अच्छा लगा सुनकर!', question: 'अब आपका अगला कदम क्या होगा?'),
       ],
-      defaultFollowUpQuestion: 'इस बारे में आपका क्या विचार है?',
+      nudges: [
+        'मैं सुन रहा हूँ! आराम से अपने विचार साझा करें।',
+        'गलती होने की चिंता न करें — छोटे से वाक्य से शुरू करें!',
+        'अभी आपके मन में पहला विचार क्या आ रहा है?',
+        'कोई बात नहीं, समय लीजिए। क्या मैं प्रश्न को आसान शब्दों में पूछूँ?',
+      ],
+      openingPrefixes: [
+        'नमस्ते! आज आपके साथ हिंदी का अभ्यास करके बहुत खुशी हो रही है।',
+        'आइए, आज एक बिल्कुल स्वाभाविक बातचीत शुरू करते हैं।',
+        'स्वागत है! आराम से बोलें और इस स्थिति की कल्पना करें।',
+        'चलिए आज के विषय पर मज़ेदार चर्चा शुरू करते हैं!',
+      ],
       praise: 'शानदार! बिल्कुल सही उच्चारण! 🎉',
       praiseQuestion: 'आप और क्या साझा करना चाहेंगे?',
       grace: 'अच्छा प्रयास! चिंता न करें, अगली बार आप इसे और बेहतर बोलेंगे। चलिए आगे बढ़ते हैं!',
@@ -236,11 +457,28 @@ class LanguagePack20 {
     ),
     'ta': NativeLanguageBundle(
       code: 'ta',
-      offlineReplies: [
-        'மிக நன்று, நீங்கள் சொன்னது தெளிவாகப் புரிந்தது! இதைப்பற்றி இன்னும் கொஞ்சம் சொல்ல முடியுமா?',
-        'மிகவும் இயல்பாகப் பேசினீர்கள்! அடுத்து நீங்கள் என்ன செய்ய விரும்புகிறீர்கள்?',
+      dialogueTurns: [
+        DialoguePair(reply: 'மிக நன்று, நீங்கள் சொன்னது தெளிவாகப் புரிந்தது!', question: 'அடுத்து நீங்கள் என்ன செய்ய விரும்புகிறீர்கள்?'),
+        DialoguePair(reply: 'மிகவும் இயல்பாகப் பேசினீர்கள்!', question: 'இதற்கு முன் இதே போன்ற அனுபவம் உங்களுக்கு இருந்ததா?'),
+        DialoguePair(reply: 'சிறப்பான கருத்து!', question: 'இதில் உங்களுக்கு மிகவும் பிடித்த விஷயம் எது?'),
+        DialoguePair(reply: 'சரியாகச் சொன்னீர்கள்!', question: 'இதைப்பற்றி இன்னும் கொஞ்சம் விவரமாகச் சொல்ல முடியுமா?'),
+        DialoguePair(reply: 'உங்கள் தமிழ் உச்சரிப்பு அருமையாக உள்ளது!', question: 'வேறொரு வாய்ப்பு இருந்தால் நீங்கள் எதைத் தேர்ந்தெடுப்பீர்கள்?'),
+        DialoguePair(reply: 'புரிந்தது, நல்ல முடிவு!', question: 'சாதாரணமாக இப்படிப்பட்ட நேரத்தில் நீங்கள் என்ன செய்வீர்கள்?'),
+        DialoguePair(reply: 'மிகவும் சுவாரசியமாக இருக்கிறது!', question: 'இதைப் பற்றி வேறு ஏதாவது சொல்ல விரும்புகிறீர்களா?'),
+        DialoguePair(reply: 'நல்லது!', question: 'உங்கள் அடுத்த திட்டம் என்ன?'),
       ],
-      defaultFollowUpQuestion: 'இதைப் பற்றி நீங்கள் என்ன நினைக்கிறீர்கள்?',
+      nudges: [
+        'நான் கேட்டுக்கொண்டிருக்கிறேன்! தயங்காமல் உங்கள் கருத்தைச் சொல்லுங்கள்.',
+        'தவறுகளைப் பற்றி கவலைப்படாதீர்கள் — ஒரு சின்ன வாக்கியத்தில் தொடங்குங்கள்!',
+        'இப்போது உங்கள் மனதில் முதலில் தோன்றும் பதில் என்ன?',
+        'பரவாயில்லை, மெதுவாகச் சிந்தித்துப் பேசுங்கள். நான் வேறு விதமாகக் கேட்கட்டுமா?',
+      ],
+      openingPrefixes: [
+        'வணக்கம்! இன்று உங்களுடன் தமிழில் உரையாடுவதில் மிகவும் மகிழ்ச்சி.',
+        'வாருங்கள், இன்று இயல்பான ஒரு உரையாடலைத் தொடங்குவோம்.',
+        'நல்வரவு! நிதானமாகவும் நம்பிக்கையுடனும் பேசத் தொடங்குங்கள்.',
+        'சரி, இன்றைய சூழலுக்கு ஏற்ப நமது பயிற்சியை ஆரம்பிக்கலாமா?',
+      ],
       praise: 'அருமை! மிகச் சரியான உச்சரிப்பு! 🎉',
       praiseQuestion: 'வேறென்ன சொல்ல விரும்புகிறீர்கள்?',
       grace: 'நல்ல முயற்சி! கவலைப்படாதீர்கள், தொடர்ந்து பேசுவோம்!',
@@ -254,11 +492,28 @@ class LanguagePack20 {
     ),
     'si': NativeLanguageBundle(
       code: 'si',
-      offlineReplies: [
-        'හොඳයි, මට පැහැදිලිව තේරුණා! මේ ගැන තව ටිකක් විස්තර කරන්න පුළුවන්ද?',
-        'ස්තූතියි! ඔබේ අදහස හරිම ස්වභාවිකයි. ඊළඟට මොකක්ද ඔබ කරන්න කැමති?',
+      dialogueTurns: [
+        DialoguePair(reply: 'හොඳයි, මට පැහැදිලිව තේරුණා!', question: 'ඊළඟට ඔබ කරන්න කැමති මොකක්ද?'),
+        DialoguePair(reply: 'ඔබේ අදහස හරිම ස්වභාවිකයි!', question: 'මීට කලින් මේ වගේ අත්දැකීමක් තිබිලා තියෙනවද?'),
+        DialoguePair(reply: 'නියම අදහසක්!', question: 'ඒකෙන් ඔබ වැඩියෙන්ම කැමති මොන කොටසටද?'),
+        DialoguePair(reply: 'හරිම පැහැදිලියි!', question: 'මේ ගැන තව ටිකක් විස්තර කරන්න පුළුවන්ද?'),
+        DialoguePair(reply: 'ඔබ හරිම විශ්වාසයෙන් කතා කරනවා!', question: 'වෙනත් විකල්පයක් තිබුණා නම් ඔබ මොකක්ද තෝරගන්නේ?'),
+        DialoguePair(reply: 'ඇත්තටම මමත් ඒකට එකඟයි!', question: 'සාමාන්‍යයෙන් ඔබ මේ වගේ වෙලාවට මොකද කරන්නේ?'),
+        DialoguePair(reply: 'හරිම රසවත් කතාවක්!', question: 'ඒ ගැන තව මොනවද එකතු කරන්න තියෙන්නේ?'),
+        DialoguePair(reply: 'ස්තූතියි, මට තේරුණා!', question: 'ඔබේ ඊළඟ සැලැස්ම මොකක්ද?'),
       ],
-      defaultFollowUpQuestion: 'ඒ ගැන ඔබ මොකද හිතන්නේ?',
+      nudges: [
+        'මම අහගෙන ඉන්නේ! සන්සුන්ව ඔබේ අදහස කියන්න.',
+        'වැරදීම් ගැන බය වෙන්න එපා — පොඩි වාක්‍යයකින් පටන් ගමු!',
+        'දැන්ම ඔබේ හිතට එන පළමු අදහස මොකක්ද?',
+        'කලබල නැතුව කල්පනා කරලා කියන්න. මම ප්‍රශ්නය තව සරල කරන්නද?',
+      ],
+      openingPrefixes: [
+        'ආයුබෝවන්! අද ඔබ එක්ක සිංහලෙන් පුහුණු වෙන්න ලැබීම සතුටක්.',
+        'හෙලෝ! අපි ස්වභාවිකවම මේ සංවාදය පටන් ගමු.',
+        'සාදරයෙන් පිළිගන්නවා! සැහැල්ලුවෙන් කතා කරන්න පටන් ගන්න.',
+        'හරි, අද මාතෘකාව ගැන අපි උද්යෝගයෙන් කතා කරමු!',
+      ],
       praise: 'ඉතා විශිෂ්ටයි! නිවැරදි උච්චාරණය! 🎉',
       praiseQuestion: 'ඔබට තව මොනවද කියන්න තියෙන්නේ?',
       grace: 'හොඳ උත්සාහයක්! බයවෙන්න එපා, අපි දිගටම කරමු!',
@@ -272,11 +527,28 @@ class LanguagePack20 {
     ),
     'nl': NativeLanguageBundle(
       code: 'nl',
-      offlineReplies: [
-        'Heel goed, dat klinkt duidelijk! Vertel me daar gerust iets meer over.',
-        'Begrepen! Wat zou je hierna willen doen?',
+      dialogueTurns: [
+        DialoguePair(reply: 'Heel goed, dat klinkt duidelijk!', question: 'Wat zou je hierna willen doen?'),
+        DialoguePair(reply: 'Dat klinkt heel natuurlijk!', question: 'Heb je zoiets al eens eerder meegemaakt?'),
+        DialoguePair(reply: 'Wat een goed punt!', question: 'Wat spreekt je daar het meeste in aan?'),
+        DialoguePair(reply: 'Begrepen, dat klinkt heel logisch!', question: 'Kun je daar iets meer over vertellen?'),
+        DialoguePair(reply: 'Je uitspraak klinkt echt sterk!', question: 'Welk alternatief zou je kiezen als dat kon?'),
+        DialoguePair(reply: 'Helemaal mee eens!', question: 'Hoe pak je dit normaal gesproken aan?'),
+        DialoguePair(reply: 'Leuk om te horen!', question: 'Wil je daar nog iets aan toevoegen?'),
+        DialoguePair(reply: 'Duidelijk!', question: 'Wat is de volgende stap volgens jou?'),
       ],
-      defaultFollowUpQuestion: 'Wat vind je daarvan?',
+      nudges: [
+        'Ik luister! Neem gerust de tijd om je gedachten te delen.',
+        'Wees niet bang om fouten te maken — begin gewoon met een korte zin!',
+        'Wat is het eerste dat in je opkomt?',
+        'Geen probleem, neem even de tijd. Zal ik de vraag iets anders stellen?',
+      ],
+      openingPrefixes: [
+        'Hallo! Leuk om vandaag samen Nederlands te oefenen.',
+        'Hoi! Laten we meteen beginnen met een natuurlijk gesprek.',
+        'Welkom! Ontspan je en laten we dit samen doornemen.',
+        'Wat fijn dat je er bent! Klaar voor dit scenario?',
+      ],
       praise: 'Geweldig! Perfecte uitspraak! 🎉',
       praiseQuestion: 'Wat zou je nog meer willen delen?',
       grace: 'Goede poging! Geen zorgen, volgende keer lukt het zeker. Laten we doorgaan!',
@@ -290,11 +562,28 @@ class LanguagePack20 {
     ),
     'tr': NativeLanguageBundle(
       code: 'tr',
-      offlineReplies: [
-        'Çok iyi, sizi gayet net anladım! Bu konuda biraz daha detay verebilir misiniz?',
-        'Harika ve çok doğal! Bundan sonra ne yapmak istersiniz?',
+      dialogueTurns: [
+        DialoguePair(reply: 'Çok iyi, sizi gayet net anladım!', question: 'Bundan sonra ne yapmak istersiniz?'),
+        DialoguePair(reply: 'Çok doğal ve akıcı konuşuyorsunuz!', question: 'Daha önce buna benzer bir deneyiminiz oldu mu?'),
+        DialoguePair(reply: 'Harika bir bakış açısı!', question: 'Bu konuda en çok hoşunuza giden şey nedir?'),
+        DialoguePair(reply: 'Kesinlikle çok mantıklı!', question: 'Bana biraz daha detay verebilir misiniz?'),
+        DialoguePair(reply: 'Telaffuzunuz giderek güçleniyor!', question: 'Başka bir seçeneğiniz olsaydı hangisini tercih ederdiniz?'),
+        DialoguePair(reply: 'Tamamen katılıyorum!', question: 'Genellikle böyle bir durumda nasıl davranırsınız?'),
+        DialoguePair(reply: 'Çok güzel ifade ettiniz!', question: 'Eklemek istediğiniz başka bir şey var mı?'),
+        DialoguePair(reply: 'Anlaşıldı!', question: 'Sizce sıradaki adım ne olmalı?'),
       ],
-      defaultFollowUpQuestion: 'Bu konuda ne düşünüyorsunuz?',
+      nudges: [
+        'Sizi dinliyorum! Hazır olduğunuzda fikrinizi paylaşabilirsiniz.',
+        'Hata yapmaktan çekinmeyin — kısa bir cümleyle başlayabilirsiniz!',
+        'Şu an aklınıza gelen ilk şey nedir?',
+        'Acele etmeyin, buradayım. Soruyu biraz daha basitleştireyim mi?',
+      ],
+      openingPrefixes: [
+        'Merhaba! Bugün sizinle Türkçe pratik yapmak harika.',
+        'Selam! Hadi hemen gerçekçi ve doğal bir sohbete başlayalım.',
+        'Hoş geldiniz! Rahatlayın ve sanki oradaymışsınız gibi konuşun.',
+        'Harika, başlıyoruz! Bugünkü senaryoya hazır mısınız?',
+      ],
       praise: 'Harika! Mükemmel telaffuz! 🎉',
       praiseQuestion: 'Başka ne paylaşmak istersiniz?',
       grace: 'Güzel deneme! Merak etmeyin, bir dahaki sefere başaracaksınız. Devam edelim!',
@@ -308,11 +597,28 @@ class LanguagePack20 {
     ),
     'vi': NativeLanguageBundle(
       code: 'vi',
-      offlineReplies: [
-        'Rất tốt, tôi đã hiểu ý bạn! Bạn có thể chia sẻ thêm một chút về điều đó không?',
-        'Rất tự nhiên và rõ ràng! Bạn muốn làm gì tiếp theo?',
+      dialogueTurns: [
+        DialoguePair(reply: 'Rất tốt, tôi đã hiểu ý bạn!', question: 'Bạn muốn làm gì tiếp theo?'),
+        DialoguePair(reply: 'Rất tự nhiên và trôi chảy!', question: 'Trước đây bạn đã từng gặp tình huống này chưa?'),
+        DialoguePair(reply: 'Ý kiến hay lắm!', question: 'Bạn thích điểm nào nhất trong lựa chọn đó?'),
+        DialoguePair(reply: 'Hoàn toàn hợp lý!', question: 'Bạn có thể chia sẻ thêm một chút chi tiết không?'),
+        DialoguePair(reply: 'Phát âm của bạn rất rõ ràng!', question: 'Nếu có lựa chọn khác, bạn sẽ chọn gì?'),
+        DialoguePair(reply: 'Tôi hoàn toàn đồng ý!', question: 'Thông thường bạn sẽ xử lý việc này thế nào?'),
+        DialoguePair(reply: 'Tuyệt vời!', question: 'Bạn có muốn nói thêm điều gì nữa không?'),
+        DialoguePair(reply: 'Rõ rồi nhé!', question: 'Bước tiếp theo của bạn là gì?'),
       ],
-      defaultFollowUpQuestion: 'Bạn nghĩ sao về điều đó?',
+      nudges: [
+        'Tôi đang lắng nghe đây! Bạn hãy cứ thoải mái chia sẻ nhé.',
+        'Đừng ngại mắc lỗi — cứ bắt đầu bằng một câu thật ngắn gọn thôi!',
+        'Điều đầu tiên bạn nghĩ đến lúc này là gì?',
+        'Không sao đâu, cứ từ từ nhé. Bạn muốn tôi hỏi lại đơn giản hơn không?',
+      ],
+      openingPrefixes: [
+        'Xin chào! Hôm nay rất vui được luyện tiếng Việt cùng bạn.',
+        'Chào bạn! Hãy cùng bắt đầu một cuộc trò chuyện thật tự nhiên nhé.',
+        'Chào mừng bạn! Hãy thư giãn và trò chuyện thoải mái nào.',
+        'Tuyệt lắm, chúng ta bắt đầu tình huống thực tế hôm nay nhé!',
+      ],
       praise: 'Tuyệt vời! Phát âm hoàn hảo! 🎉',
       praiseQuestion: 'Bạn còn muốn chia sẻ thêm điều gì không?',
       grace: 'Cố gắng rất tốt! Đừng lo lắng, lần sau bạn sẽ làm tốt hơn. Hãy tiếp tục nhé!',
@@ -326,11 +632,28 @@ class LanguagePack20 {
     ),
     'id': NativeLanguageBundle(
       code: 'id',
-      offlineReplies: [
-        'Bagus sekali, saya paham dengan jelas! Bisakah Anda ceritakan sedikit lebih banyak?',
-        'Sangat natural! Apa yang ingin Anda lakukan selanjutnya?',
+      dialogueTurns: [
+        DialoguePair(reply: 'Bagus sekali, saya paham dengan jelas!', question: 'Apa yang ingin Anda lakukan selanjutnya?'),
+        DialoguePair(reply: 'Terdengar sangat natural!', question: 'Apakah Anda pernah mengalami hal serupa sebelumnya?'),
+        DialoguePair(reply: 'Ide yang sangat bagus!', question: 'Bagian mana yang paling Anda sukai dari itu?'),
+        DialoguePair(reply: 'Masuk akal sekali!', question: 'Bisakah Anda ceritakan sedikit lebih banyak?'),
+        DialoguePair(reply: 'Pelafalan Anda terdengar mantap!', question: 'Kalau ada pilihan lain, mana yang akan Anda pilih?'),
+        DialoguePair(reply: 'Saya sangat setuju!', question: 'Bagaimana biasanya Anda menghadapi situasi seperti ini?'),
+        DialoguePair(reply: 'Keren sekali!', question: 'Ada hal lain yang ingin Anda tambahkan?'),
+        DialoguePair(reply: 'Dipahami dengan baik!', question: 'Apa rencana Anda setelah ini?'),
       ],
-      defaultFollowUpQuestion: 'Bagaimana pendapat Anda tentang hal itu?',
+      nudges: [
+        'Saya mendengarkan! Silakan santai dan sampaikan pendapat Anda.',
+        'Jangan takut salah — coba mulai dengan kalimat pendek saja!',
+        'Apa hal pertama yang terpikir oleh Anda sekarang?',
+        'Tidak apa-apa, pelan-pelan saja. Mau saya ulangi dengan lebih sederhana?',
+      ],
+      openingPrefixes: [
+        'Halo! Senang sekali bisa berlatih bahasa Indonesia bersama Anda hari ini.',
+        'Hai! Mari kita mulai percakapan yang santai dan natural.',
+        'Selamat datang! Tarik napas dan mari mengobrol seperti biasa.',
+        'Bagus, mari kita mulai skenario seru hari ini!',
+      ],
       praise: 'Luar biasa! Pelafalan yang sempurna! 🎉',
       praiseQuestion: 'Apa lagi yang ingin Anda bagikan?',
       grace: 'Usaha yang bagus! Jangan khawatir, Anda akan menguasainya lain kali. Mari lanjutkan!',
@@ -344,11 +667,28 @@ class LanguagePack20 {
     ),
     'th': NativeLanguageBundle(
       code: 'th',
-      offlineReplies: [
-        'ดีมากเลยครับ เข้าใจชัดเจนเลย! เล่าเพิ่มเติมให้ฟังอีกนิดได้ไหมครับ?',
-        'เป็นธรรมชาติมากครับ! ต่อไปอยากจะทำอะไรต่อดีครับ?',
+      dialogueTurns: [
+        DialoguePair(reply: 'ดีมากเลยครับ เข้าใจชัดเจนเลย!', question: 'ต่อไปอยากจะทำอะไรต่อดีครับ?'),
+        DialoguePair(reply: 'เป็นธรรมชาติมากครับ!', question: 'คุณเคยเจอสถานการณ์แบบนี้มาก่อนไหมครับ?'),
+        DialoguePair(reply: 'เป็นความคิดที่ดีมากครับ!', question: 'คุณชอบส่วนไหนของเรื่องนี้มากที่สุดครับ?'),
+        DialoguePair(reply: 'ฟังดูสมเหตุสมผลมากเลยครับ!', question: 'เล่าเพิ่มเติมให้ฟังอีกนิดได้ไหมครับ?'),
+        DialoguePair(reply: 'ออกเสียงได้ชัดเจนมากครับ!', question: 'ถ้าเลือกอย่างอื่นได้ คุณจะเลือกอะไรครับ?'),
+        DialoguePair(reply: 'เห็นด้วยเลยครับ!', question: 'ปกติแล้วคุณจัดการเรื่องแบบนี้ยังไงครับ?'),
+        DialoguePair(reply: 'ยอดเยี่ยมมากครับ!', question: 'มีอะไรอยากพูดเพิ่มเติมอีกไหมครับ?'),
+        DialoguePair(reply: 'เข้าใจแล้วครับ!', question: 'คุณคิดอย่างไรเกี่ยวกับเรื่องนี้ครับ?'),
       ],
-      defaultFollowUpQuestion: 'คุณคิดอย่างไรเกี่ยวกับเรื่องนี้ครับ?',
+      nudges: [
+        'ผมกำลังฟังอยู่นะครับ! สบายๆ แล้วแชร์ความคิดเห็นได้เลยครับ',
+        'ไม่ต้องกลัวผิดนะครับ ลองเริ่มจากประโยคสั้นๆ ดูก่อนก็ได้!',
+        'สิ่งแรกที่คุณนึกถึงตอนนี้คืออะไรครับ?',
+        'ไม่เป็นไรครับ ค่อยๆ คิดนะ อยากให้ผมถามให้ง่ายขึ้นไหมครับ?',
+      ],
+      openingPrefixes: [
+        'สวัสดีครับ! ยินดีมากที่ได้ฝึกภาษาไทยด้วยกันวันนี้',
+        'สวัสดีครับ! เรามาเริ่มคุยกันแบบเป็นธรรมชาติเลยนะครับ',
+        'ยินดีต้อนรับครับ! ผ่อนคลายแล้วลองคุยเหมือนอยู่ในสถานการณ์จริงเลยนะ',
+        'พร้อมแล้วนะครับ มาเริ่มบทสนทนาวันนี้กันเลย!',
+      ],
       praise: 'ยอดเยี่ยมมาก! ออกเสียงได้สมบูรณ์แบบเลยครับ! 🎉',
       praiseQuestion: 'มีอะไรอยากเล่าเพิ่มเติมอีกไหมครับ?',
       grace: 'พยายามได้ดีมากครับ! ไม่ต้องกังวล คราวหน้าจะเก่งขึ้นแน่นอน มาคุยกันต่อครับ!',
@@ -362,11 +702,28 @@ class LanguagePack20 {
     ),
     'sv': NativeLanguageBundle(
       code: 'sv',
-      offlineReplies: [
-        'Jättebra, jag förstod precis vad du menade! Berätta gärna lite mer om det.',
-        'Väldigt naturligt! Vad vill du göra härnäst?',
+      dialogueTurns: [
+        DialoguePair(reply: 'Jättebra, jag förstod precis vad du menade!', question: 'Vad vill du göra härnäst?'),
+        DialoguePair(reply: 'Väldigt naturligt uttryckt!', question: 'Har du varit med om något liknande tidigare?'),
+        DialoguePair(reply: 'Vilken bra tanke!', question: 'Vad tycker du bäst om med det?'),
+        DialoguePair(reply: 'Det låter helt rimligt!', question: 'Kan du berätta lite mer om det?'),
+        DialoguePair(reply: 'Ditt uttal låter riktigt bra!', question: 'Vad skulle du välja som alternativ?'),
+        DialoguePair(reply: 'Jag håller helt med dig!', question: 'Hur brukar du göra i en sådan situation?'),
+        DialoguePair(reply: 'Härligt att höra!', question: 'Finns det något mer du vill lägga till?'),
+        DialoguePair(reply: 'Uppfattat!', question: 'Vad tycker du är nästa steg?'),
       ],
-      defaultFollowUpQuestion: 'Vad tycker du om det?',
+      nudges: [
+        'Jag lyssnar! Ta god tid på dig och berätta vad du tycker.',
+        'Var inte rädd för att göra fel — börja bara med en kort mening!',
+        'Vad är det första du kommer att tänka på just nu?',
+        'Ingen fara, ta en sekund. Vill du att jag ställer frågan lite enklare?',
+      ],
+      openingPrefixes: [
+        'Hej! Vad kul att öva svenska tillsammans idag.',
+        'Hejsan! Låt oss börja ett naturligt och avslappnat samtal.',
+        'Välkommen! Slappna av och låtsas att vi pratar på riktigt.',
+        'Toppen, nu kör vi igång med dagens scenario!',
+      ],
       praise: 'Fantastiskt! Perfekt uttal! 🎉',
       praiseQuestion: 'Vad mer skulle du vilja dela med dig av?',
       grace: 'Bra försök! Oroa dig inte, du kommer att klara det nästa gång. Vi fortsätter!',
@@ -380,11 +737,28 @@ class LanguagePack20 {
     ),
     'en': NativeLanguageBundle(
       code: 'en',
-      offlineReplies: [
-        'That is really insightful! Could you tell me a little more about how you got started with that?',
-        'I completely understand! What else would you like to share about that?',
+      dialogueTurns: [
+        DialoguePair(reply: 'That makes total sense!', question: 'How do you usually handle that in real life?'),
+        DialoguePair(reply: 'I love the way you phrased that!', question: 'What first got you interested in this?'),
+        DialoguePair(reply: 'You explained that so clearly!', question: 'If you had another option, which one would you pick?'),
+        DialoguePair(reply: 'Great point — I completely agree with you!', question: 'Could you give me a quick real-life example?'),
+        DialoguePair(reply: 'That sounds really interesting!', question: 'What has been the biggest challenge with it so far?'),
+        DialoguePair(reply: 'Awesome, your tone sounded super confident!', question: 'What do you enjoy most about this experience?'),
+        DialoguePair(reply: 'Good thinking!', question: 'How would a friend or colleague usually respond to that?'),
+        DialoguePair(reply: 'Nice! That flows very naturally.', question: 'What would your next step be from here?'),
       ],
-      defaultFollowUpQuestion: 'What else do you think about that?',
+      nudges: [
+        "I'm listening! Take your time and share whatever comes to mind first.",
+        "No pressure at all — even a short answer is great practice! Give it a quick try.",
+        "Take a breath, you're doing great! Would you like to start with 'Well, I think...'?",
+        "Still with me? Let's keep it simple: do you like this option or prefer something else?",
+      ],
+      openingPrefixes: [
+        'Hey there! So great to practice speaking with you today.',
+        "Welcome back! Let's jump right into a natural conversation.",
+        'Hi! Relax and imagine we are right there in person.',
+        "Awesome to hear from you! Let's kick off this scenario together.",
+      ],
       praise: 'Awesome! Perfect pronunciation! 🎉',
       praiseQuestion: 'What else would you like to share?',
       grace: "Good effort! Don't worry, you'll master it next time. Let's keep going!",
@@ -420,5 +794,161 @@ class LanguagePack20 {
     if (l.contains('thai') || l == 'th' || l.startsWith('th-')) return _bundles['th']!;
     if (l.contains('swed') || l.contains('svensk') || l == 'sv' || l == 'se' || l.startsWith('sv-')) return _bundles['sv']!;
     return _bundles['en']!;
+  }
+
+  /// Generates a fresh, varied opening prompt every time a call starts, never stuck on the exact same question!
+  static String buildVariedOpeningQuestion({
+    required String language,
+    required String defaultPrompt,
+    required List<String> alternateQuestions,
+    String lastUsedOpening = '',
+  }) {
+    final bundle = resolve(language);
+    final List<String> pool = [];
+    final cleanDefault = defaultPrompt.replaceAll(RegExp(r'\([^)]*\)'), '').replaceAll(RegExp(r'\[[^\]]*\]'), '').trim();
+    if (cleanDefault.isNotEmpty) pool.add(cleanDefault);
+
+    for (final q in alternateQuestions) {
+      final cleanQ = q.replaceAll(RegExp(r'\([^)]*\)'), '').replaceAll(RegExp(r'\[[^\]]*\]'), '').trim();
+      if (cleanQ.isNotEmpty) {
+        final prefix = bundle.openingPrefixes[_rand.nextInt(bundle.openingPrefixes.length)];
+        pool.add('$prefix $cleanQ');
+      }
+    }
+
+    for (var i = 0; i < min(4, bundle.dialogueTurns.length); i++) {
+      final turn = bundle.dialogueTurns[i];
+      final prefix = bundle.openingPrefixes[_rand.nextInt(bundle.openingPrefixes.length)];
+      pool.add('$prefix ${turn.question}');
+    }
+
+    final fresh = pool.where((p) => p != lastUsedOpening).toList();
+    final target = fresh.isNotEmpty ? fresh : pool;
+    return target[_rand.nextInt(target.length)];
+  }
+
+  /// Comprehensive Offline Grammar & Politeness Detector across Languages
+  static OfflineGrammarMatch detectGrammarMistake(String spokenText, String targetLanguage) {
+    final bundle = resolve(targetLanguage);
+    final lower = spokenText.toLowerCase().trim();
+
+    if (bundle.code == 'en') {
+      final rules = <Map<String, dynamic>>[
+        {'rx': RegExp(r'\bi am agree\b'), 'o': 'I am agree', 'c': 'I agree', 'e': "'Agree' is a verb, so never use 'am' before it."},
+        {'rx': RegExp(r"\b(he|she|it)\s+don'?t\b"), 'o': "he/she don't", 'c': "he/she doesn't", 'e': "Use 'doesn't' with singular third-person subjects (he, she, it)."},
+        {'rx': RegExp(r'\b(he|she|it)\s+have\b'), 'o': 'he/she have', 'c': 'he/she has', 'e': "Use 'has' instead of 'have' with he, she, or it."},
+        {'rx': RegExp(r"\bdidn'?t\s+(went|came|saw|ate|did|bought|got)\b"), 'o': "didn't + past verb", 'c': "didn't go", 'e': "After 'didn't', always use the base verb form (e.g., 'didn't go')."},
+        {'rx': RegExp(r'\bmore\s+(better|faster|easier|cheaper|bigger)\b'), 'o': 'more better', 'c': 'much better', 'e': "Avoid double comparatives; say 'much better' instead of 'more better'."},
+        {'rx': RegExp(r'\byesterday\s+i\s+go\b|\bi\s+go\b.*\byesterday\b'), 'o': 'go yesterday', 'c': 'went yesterday', 'e': "Use the past tense verb 'went' when talking about yesterday."},
+        {'rx': RegExp(r'\bi\s+am\s+(live|work|like|want|know)\b'), 'o': 'I am + base verb', 'c': 'I live / I work', 'e': "For habits and states, use simple present 'I live' rather than 'I am live'."},
+        {'rx': RegExp(r'\bwant\s+(order|eat|go|buy|ask|speak)\b'), 'o': 'want + verb', 'c': 'want to order', 'e': "Always place 'to' between 'want' and another verb."},
+        {'rx': RegExp(r'\bdiscuss\s+about\b'), 'o': 'discuss about', 'c': 'discuss', 'e': "'Discuss' already includes 'about', so say 'discuss the topic'."},
+        {'rx': RegExp(r'\bsince\s+\d+\s+(years|months|days|hours)\b'), 'o': 'since X years', 'c': 'for X years', 'e': "Use 'for' for durations of time, and 'since' for a starting point."},
+        {'rx': RegExp(r'\bmarried\s+with\b'), 'o': 'married with', 'c': 'married to', 'e': "In English, we say 'married to someone', not 'married with'."},
+        {'rx': RegExp(r'\blisten\s+music\b'), 'o': 'listen music', 'c': 'listen to music', 'e': "The verb 'listen' requires the preposition 'to' before an object."},
+        {'rx': RegExp(r'\bdepend\s+of\b'), 'o': 'depend of', 'c': 'depend on', 'e': "In English, the verb 'depend' is always followed by 'on'."},
+        {'rx': RegExp(r'\bexplain\s+me\b'), 'o': 'explain me', 'c': 'explain to me', 'e': "Say 'explain to me', not 'explain me'."},
+        {'rx': RegExp(r'\b(informations|advices|furnitures)\b'), 'o': 'informations / advices', 'c': 'information / advice', 'e': 'These are uncountable nouns in English and do not take a plural s.'},
+        {'rx': RegExp(r'\bmuch\s+peoples?\b|\bmany\s+persons\b'), 'o': 'much people / many persons', 'c': 'many people', 'e': "'People' is plural and pairs with 'many', not 'much'."},
+        {'rx': RegExp(r'\bme\s+want\b'), 'o': 'me want', 'c': 'I would like', 'e': "Use subject pronoun 'I' (not 'me') as the subject."},
+      ];
+      for (final r in rules) {
+        if ((r['rx'] as RegExp).hasMatch(lower)) {
+          return OfflineGrammarMatch(
+            hasCorrection: true,
+            original: r['o'] as String,
+            correction: r['c'] as String,
+            explanation: r['e'] as String,
+            targetPhrase: r['c'] as String,
+          );
+        }
+      }
+    } else if (bundle.code == 'fr') {
+      final rules = <Map<String, dynamic>>[
+        {'rx': RegExp(r'\bje\s+veux\s+(un|une|du|de|le|la)\b'), 'o': 'je veux ...', 'c': 'je voudrais ...', 'e': "En français poli, on dit 'Je voudrais...' plutôt que 'Je veux...'."},
+        {'rx': RegExp(r'\bje\s+suis\s+\d+\s+ans?\b'), 'o': 'je suis ... ans', 'c': "j'ai ... ans", 'e': "En français, on utilise le verbe 'avoir' pour l'âge (j'ai 20 ans)."},
+        {'rx': RegExp(r'\bje\s+suis\s+(faim|soif|chaud|froid)\b'), 'o': 'je suis faim/soif', 'c': "j'ai faim / j'ai soif", 'e': "On utilise 'avoir' : j'ai faim, j'ai soif."},
+        {'rx': RegExp(r'\bbeaucoup\s+des\b'), 'o': 'beaucoup des', 'c': 'beaucoup de', 'e': "Après 'beaucoup', on utilise toujours 'de' sans article."},
+      ];
+      for (final r in rules) {
+        if ((r['rx'] as RegExp).hasMatch(lower)) {
+          return OfflineGrammarMatch(
+            hasCorrection: true,
+            original: r['o'] as String,
+            correction: r['c'] as String,
+            explanation: r['e'] as String,
+            targetPhrase: r['c'] as String,
+          );
+        }
+      }
+    } else if (bundle.code == 'es') {
+      final rules = <Map<String, dynamic>>[
+        {'rx': RegExp(r'\b(yo\s+)?soy\s+\d+\s+años?\b'), 'o': 'soy ... años', 'c': 'tengo ... años', 'e': "En español se usa 'tener' para la edad (tengo 20 años)."},
+        {'rx': RegExp(r'\b(yo\s+)?gusto\b|\bme\s+gusto\b'), 'o': 'me gusto', 'c': 'me gusta', 'e': "Con el verbo gustar se dice 'me gusta'."},
+        {'rx': RegExp(r'\bla\s+problema\b|\bla\s+día\b'), 'o': 'la problema / la día', 'c': 'el problema / el día', 'e': "'Problema' y 'día' son sustantivos masculinos."},
+      ];
+      for (final r in rules) {
+        if ((r['rx'] as RegExp).hasMatch(lower)) {
+          return OfflineGrammarMatch(
+            hasCorrection: true,
+            original: r['o'] as String,
+            correction: r['c'] as String,
+            explanation: r['e'] as String,
+            targetPhrase: r['c'] as String,
+          );
+        }
+      }
+    } else if (bundle.code == 'de') {
+      if (RegExp(r'\bich\s+habe\s+\d+\s+jahre\b').hasMatch(lower)) {
+        return const OfflineGrammarMatch(
+          hasCorrection: true,
+          original: 'ich habe ... Jahre',
+          correction: 'ich bin ... Jahre alt',
+          explanation: "Auf Deutsch benutzt man 'sein' für das Alter.",
+          targetPhrase: 'ich bin 20 Jahre alt',
+        );
+      }
+      if (RegExp(r'\bich\s+will\s+(bestellen|ein)\b').hasMatch(lower)) {
+        return const OfflineGrammarMatch(
+          hasCorrection: true,
+          original: 'ich will ...',
+          correction: 'ich hätte gerne ...',
+          explanation: "Höflicher sagt man 'Ich hätte gerne...'.",
+          targetPhrase: 'Ich hätte gerne einen Kaffee',
+        );
+      }
+    } else if (bundle.code == 'it') {
+      if (RegExp(r'\bsono\s+\d+\s+anni\b').hasMatch(lower)) {
+        return const OfflineGrammarMatch(
+          hasCorrection: true,
+          original: 'sono ... anni',
+          correction: 'ho ... anni',
+          explanation: "In italiano si usa 'avere' per l'età.",
+          targetPhrase: 'ho venti anni',
+        );
+      }
+    } else if (bundle.code == 'ja') {
+      if ((lower.contains('食べますでした') || lower.contains('行きますでした')) || (lower.contains('tabeta') && !lower.contains('mashita'))) {
+        return const OfflineGrammarMatch(
+          hasCorrection: true,
+          original: '食べた / 〜ますでした',
+          correction: '食べました',
+          explanation: '丁寧な過去形は「〜ました」を使います。',
+          targetPhrase: '食べました',
+        );
+      }
+    } else if (bundle.code == 'ko') {
+      if ((lower.contains('bogo') || lower.contains('보고 싶어')) && !lower.contains('요')) {
+        return const OfflineGrammarMatch(
+          hasCorrection: true,
+          original: '보고 싶어',
+          correction: '보고 싶어요',
+          explanation: "존댓말 '-요'를 붙이는 것이 자연스럽습니다.",
+          targetPhrase: '보고 싶어요',
+        );
+      }
+    }
+
+    return const OfflineGrammarMatch(hasCorrection: false);
   }
 }
