@@ -1,7 +1,7 @@
 # 🎙️ SpeakFlow AI — Real-Time Hybrid AI Language & Accent Coach
 
 [![Google Firebase Hackathon](https://img.shields.io/badge/Google%20Firebase-%23BuildHybridAI%202026-FFA000?style=for-the-badge&logo=firebase&logoColor=white)](https://firebase.google.com/)
-[![Firebase Vertex AI](https://img.shields.io/badge/Firebase%20Vertex%20AI-Official%20SDK-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/docs/vertex-ai)
+[![Firebase AI Logic](https://img.shields.io/badge/Firebase%20AI%20Logic-Official%20Hybrid%20SDK-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/docs/ai-logic)
 [![Gemini Nano On-Device](https://img.shields.io/badge/On--Device-Gemini%20Nano%20%5B0ms%5D-34A853?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 [![Gemini 2.5 Flash Cloud](https://img.shields.io/badge/Cloud-Gemini%202.5%20Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://aistudio.google.com/)
 [![Flutter 3.x](https://img.shields.io/badge/Flutter-3.x%20Web%20%7C%20Android%20%7C%20iOS-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev/)
@@ -55,12 +55,14 @@ flowchart TD
 ## 🌟 Key Highlights & Technical Innovations
 
 ### 1. ⚡ Firebase AI Logic: Hybrid LLM Inference Router
-* **Official Google Firebase SDK Integration**: Integrated official `firebase_vertexai` and `firebase_ai` SDKs (`FirebaseVertexAI.instance.generativeModel`) for cloud inference, eliminating insecure direct API calls.
+* **Official Google Firebase AI Logic Documentation Standard**: Built strictly to the official [Firebase AI Logic documentation](https://firebase.google.com/docs/ai-logic) specifications.
+* **Official Google Firebase SDK Integration**: Integrated official `firebase/ai` (Web: `getAI`, `getGenerativeModel`, `InferenceMode.PREFER_ON_DEVICE`) and `firebase_vertexai` (Flutter/Android) SDKs, eliminating insecure direct API calls and implementing Google's managed client-side architecture.
 * **On-Device (Gemini Nano)**: Evaluates user speech locally using **Gemini Nano** (`window.ai.languageModel` on Web / Android AICore on mobile / local multi-tense neural NLP core in `hybrid-ai.ts` and `gemini_voice_service.dart`). Guarantees zero latency, complete user privacy, and zero API costs.
-* **Cloud (Gemini 2.5 Flash)**: Leverages Google's flagship model via Firebase Vertex AI for complex conversational roleplay, nuanced grammar explanations, and scenario adaptation.
+* **Cloud (Gemini 2.5 Flash)**: Leverages Google's flagship model via Firebase AI Logic / Vertex AI for complex conversational roleplay, nuanced grammar explanations, and scenario adaptation.
 * **Seamless Resilience Fallback**: If network connectivity drops, API quota is exhausted (HTTP 429), or the user engages **In-Flight / Offline Mode**, the engine instantaneously falls back to On-Device Gemini Nano with **0ms interruption**.
-* **Live Telemetry HUD**: The active call screen displays real-time execution badges:
-  * `⚡ ON-DEVICE: GEMINI NANO [0ms • Offline]`
+* **Live Telemetry HUD**: The active call screen displays real-time execution badges matching actual engine sources:
+  * `⚡ ON-DEVICE: GEMINI NANO [0ms • Prompt API]`
+  * `🛡️ OFFLINE: RESILIENCE NLP CORE [0ms • Local]`
   * `☁️ CLOUD: GEMINI 2.5 FLASH [Firebase]`
   * Interactive `✈️ Sim Offline` switch to demonstrate local on-device inference live to judges.
 
